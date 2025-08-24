@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Combustion Air Requirement - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC100; /* Adjusted for better visibility */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Back to Tools link (placeholder, replace with actual index.html if available) -->
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Fuel Combustion Stoichiometric & Actual Air Requirement Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator determines the <strong>theoretical minimum amount of air (stoichiometric air)</strong> required for complete combustion of a given fuel, based on its elemental composition by mass. It then calculates the <strong>Actual Air Requirement</strong> by incorporating an engineer-defined excess air percentage, which is crucial for practical industrial combustion system design, optimization, and emission control.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Fuel Composition (% by mass):</strong> Enter the mass percentages of Carbon (C), Hydrogen (H), Sulfur (S), Oxygen (O), and Nitrogen (N) in your fuel. The sum of these percentages should ideally be 100%.</li>
+                    <li><strong>Excess Air (%):</strong> The percentage of air supplied in excess of the stoichiometric requirement. This accounts for incomplete mixing and ensures full combustion in industrial burners. Typical values range from 10% to 50% depending on fuel and burner design.</li>
+                    <li><strong>Unit System:</strong> Select whether to display the air requirement in kg of air per kg of fuel or lb of air per lb of fuel.</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Stoichiometric Air-Fuel Ratio (AFR):</strong> The mass of air theoretically required for the complete combustion of one unit mass of fuel.</li>
+                    <li><strong>Actual Air-Fuel Ratio (AFR<sub>Actual</sub>):</strong> The practical mass of air required per unit mass of fuel, considering the specified excess air.</li>
+                </ul>
+                <p><strong>Note on Ash & Moisture:</strong> This calculator focuses on the combustible elements. While ash and moisture content in real fuels dilute the combustible mass and affect overall fuel-air ratios on a 'wet' or 'as-fired' basis, they do not directly consume oxygen for combustion. Their impact on air requirement is implicitly handled when determining the mass fractions of C, H, S, O, N in the *combustible* portion of the fuel or by adjusting the total fuel mass if calculating for as-fired conditions.</p>
+                <p><strong>Note on Complex Combustion Products:</strong> This calculation assumes ideal complete combustion products (CO₂, H₂O, SO₂). Real-world combustion can produce minor amounts of incomplete combustion products (CO, unburnt hydrocarbons) and NOx (due to high temperatures and nitrogen in air/fuel). These are combustion phenomena influenced by operating conditions and burner design, and not directly by the stoichiometric air calculation.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="combustion-calculator-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Output Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select units for the calculated air-fuel ratio.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="kg">kg Air / kg Fuel</option>
+                                <option value="lb">lb Air / lb Fuel</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="excess-air">Excess Air (%): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Percentage of air supplied over stoichiometric. Typically 10-50% for industrial burners.</span></span></label>
+                            <input type="number" id="excess-air" step="0.1" value="20" required min="0" max="1000">
+                        </div>
+                    </div>
+
+                    <h3>Fuel Elemental Composition (% by Mass)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="carbon">Carbon (C) %: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass percentage of Carbon in the fuel.</span></span></label>
+                            <input type="number" id="carbon" step="0.01" value="85" required min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="hydrogen">Hydrogen (H) %: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass percentage of Hydrogen in the fuel.</span></span></label>
+                            <input type="number" id="hydrogen" step="0.01" value="12" required min="0" max="100">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sulfur">Sulfur (S) %: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass percentage of Sulfur in the fuel.</span></span></label>
+                            <input type="number" id="sulfur" step="0.01" value="2" required min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="oxygen">Oxygen (O) %: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass percentage of Oxygen in the fuel.</span></span></label>
+                            <input type="number" id="oxygen" step="0.01" value="0" required min="0" max="100">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nitrogen">Nitrogen (N) %: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass percentage of Nitrogen in the fuel (does not contribute to oxygen demand).</span></span></label>
+                            <input type="number" id="nitrogen" step="0.01" value="1" required min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="sum-composition">Sum of Composition (%):</label>
+                            <input type="text" id="sum-composition" value="0" readonly style="font-weight: bold;">
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="calculate-combustion-btn" class="calculate-btn">Calculate Air Requirements</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This calculator provides the <strong>theoretical minimum (stoichiometric) air requirement by mass for complete combustion</strong>, based on the elemental composition of the fuel. It then calculates the <strong>Actual Air Requirement</strong> by incorporating an engineer-defined excess air percentage. This is an essential theoretical starting point and a practical estimate for combustion system design and analysis.</p>
+                <p><strong>This calculator operates on fundamental chemical principles and does NOT replace detailed engineering analysis for:</strong></p>
+                <ul>
+                    <li><strong>Comprehensive Fuel Analysis:</strong> Actual fuel properties (including ash, moisture, and heating values) require detailed laboratory analysis (e.g., proximate and ultimate analysis via ASTM D3176, D5291, D4239). This tool assumes input percentages for combustible elements only.</li>
+                    <li><strong>Complex Combustion Products & Emissions:</strong> Assumes complete combustion to CO₂, H₂O, and SO₂. Real combustion systems can produce varying amounts of incomplete combustion products (CO, unburnt hydrocarbons) and pollutants like NOx, influenced by burner design, flame temperature, and operating conditions. These require specialized emission modeling and measurement.</li>
+                    <li><strong>Operating Conditions & System Design:</strong> Factors like air preheat temperature, fuel atomization, mixing efficiency, combustion chamber geometry, and pressure significantly influence actual combustion performance, flame stability, and NOx formation.</li>
+                    <li><strong>Specific Industrial Codes & Standards:</strong> Adherence to industrial combustion and boiler codes (e.g., ASME PTC 4 for Fired Steam Generators, NFPA standards for fuel handling and safety, API standards for fired heaters) is critical for safe and compliant operation. This tool provides a foundational calculation, not full compliance.</li>
+                </ul>
+                <p>For accurate, safe, and optimized design, operation, and troubleshooting in critical industrial combustion applications, it is <strong>imperative</strong> to conduct comprehensive fuel analysis, consult relevant industry standards, utilize specialized combustion engineering software, and engage qualified chemical or mechanical engineers with expertise in combustion technology.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Fuel Combustion Air Requirement Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-combustion-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const carbonInput = document.getElementById('carbon');
+            const hydrogenInput = document.getElementById('hydrogen');
+            const sulfurInput = document.getElementById('sulfur');
+            const oxygenInput = document.getElementById('oxygen');
+            const nitrogenInput = document.getElementById('nitrogen');
+            const excessAirInput = document.getElementById('excess-air'); // New input
+            const sumCompositionInput = document.getElementById('sum-composition');
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Calculates and updates the sum of fuel composition percentages.
+             */
+            function updateSumComposition() {
+                const C = parseFloat(carbonInput.value) || 0;
+                const H = parseFloat(hydrogenInput.value) || 0;
+                const S = parseFloat(sulfurInput.value) || 0;
+                const O = parseFloat(oxygenInput.value) || 0;
+                const N = parseFloat(nitrogenInput.value) || 0;
+                const sum = C + H + S + O + N;
+                sumCompositionInput.value = sum.toFixed(2);
+
+                if (sum > 100.01 || sum < 99.99) {
+                    sumCompositionInput.style.backgroundColor = 'var(--error-color)';
+                    sumCompositionInput.style.color = 'white';
+                } else {
+                    sumCompositionInput.style.backgroundColor = 'var(--bg-color)';
+                    sumCompositionInput.style.color = 'var(--text-color)';
+                }
+            }
+
+            // Add event listeners to composition inputs
+            carbonInput.addEventListener('input', updateSumComposition);
+            hydrogenInput.addEventListener('input', updateSumComposition);
+            sulfurInput.addEventListener('input', updateSumComposition);
+            oxygenInput.addEventListener('input', updateSumComposition);
+            nitrogenInput.addEventListener('input', updateSumComposition);
+
+            // Initial sum update on load
+            updateSumComposition();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('combustion-calculator-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const C_mass = parseFloat(carbonInput.value) / 100; // mass fraction
+                const H_mass = parseFloat(hydrogenInput.value) / 100;
+                const S_mass = parseFloat(sulfurInput.value) / 100;
+                const O_mass = parseFloat(oxygenInput.value) / 100;
+                const N_mass = parseFloat(nitrogenInput.value) / 100;
+                const excessAirPct = parseFloat(excessAirInput.value); // Excess air in percentage
+                const unitSystem = unitSystemSelect.value;
+
+                // Validate sum of composition
+                const sumOfElements = C_mass + H_mass + S_mass + O_mass + N_mass;
+                if (sumOfElements < 0.999 || sumOfElements > 1.001) { // Allow for small floating point inaccuracies
+                    displayMessage("Sum of fuel composition percentages must be close to 100%. Please check your inputs.", "error");
+                    return;
+                }
+                if (excessAirPct < 0) {
+                     displayMessage("Excess Air percentage cannot be negative.", "error");
+                     return;
+                }
+
+
+                let theoreticalOxygenRequired = 0;
+                let calculationHtml = '<h4>Detailed Calculation Steps (Per kg/lb of Fuel):</h4>';
+                
+                // Molecular weights
+                const MW_C = 12.01;
+                const MW_H = 1.008; // H2 has MW 2.016, but we calculate per kg of H
+                const MW_S = 32.06;
+                const MW_O2 = 32.00; // Molecular oxygen
+
+                // Mass of O2 required per unit mass of element (stoichiometric reactions)
+                const O2_per_C = MW_O2 / MW_C; // 32/12 = 2.667 kg O2/kg C
+                const O2_per_H = (0.5 * MW_O2) / (2 * MW_H); // (0.5 * 32) / (2 * 1) = 8 kg O2/kg H
+                const O2_per_S = MW_O2 / MW_S; // 32/32 = 1 kg O2/kg S
+
+                calculationHtml += `<p><strong>Formulas for Oxygen Required (mass O₂ per mass element):</strong></p>
+                                    <ul>
+                                        <li>Carbon (C): \\( O_{2,C} = \\frac{32}{12} = 2.667 \\)</li>
+                                        <li>Hydrogen (H): \\( O_{2,H} = \\frac{16}{2} = 8.0 \\)</li>
+                                        <li>Sulfur (S): \\( O_{2,S} = \\frac{32}{32} = 1.0 \\)</li>
+                                    </ul>`;
+
+                calculationHtml += `<p><strong>1. Oxygen Required for Each Combustible Element:</strong></p>`;
+                const o2_for_c = C_mass * O2_per_C;
+                calculationHtml += `<p class="calculation-step">
+                    Oxygen for Carbon = ${C_mass.toFixed(4)} kg/lb C \\( \\times \\) ${O2_per_C.toFixed(3)} kg/lb O₂/kg/lb C = ${o2_for_c.toFixed(4)} kg/lb O₂
+                </p>`;
+                
+                const o2_for_h = H_mass * O2_per_H;
+                calculationHtml += `<p class="calculation-step">
+                    Oxygen for Hydrogen = ${H_mass.toFixed(4)} kg/lb H \\( \\times \\) ${O2_per_H.toFixed(1)} kg/lb O₂/kg/lb H = ${o2_for_h.toFixed(4)} kg/lb O₂
+                </p>`;
+
+                const o2_for_s = S_mass * O2_per_S;
+                calculationHtml += `<p class="calculation-step">
+                    Oxygen for Sulfur = ${S_mass.toFixed(4)} kg/lb S \\( \\times \\) ${O2_per_S.toFixed(1)} kg/lb O₂/kg/lb S = ${o2_for_s.toFixed(4)} kg/lb O₂
+                </p>`;
+
+                theoreticalOxygenRequired = o2_for_c + o2_for_h + o2_for_s;
+                calculationHtml += `<p><strong>2. Total Oxygen Theoretically Required (based on combustible elements):</strong></p>
+                                    <p class="calculation-step">
+                                        Total O₂ Required = ${o2_for_c.toFixed(4)} + ${o2_for_h.toFixed(4)} + ${o2_for_s.toFixed(4)} = ${theoreticalOxygenRequired.toFixed(4)} kg/lb O₂
+                                    </p>`;
+
+                // Subtract oxygen already present in the fuel
+                const netOxygenRequired = theoreticalOxygenRequired - O_mass;
+                calculationHtml += `<p><strong>3. Net Oxygen Required (accounting for Oxygen in fuel):</strong></p>
+                                    <p class="formula">\\[ O_{2,net} = \\left(\\frac{32}{12}C + \\frac{16}{2}H + \\frac{32}{32}S\\right) - O \\]</p>
+                                    <p class="calculation-step">
+                                        Net O₂ Required = ${theoreticalOxygenRequired.toFixed(4)} - ${O_mass.toFixed(4)} (O in fuel) = ${netOxygenRequired.toFixed(4)} kg/lb O₂
+                                    </p>`;
+
+                // Air contains approximately 23.2% oxygen by mass (or 21% by volume)
+                const O2_in_Air_by_Mass = 0.232; // kg O2 per kg Air
+                const stoichiometricAirFuelRatio = netOxygenRequired / O2_in_Air_by_Mass;
+
+                calculationHtml += `<p><strong>4. Stoichiometric Air-Fuel Ratio (AFR):</strong></p>
+                                    <p>Air contains approximately ${ (O2_in_Air_by_Mass * 100).toFixed(1) }% Oxygen by mass.</p>
+                                    <p class="formula">\\[ AFR_{stoich} = \\frac{O_{2,net}}{0.232} \\]</p>
+                                    <p class="calculation-step">
+                                        AFR = ${netOxygenRequired.toFixed(4)} kg/lb O₂ / ${O2_in_Air_by_Mass} = ${stoichiometricAirFuelRatio.toFixed(3)} ${unitSystem} Air / ${unitSystem} Fuel
+                                    </p>`;
+                
+                // Calculate Actual Air Requirement
+                const actualAirFuelRatio = stoichiometricAirFuelRatio * (1 + excessAirPct / 100);
+                calculationHtml += `<p><strong>5. Actual Air-Fuel Ratio (AFR<sub>Actual</sub>):</strong></p>
+                                    <p class="formula">\\[ AFR_{Actual} = AFR_{stoich} \\times \\left(1 + \\frac{\\text{Excess Air \\%}}{100}\\right) \\]</p>
+                                    <p class="calculation-step">
+                                        AFR<sub>Actual</sub> = ${stoichiometricAirFuelRatio.toFixed(3)} \\( \\times \\) (1 + ${excessAirPct.toFixed(1)} / 100) = ${actualAirFuelRatio.toFixed(3)} ${unitSystem} Air / ${unitSystem} Fuel
+                                    </p>`;
+
+
+                // Clear previous results
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                // Populate results table
+                addResultRow("Fuel Composition Sum", `${(sumOfElements * 100).toFixed(2)} %`);
+                addResultRow("Carbon (C)", `${(C_mass * 100).toFixed(2)} %`);
+                addResultRow("Hydrogen (H)", `${(H_mass * 100).toFixed(2)} %`);
+                addResultRow("Sulfur (S)", `${(S_mass * 100).toFixed(2)} %`);
+                addResultRow("Oxygen (O)", `${(O_mass * 100).toFixed(2)} %`);
+                addResultRow("Nitrogen (N)", `${(N_mass * 100).toFixed(2)} %`);
+                addResultRow("Excess Air", `${excessAirPct.toFixed(1)} %`);
+
+                addResultRow("Oxygen Required for C", `${o2_for_c.toFixed(4)} kg/lb O₂`);
+                addResultRow("Oxygen Required for H", `${o2_for_h.toFixed(4)} kg/lb O₂`);
+                addResultRow("Oxygen Required for S", `${o2_for_s.toFixed(4)} kg/lb O₂`);
+                addResultRow("Net Oxygen Required (per unit Fuel)", `<strong>${netOxygenRequired.toFixed(4)} kg/lb O₂</strong>`);
+                
+                addResultRow("Stoichiometric Air-Fuel Ratio (AFR)", `<strong>\\( ${stoichiometricAirFuelRatio.toFixed(3)} \\) ${unitSystem} Air / ${unitSystem} Fuel</strong>`);
+                addResultRow("Actual Air-Fuel Ratio (AFR<sub>Actual</sub>)", `<strong>\\( ${actualAirFuelRatio.toFixed(3)} \\) ${unitSystem} Air / ${unitSystem} Fuel</strong>`);
+
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This calculator provides the <strong>theoretical minimum (stoichiometric) air requirement by mass for complete combustion</strong>, based on the elemental composition of the fuel. It then calculates the <strong>Actual Air Requirement</strong> by incorporating an engineer-defined excess air percentage. This is an essential theoretical starting point and a practical estimate for combustion system design and analysis. This calculator operates on fundamental chemical principles and does NOT replace detailed engineering analysis for: <strong>Comprehensive Fuel Analysis:</strong> Actual fuel properties (including ash, moisture, and heating values) require detailed laboratory analysis (e.g., proximate and ultimate analysis via ASTM D3176, D5291, D4239). This tool assumes input percentages for combustible elements only. <strong>Complex Combustion Products & Emissions:</strong> Assumes complete combustion to CO₂, H₂O, and SO₂. Real combustion systems can produce varying amounts of incomplete combustion products (CO, unburnt hydrocarbons) and pollutants like NOx, influenced by burner design, flame temperature, and operating conditions. These require specialized emission modeling and measurement. <strong>Operating Conditions & System Design:</strong> Factors like air preheat temperature, fuel atomization, mixing efficiency, combustion chamber geometry, and pressure significantly influence actual combustion performance, flame stability, and NOx formation. <strong>Specific Industrial Codes & Standards:</strong> Adherence to industrial combustion and boiler codes (e.g., ASME PTC 4 for Fired Steam Generators, NFPA standards for fuel handling and safety, API standards for fired heaters) is critical for safe and compliant operation. This tool provides a foundational calculation, not full compliance. For accurate, safe, and optimized design, operation, and troubleshooting in critical industrial combustion applications, it is <strong>imperative</strong> to conduct comprehensive fuel analysis, consult relevant industry standards, utilize specialized combustion engineering software, and engage qualified chemical or mechanical engineers with expertise in combustion technology.";
+
+                // Ensure result container is visible and transitions smoothly
+                resultContainer.style.display = 'block'; // Make element visible
+                resultContainer.offsetHeight; // Force reflow to ensure display change is registered before transition
+                resultContainer.classList.add('show'); // Apply class that sets opacity to 1 and allows interaction
+
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Calculation completed successfully! Remember, this provides both theoretical and practical air requirements.", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipe Stress & Flexibility Calculator - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+         /* Checkbox styling */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0; /* Override default label margin */
+            margin-left: 10px;
+            font-weight: normal; /* Keep label text normal weight */
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto; /* Adjust width for checkbox */
+            margin: 0;
+            transform: scale(1.3); /* Make checkbox slightly larger */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Pipe Stress & Flexibility Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator performs preliminary calculations for pipe thermal expansion, thermal stress (if restrained), and pressure stresses. It also provides a simplified estimation for expansion loop sizing to accommodate thermal movement.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Pipe Material:</strong> Select from common materials to auto-populate properties, or custom input.</li>
+                    <li><strong>Pipe Outer Diameter (\(D_{OD}\)):</strong> The outside diameter of the pipe.</li>
+                    <li><strong>Pipe Wall Thickness (\(t\)):</strong> The thickness of the pipe wall.</li>
+                    <li><strong>Corrosion Allowance (\(C_A\)):</strong> An extra thickness for corrosion protection.</li>
+                    <li><strong>Operating Temperature (\(T_{op}\)):</strong> The temperature of the pipe during operation.</li>
+                    <li><strong>Installation Temperature (\(T_{inst}\)):</strong> The temperature at which the pipe was installed.</li>
+                    <li><strong>Internal Design Pressure (\(P\)):</strong> The internal fluid pressure.</li>
+                    <li><strong>Length of Pipe Section to be Accommodated (\(L_{section}\)):</strong> The straight pipe run length where thermal expansion needs to be absorbed by a loop.</li>
+                    <li><strong>Coefficient of Thermal Expansion (\(\alpha\)):</strong> Material property for thermal expansion.</li>
+                    <li><strong>Young's Modulus (\(E\)):</strong> Material stiffness (required for thermal stress).</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Temperature Change (\(\Delta T\)):</strong> Difference between operating and installation temperatures.</li>
+                    <li><strong>Thermal Expansion (\(\Delta L_{thermal}\)):</strong> Total change in length due to temperature change.</li>
+                    <li><strong>Thermal Stress (\(\sigma_{thermal}\)):</strong> Stress if thermal expansion is fully restrained.</li>
+                    <li><strong>Effective Wall Thickness (\(t_{eff}\)):</strong> Wall thickness after accounting for corrosion.</li>
+                    <li><strong>Hoop Stress (\(\sigma_{hoop}\)):</strong> Stress in the circumferential direction due to pressure.</li>
+                    <li><strong>Longitudinal Stress (\(\sigma_{long}\)):</strong> Stress along the pipe axis due to pressure.</li>
+                    <li><strong>Recommended Min. Effective Length of Expansion Loop (\(L_{loop}\)):</strong> An estimated total effective length of pipe needed in a U-bend to absorb the thermal expansion.</li>
+                </ul>
+            </div>
+
+            <div class="calculator-form">
+                <form id="pipe-stress-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (mm, &#176;C, MPa, m) or Imperial (inches, &#176;F, psi, ft) units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (mm, &#176;C, MPa)</option>
+                                <option value="imperial">Imperial (inches, &#176;F, psi)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="material-select">Pipe Material: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select a common pipe material or choose 'Custom' to input your own properties.</span></span></label>
+                            <select id="material-select" required>
+                                <option value="carbon-steel">Carbon Steel</option>
+                                <option value="stainless-steel-304">Stainless Steel 304</option>
+                                <option value="aluminum-6061-t6">Aluminum (6061-T6)</option>
+                                <option value="copper">Copper</option>
+                                <option value="custom">Custom Material</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>Pipe & Operating Conditions</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pipe-od">Pipe Outer Diameter (\(D_{OD}\)) <span class="dimension-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The outside diameter of the pipe. Refer to ASME B36.10M/19M for standard dimensions.</span></span></label>
+                            <input type="number" id="pipe-od" step="any" value="219.1" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="pipe-wall-thickness">Pipe Wall Thickness (\(t\)) <span class="dimension-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The nominal wall thickness of the pipe. Refer to ASME B36.10M/19M for standard dimensions.</span></span></label>
+                            <input type="number" id="pipe-wall-thickness" step="any" value="8.18" required min="0.1">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="corrosion-allowance">Corrosion Allowance (\(C_A\)) <span class="dimension-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Additional wall thickness for corrosion (e.g., 1.5mm or 0.0625 inches for corrosive service).</span></span></label>
+                            <input type="number" id="corrosion-allowance" step="any" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="operating-temp">Operating Temperature (\(T_{op}\)) <span class="temp-unit-label">(&#176;C)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The temperature of the pipe during normal operation.</span></span></label>
+                            <input type="number" id="operating-temp" step="any" value="150" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="installation-temp">Installation Temperature (\(T_{inst}\)) <span class="temp-unit-label">(&#176;C)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The temperature at which the pipe system was installed.</span></span></label>
+                            <input type="number" id="installation-temp" step="any" value="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="design-pressure">Internal Design Pressure (\(P\)) <span class="pressure-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The internal pressure the pipe is designed to withstand.</span></span></label>
+                            <input type="number" id="design-pressure" step="any" value="10" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pipe-section-length">Length of Pipe Section to be Accommodated (\(L_{section}\)) <span class="length-unit-label">(m)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total straight run of pipe that needs thermal expansion absorbed by a loop.</span></span></label>
+                        <input type="number" id="pipe-section-length" step="any" value="50" required min="1">
+                    </div>
+
+
+                    <h3>Material Properties</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="custom-alpha">Coefficient of Thermal Expansion (\(\alpha\)) <span class="alpha-unit-label">(/&#176;C)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material's thermal expansion coefficient (e.g., $11.7 \times 10^{-6}$ for Carbon Steel). Enter as a decimal (e.g., 0.0000117).</span></span></label>
+                            <input type="number" id="custom-alpha" step="any" value="0.0000117" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="custom-young-modulus">Young's Modulus (\(E\)) <span class="young-modulus-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material's stiffness (e.g., 200000 MPa for Carbon Steel, or 29e6 psi).</span></span></label>
+                            <input type="number" id="custom-young-modulus" step="any" value="200000" required min="0">
+                        </div>
+                    </div>
+                   
+                    <button type="button" id="calculate-pipe-stress-btn" class="calculate-btn">Calculate Pipe Stress & Flexibility</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides simplified, theoretical estimations for pipe stress and flexibility based on fundamental engineering principles. It accounts for thermal expansion, pressure stresses, and provides a preliminary guide for expansion loop sizing.</p>
+                <p>It <strong>does NOT</strong> account for complex factors such as: dynamic loads (wind, seismic), support friction, nozzle loads on connected equipment, weight of pipe and contents, complex fitting geometries, or detailed flexibility analysis (Stress Intensification Factors, Flexibility Factors, etc.).</p>
+                <p>For accurate design, safety, and compliance with industry regulations, it is <strong>imperative</strong> to consult comprehensive piping codes (e.g., ASME B31.1, B31.3), utilize specialized pipe stress analysis software (e.g., CAESAR II, AutoPIPE), and work with qualified pipe stress engineers.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Pipe Stress & Flexibility Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-pipe-stress-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const materialSelect = document.getElementById('material-select');
+
+            const pipeODInput = document.getElementById('pipe-od');
+            const pipeWallThicknessInput = document.getElementById('pipe-wall-thickness');
+            const corrosionAllowanceInput = document.getElementById('corrosion-allowance');
+            const operatingTempInput = document.getElementById('operating-temp');
+            const installationTempInput = document.getElementById('installation-temp');
+            const designPressureInput = document.getElementById('design-pressure');
+            const pipeSectionLengthInput = document.getElementById('pipe-section-length');
+            const customAlphaInput = document.getElementById('custom-alpha');
+            const customYoungModulusInput = document.getElementById('custom-young-modulus');
+
+            // Unit labels
+            const dimensionUnitLabels = document.querySelectorAll('.dimension-unit-label');
+            const tempUnitLabels = document.querySelectorAll('.temp-unit-label');
+            const pressureUnitLabel = document.querySelector('.pressure-unit-label');
+            const lengthUnitLabel = document.querySelector('.length-unit-label');
+            const alphaUnitLabel = document.querySelector('.alpha-unit-label');
+            const youngModulusUnitLabel = document.querySelector('.young-modulus-unit-label');
+
+
+            // Material properties (alpha and Young's Modulus E)
+            const materialProperties = {
+                'carbon-steel': {
+                    'metric': { alpha: 0.0000117, E: 200000 }, // alpha in /°C, E in MPa
+                    'imperial': { alpha: 0.0000065, E: 29000000 } // alpha in /°F, E in psi
+                },
+                'stainless-steel-304': {
+                    'metric': { alpha: 0.0000173, E: 193000 },
+                    'imperial': { alpha: 0.0000096, E: 28000000 }
+                },
+                'aluminum-6061-t6': {
+                    'metric': { alpha: 0.0000234, E: 69000 },
+                    'imperial': { alpha: 0.0000130, E: 10000000 }
+                },
+                'copper': {
+                    'metric': { alpha: 0.0000170, E: 110000 },
+                    'imperial': { alpha: 0.0000094, E: 16000000 }
+                }
+            };
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates unit labels and input defaults based on selected unit system and material.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+                const materialType = materialSelect.value;
+
+                if (unitSystem === 'metric') {
+                    dimensionUnitLabels.forEach(label => label.innerHTML = '(mm)');
+                    tempUnitLabels.forEach(label => label.innerHTML = '(&#176;C)');
+                    pressureUnitLabel.innerHTML = '(MPa)';
+                    lengthUnitLabel.innerHTML = '(m)';
+                    alphaUnitLabel.innerHTML = '(/&#176;C)';
+                    youngModulusUnitLabel.innerHTML = '(MPa)';
+
+                    // Set metric defaults/properties
+                    pipeODInput.value = "219.1"; // NPS 8" SCH 40 OD
+                    pipeWallThicknessInput.value = "8.18"; // NPS 8" SCH 40 wall thickness
+                    corrosionAllowanceInput.value = "0";
+                    operatingTempInput.value = "150";
+                    installationTempInput.value = "20";
+                    designPressureInput.value = "10"; // MPa
+                    pipeSectionLengthInput.value = "50"; // meters
+
+                    if (materialType !== 'custom') {
+                        customAlphaInput.value = materialProperties[materialType].metric.alpha;
+                        customYoungModulusInput.value = materialProperties[materialType].metric.E;
+                    } else {
+                         // Default for custom when switching to metric if nothing was set
+                        if (customAlphaInput.value === "" || isNaN(parseFloat(customAlphaInput.value))) customAlphaInput.value = "0.0000117";
+                        if (customYoungModulusInput.value === "" || isNaN(parseFloat(customYoungModulusInput.value))) customYoungModulusInput.value = "200000";
+                    }
+
+                } else { // Imperial
+                    dimensionUnitLabels.forEach(label => label.innerHTML = '(inches)');
+                    tempUnitLabels.forEach(label => label.innerHTML = '(&#176;F)');
+                    pressureUnitLabel.innerHTML = '(psi)';
+                    lengthUnitLabel.innerHTML = '(ft)';
+                    alphaUnitLabel.innerHTML = '(/&#176;F)';
+                    youngModulusUnitLabel.innerHTML = '(psi)';
+
+                    // Set imperial defaults/properties
+                    pipeODInput.value = "8.625"; // NPS 8" SCH 40 OD
+                    pipeWallThicknessInput.value = "0.322"; // NPS 8" SCH 40 wall thickness
+                    corrosionAllowanceInput.value = "0";
+                    operatingTempInput.value = "300"; // approx 150C
+                    installationTempInput.value = "68"; // approx 20C
+                    designPressureInput.value = "1450"; // psi (approx 10 MPa)
+                    pipeSectionLengthInput.value = "164"; // feet (approx 50m)
+
+                    if (materialType !== 'custom') {
+                        customAlphaInput.value = materialProperties[materialType].imperial.alpha;
+                        customYoungModulusInput.value = materialProperties[materialType].imperial.E;
+                    } else {
+                         // Default for custom when switching to imperial if nothing was set
+                        if (customAlphaInput.value === "" || isNaN(parseFloat(customAlphaInput.value))) customAlphaInput.value = "0.0000065";
+                        if (customYoungModulusInput.value === "" || isNaN(parseFloat(customYoungModulusInput.value))) customYoungModulusInput.value = "29000000";
+                    }
+                }
+                toggleCustomMaterialInputs(); // Ensure custom inputs are enabled/disabled correctly
+            }
+
+            /**
+             * Toggles the disabled state of custom material property inputs.
+             */
+            function toggleCustomMaterialInputs() {
+                const isCustom = materialSelect.value === 'custom';
+                customAlphaInput.disabled = !isCustom;
+                customYoungModulusInput.disabled = !isCustom;
+
+                // Set/remove required attribute based on disabled state
+                if (isCustom) {
+                    customAlphaInput.setAttribute('required', 'true');
+                    customYoungModulusInput.setAttribute('required', 'true');
+                } else {
+                    customAlphaInput.removeAttribute('required');
+                    customYoungModulusInput.removeAttribute('required');
+                }
+            }
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            materialSelect.addEventListener('change', updateUnitLabelsAndDefaults); // Also triggers defaults for selected material
+            materialSelect.addEventListener('change', toggleCustomMaterialInputs); // To disable/enable custom inputs
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('pipe-stress-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+
+                const Do_input = parseFloat(pipeODInput.value);
+                const t_input = parseFloat(pipeWallThicknessInput.value);
+                const Ca_input = parseFloat(corrosionAllowanceInput.value);
+                const Top_input = parseFloat(operatingTempInput.value);
+                const Tinst_input = parseFloat(installationTempInput.value);
+                const P_input = parseFloat(designPressureInput.value);
+                const Lsection_input = parseFloat(pipeSectionLengthInput.value);
+                const alpha_input = parseFloat(customAlphaInput.value);
+                const E_input = parseFloat(customYoungModulusInput.value);
+
+                if (t_input <= Ca_input) {
+                    displayMessage("Pipe Wall Thickness must be greater than Corrosion Allowance.", "error");
+                    return;
+                }
+                if (Do_input <= 2 * t_input) {
+                    displayMessage("Pipe Outer Diameter must be greater than twice the Wall Thickness.", "error");
+                    return;
+                }
+                 if (t_input <= 0 || Do_input <= 0) {
+                    displayMessage("Pipe dimensions must be positive values.", "error");
+                    return;
+                }
+
+                // Standardize inputs to SI units for calculations
+                let Do_si;          // meters
+                let t_si;           // meters
+                let Ca_si;          // meters
+                let Top_si;         // Celsius
+                let Tinst_si;       // Celsius
+                let P_si;           // Pascals
+                let Lsection_si;    // meters
+                let alpha_si;       // /°C
+                let E_si;           // Pascals (Pa)
+
+                if (unitSystem === 'metric') {
+                    Do_si = Do_input / 1000;         // mm to meters
+                    t_si = t_input / 1000;           // mm to meters
+                    Ca_si = Ca_input / 1000;         // mm to meters
+                    Top_si = Top_input;              // °C
+                    Tinst_si = Tinst_input;          // °C
+                    P_si = P_input * 1e6;            // MPa to Pa
+                    Lsection_si = Lsection_input;    // meters
+                    alpha_si = alpha_input;          // /°C
+                    E_si = E_input * 1e6;            // MPa to Pa
+                } else { // Imperial
+                    Do_si = Do_input * 0.0254;       // inches to meters
+                    t_si = t_input * 0.0254;         // inches to meters
+                    Ca_si = Ca_input * 0.0254;       // inches to meters
+                    Top_si = (Top_input - 32) * 5 / 9; // °F to °C
+                    Tinst_si = (Tinst_input - 32) * 5 / 9; // °F to °C
+                    P_si = P_input * 6894.76;        // psi to Pa
+                    Lsection_si = Lsection_input * 0.3048; // feet to meters
+                    alpha_si = alpha_input * 1.8;    // /°F to /°C (since deltaT_C = deltaT_F / 1.8)
+                    E_si = E_input * 6894.76;        // psi to Pa
+                }
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters:</strong></p><ul>
+                    <li>Pipe OD (\(D_{OD}\)): ${Do_input} ${unitSystem === 'metric' ? 'mm' : 'inches'}</li>
+                    <li>Pipe Wall Thickness (\(t\)): ${t_input} ${unitSystem === 'metric' ? 'mm' : 'inches'}</li>
+                    <li>Corrosion Allowance (\(C_A\)): ${Ca_input} ${unitSystem === 'metric' ? 'mm' : 'inches'}</li>
+                    <li>Operating Temp (\(T_{op}\)): ${Top_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}</li>
+                    <li>Installation Temp (\(T_{inst}\)): ${Tinst_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}</li>
+                    <li>Design Pressure (\(P\)): ${P_input} ${unitSystem === 'metric' ? 'MPa' : 'psi'}</li>
+                    <li>Pipe Section Length (\(L_{section}\)): ${Lsection_input} ${unitSystem === 'metric' ? 'm' : 'ft'}</li>
+                    <li>Coefficient of Thermal Expansion (\(\alpha\)): ${customAlphaInput.value} ${unitSystem === 'metric' ? '/&#176;C' : '/&#176;F'}</li>
+                    <li>Young's Modulus (\(E\)): ${customYoungModulusInput.value} ${unitSystem === 'metric' ? 'MPa' : 'psi'}</li>
+                </ul>`;
+
+                // Calculate Effective Wall Thickness
+                const teff_si = t_si - Ca_si; // meters
+                if (teff_si <= 0) {
+                    displayMessage("Effective wall thickness is zero or negative. Please ensure wall thickness is greater than corrosion allowance.", "error");
+                    return;
+                }
+                calculationHtml += `<p><strong>2. Calculate Effective Wall Thickness (\(t_{eff}\)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ t_{eff} = t - C_A \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( t_{eff} \\) = ${t_si.toFixed(5)} m - ${Ca_si.toFixed(5)} m = ${teff_si.toFixed(5)} m
+                </p>`;
+
+
+                // Calculate Temperature Change (for thermal expansion)
+                const deltaT_si = Top_si - Tinst_si;
+                const deltaT_display = unitSystem === 'metric' ? deltaT_si : (deltaT_si * 1.8).toFixed(2);
+                
+                calculationHtml += `<p><strong>3. Calculate Temperature Change (\(\Delta T\)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\Delta T = T_{op} - T_{inst} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\Delta T \\) = ${Top_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'} - ${Tinst_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'} = ${deltaT_display} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}
+                </p>`;
+
+
+                // 4. Calculate Thermal Expansion (\(\Delta L_{thermal}\))
+                const deltaL_thermal_si = Lsection_si * alpha_si * deltaT_si; // meters
+                
+                calculationHtml += `<p><strong>4. Calculate Thermal Expansion (\(\Delta L_{thermal}\)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\Delta L_{thermal} = L_{section} \\cdot \\alpha \\cdot \\Delta T \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\Delta L_{thermal} \\) = ${Lsection_si.toFixed(2)} m \\times ${alpha_si.toExponential(2)} /&#176;C \\times ${deltaT_si.toFixed(2)} &#176;C = ${deltaL_thermal_si.toExponential(4)} m
+                </p>`;
+
+                // 5. Calculate Thermal Stress (\(\sigma_{thermal}\)) - if fully restrained
+                const sigma_thermal_Pa = -E_si * alpha_si * deltaT_si; // Pascals (negative for compressive, positive for tensile)
+                
+                calculationHtml += `<p><strong>5. Calculate Thermal Stress (\(\sigma_{thermal}\)) (Assuming Full Restraint):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\sigma_{thermal} = -E \\cdot \\alpha \\cdot \\Delta T \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\sigma_{thermal} \\) = -${E_si.toExponential(2)} Pa \\times ${alpha_si.toExponential(2)} /&#176;C \\times ${deltaT_si.toFixed(2)} &#176;C = ${sigma_thermal_Pa.toExponential(2)} Pa
+                </p>`;
+                if (sigma_thermal_Pa > 0) {
+                    calculationHtml += `<p class="calculation-step">Resulting stress is tensile (material tries to contract but is restrained).</p>`;
+                } else if (sigma_thermal_Pa < 0) {
+                    calculationHtml += `<p class="calculation-step">Resulting stress is compressive (material tries to expand but is restrained).</p>`;
+                } else {
+                    calculationHtml += `<p class="calculation-step">No thermal stress if \\( \\Delta T \\) is zero.</p>`;
+                }
+
+
+                // Calculate Pipe Mean Diameter (\(D_m\))
+                const Dm_si = Do_si - teff_si; // meters
+                if (Dm_si <=0) {
+                     displayMessage("Calculated mean diameter is zero or negative. Check OD and wall thickness.", "error");
+                     return;
+                }
+
+                // 6. Calculate Hoop Stress (\(\sigma_{hoop}\))
+                const sigma_hoop_Pa = (P_si * Dm_si) / (2 * teff_si); // Pascals
+                
+                calculationHtml += `<p><strong>6. Calculate Hoop Stress (\(\sigma_{hoop}\)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\sigma_{hoop} = \\frac{P \\cdot D_m}{2 \\cdot t_{eff}} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( D_m \\) = ${Do_si.toFixed(4)} m - ${teff_si.toFixed(5)} m = ${Dm_si.toFixed(4)} m
+                </p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\sigma_{hoop} \\) = (${P_si.toExponential(2)} Pa \\times ${Dm_si.toFixed(4)} m) / (2 \\times ${teff_si.toFixed(5)} m) = ${sigma_hoop_Pa.toExponential(2)} Pa
+                </p>`;
+
+                // 7. Calculate Longitudinal Stress (\(\sigma_{long}\)) due to pressure (assuming closed ends)
+                const sigma_long_Pa = (P_si * Dm_si) / (4 * teff_si); // Pascals
+                
+                calculationHtml += `<p><strong>7. Calculate Longitudinal Stress (\(\sigma_{long}\)) (due to pressure, assuming closed ends):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\sigma_{long} = \\frac{P \\cdot D_m}{4 \\cdot t_{eff}} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\sigma_{long} \\) = (${P_si.toExponential(2)} Pa \\times ${Dm_si.toFixed(4)} m) / (4 \\times ${teff_si.toFixed(5)} m) = ${sigma_long_Pa.toExponential(2)} Pa
+                </p>`;
+
+                // 8. Simplified Expansion Loop Sizing (Effective Length of U-bend)
+                // This is a highly simplified estimation. For Imperial units, a common rule of thumb for steel:
+                // L_effective_loop (ft) = C * sqrt(D_o (in) * delta_L (in))
+                // Where C is an empirical constant, e.g., 0.0076 (leading to feet).
+                // Or for `L_leg` (length of one leg of the U-bend)
+                // L_leg (in) = K * sqrt(D_o (in) * delta_L (in)) where K is 60 to 80.
+                // Let's use a simpler and more general approach for the *effective length* of the loop,
+                // which an engineer would then size a U-bend to meet.
+                // Using the square root relationship: L_effective ~ sqrt(D_eff * delta_L_thermal)
+                // A very simplified form for required effective length of loop (m) = C * sqrt(OD_m * delta_L_m)
+                // Let's use a conversion factor that leads to a reasonable size based on general piping practice.
+                // Roughly, for steel, L_effective (m) = 1.2 * sqrt(Do_si (m) * deltaL_thermal_si (m))
+                
+                // Let's use a more standard empirical correlation for the *total length* of the pipe in the loop,
+                // for a single U-bend, to absorb a given thermal expansion.
+                // From various sources, for steel pipe, a simplified formula for total equivalent length `L_e` (in feet)
+                // of a U-bend required to absorb `dL` (in inches) for a pipe `D_o` (in inches):
+                // L_e = 0.0076 * sqrt(D_o * dL)
+                // This formula is often rearranged.
+                // A simpler, commonly quoted form for the length of one leg (L_b, in feet) of a U-bend:
+                // L_b = C * sqrt(D_o_in * delta_L_in)
+                // Where C is typically around 0.0076 for Imperial.
+                // No, that's not quite right for `L_b`.
+                // For a specific formula for the required *length of one leg* of a U-bend for stress absorption:
+                // L_leg = K * sqrt(D_o * dL / S_A) -- This needs allowable stress.
+
+                // I will use a very simplified rule of thumb for the *minimum effective length* of pipe in the loop,
+                // which relates to the total pipe run. This is a very rough guide for feasibility.
+                // Let's use a basic approach that doesn't involve material stress explicitly for the loop sizing,
+                // as that leads to complex iterative solutions.
+                // A general guideline for U-bend loop sizing related to flexibility:
+                // Length of pipe in loop = C * sqrt(OD * deflection)
+                // For a straight run L_section, thermal expansion is deltaL_thermal.
+                // A *very simplified* formula for minimum required loop length (total pipe in loop, not leg length):
+                // L_loop = (Factor) * sqrt(Pipe_OD * Thermal_Expansion_to_absorb)
+                // Factor can be ~50-100 in mixed units (e.g., L_loop in feet, OD in inches, delta_L in inches)
+                // Let's use 60 as a common rough estimate for the total length of the loop's perimeter for steel.
+                
+                // Effective Length for Flexibility (simplified, not code-compliant):
+                // This calculates a 'length of straight pipe' that would absorb the same expansion.
+                // For an actual U-bend, the "span" (width of U) and "leg" lengths are key.
+                // Let's target the length of one leg, as that is a primary design parameter for a U-bend.
+                // Formula from some handbooks for one leg of U-bend:
+                // L_leg = K * sqrt(D_o_in * delta_L_in)
+                // K is around 60-80 for steel for preliminary sizing.
+                
+                // I will use `L_section_si` as the length over which expansion occurs, and `deltaL_thermal_si` as the total expansion.
+                // Simplified Rule of Thumb for U-bend leg length (for steel pipe, roughly):
+                // L_leg (ft) = 0.0076 * sqrt(D_o (in) * delta_L (in)) -> This is for effective length not leg length
+                // For required leg length of a U-bend (each side from anchor to tangent point):
+                // L_leg = sqrt(alpha * (T_op - T_inst) * D_nominal * Factor / Stress_Allowable) -> Too complex.
+
+                // Let's simplify and use a direct empirical formula for the *total length of pipe in the expansion loop*.
+                // This is often derived from displacement formulas for simple bends.
+                // A widely used, very simplified rule of thumb for effective loop length (L_eff_loop) in feet:
+                // L_eff_loop (ft) = C * sqrt(D_o (in) * delta_L (in))
+                // Where C is commonly taken as 60 for un-sprung carbon steel.
+                // This "L_eff_loop" represents the total length of the pipe comprising the loop.
+
+                // To convert C for metric:
+                // C_metric = C_imperial * sqrt(0.0254 / 0.0254) * (1 ft / 0.3048 m)
+                // C_metric (m) = C_imperial (ft) * (0.3048 m / 1 ft)
+                // Let's use `K_loop` as a unit-consistent factor.
+                // L_loop_m = K_loop * sqrt(Do_si * deltaL_thermal_si)
+                // If L_loop in meters, Do_si in meters, deltaL_thermal_si in meters.
+                // K_loop = 60 * 0.3048 / sqrt(0.0254 * 0.0254) = 60 * 0.3048 / 0.0254 = 60 * 12 = 720 (for L_loop in m)
+
+                const K_loop_imperial = 60; // Empirical constant for L_loop in ft, D_o in in, dL in in
+                const K_loop_metric = K_loop_imperial * (0.3048 / Math.sqrt(0.0254 * 0.0254)); // Convert to meters, based on the square root relationship
+                
+                let effectiveLoopLength_si;
+                let Do_in_inches; // For the imperial formula conversion
+                let deltaL_thermal_in_inches; // For the imperial formula conversion
+
+                if (unitSystem === 'metric') {
+                    // For metric, using the derived K_loop_metric
+                    effectiveLoopLength_si = K_loop_metric * Math.sqrt(Do_si * deltaL_thermal_si);
+                } else { // Imperial
+                    Do_in_inches = Do_input; // Already in inches
+                    deltaL_thermal_in_inches = deltaL_thermal_si / 0.0254; // meters to inches
+                    effectiveLoopLength_si = K_loop_imperial * Math.sqrt(Do_in_inches * deltaL_thermal_in_inches) * 0.3048; // Convert to meters for SI consistency
+                }
+
+                if (isNaN(effectiveLoopLength_si) || effectiveLoopLength_si < 0) {
+                     effectiveLoopLength_si = 0; // Handle cases where sqrt input might be negative or zero
+                }
+                
+                calculationHtml += `<p><strong>8. Calculate Recommended Minimum Effective Length of Expansion Loop (\(L_{loop}\)):</strong></p>`;
+                calculationHtml += `<p class="calculation-step">This is a simplified empirical estimation for the total effective length of pipe within a U-bend type expansion loop to absorb the calculated thermal expansion.</p>`;
+                if (unitSystem === 'metric') {
+                    calculationHtml += `<p class="formula">\\[ L_{loop} = ${K_loop_metric.toFixed(0)} \\cdot \\sqrt{D_{OD,m} \\cdot \\Delta L_{thermal,m}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( L_{loop} \\) = ${K_loop_metric.toFixed(0)} \\times \\sqrt{${Do_si.toFixed(4)} m \\times ${deltaL_thermal_si.toExponential(4)} m} = ${effectiveLoopLength_si.toFixed(2)} m
+                    </p>`;
+                } else {
+                    calculationHtml += `<p class="formula">\\[ L_{loop} = ${K_loop_imperial} \\cdot \\sqrt{D_{OD,in} \\cdot \\Delta L_{thermal,in}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( L_{loop} \\) = ${K_loop_imperial} \\times \\sqrt{${Do_in_inches.toFixed(2)} in \\times ${deltaL_thermal_in_inches.toPrecision(3)} in} = ${(effectiveLoopLength_si / 0.3048).toFixed(2)} ft
+                    </p>`;
+                }
+                
+
+
+                // Prepare results for display
+                resultTableBody.innerHTML = ''; // Clear previous results
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
+                addResultRow("Pipe Material", materialSelect.options[materialSelect.selectedIndex].text);
+                addResultRow("Pipe OD (\\(D_{OD}\\))", `${Do_input.toFixed(2)} ${unitSystem === 'metric' ? 'mm' : 'inches'}`);
+                addResultRow("Wall Thickness (\\(t\\))", `${t_input.toFixed(2)} ${unitSystem === 'metric' ? 'mm' : 'inches'}`);
+                addResultRow("Corrosion Allowance (\\(C_A\\))", `${Ca_input.toFixed(2)} ${unitSystem === 'metric' ? 'mm' : 'inches'}`);
+                addResultRow("Effective Wall Thickness (\\(t_{eff}\\))", `\\( ${(teff_si * (unitSystem === 'metric' ? 1000 : 1/0.0254)).toFixed(2)} \\) ${unitSystem === 'metric' ? 'mm' : 'inches'}`);
+                addResultRow("Operating Temp (\\(T_{op}\\))", `${Top_input.toFixed(2)} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}`);
+                addResultRow("Installation Temp (\\(T_{inst}\\))", `${Tinst_input.toFixed(2)} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}`);
+                addResultRow("Design Pressure (\\(P\\))", `${P_input.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}`);
+                addResultRow("Pipe Section Length (\\(L_{section}\\))", `${Lsection_input.toFixed(2)} ${unitSystem === 'metric' ? 'm' : 'ft'}`);
+                
+                addResultRow("Temperature Change (\\(\\Delta T\\))", `<strong>\\( ${deltaT_display} \\) ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}</strong>`);
+
+                let deltaL_thermal_display, sigma_thermal_display, sigma_hoop_display, sigma_long_display, effectiveLoopLength_display;
+                if (unitSystem === 'metric') {
+                    deltaL_thermal_display = deltaL_thermal_si * 1000; // m to mm
+                    sigma_thermal_display = sigma_thermal_Pa / 1e6; // Pa to MPa
+                    sigma_hoop_display = sigma_hoop_Pa / 1e6; // Pa to MPa
+                    sigma_long_display = sigma_long_Pa / 1e6; // Pa to MPa
+                    effectiveLoopLength_display = effectiveLoopLength_si; // m
+                    addResultRow("Thermal Expansion (\\(\\Delta L_{thermal}\\))", `<strong>\\( ${deltaL_thermal_display.toPrecision(3)} \\) mm</strong>`);
+                    addResultRow("Thermal Stress (\\(\\sigma_{thermal}\\))", `<strong>\\( ${sigma_thermal_display.toFixed(2)} \\) MPa</strong>`);
+                    addResultRow("Hoop Stress (\\(\\sigma_{hoop}\\))", `<strong>\\( ${sigma_hoop_display.toFixed(2)} \\) MPa</strong>`);
+                    addResultRow("Longitudinal Stress (\\(\\sigma_{long}\\))", `<strong>\\( ${sigma_long_display.toFixed(2)} \\) MPa</strong>`);
+                    addResultRow("Recommended Min. Effective Length of Expansion Loop (\\(L_{loop}\\))", `<strong>\\( ${effectiveLoopLength_display.toFixed(2)} \\) m</strong>`);
+
+                } else { // Imperial
+                    deltaL_thermal_display = deltaL_thermal_si / 0.0254; // m to inches
+                    sigma_thermal_display = sigma_thermal_Pa / 6894.76; // Pa to psi
+                    sigma_hoop_display = sigma_hoop_Pa / 6894.76; // Pa to psi
+                    sigma_long_display = sigma_long_Pa / 6894.76; // Pa to psi
+                    effectiveLoopLength_display = effectiveLoopLength_si / 0.3048; // m to feet
+                    addResultRow("Thermal Expansion (\\(\\Delta L_{thermal}\\))", `<strong>\\( ${deltaL_thermal_display.toPrecision(3)} \\) inches</strong>`);
+                    addResultRow("Thermal Stress (\\(\\sigma_{thermal}\\))", `<strong>\\( ${sigma_thermal_display.toFixed(2)} \\) psi</strong>`);
+                    addResultRow("Hoop Stress (\\(\\sigma_{hoop}\\))", `<strong>\\( ${sigma_hoop_display.toFixed(2)} \\) psi</strong>`);
+                    addResultRow("Longitudinal Stress (\\(\\sigma_{long}\\))", `<strong>\\( ${sigma_long_display.toFixed(2)} \\) psi</strong>`);
+                    addResultRow("Recommended Min. Effective Length of Expansion Loop (\\(L_{loop}\\))", `<strong>\\( ${effectiveLoopLength_display.toFixed(2)} \\) ft</strong>`);
+                }
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides simplified, theoretical estimations for pipe stress and flexibility based on fundamental engineering principles. It accounts for thermal expansion, pressure stresses, and provides a preliminary guide for expansion loop sizing. For accurate design, safety, and compliance with industry regulations, it is <strong>imperative</strong> to consult comprehensive piping codes (e.g., ASME B31.1, B31.3), utilize specialized pipe stress analysis software (e.g., CAESAR II, AutoPIPE), and work with qualified pipe stress engineers.";
+
+                // Show results container
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Pipe Stress & Flexibility Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME VIII Pressure Vessel Calculator - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+
+        /* Styling specific to ASME Calculator */
+        .calculation-mode-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .calculation-mode-option {
+            flex: 1 1 calc(50% - 10px);
+            min-width: 200px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--bg-color);
+        }
+
+        .calculation-mode-option.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            box-shadow: 0 4px 10px rgba(var(--primary-color-rgb), 0.4);
+            transform: translateY(-3px);
+        }
+
+        .calculation-mode-option:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .calculation-mode-option input[type="radio"] {
+            display: none;
+        }
+
+        .calculation-mode-option label {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 0;
+            color: inherit;
+        }
+
+        .form-section {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            background-color: var(--bg-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            border-bottom: 1px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>ASME Section VIII Div 1 Pressure Vessel Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator determines the required wall thickness for a given internal design pressure, or the Maximum Allowable Working Pressure (MAWP) for a given wall thickness, for cylindrical and spherical shells under internal pressure, based on <strong>ASME Boiler and Pressure Vessel Code, Section VIII, Division 1, Part UG-27</strong>.</p>
+                <p><strong>Key Assumptions and Limitations:</strong></p>
+                <ul>
+                    <li>Calculations are for shells under internal pressure only. External pressure calculations are more complex and not included.</li>
+                    <li>Applies to cylindrical shells with a longitudinal joint and spherical shells (or spherical portions of heads).</li>
+                    <li>Assumes uniform material properties and temperature.</li>
+                    <li>This tool is for preliminary assessment and educational purposes. A detailed design must always be conducted by a qualified engineer using the full ASME BPVC code and considering all applicable sections (e.g., impact testing, fatigue, support loads).</li>
+                </ul>
+                <p><strong>Units:</strong> Ensure consistency. If you use mm for length, use MPa for pressure and stress. If inches, use psi.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="asme-calculator-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (mm, MPa) or Imperial (inches, psi) units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (mm, MPa)</option>
+                                <option value="imperial">Imperial (inches, psi)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="vessel-type">Vessel Shape: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select cylindrical or spherical shell.</span></span></label>
+                            <select id="vessel-type" required>
+                                <option value="cylinder">Cylindrical Shell</option>
+                                <option value="sphere">Spherical Shell</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Calculation Mode</h3>
+                        <div class="calculation-mode-options">
+                            <div class="calculation-mode-option" data-mode="thickness">
+                                <input type="radio" id="mode-thickness" name="calculationMode" value="thickness" checked>
+                                <label for="mode-thickness">Calculate Required Thickness</label>
+                            </div>
+                            <div class="calculation-mode-option" data-mode="mawp">
+                                <input type="radio" id="mode-mawp" name="calculationMode" value="mawp">
+                                <label for="mode-mawp">Calculate MAWP</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="common-parameters-section" class="form-section">
+                        <h3>Common Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="material-allowable-stress">Material Allowable Stress (S) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum allowable stress value for the material at design temperature, from ASME Section II.</span></span></label>
+                                <input type="number" id="material-allowable-stress" step="0.1" value="138" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="joint-efficiency">Joint Efficiency (E): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Longitudinal weld joint efficiency (for cylindrical) or spherical weld joint efficiency (for spherical), from ASME UW-12. Usually between 0.70 and 1.0.</span></span></label>
+                                <input type="number" id="joint-efficiency" step="0.01" min="0.7" max="1.0" value="0.85" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                             <div class="form-group">
+                                <label for="internal-diameter">Internal Diameter (ID) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Inside diameter of the vessel shell. For cylindrical, this is the cylinder diameter. For spherical, this is the sphere diameter.</span></span></label>
+                                <input type="number" id="internal-diameter" step="0.1" value="1000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="corrosion-allowance">Corrosion Allowance (CA) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Additional thickness added for corrosion.</span></span></label>
+                                <input type="number" id="corrosion-allowance" step="0.01" value="1.5" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="thickness-mode-inputs">
+                        <div class="form-section">
+                            <h3>Required Thickness Calculation Inputs</h3>
+                            <div class="form-group">
+                                <label for="design-pressure">Design Pressure (P) <span class="pressure-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Internal design pressure of the vessel.</span></span></label>
+                                <input type="number" id="design-pressure" step="0.01" value="1.0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mawp-mode-inputs" style="display: none;">
+                        <div class="form-section">
+                            <h3>MAWP Calculation Inputs</h3>
+                            <div class="form-group">
+                                <label for="nominal-thickness">Nominal Thickness (t_nom) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Nominal or measured thickness of the vessel shell.</span></span></label>
+                                <input type="number" id="nominal-thickness" step="0.1" value="10" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="calculate-asme-btn" class="calculate-btn">Calculate</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing ASME Pressure Vessel Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-asme-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const vesselTypeSelect = document.getElementById('vessel-type');
+            const calculationModeOptions = document.querySelectorAll('.calculation-mode-option');
+            const thicknessModeInputs = document.getElementById('thickness-mode-inputs');
+            const mawpModeInputs = document.getElementById('mawp-mode-inputs');
+
+            const materialAllowableStressInput = document.getElementById('material-allowable-stress');
+            const jointEfficiencyInput = document.getElementById('joint-efficiency');
+            const internalDiameterInput = document.getElementById('internal-diameter');
+            const corrosionAllowanceInput = document.getElementById('corrosion-allowance');
+            const designPressureInput = document.getElementById('design-pressure');
+            const nominalThicknessInput = document.getElementById('nominal-thickness');
+
+            // Unit labels
+            const lengthUnitLabels = document.querySelectorAll('.length-unit-label');
+            const stressUnitLabels = document.querySelectorAll('.stress-unit-label');
+            const pressureUnitLabels = document.querySelectorAll('.pressure-unit-label');
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates the unit labels in the UI based on the selected unit system.
+             */
+            function updateUnitLabels() {
+                const unitSystem = unitSystemSelect.value;
+                const lengthUnit = unitSystem === 'imperial' ? '(in.)' : '(mm)';
+                const stressUnit = unitSystem === 'imperial' ? '(psi)' : '(MPa)';
+                const pressureUnit = unitSystem === 'imperial' ? '(psi)' : '(MPa)';
+
+                lengthUnitLabels.forEach(label => label.textContent = lengthUnit);
+                stressUnitLabels.forEach(label => label.textContent = stressUnit);
+                pressureUnitLabels.forEach(label => label.textContent = pressureUnit);
+
+                // Update input step values for better user experience based on units
+                materialAllowableStressInput.step = unitSystem === 'imperial' ? '0.01' : '0.1';
+                internalDiameterInput.step = unitSystem === 'imperial' ? '0.01' : '0.1';
+                corrosionAllowanceInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
+                designPressureInput.step = unitSystem === 'imperial' ? '0.01' : '0.01';
+                nominalThicknessInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
+            }
+
+            /**
+             * Toggles visibility of input sections based on selected calculation mode.
+             */
+            function toggleCalculationModeInputs() {
+                const selectedMode = document.querySelector('input[name="calculationMode"]:checked').value;
+                if (selectedMode === 'thickness') {
+                    thicknessModeInputs.style.display = 'block';
+                    mawpModeInputs.style.display = 'none';
+                    designPressureInput.setAttribute('required', 'true');
+                    nominalThicknessInput.removeAttribute('required');
+                } else { // mawp mode
+                    thicknessModeInputs.style.display = 'none';
+                    mawpModeInputs.style.display = 'block';
+                    nominalThicknessInput.setAttribute('required', 'true');
+                    designPressureInput.removeAttribute('required');
+                }
+            }
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabels);
+            vesselTypeSelect.addEventListener('change', updateUnitLabels); // Re-render for diameter tooltip
+            calculationModeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    calculationModeOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                    toggleCalculationModeInputs();
+                });
+            });
+
+            // Initial UI update on load
+            updateUnitLabels();
+            document.querySelector('.calculation-mode-option[data-mode="thickness"]').classList.add('selected');
+            toggleCalculationModeInputs();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Event listener for the calculate button
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('asme-calculator-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity();
+                    return;
+                }
+
+                // Gather inputs
+                const unitSystem = unitSystemSelect.value;
+                const S = parseFloat(materialAllowableStressInput.value);
+                const E = parseFloat(jointEfficiencyInput.value);
+                const ID = parseFloat(internalDiameterInput.value);
+                const CA = parseFloat(corrosionAllowanceInput.value);
+                const vesselType = vesselTypeSelect.value;
+                const calculationMode = document.querySelector('input[name="calculationMode"]:checked').value;
+
+                let calculationHtml = '<h4>Detailed Calculation Steps (ASME UG-27):</h4>';
+                resultTableBody.innerHTML = ''; // Clear previous results
+
+                // Common calculations
+                const R_internal = ID / 2; // Internal radius of cylindrical shell or spherical shell
+
+                // Basic validation
+                if (S <= 0 || E <= 0 || ID <= 0 || CA < 0 || E > 1) {
+                    displayMessage("Please enter valid positive values for all parameters. Joint efficiency must be between 0 and 1 (typically 0.7-1.0).", "error");
+                    return;
+                }
+
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
+                addResultRow("Vessel Shape", vesselType === 'cylinder' ? 'Cylindrical Shell' : 'Spherical Shell');
+                addResultRow("Material Allowable Stress (S)", `${S} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}`);
+                addResultRow("Joint Efficiency (E)", E);
+                addResultRow("Internal Diameter (ID)", `${ID} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                addResultRow("Internal Radius (R)", `${R_internal.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                addResultRow("Corrosion Allowance (CA)", `${CA} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+
+
+                if (calculationMode === 'thickness') {
+                    const P_design = parseFloat(designPressureInput.value);
+
+                    if (P_design <= 0) {
+                        displayMessage("Design Pressure must be a positive value.", "error");
+                        return;
+                    }
+
+                    addResultRow("Design Pressure (P)", `${P_design} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}`);
+                    calculationHtml += `<p><strong>Calculation for Required Thickness (\\(t_{req}\\)):</strong></p>`;
+
+                    let t_required_corroded;
+                    if (vesselType === 'cylinder') {
+                        // UG-27(c)(1) for Cylindrical Shells: t = PR / (SE - 0.6P)
+                        if ((S * E - 0.6 * P_design) <= 0) {
+                             displayMessage("Calculation error: (S * E - 0.6P) is zero or negative. Design pressure might be too high or material stress too low.", "error");
+                             return;
+                        }
+                        t_required_corroded = (P_design * R_internal) / (S * E - 0.6 * P_design);
+
+                        calculationHtml += `<p class="formula">For Cylindrical Shell (Longitudinal Joint):</p>`;
+                        calculationHtml += `<p class="formula">\\[ t_{req,corroded} = \\frac{P R}{SE - 0.6P} \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">
+                            \\(t_{req,corroded}\\) = ( ${P_design} \\times ${R_internal.toFixed(3)} ) / ( ${S} \\times ${E} - 0.6 \\times ${P_design} ) = ${t_required_corroded.toFixed(4)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}
+                        </p>`;
+                    } else { // sphere
+                        // UG-27(d)(1) for Spherical Shells: t = PR / (2SE - 0.2P)
+                        if ((2 * S * E - 0.2 * P_design) <= 0) {
+                             displayMessage("Calculation error: (2SE - 0.2P) is zero or negative. Design pressure might be too high or material stress too low.", "error");
+                             return;
+                        }
+                        t_required_corroded = (P_design * R_internal) / (2 * S * E - 0.2 * P_design);
+
+                        calculationHtml += `<p class="formula">For Spherical Shell:</p>`;
+                        calculationHtml += `<p class="formula">\\[ t_{req,corroded} = \\frac{P R}{2SE - 0.2P} \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">
+                            \\(t_{req,corroded}\\) = ( ${P_design} \\times ${R_internal.toFixed(3)} ) / ( 2 \\times ${S} \\times ${E} - 0.2 \\times ${P_design} ) = ${t_required_corroded.toFixed(4)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}
+                        </p>`;
+                    }
+
+                    if (t_required_corroded < 0) {
+                        displayMessage("Calculated required thickness is negative. Check inputs for Design Pressure and Material Allowable Stress.", "error");
+                        return;
+                    }
+
+                    // Add corrosion allowance to get nominal thickness
+                    const t_required_nominal = t_required_corroded + CA;
+
+                    addResultRow("Required Thickness (Corroded)", `\\( ${t_required_corroded.toFixed(4)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                    addResultRow("Required Thickness (Nominal)", `<strong>\\( ${t_required_nominal.toFixed(4)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}</strong>`);
+                    calculationHtml += `<p><strong>Add Corrosion Allowance for Nominal Thickness:</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ t_{req,nominal} = t_{req,corroded} + CA \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\(t_{req,nominal}\\) = ${t_required_corroded.toFixed(4)} + ${CA} = ${t_required_nominal.toFixed(4)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}
+                    </p>`;
+
+                } else { // mawp mode
+                    const t_nominal = parseFloat(nominalThicknessInput.value);
+
+                    if (t_nominal <= 0) {
+                        displayMessage("Nominal Thickness must be a positive value.", "error");
+                        return;
+                    }
+                    if (t_nominal <= CA) {
+                         displayMessage("Nominal Thickness must be greater than Corrosion Allowance.", "error");
+                         return;
+                    }
+
+                    const t_corroded = t_nominal - CA; // Corroded thickness for MAWP calculation
+
+                    addResultRow("Nominal Thickness (t_nom)", `${t_nominal} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                    addResultRow("Corroded Thickness (t_corr)", `${t_corroded.toFixed(4)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                    calculationHtml += `<p><strong>Calculate Corroded Thickness:</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ t_{corroded} = t_{nominal} - CA \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\(t_{corroded}\\) = ${t_nominal} - ${CA} = ${t_corroded.toFixed(4)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}
+                    </p>`;
+                    calculationHtml += `<p><strong>Calculation for Maximum Allowable Working Pressure (MAWP):</strong></p>`;
+
+                    let mawp;
+                    if (vesselType === 'cylinder') {
+                        // UG-27(c)(1) rearranged for P: P = (SEt) / (R + 0.6t)
+                        mawp = (S * E * t_corroded) / (R_internal + 0.6 * t_corroded);
+                        calculationHtml += `<p class="formula">For Cylindrical Shell (Longitudinal Joint):</p>`;
+                        calculationHtml += `<p class="formula">\\[ MAWP = \\frac{SEt_{corroded}}{R + 0.6t_{corroded}} \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">
+                            \\(MAWP\\) = ( ${S} \\times ${E} \\times ${t_corroded.toFixed(4)} ) / ( ${R_internal.toFixed(3)} + 0.6 \\times ${t_corroded.toFixed(4)} ) = ${mawp.toFixed(3)} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}
+                        </p>`;
+                    } else { // sphere
+                        // UG-27(d)(1) rearranged for P: P = (2SEt) / (R + 0.2t)
+                        mawp = (2 * S * E * t_corroded) / (R_internal + 0.2 * t_corroded);
+                        calculationHtml += `<p class="formula">For Spherical Shell:</p>`;
+                        calculationHtml += `<p class="formula">\\[ MAWP = \\frac{2SEt_{corroded}}{R + 0.2t_{corroded}} \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">
+                            \\(MAWP\\) = ( 2 \\times ${S} \\times ${E} \\times ${t_corroded.toFixed(4)} ) / ( ${R_internal.toFixed(3)} + 0.2 \\times ${t_corroded.toFixed(4)} ) = ${mawp.toFixed(3)} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}
+                        </p>`;
+                    }
+
+                    if (mawp < 0) {
+                        displayMessage("Calculated MAWP is negative. Check inputs for Material Allowable Stress, Joint Efficiency, and Corroded Thickness.", "error");
+                        return;
+                    }
+                    addResultRow("Maximum Allowable Working Pressure (MAWP)", `<strong>\\( ${mawp.toFixed(3)} \\) ${unitSystem === 'imperial' ? 'psi' : 'MPa'}</strong>`);
+                }
+
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                // Re-render MathJax equations
+                if (window.MathJax) {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                standardReference.innerHTML = "This calculation is based on simplified principles from <strong>ASME Boiler and Pressure Vessel Code, Section VIII, Division 1, Part UG-27 (Thickness of Shells Under Internal Pressure)</strong>. For full compliance and complex design scenarios (e.g., external pressure, fatigue, impact, transient conditions, specific head types), refer to the latest edition of the ASME BPVC and consult a qualified pressure vessel engineer.";
+
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

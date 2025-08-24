@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-23Y1V450SR');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loop Impedance & Voltage Drop Calculator - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme */
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #45a049; /* Darker Green */
+            --accent-color: #FFC107; /* Amber */
+            --bg-color: #f4f7f6; /* Light Greyish Green */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #e2e6ea;
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #3b8e3e);
+            --reset-button-bg: #FFC107; /* Yellow for reset */
+            --reset-button-hover-bg: #E0A800; /* Darker yellow */
+            --clear-button-bg: #007bff; /* Blue for clear */
+            --clear-button-hover-bg: #0056b3; /* Darker blue */
+            --voltage-color: #f39c12; /* Orange for voltage drop */
+            --voltage-color-dark: #e67e22; /* Darker orange for voltage drop */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #3b8e3e, #4CAF50);
+            --button-hover-gradient: linear-gradient(45deg, #4CAF50, #5cb85c);
+            --reset-button-bg: #FFD700; /* Gold/Yellow for dark mode reset */
+            --reset-button-hover-bg: #DAA520; /* Darker gold/yellow */
+            --clear-button-bg: #17a2b8; /* Cyan for dark mode clear */
+            --clear-button-hover-bg: #138496;
+            --voltage-color: #f1c40f; /* Lighter orange for dark mode */
+            --voltage-color-dark: #f39c12; /* Darker orange for dark mode */
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #e0e0e0);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative; /* For theme toggle positioning */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content; 
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px; /* Space between sections */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0; /* Initial state for fade-in animation */
+            transform: translateY(10px); /* Initial state for slide-up animation */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Default margin for form groups */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg); /* Use card-bg for input background */
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px; /* Gap between grid items */
+            margin-bottom: 0; /* Handled by form-group margin */
+        }
+        
+        .calculate-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px; /* Increased padding for better appearance */
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: bold;
+            margin-top: 25px; /* More space above button */
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto; /* Allow button to size based on content and padding */
+            min-width: 220px; /* Ensure a minimum width for consistency */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px; /* Space from calculate button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* For animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color); /* Highlight row on hover */
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px; /* Increased padding */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px); /* Initial state for tooltip animation */
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex; /* Use flex for centering text */
+            align-items: center;
+            justify-content: center;
+            min-width: 250px; /* Ensure it's wide enough */
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* More rounded */
+            padding: 20px; /* Increased padding */
+            margin-bottom: 25px; /* More space */
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px; /* More space */
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif; /* A font suitable for mathematical formulas */
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px; /* Increased padding */
+            background-color: var(--hover-color);
+            border-radius: 6px; /* More rounded */
+            margin: 15px 0; /* More space */
+            overflow-x: auto; /* Allow horizontal scrolling for long formulas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace; /* Monospace for steps */
+            background-color: var(--hover-color);
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 4px; /* More rounded */
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-break: break-word; /* Break long words */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px; /* Increased margin */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center; /* Center the button horizontally */
+            width: 100%; /* Ensure it takes full width to center effectively */
+            padding-top: 20px; /* Add more spacing above the button */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4); /* Green glow, slightly more pronounced */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(76, 175, 80, 0.2); /* Softer pulse */
+            }
+        }
+
+        /* Specific styles for Loop Impedance & Voltage Drop Calculator */
+        .unit-system-selector, .wire-gauge-input-selector, .wire-material-selector {
+            margin-bottom: 20px;
+            background-color: var(--hover-color);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .unit-system-selector label, .wire-gauge-input-selector label, .wire-material-selector label {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .wire-gauge-input-selector input[type="radio"], .wire-material-selector input[type="radio"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        #wire-gauge-awg-group, #wire-gauge-mm2-group {
+            display: none; /* Hidden by default */
+            margin-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 15px;
+        }
+        #wire-gauge-awg-group.active, #wire-gauge-mm2-group.active {
+            display: block;
+        }
+
+        /* Voltage Drop Visualization */
+        .voltage-drop-visualization-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            flex-direction: column;
+        }
+
+        .voltage-bar-container {
+            width: 80%;
+            height: 30px;
+            background-color: var(--primary-color); /* Represents total supply voltage */
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        .voltage-drop-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(to left, var(--voltage-color), var(--voltage-color-dark));
+            transition: width 1.5s ease-out; /* Smooth animation */
+            border-radius: 5px;
+            z-index: 1;
+        }
+
+        .voltage-bar-label {
+            color: white;
+            font-weight: bold;
+            z-index: 2; /* Ensure text is above overlay */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .loop-status-display {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+        }
+        .loop-status-display.ok {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .loop-status-display.error {
+            background-color: var(--error-color);
+            color: white;
+        }
+        .loop-status-display.warning {
+            background-color: var(--warning-color);
+            color: var(--text-color); /* Dark text for warning background */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Loop Impedance & Voltage Drop Calculator (4-20 mA)</h2>
+            
+            <div class="tool-description">
+                <p>This professional tool calculates the total loop resistance and voltage drop in 4-20 mA current loops. Accurate calculation is vital to ensure sufficient voltage is available at the field device for proper operation, especially in long cable runs or complex instrumentation systems across all industries worldwide.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="loop-calculator-form">
+                    <!-- Unit System Selection -->
+                    <div class="form-section unit-system-selector">
+                        <label for="unit-system">Select Unit System:</label>
+                        <select id="unit-system" required>
+                            <option value="metric">Metric (meters, mm²)</option>
+                            <option value="imperial">Imperial (feet, AWG)</option>
+                        </select>
+                    </div>
+
+                    <!-- Loop Parameters -->
+                    <div class="form-section">
+                        <h3>Loop Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="supply-voltage" id="label-supply-voltage">Power Supply Voltage (V<sub>supply</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The voltage provided by the power supply to the 4-20 mA loop.</span></span></label>
+                                <input type="number" id="supply-voltage" step="0.1" value="24.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="transmitter-voltage-drop" id="label-transmitter-voltage-drop">Transmitter Minimum Voltage (V<sub>TX,min</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The minimum voltage required for the 4-20 mA transmitter to operate correctly.</span></span></label>
+                                <input type="number" id="transmitter-voltage-drop" step="0.1" value="10.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="load-resistance" id="label-load-resistance">Receiver/Load Resistance (R<sub>load</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The resistance of the receiver or load in the 4-20 mA loop (e.g., PLC analog input impedance).</span></span></label>
+                                <input type="number" id="load-resistance" step="1" value="250.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="loop-length" id="label-loop-length">Loop Length (L) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The one-way length of the impulse tubing cable. The calculator accounts for two-way resistance.</span></span></label>
+                                <input type="number" id="loop-length" step="1" value="100.0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wire Properties -->
+                    <div class="form-section">
+                        <h3>Wire Properties</h3>
+                        <div class="wire-material-selector">
+                            <label>Wire Material:</label>
+                            <label>
+                                <input type="radio" name="wire-material" value="copper" checked> Copper
+                            </label>
+                            <label>
+                                <input type="radio" name="wire-material" value="aluminum"> Aluminum
+                            </label>
+                        </div>
+                        <div class="wire-gauge-input-selector">
+                            <label>Wire Gauge Input Method:</label>
+                            <label>
+                                <input type="radio" name="wire-gauge-method" value="awg" checked> AWG
+                            </label>
+                            <label>
+                                <input type="radio" name="wire-gauge-method" value="mm2"> Cross-sectional Area (mm²)
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" id="wire-gauge-awg-group" class="active">
+                                <label for="wire-gauge-awg">Wire Gauge (AWG) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">American Wire Gauge. Smaller AWG numbers mean larger wire diameter.</span></span></label>
+                                <select id="wire-gauge-awg" required>
+                                    <option value="24">24 AWG</option>
+                                    <option value="22">22 AWG</option>
+                                    <option value="20">20 AWG</option>
+                                    <option value="18" selected>18 AWG</option>
+                                    <option value="16">16 AWG</option>
+                                    <option value="14">14 AWG</option>
+                                    <option value="12">12 AWG</option>
+                                    <option value="10">10 AWG</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="wire-gauge-mm2-group">
+                                <label for="wire-gauge-mm2" id="label-wire-gauge-mm2">Cross-sectional Area (A) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The cross-sectional area of the wire.</span></span></label>
+                                <input type="number" id="wire-gauge-mm2" step="0.01" value="0.823" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Loop Parameters -->
+                    <div class="form-section">
+                        <h3>Advanced Loop Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ambient-temperature">Ambient Temperature (T) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The ambient temperature where the cable is installed. Wire resistance changes with temperature. (Units: °C)</span></span></label>
+                                <input type="number" id="ambient-temperature" step="1" value="20" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="barrier-resistance">Intrinsic Safety Barrier Resistance (R<sub>barrier</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The series resistance added by an intrinsic safety barrier in hazardous area installations. (Units: Ohm)</span></span></label>
+                                <input type="number" id="barrier-resistance" step="1" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="max-voltage-drop-percentage">Max Allowed Voltage Drop (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum permissible voltage drop across the wire, as a percentage of the supply voltage. (e.g., 5% or 10%)</span></span></label>
+                                <input type="number" id="max-voltage-drop-percentage" step="0.5" value="10" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-loop-btn" class="calculate-btn">Calculate Loop Parameters</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="result-container" class="result-container">
+                <h3>Loop Calculation Results</h3>
+                <div class="voltage-drop-visualization-container">
+                    <div class="voltage-bar-container">
+                        <span class="voltage-bar-label">Supply: <span id="supply-voltage-display">0.00 V</span></span>
+                        <div class="voltage-drop-overlay" id="voltage-drop-overlay" style="width: 0%;"></div>
+                        <span class="voltage-bar-label">Remaining: <span id="remaining-voltage-display">0.00 V</span></span>
+                    </div>
+                    <p class="loop-status-display" id="loop-status-display">Status: N/A</p>
+                    <p class="loop-status-display" id="voltage-drop-percentage-status" style="display: none;">Voltage Drop % Status: N/A</p>
+                </div>
+                <div id="calculation-details">
+                    <!-- Calculation steps will be inserted here -->
+                </div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <!-- Standard reference text will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSystemSelect = document.getElementById('unit-system');
+            const wireGaugeMethodRadios = document.querySelectorAll('input[name="wire-gauge-method"]');
+            const wireMaterialRadios = document.querySelectorAll('input[name="wire-material"]');
+
+            const supplyVoltageInput = document.getElementById('supply-voltage');
+            const transmitterVoltageDropInput = document.getElementById('transmitter-voltage-drop');
+            const loadResistanceInput = document.getElementById('load-resistance');
+            const loopLengthInput = document.getElementById('loop-length');
+            const wireGaugeAWGSelect = document.getElementById('wire-gauge-awg');
+            const wireGaugeMM2Input = document.getElementById('wire-gauge-mm2');
+            const ambientTemperatureInput = document.getElementById('ambient-temperature'); // New
+            const barrierResistanceInput = document.getElementById('barrier-resistance'); // New
+            const maxVoltageDropPercentageInput = document.getElementById('max-voltage-drop-percentage'); // New
+
+            const wireGaugeAWGGroup = document.getElementById('wire-gauge-awg-group');
+            const wireGaugeMM2Group = document.getElementById('wire-gauge-mm2-group');
+
+            const labelSupplyVoltage = document.getElementById('label-supply-voltage');
+            const labelTransmitterVoltageDrop = document.getElementById('label-transmitter-voltage-drop');
+            const labelLoadResistance = document.getElementById('label-load-resistance');
+            const labelLoopLength = document.getElementById('label-loop-length');
+            const labelWireGaugeMM2 = document.getElementById('label-wire-gauge-mm2');
+
+            const calculateLoopBtn = document.getElementById('calculate-loop-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            const supplyVoltageDisplay = document.getElementById('supply-voltage-display');
+            const remainingVoltageDisplay = document.getElementById('remaining-voltage-display');
+            const voltageDropOverlay = document.getElementById('voltage-drop-overlay');
+            const loopStatusDisplay = document.getElementById('loop-status-display');
+            const voltageDropPercentageStatus = document.getElementById('voltage-drop-percentage-status'); // New
+
+            // Constants for 4-20 mA loop
+            const MAX_LOOP_CURRENT_MA = 20; // mA
+
+            // Resistivity values at 20°C (Ohm·m)
+            const RESISTIVITY_COPPER_SI = 1.68e-8;
+            const RESISTIVITY_ALUMINUM_SI = 2.82e-8;
+
+            // Temperature coefficients (per °C)
+            const TEMP_COEFF_COPPER = 0.00393;
+            const TEMP_COEFF_ALUMINUM = 0.00403;
+            const REFERENCE_TEMPERATURE = 20; // °C
+
+            // Wire gauge data (Resistance per meter for copper at 20°C)
+            // Values derived from standard wire tables, converted to Ohm/m
+            const WIRE_GAUGE_OHM_PER_M_COPPER = {
+                '24': 0.0842, // Ohm/m
+                '22': 0.0530,
+                '20': 0.0333,
+                '18': 0.0210,
+                '16': 0.0132,
+                '14': 0.00828,
+                '12': 0.00521,
+                '10': 0.00328,
+            };
+
+            // Default values for resetting form (Metric)
+            const defaultValues = {
+                'unit-system': 'metric',
+                'wire-gauge-method': 'awg',
+                'wire-material': 'copper',
+                'supply-voltage': 24.0, // V
+                'transmitter-voltage-drop': 10.0, // V
+                'load-resistance': 250.0, // Ohm
+                'loop-length': 100.0, // meters
+                'wire-gauge-awg': '18',
+                'wire-gauge-mm2': 0.823, // 18 AWG equivalent
+                'ambient-temperature': 20, // °C
+                'barrier-resistance': 0, // Ohm
+                'max-voltage-drop-percentage': 10, // %
+            };
+
+            // Unit configurations
+            const unitsConfig = {
+                'metric': {
+                    length: { label: 'm', tooltip: 'meters', toSI: 1, fromSI: 1, precision: 2 },
+                    resistance: { label: 'Ohm', tooltip: 'Ohms', precision: 2 },
+                    voltage: { label: 'V', tooltip: 'Volts', precision: 2 },
+                    current: { label: 'mA', tooltip: 'milliamperes' },
+                    area: { label: 'mm²', tooltip: 'square millimeters', toSI: 1e-6, fromSI: 1e6, precision: 3 }, // mm² to m²
+                    temperature: { label: '°C', tooltip: 'degrees Celsius', precision: 0 }
+                },
+                'imperial': {
+                    length: { label: 'ft', tooltip: 'feet', toSI: 0.3048, fromSI: 3.28084, precision: 0 },
+                    resistance: { label: 'Ohm', tooltip: 'Ohms', precision: 2 },
+                    voltage: { label: 'V', tooltip: 'Volts', precision: 2 },
+                    current: { label: 'mA', tooltip: 'milliamperes' },
+                    area: { label: 'AWG', tooltip: 'American Wire Gauge', precision: 0 }, // AWG is not a direct area unit
+                    temperature: { label: '°F', tooltip: 'degrees Fahrenheit', precision: 0 } // Note: Calculations use Celsius internally
+                }
+            };
+
+            // Helper function to add rows to the result table
+            function addResultRow(parameter, value) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameter;
+                valueCell.innerHTML = value;
+            }
+
+            // Event Listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndTooltips);
+            wireGaugeMethodRadios.forEach(radio => radio.addEventListener('change', updateWireGaugeInputVisibility));
+            wireMaterialRadios.forEach(radio => radio.addEventListener('change', updateUnitLabelsAndTooltips)); // Trigger update for resistivity info
+            calculateLoopBtn.addEventListener('click', calculateLoopParameters);
+            resetFormBtn.addEventListener('click', resetForm);
+            clearResultsBtn.addEventListener('click', clearResults);
+
+            // Initial setup
+            updateUnitLabelsAndTooltips(); // Update labels based on initial system
+            updateWireGaugeInputVisibility(); // Show/hide wire gauge input fields
+            
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            function updateUnitLabelsAndTooltips() {
+                const selectedSystem = unitSystemSelect.value;
+                const config = unitsConfig[selectedSystem];
+                const wireGaugeMethod = document.querySelector('input[name="wire-gauge-method"]:checked').value;
+
+                labelSupplyVoltage.innerHTML = `Power Supply Voltage (V<sub>supply</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The voltage provided by the power supply to the 4-20 mA loop. Unit: ${config.voltage.tooltip}.</span></span>`;
+                labelTransmitterVoltageDrop.innerHTML = `Transmitter Minimum Voltage (V<sub>TX,min</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The minimum voltage required for the 4-20 mA transmitter to operate correctly. Unit: ${config.voltage.tooltip}.</span></span>`;
+                labelLoadResistance.innerHTML = `Receiver/Load Resistance (R<sub>load</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The resistance of the receiver or load in the 4-20 mA loop (e.g., PLC analog input impedance). Unit: ${config.resistance.tooltip}.</span></span>`;
+                labelLoopLength.innerHTML = `Loop Length (L) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The one-way length of the cable. The calculator accounts for two-way resistance. Unit: ${config.length.tooltip}.</span></span>`;
+                
+                if (wireGaugeMethod === 'mm2') {
+                    labelWireGaugeMM2.innerHTML = `Cross-sectional Area (A) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The cross-sectional area of the wire. Unit: ${config.area.tooltip}.</span></span>`;
+                }
+                
+                // Update input placeholders if needed (for now, default values are fine)
+                supplyVoltageInput.placeholder = `e.g., 24.0 ${config.voltage.label}`;
+                transmitterVoltageDropInput.placeholder = `e.g., 10.0 ${config.voltage.label}`;
+                loadResistanceInput.placeholder = `e.g., 250 ${config.resistance.label}`;
+                loopLengthInput.placeholder = `e.g., 100 ${config.length.label}`;
+                wireGaugeMM2Input.placeholder = `e.g., 0.823 ${config.area.label}`;
+                ambientTemperatureInput.placeholder = `e.g., 20 ${config.temperature.label}`;
+
+                // Adjust AWG options visibility based on unit system
+                if (selectedSystem === 'imperial') {
+                    wireGaugeAWGSelect.style.display = 'block';
+                    wireGaugeMM2Input.style.display = 'none';
+                    document.querySelector('input[name="wire-gauge-method"][value="awg"]').checked = true;
+                    updateWireGaugeInputVisibility(); // Re-trigger visibility
+                } else {
+                    // For metric, default to mm2 input
+                    document.querySelector('input[name="wire-gauge-method"][value="mm2"]').checked = true;
+                    updateWireGaugeInputVisibility(); // Re-trigger visibility
+                }
+            }
+
+            function updateWireGaugeInputVisibility() {
+                const selectedMethod = document.querySelector('input[name="wire-gauge-method"]:checked').value;
+                if (selectedMethod === 'awg') {
+                    wireGaugeAWGGroup.classList.add('active');
+                    wireGaugeMM2Group.classList.remove('active');
+                    wireGaugeAWGSelect.setAttribute('required', 'required');
+                    wireGaugeMM2Input.removeAttribute('required');
+                } else {
+                    wireGaugeAWGGroup.classList.remove('active');
+                    wireGaugeMM2Group.classList.add('active');
+                    wireGaugeAWGSelect.removeAttribute('required');
+                    wireGaugeMM2Input.setAttribute('required', 'required');
+                }
+                clearResults(); // Clear results when input method changes
+            }
+
+            function clearResults() {
+                resultContainer.classList.remove('show');
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = '';
+                standardReference.innerHTML = '';
+                if (voltageDropOverlay) { 
+                    voltageDropOverlay.style.width = '0%'; // Reset animation
+                }
+                supplyVoltageDisplay.textContent = '0.00 V';
+                remainingVoltageDisplay.textContent = '0.00 V';
+                loopStatusDisplay.textContent = 'Status: N/A';
+                loopStatusDisplay.classList.remove('ok', 'error', 'warning'); // Clear all status classes
+                voltageDropPercentageStatus.style.display = 'none'; // Hide percentage status
+                voltageDropPercentageStatus.classList.remove('ok', 'error', 'warning'); // Clear its classes
+                displayMessage("Results cleared.", "info");
+            }
+
+            function resetForm() {
+                unitSystemSelect.value = defaultValues['unit-system'];
+                
+                document.querySelector(`input[name="wire-gauge-method"][value="${defaultValues['wire-gauge-method']}"]`).checked = true;
+                updateWireGaugeInputVisibility();
+
+                document.querySelector(`input[name="wire-material"][value="${defaultValues['wire-material']}"]`).checked = true;
+                
+                supplyVoltageInput.value = defaultValues['supply-voltage'];
+                transmitterVoltageDropInput.value = defaultValues['transmitter-voltage-drop'];
+                loadResistanceInput.value = defaultValues['load-resistance'];
+                loopLengthInput.value = defaultValues['loop-length'];
+                wireGaugeAWGSelect.value = defaultValues['wire-gauge-awg'];
+                wireGaugeMM2Input.value = defaultValues['wire-gauge-mm2'];
+                ambientTemperatureInput.value = defaultValues['ambient-temperature']; // Reset new field
+                barrierResistanceInput.value = defaultValues['barrier-resistance']; // Reset new field
+                maxVoltageDropPercentageInput.value = defaultValues['max-voltage-drop-percentage']; // Reset new field
+                
+                clearResults(); // Clear results again after inputs are reset
+                displayMessage("Form reset to default values (Metric/AWG).", "info");
+            }
+
+            // Function to display messages (replaces alert())
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    messageBox.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        padding: 15px 25px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                        z-index: 1000;
+                        font-weight: bold;
+                        color: white;
+                        opacity: 0;
+                        transition: opacity 0.5s ease-in-out, transform 0.3s ease-out;
+                        display: flex; /* Use flex for centering text */
+                        align-items: center;
+                        justify-content: center;
+                        min-width: 250px; /* Ensure it's wide enough */
+                    `;
+                    document.body.appendChild(messageBox);
+                }
+
+                messageBox.textContent = message;
+                if (type === "error") {
+                    messageBox.style.backgroundColor = '#dc3545'; /* Red */
+                } else if (type === "warning") {
+                    messageBox.style.backgroundColor = '#ffc107'; /* Amber */
+                    messageBox.style.color = '#333';
+                } else {
+                    messageBox.style.backgroundColor = '#28a745'; /* Green */
+                }
+                messageBox.style.opacity = 1;
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Bring to position
+
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Fade out and move up
+                }, 5000);
+            }
+
+            function calculateLoopParameters() {
+                clearResults(); // Clear previous results
+                const selectedSystem = unitSystemSelect.value;
+                const config = unitsConfig[selectedSystem];
+
+                let supplyVoltage = parseFloat(supplyVoltageInput.value);
+                let transmitterVoltageDrop = parseFloat(transmitterVoltageDropInput.value);
+                let loadResistance = parseFloat(loadResistanceInput.value);
+                let loopLength_input = parseFloat(loopLengthInput.value);
+                let ambientTemperature = parseFloat(ambientTemperatureInput.value); // New
+                let barrierResistance = parseFloat(barrierResistanceInput.value); // New
+                let maxVoltageDropPercentage = parseFloat(maxVoltageDropPercentageInput.value); // New
+
+                const wireGaugeMethod = document.querySelector('input[name="wire-gauge-method"]:checked').value;
+                const wireMaterial = document.querySelector('input[name="wire-material"]:checked').value;
+
+                let wireResistancePerMeter_at_20C; // Ohm/meter at reference temperature
+                let temperatureCoefficient;
+
+                // Input Validation
+                if (isNaN(supplyVoltage) || supplyVoltage <= 0) { displayMessage("Please enter a valid positive Power Supply Voltage.", "error"); return; }
+                if (isNaN(transmitterVoltageDrop) || transmitterVoltageDrop < 0) { displayMessage("Please enter a valid non-negative Transmitter Minimum Voltage.", "error"); return; }
+                if (isNaN(loadResistance) || loadResistance < 0) { displayMessage("Please enter a valid non-negative Receiver/Load Resistance.", "error"); return; }
+                if (isNaN(loopLength_input) || loopLength_input < 0) { displayMessage("Please enter a valid non-negative Loop Length.", "error"); return; }
+                if (isNaN(ambientTemperature)) { displayMessage("Please enter a valid Ambient Temperature.", "error"); return; }
+                if (isNaN(barrierResistance) || barrierResistance < 0) { displayMessage("Please enter a valid non-negative Intrinsic Safety Barrier Resistance.", "error"); return; }
+                if (isNaN(maxVoltageDropPercentage) || maxVoltageDropPercentage < 0 || maxVoltageDropPercentage > 100) { displayMessage("Please enter a valid Max Allowed Voltage Drop percentage (0-100).", "error"); return; }
+
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>Unit System:</strong> ${selectedSystem.toUpperCase()}</p>`;
+                
+                calculationHtml += `<p><strong>1. Input Parameters:</strong></p>`;
+                calculationHtml += `<p class="calculation-step">Power Supply Voltage (V<sub>supply</sub>) = ${supplyVoltage.toFixed(config.voltage.precision)} V</p>`;
+                calculationHtml += `<p class="calculation-step">Transmitter Minimum Voltage (V<sub>TX,min</sub>) = ${transmitterVoltageDrop.toFixed(config.voltage.precision)} V</p>`;
+                calculationHtml += `<p class="calculation-step">Receiver/Load Resistance (R<sub>load</sub>) = ${loadResistance.toFixed(config.resistance.precision)} Ohm</p>`;
+                calculationHtml += `<p class="calculation-step">Loop Length (L, one-way) = ${loopLength_input.toFixed(config.length.precision)} ${config.length.label}</p>`;
+                calculationHtml += `<p class="calculation-step">Wire Material = ${wireMaterial.charAt(0).toUpperCase() + wireMaterial.slice(1)}</p>`;
+                calculationHtml += `<p class="calculation-step">Ambient Temperature (T) = ${ambientTemperature.toFixed(config.temperature.precision)} ${config.temperature.label}</p>`;
+                calculationHtml += `<p class="calculation-step">Intrinsic Safety Barrier Resistance (R<sub>barrier</sub>) = ${barrierResistance.toFixed(config.resistance.precision)} Ohm</p>`;
+                calculationHtml += `<p class="calculation-step">Maximum Allowed Voltage Drop = ${maxVoltageDropPercentage.toFixed(1)} %</p>`;
+                calculationHtml += `<p class="calculation-step">Maximum Loop Current (I<sub>max</sub>) = ${MAX_LOOP_CURRENT_MA} mA = ${MAX_LOOP_CURRENT_MA / 1000} A</p>`;
+
+                // 2. Determine Wire Resistance per Unit Length at Reference Temperature (20°C)
+                calculationHtml += `<p><strong>2. Determine Wire Resistance per Unit Length at Reference Temperature (R<sub>wire/unit,20°C</sub>):</strong></p>`;
+                if (wireGaugeMethod === 'awg') {
+                    const awg = wireGaugeAWGSelect.value;
+                    if (!WIRE_GAUGE_OHM_PER_M_COPPER[awg]) {
+                        displayMessage("Selected AWG is not supported for calculation.", "error");
+                        return;
+                    }
+                    // Get copper resistance per meter at 20C
+                    wireResistancePerMeter_at_20C = WIRE_GAUGE_OHM_PER_M_COPPER[awg];
+                    calculationHtml += `<p class="calculation-step">Selected Wire Gauge = ${awg} AWG (from lookup table)</p>`;
+                    calculationHtml += `<p class="calculation-step">R<sub>wire/unit,20°C</sub> (Copper) = ${wireResistancePerMeter_at_20C.toFixed(4)} Ohm/m</p>`;
+                } else { // mm2
+                    const area_mm2 = parseFloat(wireGaugeMM2Input.value);
+                    if (isNaN(area_mm2) || area_mm2 <= 0) {
+                        displayMessage("Please enter a valid positive Cross-sectional Area (mm²).", "error");
+                        return;
+                    }
+                    // Calculate resistance per meter at 20C using resistivity and area
+                    wireResistancePerMeter_at_20C = RESISTIVITY_COPPER_SI / (area_mm2 * unitsConfig.metric.area.toSI);
+                    calculationHtml += `<p class="calculation-step">Cross-sectional Area (A) = ${area_mm2.toFixed(config.area.precision)} mm² = ${(area_mm2 * unitsConfig.metric.area.toSI).toExponential(2)} m²</p>`;
+                    calculationHtml += `<p class="formula">R<sub>wire/unit,20°C</sub> = ρ<sub>20°C</sub> / A</p>`;
+                    calculationHtml += `<p class="calculation-step">R<sub>wire/unit,20°C</sub> = ${RESISTIVITY_COPPER_SI.toExponential(2)} Ohm·m / ${(area_mm2 * unitsConfig.metric.area.toSI).toExponential(2)} m² = ${wireResistancePerMeter_at_20C.toFixed(4)} Ohm/m</p>`;
+                }
+
+                // Determine temperature coefficient
+                temperatureCoefficient = (wireMaterial === 'copper') ? TEMP_COEFF_COPPER : TEMP_COEFF_ALUMINUM;
+                calculationHtml += `<p class="calculation-step">Temperature Coefficient (α) for ${wireMaterial.charAt(0).toUpperCase() + wireMaterial.slice(1)} = ${temperatureCoefficient.toFixed(5)} /°C</p>`;
+
+                // Adjust for Aluminum if selected (base resistance at 20C)
+                if (wireMaterial === 'aluminum' && wireGaugeMethod === 'awg') {
+                    // For AWG, we have copper base, so convert to aluminum base
+                    const materialFactor = RESISTIVITY_ALUMINUM_SI / RESISTIVITY_COPPER_SI;
+                    wireResistancePerMeter_at_20C *= materialFactor;
+                    calculationHtml += `<p class="calculation-step">Adjusting R<sub>wire/unit,20°C</sub> for Aluminum material (factor: ${materialFactor.toFixed(2)})</p>`;
+                    calculationHtml += `<p class="calculation-step">R<sub>wire/unit,20°C</sub> (Aluminum) = ${wireResistancePerMeter_at_20C.toFixed(4)} Ohm/m</p>`;
+                }
+
+                // 3. Calculate Wire Resistance per Unit Length at Ambient Temperature
+                let wireResistancePerMeter_at_ambient;
+                const tempDifference = ambientTemperature - REFERENCE_TEMPERATURE;
+                wireResistancePerMeter_at_ambient = wireResistancePerMeter_at_20C * (1 + temperatureCoefficient * tempDifference);
+                calculationHtml += `<p><strong>3. Calculate Wire Resistance per Unit Length at Ambient Temperature (R<sub>wire/unit,T</sub>):</strong></p>`;
+                calculationHtml += `<p>Wire resistance changes with temperature. This calculation adjusts the resistance from the reference temperature (20°C) to the specified ambient temperature.</p>`;
+                calculationHtml += `<p class="formula">R<sub>wire/unit,T</sub> = R<sub>wire/unit,20°C</sub> &times; [1 + α &times; (T<sub>ambient</sub> - T<sub>ref</sub>)]</p>`;
+                calculationHtml += `<p class="calculation-step">R<sub>wire/unit,T</sub> = ${wireResistancePerMeter_at_20C.toFixed(4)} &times; [1 + ${temperatureCoefficient.toFixed(5)} &times; (${ambientTemperature.toFixed(0)} - ${REFERENCE_TEMPERATURE})] = ${wireResistancePerMeter_at_ambient.toFixed(4)} Ohm/m</p>`;
+
+
+                // Convert loop length to meters for consistent calculation
+                const loopLength_si = loopLength_input * config.length.toSI;
+
+                // 4. Calculate Total Wire Resistance (at Ambient Temperature)
+                // A 4-20mA loop is two-wire (out and back)
+                const totalWireResistance = wireResistancePerMeter_at_ambient * loopLength_si * 2;
+                calculationHtml += `<p><strong>4. Calculate Total Wire Resistance (R<sub>wire,total</sub>) at Ambient Temperature:</strong></p>`;
+                calculationHtml += `<p>The total wire resistance accounts for both the outgoing and return paths of the current loop.</p>`;
+                calculationHtml += `<p class="formula">R<sub>wire,total</sub> = R<sub>wire/unit,T</sub> &times; L<sub>one-way</sub> &times; 2</p>`;
+                calculationHtml += `<p class="calculation-step">R<sub>wire,total</sub> = ${wireResistancePerMeter_at_ambient.toFixed(4)} Ohm/m &times; ${loopLength_si.toFixed(2)} m &times; 2 = ${totalWireResistance.toFixed(2)} Ohm</p>`;
+
+                // 5. Calculate Total Loop Resistance (including barrier)
+                const totalLoopResistance = totalWireResistance + loadResistance + barrierResistance;
+                calculationHtml += `<p><strong>5. Calculate Total Loop Resistance (R<sub>loop,total</sub>):</strong></p>`;
+                calculationHtml += `<p>This is the sum of the wire resistance, the receiver/load resistance, and any intrinsic safety barrier resistance in the loop.</p>`;
+                calculationHtml += `<p class="formula">R<sub>loop,total</sub> = R<sub>wire,total</sub> + R<sub>load</sub> + R<sub>barrier</sub></p>`;
+                calculationHtml += `<p class="calculation-step">R<sub>loop,total</sub> = ${totalWireResistance.toFixed(2)} Ohm + ${loadResistance.toFixed(2)} Ohm + ${barrierResistance.toFixed(2)} Ohm = ${totalLoopResistance.toFixed(2)} Ohm</p>`;
+
+                // 6. Calculate Voltage Drops at Max Current (20 mA)
+                const maxCurrentAmps = MAX_LOOP_CURRENT_MA / 1000; // Convert mA to Amps
+
+                const voltageDropWire = maxCurrentAmps * totalWireResistance;
+                calculationHtml += `<p><strong>6. Calculate Voltage Drops at Maximum Current (20 mA):</strong></p>`;
+                calculationHtml += `<p>Voltage drops are calculated at the maximum loop current to ensure sufficient voltage is available under worst-case conditions.</p>`;
+                calculationHtml += `<p class="formula">V<sub>drop,wire</sub> = I<sub>max</sub> &times; R<sub>wire,total</sub></p>`;
+                calculationHtml += `<p class="calculation-step">V<sub>drop,wire</sub> = ${maxCurrentAmps.toFixed(4)} A &times; ${totalWireResistance.toFixed(2)} Ohm = ${voltageDropWire.toFixed(2)} V</p>`;
+
+                const voltageDropLoad = maxCurrentAmps * loadResistance;
+                calculationHtml += `<p class="formula">V<sub>drop,load</sub> = I<sub>max</sub> &times; R<sub>load</sub></p>`;
+                calculationHtml += `<p class="calculation-step">V<sub>drop,load</sub> = ${maxCurrentAmps.toFixed(4)} A &times; ${loadResistance.toFixed(2)} Ohm = ${voltageDropLoad.toFixed(2)} V</p>`;
+
+                const voltageDropBarrier = maxCurrentAmps * barrierResistance;
+                calculationHtml += `<p class="formula">V<sub>drop,barrier</sub> = I<sub>max</sub> &times; R<sub>barrier</sub></p>`;
+                calculationHtml += `<p class="calculation-step">V<sub>drop,barrier</sub> = ${maxCurrentAmps.toFixed(4)} A &times; ${barrierResistance.toFixed(2)} Ohm = ${voltageDropBarrier.toFixed(2)} V</p>`;
+
+
+                const totalVoltageDrop = voltageDropWire + voltageDropLoad + voltageDropBarrier;
+                calculationHtml += `<p class="formula">V<sub>drop,total</sub> = V<sub>drop,wire</sub> + V<sub>drop,load</sub> + V<sub>drop,barrier</sub></p>`;
+                calculationHtml += `<p class="calculation-step">V<sub>drop,total</sub> = ${voltageDropWire.toFixed(2)} V + ${voltageDropLoad.toFixed(2)} V + ${voltageDropBarrier.toFixed(2)} V = ${totalVoltageDrop.toFixed(2)} V</p>`;
+
+                // 7. Calculate Available Voltage at Transmitter
+                const voltageAvailableAtTx = supplyVoltage - voltageDropWire - voltageDropBarrier; // Only wire and barrier drop affect voltage at TX
+                calculationHtml += `<p><strong>7. Calculate Available Voltage at Transmitter (V<sub>TX,available</sub>):</strong></p>`;
+                calculationHtml += `<p>This is the voltage that the transmitter actually receives after accounting for the voltage drop across the wiring and any intrinsic safety barrier.</p>`;
+                calculationHtml += `<p class="formula">V<sub>TX,available</sub> = V<sub>supply</sub> - V<sub>drop,wire</sub> - V<sub>drop,barrier</sub></p>`;
+                calculationHtml += `<p class="calculation-step">V<sub>TX,available</sub> = ${supplyVoltage.toFixed(2)} V - ${voltageDropWire.toFixed(2)} V - ${voltageDropBarrier.toFixed(2)} V = ${voltageAvailableAtTx.toFixed(2)} V</p>`;
+
+                // 8. Determine Loop Status (Compliance Voltage Check)
+                let loopStatus = "N/A";
+                let loopStatusClass = "";
+                if (voltageAvailableAtTx >= transmitterVoltageDrop) {
+                    loopStatus = "OK";
+                    loopStatusClass = "ok";
+                    calculationHtml += `<p><strong>8. Loop Status (Compliance Check - Transmitter Operation):</strong></p>`;
+                    calculationHtml += `<p>The loop is compliant if the voltage available at the transmitter is greater than or equal to the transmitter's minimum required operating voltage.</p>`;
+                    calculationHtml += `<p class="calculation-step">V<sub>TX,available</sub> (${voltageAvailableAtTx.toFixed(2)} V) ≥ V<sub>TX,min</sub> (${transmitterVoltageDrop.toFixed(2)} V)</p>`;
+                    calculationHtml += `<p class="calculation-step">Loop Status: OK</p>`;
+                } else {
+                    loopStatus = "INSUFFICIENT VOLTAGE";
+                    loopStatusClass = "error";
+                    calculationHtml += `<p><strong>8. Loop Status (Compliance Check - Transmitter Operation):</strong></p>`;
+                    calculationHtml += `<p>The loop is not compliant if the voltage available at the transmitter is less than the transmitter's minimum required operating voltage.</p>`;
+                    calculationHtml += `<p class="calculation-step">V<sub>TX,available</sub> (${voltageAvailableAtTx.toFixed(2)} V) < V<sub>TX,min</sub> (${transmitterVoltageDrop.toFixed(2)} V)</p>`;
+                    calculationHtml += `<p class="calculation-step">Loop Status: INSUFFICIENT VOLTAGE</p>`;
+                    displayMessage("Warning: Insufficient voltage for transmitter operation!", "error");
+                }
+
+                // 9. Voltage Drop Percentage Check
+                const actualVoltageDropPercentage = (voltageDropWire / supplyVoltage) * 100;
+                let percentageStatus = "N/A";
+                let percentageStatusClass = "";
+                if (actualVoltageDropPercentage <= maxVoltageDropPercentage) {
+                    percentageStatus = `Within ${maxVoltageDropPercentage.toFixed(1)}% Limit`;
+                    percentageStatusClass = "ok";
+                    calculationHtml += `<p><strong>9. Voltage Drop Percentage Check:</strong></p>`;
+                    calculationHtml += `<p>This check verifies if the voltage drop across the wire (excluding load and barrier) falls within a user-defined acceptable percentage of the supply voltage.</p>`;
+                    calculationHtml += `<p class="formula">%V<sub>drop,wire</sub> = (V<sub>drop,wire</sub> / V<sub>supply</sub>) &times; 100</p>`;
+                    calculationHtml += `<p class="calculation-step">%V<sub>drop,wire</sub> = (${voltageDropWire.toFixed(2)} V / ${supplyVoltage.toFixed(2)} V) &times; 100 = ${actualVoltageDropPercentage.toFixed(2)} %</p>`;
+                    calculationHtml += `<p class="calculation-step">${actualVoltageDropPercentage.toFixed(2)} % ≤ ${maxVoltageDropPercentage.toFixed(1)} %: ${percentageStatus}</p>`;
+                } else {
+                    percentageStatus = `Exceeds ${maxVoltageDropPercentage.toFixed(1)}% Limit`;
+                    percentageStatusClass = "warning";
+                    calculationHtml += `<p><strong>9. Voltage Drop Percentage Check:</strong></p>`;
+                    calculationHtml += `<p>This check verifies if the voltage drop across the wire (excluding load and barrier) falls within a user-defined acceptable percentage of the supply voltage.</p>`;
+                    calculationHtml += `<p class="formula">%V<sub>drop,wire</sub> = (V<sub>drop,wire</sub> / V<sub>supply</sub>) &times; 100</p>`;
+                    calculationHtml += `<p class="calculation-step">%V<sub>drop,wire</sub> = (${voltageDropWire.toFixed(2)} V / ${supplyVoltage.toFixed(2)} V) &times; 100 = ${actualVoltageDropPercentage.toFixed(2)} %</p>`;
+                    calculationHtml += `<p class="calculation-step">${actualVoltageDropPercentage.toFixed(2)} % > ${maxVoltageDropPercentage.toFixed(1)} %: ${percentageStatus}</p>`;
+                    displayMessage(`Warning: Wire voltage drop (${actualVoltageDropPercentage.toFixed(2)}%) exceeds the set limit of ${maxVoltageDropPercentage.toFixed(1)}%.`, "warning");
+                }
+
+
+                // Display Results in table
+                resultTableBody.innerHTML = '';
+                addResultRow("Power Supply Voltage", `${supplyVoltage.toFixed(config.voltage.precision)} V`);
+                addResultRow("Transmitter Minimum Voltage", `${transmitterVoltageDrop.toFixed(config.voltage.precision)} V`);
+                addResultRow("Receiver/Load Resistance", `${loadResistance.toFixed(config.resistance.precision)} Ohm`);
+                addResultRow("Loop Length (one-way)", `${loopLength_input.toFixed(config.length.precision)} ${config.length.label}`);
+                addResultRow("Wire Material", wireMaterial.charAt(0).toUpperCase() + wireMaterial.slice(1));
+                addResultRow("Wire Gauge", wireGaugeMethod === 'awg' ? `${wireGaugeAWGSelect.value} AWG` : `${wireGaugeMM2Input.value} mm²`);
+                addResultRow("Ambient Temperature", `${ambientTemperature.toFixed(config.temperature.precision)} ${config.temperature.label}`);
+                addResultRow("Intrinsic Safety Barrier Resistance", `${barrierResistance.toFixed(config.resistance.precision)} Ohm`);
+                addResultRow("Max Allowed Voltage Drop", `${maxVoltageDropPercentage.toFixed(1)} %`);
+                addResultRow("Wire Resistance per Meter (at Ambient Temp)", `${wireResistancePerMeter_at_ambient.toFixed(4)} Ohm/m`);
+                addResultRow("Total Wire Resistance (2-way, at Ambient Temp)", `${totalWireResistance.toFixed(2)} Ohm`);
+                addResultRow("Total Loop Resistance (incl. Barrier)", `${totalLoopResistance.toFixed(2)} Ohm`);
+                addResultRow("Voltage Drop across Wire (at 20 mA)", `${voltageDropWire.toFixed(2)} V`);
+                addResultRow("Voltage Drop across Load (at 20 mA)", `${voltageDropLoad.toFixed(2)} V`);
+                addResultRow("Voltage Drop across Barrier (at 20 mA)", `${voltageDropBarrier.toFixed(2)} V`);
+                addResultRow("Total Voltage Drop (at 20 mA)", `${totalVoltageDrop.toFixed(2)} V`);
+                addResultRow("<strong>Voltage Available at Transmitter</strong>", `<strong>${voltageAvailableAtTx.toFixed(2)} V</strong>`);
+                addResultRow("<strong>Transmitter Operation Status</strong>", `<strong class="${loopStatusClass}">${loopStatus}</strong>`);
+                addResultRow("<strong>Wire Voltage Drop Percentage</strong>", `<strong>${actualVoltageDropPercentage.toFixed(2)} %</strong>`);
+                addResultRow("<strong>Voltage Drop % Status</strong>", `<strong class="${percentageStatusClass}">${percentageStatus}</strong>`);
+                
+                // Update Voltage Drop Visualization
+                supplyVoltageDisplay.textContent = `${supplyVoltage.toFixed(config.voltage.precision)} V`;
+                remainingVoltageDisplay.textContent = `${voltageAvailableAtTx.toFixed(config.voltage.precision)} V`;
+
+                // Calculate percentage of voltage drop relative to supply voltage
+                let dropPercentageViz = (totalVoltageDrop / supplyVoltage) * 100; // Use total drop for visualization
+                dropPercentageViz = Math.min(100, Math.max(0, dropPercentageViz)); // Clamp between 0 and 100%
+                voltageDropOverlay.style.width = `${dropPercentageViz}%`;
+
+                loopStatusDisplay.textContent = `Status: ${loopStatus}`;
+                loopStatusDisplay.classList.remove('ok', 'error', 'warning');
+                loopStatusDisplay.classList.add(loopStatusClass);
+
+                voltageDropPercentageStatus.textContent = `Voltage Drop % Status: ${percentageStatus}`;
+                voltageDropPercentageStatus.classList.remove('ok', 'error', 'warning');
+                voltageDropPercentageStatus.classList.add(percentageStatusClass);
+                voltageDropPercentageStatus.style.display = 'block';
+
+
+                standardRefText = `
+                    <h4>International Standards Compliance & Best Practices:</h4>
+                    <p>Accurate loop impedance and voltage drop calculations are critical for reliable 4-20 mA current loop operation, aligning with various international standards and industry best practices:</p>
+                    <ul>
+                        <li><strong>IEC 60381-1: Analogue signals for process control systems - Part 1: Direct current signals.</strong> This standard specifies the characteristics of 4-20 mA current signals, including the voltage requirements for transmitters and receivers. It implicitly requires sufficient voltage at the device.</li>
+                        <li><strong>ISA-50.1-1982 (R1992): Compatibility of Analog Signals for Electronic Industrial Process Instruments.</strong> Although largely superseded, this ISA standard established foundational principles for ensuring interoperability and proper voltage/current levels in analog loops.</li>
+                        <li><strong>NAMUR NE 43: Standardization of the signal range 4 to 20 mA for the connection of field devices.</strong> This recommendation from NAMUR (User Association of Automation Technology in Process Industries) specifies requirements for 4-20 mA devices, including minimum operating voltages and considerations for loop resistance.</li>
+                        <li><strong>IEC 60079 series (Explosive Atmospheres - Intrinsic Safety):</strong> For hazardous areas (e.g., Zone 0, 1, 2), intrinsic safety (Ex i) is a common protection concept. This series of standards (e.g., IEC 60079-11) sets strict limitations on the maximum permissible loop resistance (R<sub>loop</sub>) to ensure that the energy in the circuit is too low to ignite a hazardous atmosphere. The inclusion of barrier resistance in calculations is crucial for compliance in these environments.</li>
+                        <li><strong>ANSI/NFPA 70 (National Electrical Code - NEC):</strong> While more focused on power distribution, NEC provides guidelines for wire sizing and voltage drop limits in general electrical installations, which can be referenced for instrumentation wiring. Recommended voltage drops for general circuits are often 3% for feeders and 5% for the farthest outlet. For sensitive instrumentation, even tighter limits (e.g., 2%) might be applied.</li>
+                        <li><strong>General Electrical Engineering Principles:</strong> The calculations are based on Ohm's Law (V=IR) and fundamental principles of electrical circuit analysis, which are universally applied in electrical and instrumentation engineering. Temperature effects on resistance are also a standard consideration.</li>
+                        <li><strong>Industry Best Practices:</strong> Proper wire sizing, voltage drop calculation, and consideration of ambient temperature and intrinsic safety barriers prevent issues like signal degradation, inaccurate measurements, and device malfunction. This ensures stable and reliable process control in industries such as oil & gas, chemical, power generation, manufacturing, and pharmaceuticals.</li>
+                    </ul>
+                    <p>This tool provides calculations based on these widely accepted engineering principles and industry practices. For critical applications, especially in hazardous areas or very long runs, always refer to the latest official standards documents, device manufacturer specifications, and consult with a qualified instrumentation and electrical engineer to ensure full compliance and optimal system performance.</p>
+                `;
+                standardReference.innerHTML = standardRefText;
+
+                calculationDetailsDiv.innerHTML = calculationHtml; // Insert detailed steps
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    calculationDetailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to calculation details
+                }, 10);
+            }
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

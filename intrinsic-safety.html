@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en" oncontextmenu="return false;">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> <!-- Placeholder for G-tag ID -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX'); // Placeholder for G-tag ID
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ex i Intrinsically Safe Loop - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme (Green) */
+        :root {
+            --primary-color: #28A745; /* Green */
+            --secondary-color: #1E7E34; /* Darker Green */
+            --accent-color: #FFC107; /* Amber (for warnings/accents) */
+            --bg-color: #e6f2ed; /* Light Greenish Grey */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey (for contrast) */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #d9ead3; /* Lighter green for hover */
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #176B2F);
+            --reset-button-bg: #6c757d; /* Grey for reset */
+            --reset-button-hover-bg: #5a6268; /* Darker grey */
+            --clear-button-bg: #FFC107; /* Amber for clear */
+            --clear-button-hover-bg: #E0A800; /* Darker amber */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #1E7E34, #28A745);
+            --button-hover-gradient: linear-gradient(45deg, #28A745, #34B850);
+            --reset-button-bg: #5a6268; /* Darker grey for dark mode reset */
+            --reset-button-hover-bg: #495057;
+            --clear-button-bg: #DAA520; /* Darker amber for dark mode clear */
+            --clear-button-hover-bg: #B8860B;
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #d0d2d6);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 0;
+        }
+        
+        .calculate-btn, .save-btn, .load-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 220px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover, .save-btn:hover, .load-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 250px;
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding-top: 20px;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            gap: 15px; /* Spacing between buttons */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4); /* Green glow */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(40, 167, 69, 0.2);
+            }
+        }
+
+        /* Status Display */
+        .status-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+            width: 100%;
+        }
+        .status-display.optimal {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .status-display.adequate {
+            background-color: #66bb6a; /* Lighter green */
+            color: white;
+        }
+        .status-display.warning {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+        .status-display.critical {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            color: white;
+            font-size: 1.5em;
+            flex-direction: column;
+            gap: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        #loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* User ID Display - Removed as Firebase is no longer used for save/load */
+        /* #user-id-display {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: var(--text-color);
+            padding: 8px;
+            background-color: var(--hover-color);
+            border-radius: 5px;
+            word-break: break-all;
+        } */
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Ex i Intrinsically Safe Loop Calculator</h2>
+            
+            <div class="tool-description">
+                <p>This calculator validates the parameters of an intrinsically safe (Ex i) loop to ensure compliance with intrinsic safety standards. It checks voltage, current, power, capacitance, and inductance limits for safe operation in hazardous areas.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="is-loop-calculator-form">
+                    <!-- Barrier (Source) Parameters -->
+                    <div class="form-section">
+                        <h3>Barrier (Source) Parameters (from Barrier Certificate)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="barrier-uo">Barrier Uo (Voc) [Open Circuit Voltage] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum output voltage of the barrier under open circuit conditions. (V)</span></span></label>
+                                <input type="number" id="barrier-uo" step="0.01" value="28" required>
+                                <select id="barrier-uo-unit">
+                                    <option value="V">V</option>
+                                    <option value="mV">mV</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="barrier-io">Barrier Io (Isc) [Short Circuit Current] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum output current of the barrier under short circuit conditions. (mA)</span></span></label>
+                                <input type="number" id="barrier-io" step="0.01" value="93" required>
+                                <select id="barrier-io-unit">
+                                    <option value="mA">mA</option>
+                                    <option value="A">A</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="barrier-po">Barrier Po (Pa) [Max Output Power] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum output power of the barrier. (W)</span></span></label>
+                                <input type="number" id="barrier-po" step="0.001" value="0.65" required>
+                                <select id="barrier-po-unit">
+                                    <option value="W">W</option>
+                                    <option value="mW">mW</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="barrier-ca">Barrier Ca (Max External Capacitance) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum permissible external capacitance that can be connected to the barrier. (uF)</span></span></label>
+                                <input type="number" id="barrier-ca" step="0.001" value="0.083" required>
+                                <select id="barrier-ca-unit">
+                                    <option value="uF">uF</option>
+                                    <option value="nF">nF</option>
+                                    <option value="pF">pF</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="barrier-la">Barrier La (Max External Inductance) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum permissible external inductance that can be connected to the barrier. (mH)</span></span></label>
+                                <input type="number" id="barrier-la" step="0.001" value="2.3" required>
+                                <select id="barrier-la-unit">
+                                    <option value="mH">mH</option>
+                                    <option value="uH">uH</option>
+                                    <option value="nH">nH</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Field Device Parameters -->
+                    <div class="form-section">
+                        <h3>Field Device Parameters (from Device Certificate)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="device-ui">Device Ui (Vi_max) [Max Input Voltage] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum input voltage the field device can safely receive. (V)</span></span></label>
+                                <input type="number" id="device-ui" step="0.01" value="30" required>
+                                <select id="device-ui-unit">
+                                    <option value="V">V</option>
+                                    <option value="mV">mV</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="device-ii">Device Ii (Ii_max) [Max Input Current] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum input current the field device can safely receive. (mA)</span></span></label>
+                                <input type="number" id="device-ii" step="0.01" value="100" required>
+                                <select id="device-ii-unit">
+                                    <option value="mA">mA</option>
+                                    <option value="A">A</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="device-pi">Device Pi (Pi_max) [Max Input Power] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum input power the field device can safely receive. (W)</span></span></label>
+                                <input type="number" id="device-pi" step="0.001" value="0.75" required>
+                                <select id="device-pi-unit">
+                                    <option value="W">W</option>
+                                    <option value="mW">mW</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="device-ci">Device Ci (Max Internal Capacitance) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum internal capacitance of the field device. (uF)</span></span></label>
+                                <input type="number" id="device-ci" step="0.001" value="0.001" required>
+                                <select id="device-ci-unit">
+                                    <option value="uF">uF</option>
+                                    <option value="nF">nF</option>
+                                    <option value="pF">pF</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="device-li">Device Li (Max Internal Inductance) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum internal inductance of the field device. (mH)</span></span></label>
+                                <input type="number" id="device-li" step="0.001" value="0.001" required>
+                                <select id="device-li-unit">
+                                    <option value="mH">mH</option>
+                                    <option value="uH">uH</option>
+                                    <option value="nH">nH</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cable Parameters -->
+                    <div class="form-section">
+                        <h3>Cable Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cable-length">Cable Length <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total length of the cable connecting the barrier and the field device.</span></span></label>
+                                <input type="number" id="cable-length" step="0.1" value="100" required>
+                                <select id="cable-length-unit">
+                                    <option value="m">meter</option>
+                                    <option value="ft">feet</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cable-capacitance-per-meter">Cable Capacitance per unit length <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Capacitance of the cable per unit of its length. (nF/m)</span></span></label>
+                                <input type="number" id="cable-capacitance-per-meter" step="0.001" value="0.15" required>
+                                <select id="cable-capacitance-per-meter-unit">
+                                    <option value="nF/m">nF/m</option>
+                                    <option value="pF/ft">pF/ft</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cable-inductance-per-meter">Cable Inductance per unit length <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Inductance of the cable per unit of its length. (uH/m)</span></span></label>
+                                <input type="number" id="cable-inductance-per-meter" step="0.001" value="0.5" required>
+                                <select id="cable-inductance-per-meter-unit">
+                                    <option value="uH/m">uH/m</option>
+                                    <option value="nH/ft">nH/ft</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cable-resistance-per-meter">Cable Resistance per unit length <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Resistance of the cable per unit of its length. (Ohm/m)</span></span></label>
+                                <input type="number" id="cable-resistance-per-meter" step="0.001" value="0.05" required>
+                                <select id="cable-resistance-per-meter-unit">
+                                    <option value="Ohm/m">Ohm/m</option>
+                                    <option value="Ohm/ft">Ohm/ft</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Factors -->
+                    <div class="form-section">
+                        <h3>Safety Factors (Optional, but Recommended)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="safety-factor-c">Capacitance Safety Factor <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Multiplier applied to cable capacitance for additional safety margin (e.g., 1.5).</span></span></label>
+                                <input type="number" id="safety-factor-c" step="0.1" value="1.5" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="safety-factor-l">Inductance Safety Factor <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Multiplier applied to cable inductance for additional safety margin (e.g., 1.5).</span></span></label>
+                                <input type="number" id="safety-factor-l" step="0.1" value="1.5" min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn">Validate Loop</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Intrinsic Safety Validation Results</h3>
+                <p class="status-display" id="loop-status-display">Loop Status: N/A</p>
+
+                <div id="calculation-details">
+                    <h4>Step-by-Step Calculation & Checks</h4>
+                    <div id="steps-list">
+                        <!-- Calculation steps will be inserted here -->
+                    </div>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Barrier (Source)</th>
+                            <th>Field Device</th>
+                            <th>Cable (Total)</th>
+                            <th>Check Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+
+                <div id="practical-recommendations" style="display: none;">
+                    <h4>Practical Considerations & Recommendations</h4>
+                    <ul id="recommendations-list">
+                        <!-- Recommendations will be dynamically inserted here -->
+                    </ul>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <p><strong>Applicable Standards and Guidelines:</strong> Intrinsic safety is a protection concept governed by rigorous international standards to prevent ignition in hazardous areas.</p>
+                    <ul>
+                        <li><strong>IEC 60079-11: Explosive atmospheres - Part 11: Equipment protection by intrinsic safety "i".</strong> This is the primary international standard for intrinsic safety. It defines the requirements for construction and testing of intrinsically safe apparatus and associated apparatus.</li>
+                        <li><strong>ATEX Directive (2014/34/EU):</strong> For the European Union, the ATEX directive mandates compliance for equipment and protective systems intended for use in potentially explosive atmospheres. Intrinsic safety is one of the protection types covered.</li>
+                        <li><strong>NEC Article 504 (NFPA 70):</strong> In North America, the National Electrical Code (NEC) provides guidelines for electrical installations in hazardous (classified) locations, including intrinsic safety.</li>
+                        <li><strong>Entity Parameters:</strong> The core of intrinsic safety validation relies on comparing "entity parameters" from the certificates of the intrinsically safe barrier (associated apparatus) and the field device (intrinsically safe apparatus).
+                            <ul>
+                                <li><strong>Barrier Output Parameters (Uo, Io, Po, Ca, La):</strong> These define the maximum energy the barrier can deliver to the hazardous area.</li>
+                                <li><strong>Field Device Input Parameters (Ui, Ii, Pi, Ci, Li):</strong> These define the maximum energy the field device can safely accept without causing ignition.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Cable Parameters:</strong> The capacitance and inductance of the connecting cable add to the total energy storage in the hazardous area and must be accounted for.</li>
+                        <li><strong>Safety Factors:</strong> It is common practice, and sometimes mandated by national standards or specific applications, to apply safety factors (e.g., 1.5) to cable capacitance and inductance to provide an additional margin of safety.</li>
+                        <li><strong>Loop Validation Criteria:</strong> For a loop to be intrinsically safe, the following conditions must typically be met:
+                            <ul>
+                                <li>Barrier Uo &le; Device Ui</li>
+                                <li>Barrier Io &le; Device Ii</li>
+                                <li>Barrier Po &le; Device Pi</li>
+                                <li>Device Ci + Cable Ccable &le; Barrier Ca (with safety factor for Ccable if applied)</li>
+                                <li>Device Li + Cable Lcable &le; Barrier La (with safety factor for Lcable if applied)</li>
+                            </ul>
+                        </li>
+                        <li><strong>Documentation:</strong> Proper documentation of intrinsic safety calculations and loop diagrams is essential for compliance and auditing.</li>
+                    </ul>
+                    <p>This tool provides a practical calculation aid for intrinsic safety loop validation. However, it does not replace the need for thorough understanding of the relevant standards, manufacturer's instructions, and, for critical installations, review by certified intrinsic safety experts.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </p>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="custom-message-box"></div>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Input elements for Barrier Parameters
+            const barrierUoInput = document.getElementById('barrier-uo');
+            const barrierUoUnitSelect = document.getElementById('barrier-uo-unit');
+            const barrierIoInput = document.getElementById('barrier-io');
+            const barrierIoUnitSelect = document.getElementById('barrier-io-unit');
+            const barrierPoInput = document.getElementById('barrier-po');
+            const barrierPoUnitSelect = document.getElementById('barrier-po-unit');
+            const barrierCaInput = document.getElementById('barrier-ca');
+            const barrierCaUnitSelect = document.getElementById('barrier-ca-unit');
+            const barrierLaInput = document.getElementById('barrier-la');
+            const barrierLaUnitSelect = document.getElementById('barrier-la-unit');
+
+            // Input elements for Field Device Parameters
+            const deviceUiInput = document.getElementById('device-ui');
+            const deviceUiUnitSelect = document.getElementById('device-ui-unit');
+            const deviceIiInput = document.getElementById('device-ii');
+            const deviceIiUnitSelect = document.getElementById('device-ii-unit');
+            const devicePiInput = document.getElementById('device-pi');
+            const devicePiUnitSelect = document.getElementById('device-pi-unit');
+            const deviceCiInput = document.getElementById('device-ci');
+            const deviceCiUnitSelect = document.getElementById('device-ci-unit');
+            const deviceLiInput = document.getElementById('device-li');
+            const deviceLiUnitSelect = document.getElementById('device-li-unit');
+
+            // Input elements for Cable Parameters
+            const cableLengthInput = document.getElementById('cable-length');
+            const cableLengthUnitSelect = document.getElementById('cable-length-unit');
+            const cableCapacitancePerMeterInput = document.getElementById('cable-capacitance-per-meter');
+            const cableCapacitancePerMeterUnitSelect = document.getElementById('cable-capacitance-per-meter-unit');
+            const cableInductancePerMeterInput = document.getElementById('cable-inductance-per-meter');
+            const cableInductancePerMeterUnitSelect = document.getElementById('cable-inductance-per-meter-unit');
+            const cableResistancePerMeterInput = document.getElementById('cable-resistance-per-meter');
+            const cableResistancePerMeterUnitSelect = document.getElementById('cable-resistance-per-meter-unit');
+
+            // Input elements for Safety Factors
+            const safetyFactorCInput = document.getElementById('safety-factor-c');
+            const safetyFactorLInput = document.getElementById('safety-factor-l');
+
+            // Buttons and result containers
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const loopStatusDisplay = document.getElementById('loop-status-display');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+            const stepsList = document.getElementById('steps-list');
+            const practicalRecommendationsDiv = document.getElementById('practical-recommendations');
+            const recommendationsList = document.getElementById('recommendations-list');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            // Default values for resetting form
+            const defaultValues = {
+                'barrier-uo': 28, 'barrier-uo-unit': 'V',
+                'barrier-io': 93, 'barrier-io-unit': 'mA',
+                'barrier-po': 0.65, 'barrier-po-unit': 'W',
+                'barrier-ca': 0.083, 'barrier-ca-unit': 'uF',
+                'barrier-la': 2.3, 'barrier-la-unit': 'mH',
+                'device-ui': 30, 'device-ui-unit': 'V',
+                'device-ii': 100, 'device-ii-unit': 'mA',
+                'device-pi': 0.75, 'device-pi-unit': 'W',
+                'device-ci': 0.001, 'device-ci-unit': 'uF',
+                'device-li': 0.001, 'device-li-unit': 'mH',
+                'cable-length': 100, 'cable-length-unit': 'm',
+                'cable-capacitance-per-meter': 0.15, 'cable-capacitance-per-meter-unit': 'nF/m',
+                'cable-inductance-per-meter': 0.5, 'cable-inductance-per-meter-unit': 'uH/m',
+                'cable-resistance-per-meter': 0.05, 'cable-resistance-per-meter-unit': 'Ohm/m',
+                'safety-factor-c': 1.5,
+                'safety-factor-l': 1.5
+            };
+
+            // Helper for unit conversions to SI base units
+            const unitConversions = {
+                voltage: { 'V': 1, 'mV': 0.001 },
+                current: { 'A': 1, 'mA': 0.001 },
+                power: { 'W': 1, 'mW': 0.001 },
+                capacitance: { 'F': 1, 'uF': 1e-6, 'nF': 1e-9, 'pF': 1e-12 },
+                inductance: { 'H': 1, 'mH': 1e-3, 'uH': 1e-6, 'nH': 1e-9 },
+                length: { 'm': 1, 'ft': 0.3048 },
+                capacitance_per_length: { 'F/m': 1, 'uF/m': 1e-6, 'nF/m': 1e-9, 'pF/m': 1e-12, 'pF/ft': 1e-12 / 0.3048 },
+                inductance_per_length: { 'H/m': 1, 'mH/m': 1e-3, 'uH/m': 1e-6, 'nH/m': 1e-9, 'nH/ft': 1e-9 / 0.3048 },
+                resistance_per_length: { 'Ohm/m': 1, 'Ohm/ft': 1 / 0.3048 }
+            };
+
+            // Function to display custom messages
+            function showCustomMessage(message, type = 'info') {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type for styling (e.g., 'error', 'success', 'info')
+
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#dc3545'; // Red
+                } else if (type === 'success') {
+                    messageBox.style.backgroundColor = '#28a745'; // Green
+                } else if (type === 'warning') {
+                    messageBox.style.backgroundColor = '#ffc107'; // Amber
+                    messageBox.style.color = '#333'; // Dark text for amber
+                } else {
+                    messageBox.style.backgroundColor = '#28A745'; // Green (default info)
+                }
+
+                messageBox.style.opacity = '1';
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Slide down animation
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Slide up animation
+                }, 3000);
+            }
+
+            // Function to show/hide loading overlay
+            function showLoading(message = "Loading...") {
+                loadingOverlay.querySelector('p').textContent = message;
+                loadingOverlay.classList.add('show');
+            }
+
+            function hideLoading() {
+                loadingOverlay.classList.remove('show');
+            }
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            // Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                resultTableBody.innerHTML = ''; // Clear previous results
+                stepsList.innerHTML = ''; // Clear previous steps
+                recommendationsList.innerHTML = ''; // Clear previous recommendations
+                practicalRecommendationsDiv.style.display = 'none'; // Hide recommendations initially
+                loopStatusDisplay.textContent = 'Loop Status: Calculating...';
+                loopStatusDisplay.className = 'status-display'; // Reset class
+
+                let calculationSteps = [];
+                let currentMainStep = 1;
+                let overallPass = true;
+
+                // 1. Get and Validate Inputs (and convert to SI units internally)
+                let barrierUo = parseFloat(barrierUoInput.value) * unitConversions.voltage[barrierUoUnitSelect.value];
+                let barrierIo = parseFloat(barrierIoInput.value) * unitConversions.current[barrierIoUnitSelect.value];
+                let barrierPo = parseFloat(barrierPoInput.value) * unitConversions.power[barrierPoUnitSelect.value];
+                let barrierCa = parseFloat(barrierCaInput.value) * unitConversions.capacitance[barrierCaUnitSelect.value];
+                let barrierLa = parseFloat(barrierLaInput.value) * unitConversions.inductance[barrierLaUnitSelect.value];
+
+                let deviceUi = parseFloat(deviceUiInput.value) * unitConversions.voltage[deviceUiUnitSelect.value];
+                let deviceIi = parseFloat(deviceIiInput.value) * unitConversions.current[deviceIiUnitSelect.value];
+                let devicePi = parseFloat(devicePiInput.value) * unitConversions.power[devicePiUnitSelect.value];
+                let deviceCi = parseFloat(deviceCiInput.value) * unitConversions.capacitance[deviceCiUnitSelect.value];
+                let deviceLi = parseFloat(deviceLiInput.value) * unitConversions.inductance[deviceLiUnitSelect.value];
+
+                let cableLength = parseFloat(cableLengthInput.value) * unitConversions.length[cableLengthUnitSelect.value];
+                let cableCapacitancePerLength = parseFloat(cableCapacitancePerMeterInput.value) * unitConversions.capacitance_per_length[cableCapacitancePerMeterUnitSelect.value];
+                let cableInductancePerLength = parseFloat(cableInductancePerMeterInput.value) * unitConversions.inductance_per_length[cableInductancePerMeterUnitSelect.value];
+                let cableResistancePerLength = parseFloat(cableResistancePerMeterInput.value) * unitConversions.resistance_per_length[cableResistancePerMeterUnitSelect.value];
+
+                let safetyFactorC = parseFloat(safetyFactorCInput.value);
+                let safetyFactorL = parseFloat(safetyFactorLInput.value);
+
+                // Input validation
+                const inputs = [
+                    { value: barrierUo, name: 'Barrier Uo', min: 0, required: true },
+                    { value: barrierIo, name: 'Barrier Io', min: 0, required: true },
+                    { value: barrierPo, name: 'Barrier Po', min: 0, required: true },
+                    { value: barrierCa, name: 'Barrier Ca', min: 0, required: true },
+                    { value: barrierLa, name: 'Barrier La', min: 0, required: true },
+                    { value: deviceUi, name: 'Device Ui', min: 0, required: true },
+                    { value: deviceIi, name: 'Device Ii', min: 0, required: true },
+                    { value: devicePi, name: 'Device Pi', min: 0, required: true },
+                    { value: deviceCi, name: 'Device Ci', min: 0, required: true },
+                    { value: deviceLi, name: 'Device Li', min: 0, required: true },
+                    { value: cableLength, name: 'Cable Length', min: 0, required: true },
+                    { value: cableCapacitancePerLength, name: 'Cable Capacitance per unit length', min: 0, required: true },
+                    { value: cableInductancePerLength, name: 'Cable Inductance per unit length', min: 0, required: true },
+                    { value: cableResistancePerLength, name: 'Cable Resistance per unit length', min: 0, required: true },
+                    { value: safetyFactorC, name: 'Capacitance Safety Factor', min: 1, required: true },
+                    { value: safetyFactorL, name: 'Inductance Safety Factor', min: 1, required: true }
+                ];
+
+                for (const input of inputs) {
+                    if (isNaN(input.value) || (input.required && input.value < input.min)) {
+                        showCustomMessage(`${input.name} must be a valid number and greater than or equal to ${input.min}.`, 'error');
+                        overallPass = false;
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+                }
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Input Parameters (Converted to SI Units):</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Barrier Uo: ${barrierUo.toFixed(3)} V`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Barrier Io: ${barrierIo.toFixed(3)} A`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Barrier Po: ${barrierPo.toFixed(3)} W`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Barrier Ca: ${barrierCa.toExponential(2)} F`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Barrier La: ${barrierLa.toExponential(2)} H`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Device Ui: ${deviceUi.toFixed(3)} V`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Device Ii: ${deviceIi.toFixed(3)} A`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Device Pi: ${devicePi.toFixed(3)} W`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Device Ci: ${deviceCi.toExponential(2)} F`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Device Li: ${deviceLi.toExponential(2)} H`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Cable Length: ${cableLength.toFixed(2)} m`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Cable Capacitance per unit length: ${cableCapacitancePerLength.toExponential(2)} F/m`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Cable Inductance per unit length: ${cableInductancePerLength.toExponential(2)} H/m`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Cable Resistance per unit length: ${cableResistancePerLength.toFixed(3)} Ohm/m`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Capacitance Safety Factor: ${safetyFactorC.toFixed(1)}`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Inductance Safety Factor: ${safetyFactorL.toFixed(1)}`);
+
+                // 2. Calculate Total Cable Parameters
+                const totalCableCapacitance = cableCapacitancePerLength * cableLength;
+                const totalCableInductance = cableInductancePerLength * cableLength;
+                const totalCableResistance = cableResistancePerLength * cableLength;
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Calculate Total Cable Parameters:</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Total Cable Capacitance (Ccable) = Cable Capacitance per unit length * Cable Length`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Ccable = ${cableCapacitancePerLength.toExponential(2)} F/m * ${cableLength.toFixed(2)} m = ${totalCableCapacitance.toExponential(2)} F`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Total Cable Inductance (Lcable) = Cable Inductance per unit length * Cable Length`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Lcable = ${cableInductancePerLength.toExponential(2)} H/m * ${cableLength.toFixed(2)} m = ${totalCableInductance.toExponential(2)} H`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Total Cable Resistance (Rcable) = Cable Resistance per unit length * Cable Length`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Rcable = ${cableResistancePerLength.toFixed(3)} Ohm/m * ${cableLength.toFixed(2)} m = ${totalCableResistance.toFixed(3)} Ohm`);
+
+                // 3. Perform Intrinsic Safety Checks
+                let recommendations = [];
+                let checkResults = [];
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Perform Intrinsic Safety Checks:</strong>`);
+
+                // Voltage Check: Uo <= Ui
+                const voltageCheck = barrierUo <= deviceUi;
+                checkResults.push({ param: 'Voltage Check (Uo <= Ui)', barrier: `${barrierUo.toFixed(3)} V`, device: `${deviceUi.toFixed(3)} V`, cable: 'N/A', status: voltageCheck ? 'PASS' : 'FAIL' });
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Voltage Check: Barrier Uo (${barrierUo.toFixed(3)} V) <= Device Ui (${deviceUi.toFixed(3)} V) -> ${voltageCheck ? 'PASS' : 'FAIL'}`);
+                if (!voltageCheck) {
+                    overallPass = false;
+                    recommendations.push("Voltage Check FAILED: Barrier Uo must be less than or equal to Device Ui. Consider a barrier with lower Uo or a device with higher Ui.");
+                }
+
+                // Current Check: Io <= Ii
+                const currentCheck = barrierIo <= deviceIi;
+                checkResults.push({ param: 'Current Check (Io <= Ii)', barrier: `${barrierIo.toFixed(3)} A`, device: `${deviceIi.toFixed(3)} A`, cable: 'N/A', status: currentCheck ? 'PASS' : 'FAIL' });
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Current Check: Barrier Io (${barrierIo.toFixed(3)} A) <= Device Ii (${deviceIi.toFixed(3)} A) -> ${currentCheck ? 'PASS' : 'FAIL'}`);
+                if (!currentCheck) {
+                    overallPass = false;
+                    recommendations.push("Current Check FAILED: Barrier Io must be less than or equal to Device Ii. Consider a barrier with lower Io or a device with higher Ii.");
+                }
+
+                // Power Check: Po <= Pi
+                const powerCheck = barrierPo <= devicePi;
+                checkResults.push({ param: 'Power Check (Po <= Pi)', barrier: `${barrierPo.toFixed(3)} W`, device: `${devicePi.toFixed(3)} W`, cable: 'N/A', status: powerCheck ? 'PASS' : 'FAIL' });
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Power Check: Barrier Po (${barrierPo.toFixed(3)} W) <= Device Pi (${devicePi.toFixed(3)} W) -> ${powerCheck ? 'PASS' : 'FAIL'}`);
+                if (!powerCheck) {
+                    overallPass = false;
+                    recommendations.push("Power Check FAILED: Barrier Po must be less than or equal to Device Pi. Consider a barrier with lower Po or a device with higher Pi.");
+                }
+
+                // Capacitance Check: Ci + Ccable_factored <= Ca
+                const factoredCableCapacitance = totalCableCapacitance * safetyFactorC;
+                const totalLoopCapacitance = deviceCi + factoredCableCapacitance;
+                const capacitanceCheck = totalLoopCapacitance <= barrierCa;
+                checkResults.push({ param: 'Capacitance Check (Ci + Ccable_factored <= Ca)', barrier: `${barrierCa.toExponential(2)} F`, device: `${deviceCi.toExponential(2)} F`, cable: `${factoredCableCapacitance.toExponential(2)} F (Factored)`, status: capacitanceCheck ? 'PASS' : 'FAIL' });
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Factored Cable Capacitance = Total Cable Capacitance * Safety Factor C = ${totalCableCapacitance.toExponential(2)} F * ${safetyFactorC.toFixed(1)} = ${factoredCableCapacitance.toExponential(2)} F`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Total Loop Capacitance = Device Ci + Factored Cable Capacitance = ${deviceCi.toExponential(2)} F + ${factoredCableCapacitance.toExponential(2)} F = ${totalLoopCapacitance.toExponential(2)} F`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Capacitance Check: Total Loop Capacitance (${totalLoopCapacitance.toExponential(2)} F) <= Barrier Ca (${barrierCa.toExponential(2)} F) -> ${capacitanceCheck ? 'PASS' : 'FAIL'}`);
+                if (!capacitanceCheck) {
+                    overallPass = false;
+                    recommendations.push("Capacitance Check FAILED: Total loop capacitance (Device Ci + Factored Cable Capacitance) must be less than or equal to Barrier Ca. Consider a barrier with higher Ca, a device with lower Ci, or a shorter/lower capacitance cable.");
+                }
+
+                // Inductance Check: Li + Lcable_factored <= La
+                const factoredCableInductance = totalCableInductance * safetyFactorL;
+                const totalLoopInductance = deviceLi + factoredCableInductance;
+                const inductanceCheck = totalLoopInductance <= barrierLa;
+                checkResults.push({ param: 'Inductance Check (Li + Lcable_factored <= La)', barrier: `${barrierLa.toExponential(2)} H`, device: `${deviceLi.toExponential(2)} H`, cable: `${factoredCableInductance.toExponential(2)} H (Factored)`, status: inductanceCheck ? 'PASS' : 'FAIL' });
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Factored Cable Inductance = Total Cable Inductance * Safety Factor L = ${totalCableInductance.toExponential(2)} H * ${safetyFactorL.toFixed(1)} = ${factoredCableInductance.toExponential(2)} H`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Total Loop Inductance = Device Li + Factored Cable Inductance = ${deviceLi.toExponential(2)} H + ${factoredCableInductance.toExponential(2)} H = ${totalLoopInductance.toExponential(2)} H`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Inductance Check: Total Loop Inductance (${totalLoopInductance.toExponential(2)} H) <= Barrier La (${barrierLa.toExponential(2)} H) -> ${inductanceCheck ? 'PASS' : 'FAIL'}`);
+                if (!inductanceCheck) {
+                    overallPass = false;
+                    recommendations.push("Inductance Check FAILED: Total loop inductance (Device Li + Factored Cable Inductance) must be less than or equal to Barrier La. Consider a barrier with higher La, a device with lower Li, or a shorter/lower inductance cable.");
+                }
+
+                // Display Results in table
+                checkResults.forEach(res => {
+                    const row = resultTableBody.insertRow();
+                    const paramCell = row.insertCell(0);
+                    const barrierCell = row.insertCell(1);
+                    const deviceCell = row.insertCell(2);
+                    const cableCell = row.insertCell(3);
+                    const statusCell = row.insertCell(4);
+
+                    paramCell.innerHTML = res.param;
+                    barrierCell.textContent = res.barrier;
+                    deviceCell.textContent = res.device;
+                    cableCell.textContent = res.cable;
+                    statusCell.textContent = res.status;
+                    statusCell.style.fontWeight = 'bold';
+                    statusCell.style.color = res.status === 'PASS' ? 'var(--ok-color)' : 'var(--error-color)';
+                });
+
+                // Populate step-by-step calculations
+                stepsList.innerHTML = '';
+                calculationSteps.forEach(step => {
+                    const p = document.createElement('p');
+                    p.className = 'calculation-step';
+                    p.innerHTML = step;
+                    stepsList.appendChild(p);
+                });
+
+                // Update Status Display and Recommendations
+                let statusText = 'Loop Status: ';
+                let statusClass = 'status-display ';
+                
+                if (overallPass) {
+                    statusClass += 'optimal';
+                    statusText += 'COMPLIANT (All Checks Passed)';
+                    recommendations.unshift("The intrinsic safety loop is COMPLIANT with the entered parameters. Ensure all component certificates are up-to-date and installation follows best practices.");
+                } else {
+                    statusClass += 'critical';
+                    statusText += 'NON-COMPLIANT (Failure in one or more checks)';
+                    recommendations.unshift("The intrinsic safety loop is NON-COMPLIANT. Review the failed checks and implement corrective actions as recommended below.");
+                }
+
+                recommendationsList.innerHTML = '';
+                recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.innerHTML = rec; // Use innerHTML for bold tags in recommendations
+                    recommendationsList.appendChild(li);
+                });
+                practicalRecommendationsDiv.style.display = 'block'; // Show recommendations
+
+                loopStatusDisplay.textContent = statusText;
+                loopStatusDisplay.className = statusClass;
+
+                resultContainer.style.display = 'block';
+                // Trigger fade-in animation
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    showCustomMessage('Validation complete!', overallPass ? 'success' : 'error');
+                }, 100);
+            });
+
+            // Reset Form Logic
+            resetFormBtn.addEventListener('click', function() {
+                for (const key in defaultValues) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = defaultValues[key];
+                    }
+                }
+                showCustomMessage('Form reset to default values.', 'info');
+            });
+
+            // Clear Results Logic
+            clearResultsBtn.addEventListener('click', function() {
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    resultTableBody.innerHTML = '';
+                    stepsList.innerHTML = '';
+                    recommendationsList.innerHTML = '';
+                    practicalRecommendationsDiv.style.display = 'none';
+                    loopStatusDisplay.textContent = 'Loop Status: N/A';
+                    loopStatusDisplay.className = 'status-display';
+                }, 500); // Wait for fade-out transition
+                showCustomMessage('Results cleared.', 'info');
+            });
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

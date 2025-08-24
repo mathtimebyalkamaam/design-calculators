@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Allowable Stress & Safety Factor Calculator - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Changed href to index.html -->
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Allowable Stress & Safety Factor Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator helps determine either the allowable stress for a given design factor or the factor of safety for a known applied stress, based on material yield and ultimate tensile strengths.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Unit System:</strong> Select Metric (MPa, N, mm) or Imperial (psi, lbf, inches).</li>
+                    <li><strong>Calculation Mode:</strong> Choose to calculate "Allowable Stress" or "Factor of Safety".</li>
+                    <li><strong>Material Type:</strong> Select from common materials (Steel, Aluminum) to auto-populate strengths, or enter custom values.</li>
+                    <li><strong>Yield Strength (\(S_y\)):</strong> The stress at which the material begins to plastically deform.</li>
+                    <li><strong>Ultimate Tensile Strength (\(S_{ut}\)):</strong> The maximum stress the material can withstand before fracture.</li>
+                    <li><strong>Applied Normal Stress (\(\sigma_{applied}\)):</strong> The maximum normal stress experienced by the component (required for Factor of Safety calculation).</li>
+                    <li><strong>Desired Factor of Safety (\(FoS_{desired}\)):</strong> The target design factor to ensure safety (required for Allowable Stress calculation).</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Allowable Stress (Yield) (\(\sigma_{allowable, y}\)):</strong> The maximum permissible stress based on yield strength and desired FoS.</li>
+                    <li><strong>Allowable Stress (Ultimate) (\(\sigma_{allowable, ut}\)):</strong> The maximum permissible stress based on ultimate strength and desired FoS.</li>
+                    <li><strong>Factor of Safety (Yield) (\(FoS_y\)):</strong> The actual factor of safety relative to yield strength and applied stress.</li>
+                    <li><strong>Factor of Safety (Ultimate) (\(FoS_{ut}\)):</strong> The actual factor of safety relative to ultimate strength and applied stress.</li>
+                </ul>
+            </div>
+
+            <div class="calculator-form">
+                <form id="stress-safety-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (MPa) or Imperial (psi) units for stress and strength values.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (MPa)</option>
+                                <option value="imperial">Imperial (psi)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="calc-mode">Calculation Mode: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Choose whether to calculate Allowable Stress or Factor of Safety.</span></span></label>
+                            <select id="calc-mode" required>
+                                <option value="allowable-stress">Calculate Allowable Stress</option>
+                                <option value="factor-of-safety">Calculate Factor of Safety</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>Material Properties</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="material-select">Material Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select a common material to auto-populate typical strength values, or choose 'Custom'.</span></span></label>
+                            <select id="material-select" required>
+                                <option value="steel-a36">Structural Steel (A36)</option>
+                                <option value="aluminum-6061-t6">Aluminum (6061-T6)</option>
+                                <option value="custom">Custom Material</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="yield-strength">Yield Strength (\(S_y\)) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The stress at which the material begins to deform plastically.</span></span></label>
+                            <input type="number" id="yield-strength" step="any" value="250" required min="0.01">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ultimate-strength">Ultimate Tensile Strength (\(S_{ut}\)) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum stress the material can withstand before breaking.</span></span></label>
+                        <input type="number" id="ultimate-strength" step="any" value="400" required min="0.01">
+                    </div>
+
+                    <h3 id="input-param-heading">Applied Stress Parameter</h3>
+                    <div class="form-row">
+                        <div class="form-group" id="applied-stress-group">
+                            <label for="applied-stress">Applied Normal Stress (\(\sigma_{applied}\)) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum normal stress that the component experiences in service.</span></span></label>
+                            <input type="number" id="applied-stress" step="any" value="100" required min="0.01">
+                        </div>
+                        <div class="form-group" id="desired-fos-group" style="display: none;">
+                            <label for="desired-fos">Desired Factor of Safety (\(FoS_{desired}\)): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The target safety factor for design (e.g., 1.5 to 3.0 for static loads, higher for dynamic/critical).</span></span></label>
+                            <input type="number" id="desired-fos" step="any" value="2.0" required min="1.0">
+                        </div>
+                    </div>
+
+                    <button type="button" id="calculate-btn" class="calculate-btn">Calculate</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides theoretical estimations for allowable stress and factor of safety based on simplified formulas. Actual design requires adherence to specific industry codes and standards (e.g., ASME, AISC, Eurocodes) which account for various factors like material behavior, loading types (static, dynamic, fatigue), environmental conditions, stress concentrations, and failure theories. This tool is for preliminary estimation and educational purposes only.</p>
+                <p>Always consult engineering handbooks, specialized software, and qualified professionals for critical applications and regulatory compliance.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Allowable Stress & Safety Factor Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const calcModeSelect = document.getElementById('calc-mode');
+            const materialSelect = document.getElementById('material-select');
+            const yieldStrengthInput = document.getElementById('yield-strength');
+            const ultimateStrengthInput = document.getElementById('ultimate-strength');
+            const appliedStressInput = document.getElementById('applied-stress');
+            const desiredFoSInput = document.getElementById('desired-fos');
+
+            // Groups for dynamic display
+            const appliedStressGroup = document.getElementById('applied-stress-group');
+            const desiredFoSGroup = document.getElementById('desired-fos-group');
+            const inputParamHeading = document.getElementById('input-param-heading');
+
+
+            // Unit labels
+            const stressUnitLabels = document.querySelectorAll('.stress-unit-label');
+
+            // Material properties (Yield and Ultimate Strengths)
+            const materialProperties = {
+                'steel-a36': {
+                    'metric': { Sy: 250, Sut: 400 }, // MPa
+                    'imperial': { Sy: 36000, Sut: 58000 } // psi
+                },
+                'aluminum-6061-t6': {
+                    'metric': { Sy: 276, Sut: 310 }, // MPa
+                    'imperial': { Sy: 40000, Sut: 45000 } // psi
+                }
+            };
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates unit labels and input defaults based on selected unit system and material.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+                const materialType = materialSelect.value;
+
+                // Update unit labels
+                stressUnitLabels.forEach(label => label.innerHTML = unitSystem === 'metric' ? '(MPa)' : '(psi)');
+
+                // Update material properties
+                if (materialType !== 'custom') {
+                    yieldStrengthInput.value = materialProperties[materialType][unitSystem].Sy;
+                    ultimateStrengthInput.value = materialProperties[materialType][unitSystem].Sut;
+                } else {
+                    // Set default values for custom if they are empty or invalid
+                    if (yieldStrengthInput.value === "" || isNaN(parseFloat(yieldStrengthInput.value))) {
+                        yieldStrengthInput.value = unitSystem === 'metric' ? "250" : "36000";
+                    }
+                    if (ultimateStrengthInput.value === "" || isNaN(parseFloat(ultimateStrengthInput.value))) {
+                        ultimateStrengthInput.value = unitSystem === 'metric' ? "400" : "58000";
+                    }
+                }
+                toggleCustomMaterialInput();
+                toggleCalculationModeInputs(); // Adjust input visibility based on calc mode
+            }
+
+            /**
+             * Toggles the disabled state of material strength inputs.
+             */
+            function toggleCustomMaterialInput() {
+                const isCustom = materialSelect.value === 'custom';
+                yieldStrengthInput.disabled = !isCustom;
+                ultimateStrengthInput.disabled = !isCustom;
+
+                // Always require them as they are core material properties
+                yieldStrengthInput.setAttribute('required', 'true');
+                ultimateStrengthInput.setAttribute('required', 'true');
+            }
+
+            /**
+             * Toggles visibility and required status of inputs based on calculation mode.
+             */
+            function toggleCalculationModeInputs() {
+                const calcMode = calcModeSelect.value;
+
+                if (calcMode === 'allowable-stress') {
+                    appliedStressGroup.style.display = 'none';
+                    desiredFoSGroup.style.display = 'block';
+                    inputParamHeading.textContent = 'Design Parameter';
+
+                    appliedStressInput.removeAttribute('required');
+                    desiredFoSInput.setAttribute('required', 'true');
+                } else { // factor-of-safety
+                    appliedStressGroup.style.display = 'block';
+                    desiredFoSGroup.style.display = 'none';
+                    inputParamHeading.textContent = 'Applied Stress Parameter';
+
+                    appliedStressInput.setAttribute('required', 'true');
+                    desiredFoSInput.removeAttribute('required');
+                }
+                // Update unit label for applied stress input field
+                appliedStressGroup.querySelector('.stress-unit-label').innerHTML = unitSystemSelect.value === 'metric' ? '(MPa)' : '(psi)';
+            }
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            materialSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            calcModeSelect.addEventListener('change', toggleCalculationModeInputs);
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('stress-safety-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+                const calcMode = calcModeSelect.value;
+
+                const Sy_input = parseFloat(yieldStrengthInput.value);
+                const Sut_input = parseFloat(ultimateStrengthInput.value);
+
+                // Input validation specific to strength values
+                if (Sy_input <= 0 || Sut_input <= 0) {
+                    displayMessage("Yield and Ultimate Strengths must be positive values.", "error");
+                    return;
+                }
+                if (Sy_input > Sut_input) {
+                    displayMessage("Yield Strength cannot be greater than Ultimate Tensile Strength.", "error");
+                    return;
+                }
+
+                // Standardize strengths to Pascals for calculation consistency
+                let Sy_Pa = unitSystem === 'metric' ? Sy_input * 1e6 : Sy_input * 6894.76;
+                let Sut_Pa = unitSystem === 'metric' ? Sut_input * 1e6 : Sut_input * 6894.76;
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters (Converted to SI Units):</strong></p><ul>
+                    <li>Yield Strength (\\(S_y\\)): ${Sy_Pa.toExponential(2)} Pa</li>
+                    <li>Ultimate Tensile Strength (\\(S_{ut}\\)): ${Sut_Pa.toExponential(2)} Pa</li>
+                </ul>`;
+
+                // Clear previous results
+                resultTableBody.innerHTML = '';
+
+
+                if (calcMode === 'allowable-stress') {
+                    const FoS_desired = parseFloat(desiredFoSInput.value);
+
+                    if (FoS_desired < 1.0) {
+                        displayMessage("Desired Factor of Safety must be 1.0 or greater.", "error");
+                        return;
+                    }
+
+                    calculationHtml += `<ul><li>Desired Factor of Safety (\\(FoS_{desired}\\)): ${FoS_desired.toFixed(2)}</li></ul>`;
+                    calculationHtml += `<p><strong>2. Calculate Allowable Stress:</strong></p>`;
+
+                    // Calculate Allowable Stress based on Yield Strength
+                    const sigma_allowable_y_Pa = Sy_Pa / FoS_desired;
+                    calculationHtml += `<p class="formula">\\[ \\sigma_{allowable, y} = \\frac{S_y}{FoS_{desired}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( \\sigma_{allowable, y} \\) = ${Sy_Pa.toExponential(2)} Pa / ${FoS_desired.toFixed(2)} = ${sigma_allowable_y_Pa.toExponential(2)} Pa
+                    </p>`;
+
+                    // Calculate Allowable Stress based on Ultimate Strength
+                    const sigma_allowable_ut_Pa = Sut_Pa / FoS_desired;
+                    calculationHtml += `<p class="formula">\\[ \\sigma_{allowable, ut} = \\frac{S_{ut}}{FoS_{desired}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( \\sigma_{allowable, ut} \\) = ${Sut_Pa.toExponential(2)} Pa / ${FoS_desired.toFixed(2)} = ${sigma_allowable_ut_Pa.toExponential(2)} Pa
+                    </p>`;
+
+                    // Display results in table
+                    addResultRow("Calculation Mode", "Allowable Stress");
+                    addResultRow("Material Type", materialSelect.options[materialSelect.selectedIndex].text);
+                    addResultRow("Yield Strength (\\(S_y\\))", `${Sy_input.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}`);
+                    addResultRow("Ultimate Tensile Strength (\\(S_{ut}\\))", `${Sut_input.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}`);
+                    addResultRow("Desired Factor of Safety (\\(FoS_{desired}\\))", `<strong>${FoS_desired.toFixed(2)}</strong>`);
+
+                    let sigma_allowable_y_display, sigma_allowable_ut_display;
+                    if (unitSystem === 'metric') {
+                        sigma_allowable_y_display = sigma_allowable_y_Pa / 1e6; // Pa to MPa
+                        sigma_allowable_ut_display = sigma_allowable_ut_Pa / 1e6; // Pa to MPa
+                        addResultRow("Allowable Stress (Yield) (\\(\\sigma_{allowable, y}\\))", `<strong>\\( ${sigma_allowable_y_display.toFixed(2)} \\) MPa</strong>`);
+                        addResultRow("Allowable Stress (Ultimate) (\\(\\sigma_{allowable, ut}\\))", `<strong>\\( ${sigma_allowable_ut_display.toFixed(2)} \\) MPa</strong>`);
+                    } else {
+                        sigma_allowable_y_display = sigma_allowable_y_Pa / 6894.76; // Pa to psi
+                        sigma_allowable_ut_display = sigma_allowable_ut_Pa / 6894.76; // Pa to psi
+                        addResultRow("Allowable Stress (Yield) (\\(\\sigma_{allowable, y}\\))", `<strong>\\( ${sigma_allowable_y_display.toFixed(2)} \\) psi</strong>`);
+                        addResultRow("Allowable Stress (Ultimate) (\\(\\sigma_{allowable, ut}\\))", `<strong>\\( ${sigma_allowable_ut_display.toFixed(2)} \\) psi</strong>`);
+                    }
+
+                } else { // calcMode === 'factor-of-safety'
+                    const sigma_applied_input = parseFloat(appliedStressInput.value);
+
+                    if (sigma_applied_input <= 0) {
+                        displayMessage("Applied Stress must be a positive value.", "error");
+                        return;
+                    }
+
+                    // Standardize applied stress to Pascals
+                    const sigma_applied_Pa = unitSystem === 'metric' ? sigma_applied_input * 1e6 : sigma_applied_input * 6894.76;
+
+                    calculationHtml += `<ul><li>Applied Normal Stress (\\(\\sigma_{applied}\\)): ${sigma_applied_Pa.toExponential(2)} Pa</li></ul>`;
+                    calculationHtml += `<p><strong>2. Calculate Factor of Safety:</strong></p>`;
+
+                    // Calculate Factor of Safety based on Yield Strength
+                    const FoS_y = Sy_Pa / sigma_applied_Pa;
+                    calculationHtml += `<p class="formula">\\[ FoS_y = \\frac{S_y}{\\sigma_{applied}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( FoS_y \\) = ${Sy_Pa.toExponential(2)} Pa / ${sigma_applied_Pa.toExponential(2)} Pa = ${FoS_y.toFixed(2)}
+                    </p>`;
+
+                    // Calculate Factor of Safety based on Ultimate Strength
+                    const FoS_ut = Sut_Pa / sigma_applied_Pa;
+                    calculationHtml += `<p class="formula">\\[ FoS_{ut} = \\frac{S_{ut}}{\\sigma_{applied}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( FoS_{ut} \\) = ${Sut_Pa.toExponential(2)} Pa / ${sigma_applied_Pa.toExponential(2)} Pa = ${FoS_ut.toFixed(2)}
+                    </p>`;
+
+                    // Display results in table
+                    addResultRow("Calculation Mode", "Factor of Safety");
+                    addResultRow("Material Type", materialSelect.options[materialSelect.selectedIndex].text);
+                    addResultRow("Yield Strength (\\(S_y\\))", `${Sy_input.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}`);
+                    addResultRow("Ultimate Tensile Strength (\\(S_{ut}\\))", `${Sut_input.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}`);
+                    addResultRow("Applied Normal Stress (\\(\sigma_{applied}\\))", `<strong>${sigma_applied_input.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}</strong>`);
+
+                    addResultRow("Factor of Safety (Yield) (\\(FoS_y\\))", `<strong>\\( ${FoS_y.toFixed(2)} \\)</strong>`);
+                    addResultRow("Factor of Safety (Ultimate) (\\(FoS_{ut}\\))", `<strong>\\( ${FoS_ut.toFixed(2)} \\)</strong>`);
+                }
+
+                // Update calculation details HTML and re-render MathJax
+                calculationDetailsDiv.innerHTML = calculationHtml;
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides theoretical estimations for allowable stress and factor of safety based on simplified formulas. Actual design requires adherence to specific industry codes and standards (e.g., ASME, AISC, Eurocodes) which account for various factors like material behavior, loading types (static, dynamic, fatigue), environmental conditions, stress concentrations, and failure theories. This tool is for preliminary estimation and educational purposes only. Always consult engineering handbooks, specialized software, and qualified professionals for critical applications and regulatory compliance.";
+
+                // Show results container
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-23Y1V450SR');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4-20 mA Signal Scaling - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <style>
+        /* Basic CSS Variables for a consistent theme */
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #45a049; /* Darker Green */
+            --accent-color: #FFC107; /* Amber */
+            --bg-color: #f4f7f6; /* Light Greyish Green */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #e2e6ea;
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #3b8e3e);
+            --reset-button-bg: #FFC107; /* Yellow for reset */
+            --reset-button-hover-bg: #E0A800; /* Darker yellow */
+            --clear-button-bg: #007bff; /* Blue for clear */
+            --clear-button-hover-bg: #0056b3; /* Darker blue */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #3b8e3e, #4CAF50);
+            --button-hover-gradient: linear-gradient(45deg, #4CAF50, #5cb85c);
+            --reset-button-bg: #FFD700; /* Gold/Yellow for dark mode reset */
+            --reset-button-hover-bg: #DAA520; /* Darker gold/yellow */
+            --clear-button-bg: #17a2b8; /* Cyan for dark mode clear */
+            --clear-button-hover-bg: #138496;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #e0e0e0);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative; /* For theme toggle positioning */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content; 
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px; /* Space between sections */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0; /* Initial state for fade-in animation */
+            transform: translateY(10px); /* Initial state for slide-up animation */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Default margin for form groups */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg); /* Use card-bg for input background */
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px; /* Gap between grid items */
+            margin-bottom: 0; /* Handled by form-group margin */
+        }
+        
+        .calculate-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px; /* Increased padding for better appearance */
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: bold;
+            margin-top: 25px; /* More space above button */
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto; /* Allow button to size based on content and padding */
+            min-width: 220px; /* Ensure a minimum width for consistency */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px; /* Space from calculate button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* For animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color); /* Highlight row on hover */
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px; /* Increased padding */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px); /* Initial state for tooltip animation */
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex; /* Use flex for centering text */
+            align-items: center;
+            justify-content: center;
+            min-width: 250px; /* Ensure it's wide enough */
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* More rounded */
+            padding: 20px; /* Increased padding */
+            margin-bottom: 25px; /* More space */
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px; /* More space */
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif; /* A font suitable for mathematical formulas */
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px; /* Increased padding */
+            background-color: var(--hover-color);
+            border-radius: 6px; /* More rounded */
+            margin: 15px 0; /* More space */
+            overflow-x: auto; /* Allow horizontal scrolling for long formulas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace; /* Monospace for steps */
+            background-color: var(--hover-color);
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 4px; /* More rounded */
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-break: break-word; /* Break long words */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px; /* Increased margin */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center; /* Center the button horizontally */
+            width: 100%; /* Ensure it takes full width to center effectively */
+            padding-top: 20px; /* Add more spacing above the button */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4); /* Green glow, slightly more pronounced */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(76, 175, 80, 0.2); /* Softer pulse */
+            }
+        }
+
+        /* Unit Selector Styling - Not needed for 4-20mA, but keeping structure */
+        .unit-selector {
+            display: none; /* Hide for this calculator as units are fixed */
+        }
+        
+        /* Conductor Type Specific Fields - Not needed for 4-20mA, but keeping structure */
+        .conductor-type-fields {
+            display: none; /* Hide for this calculator */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <!-- Assuming an index.html or similar for back navigation -->
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>4-20 mA Signal Scaling Calculator</h2>
+            
+            <div class="tool-description">
+                <p>This calculator provides a robust and precise method to convert a raw 4-20 mA current signal from any industrial instrument (e.g., pressure transmitter, temperature sensor, flow meter) into its corresponding engineering unit value. It is designed for universal application in all types of industries worldwide, ensuring accurate and reliable interpretation of process signals for even the most complex control systems.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="ma-scaling-form">
+                    <!-- Unit Selector - Hidden as units are fixed for 4-20mA -->
+                    <div class="unit-selector">
+                        <label for="unit-system">Select Units:</label>
+                        <select id="unit-system">
+                            <option value="metric">Metric</option>
+                            <option value="imperial">Imperial</option>
+                        </select>
+                    </div>
+
+                    <!-- Input Parameters -->
+                    <div class="form-section">
+                        <h3>Input Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lrv" id="label-lrv">Lower Range Value (LRV) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-lrv">The minimum value of the physical process variable that the instrument is calibrated to measure. This corresponds to 4 mA. E.g., 0 PSI, 0 °C.</span></span></label>
+                                <input type="number" id="lrv" step="any" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="urv" id="label-urv">Upper Range Value (URV) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-urv">The maximum value of the physical process variable that the instrument is calibrated to measure. This corresponds to 20 mA. E.g., 100 PSI, 100 °C.</span></span></label>
+                                <input type="number" id="urv" step="any" value="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="current-input-ma" id="label-current-input-ma">Current Signal Input (mA) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-current-input-ma">The raw current signal received from the instrument, typically ranging from 4 mA to 20 mA. Values outside this range (e.g., < 3.8 mA or > 20.5 mA) often indicate an abnormal condition (e.g., fault, over-range) as per NAMUR NE 43.</span></span></label>
+                                <input type="number" id="current-input-ma" min="0" step="0.01" value="12" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-scaling-btn" class="calculate-btn">Calculate</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="result-container" class="result-container">
+                <h3>Scaling Results</h3>
+                <div id="calculation-details">
+                    <!-- Calculation steps will be inserted here -->
+                </div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <!-- Standard reference text will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateScalingBtn = document.getElementById('calculate-scaling-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+            
+            // Default values for resetting form
+            const defaultValues = {
+                'lrv': 0,
+                'urv': 100,
+                'current-input-ma': 12,
+            };
+
+            calculateScalingBtn.addEventListener('click', calculateScaling);
+            resetFormBtn.addEventListener('click', resetForm);
+            clearResultsBtn.addEventListener('click', clearResults);
+
+            function clearResults() {
+                resultContainer.classList.remove('show');
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = '';
+                standardReference.innerHTML = '';
+                displayMessage("Results cleared.", "info");
+            }
+
+            function resetForm() {
+                for (const id in defaultValues) {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.value = defaultValues[id];
+                    }
+                }
+                clearResults();
+                displayMessage("Form reset to default values.", "info");
+            }
+
+            // Function to display messages (replaces alert())
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    messageBox.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        padding: 15px 25px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                        z-index: 1000;
+                        font-weight: bold;
+                        color: white;
+                        opacity: 0;
+                        transition: opacity 0.5s ease-in-out, transform 0.3s ease-out;
+                        display: flex; /* Use flex for centering text */
+                        align-items: center;
+                        justify-content: center;
+                        min-width: 250px; /* Ensure it's wide enough */
+                    `;
+                    document.body.appendChild(messageBox);
+                }
+
+                messageBox.textContent = message;
+                if (type === "error") {
+                    messageBox.style.backgroundColor = '#dc3545'; /* Red */
+                } else if (type === "warning") {
+                    messageBox.style.backgroundColor = '#ffc107'; /* Amber */
+                    messageBox.style.color = '#333';
+                } else {
+                    messageBox.style.backgroundColor = '#28a745'; /* Green */
+                }
+                messageBox.style.opacity = 1;
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Bring to position
+
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Fade out and move up
+                }, 5000);
+            }
+
+            function calculateScaling() {
+                const lrv = parseFloat(document.getElementById('lrv').value);
+                const urv = parseFloat(document.getElementById('urv').value);
+                const currentInputMa = parseFloat(document.getElementById('current-input-ma').value);
+
+                // Input Validation
+                if (isNaN(lrv) || isNaN(urv) || isNaN(currentInputMa)) {
+                    displayMessage("Please enter valid numerical values for all fields.", "error");
+                    return;
+                }
+                if (urv <= lrv) {
+                    displayMessage("Upper Range Value (URV) must be greater than Lower Range Value (LRV).", "error");
+                    return;
+                }
+                if (currentInputMa < 0 || currentInputMa > 22) { // Allow slightly outside 4-20 for diagnostics
+                    displayMessage("Current Signal Input should typically be between 0 mA and 22 mA. Values outside 4-20 mA indicate abnormal conditions.", "warning");
+                }
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                resultTableBody.innerHTML = ''; // Clear previous results
+                resultContainer.classList.remove('show'); // Hide previous results for animation
+
+                // Helper function to add rows to the result table
+                function addResultRow(parameter, value) {
+                    const row = resultTableBody.insertRow();
+                    const paramCell = row.insertCell();
+                    const valueCell = row.insertCell();
+                    paramCell.innerHTML = parameter;
+                    valueCell.innerHTML = value;
+                }
+
+                // 1. Calculate the span of the 4-20 mA signal and the engineering unit range
+                const currentSpan = 16; // 20 mA - 4 mA
+                const engineeringSpan = urv - lrv;
+
+                calculationHtml += `<p><strong>1. Understand the Signal and Range Spans:</strong></p>`;
+                calculationHtml += `<p>The 4-20 mA signal represents a specific range of a physical process variable. The scaling involves mapping the 16 mA span (20 mA - 4 mA) to the engineering unit span (URV - LRV).</p>`;
+                calculationHtml += `<p class="calculation-step">Current Signal Span = 20 mA - 4 mA = ${currentSpan} mA</p>`;
+                calculationHtml += `<p class="calculation-step">Engineering Unit Span = URV - LRV = ${urv} - ${lrv} = ${engineeringSpan.toFixed(3)}</p>`;
+
+                // 2. Calculate the fraction of the current signal within the 4-20 mA range
+                const currentFraction = (currentInputMa - 4) / currentSpan;
+
+                calculationHtml += `<p><strong>2. Determine the Fractional Position of the Current Signal:</strong></p>`;
+                calculationHtml += `<p>This step calculates where the input current signal falls within the 4-20 mA range, as a fraction (0 to 1).</p>`;
+                calculationHtml += `<p class="formula">$$\\text{Fraction} = \\frac{\\text{Current Signal (mA)} - 4}{16}$$</p>`;
+                calculationHtml += `<p class="calculation-step">Fraction = (${currentInputMa.toFixed(2)} mA - 4 mA) / 16 mA = ${currentFraction.toFixed(3)}</p>`;
+
+                // 3. Scale this fraction to the engineering unit range and add LRV
+                const scaledValue = (currentFraction * engineeringSpan) + lrv;
+
+                calculationHtml += `<p><strong>3. Scale to Engineering Units:</strong></p>`;
+                calculationHtml += `<p>The calculated fraction is then applied to the engineering unit span, and the Lower Range Value (LRV) is added to get the final scaled value.</p>`;
+                calculationHtml += `<p class="formula">$$\\text{Scaled Value} = \\left( \\frac{\\text{Current Signal (mA)} - 4}{16} \\right) \\times (\\text{URV} - \\text{LRV}) + \\text{LRV}$$</p>`;
+                calculationHtml += `<p class="calculation-step">Scaled Value = (${currentFraction.toFixed(3)} x ${engineeringSpan.toFixed(3)}) + ${lrv.toFixed(3)} = ${scaledValue.toFixed(3)}</p>`;
+
+
+                // Display Results
+                calculationDetailsDiv.innerHTML = calculationHtml;
+                // Ensure MathJax renders the formulas after they are added to the DOM
+                if (window.MathJax) {
+                    window.MathJax.typesetPromise([calculationDetailsDiv]).then(() => {
+                        console.log("MathJax typesetting complete.");
+                    }).catch((err) => console.error("MathJax typesetting failed", err));
+                }
+
+                resultTableBody.innerHTML = '';
+                addResultRow("Lower Range Value (LRV)", `${lrv}`);
+                addResultRow("Upper Range Value (URV)", `${urv}`);
+                addResultRow("Current Signal Input", `${currentInputMa} mA`);
+                addResultRow("<strong>Scaled Engineering Unit Value</strong>", `<strong>${scaledValue.toFixed(3)}</strong>`);
+                
+                standardRefText = `
+                    <h4>International Standards Compliance:</h4>
+                    <p>The 4-20 mA current loop is a universally adopted standard in industrial instrumentation for transmitting analog signals. This calculator adheres to the fundamental principles outlined in key international standards, ensuring its applicability and reliability across various industries and complex process control scenarios:</p>
+                    <ul>
+                        <li><strong>IEC 60381-1: Analog signals for process control systems - Part 1: Direct current signals.</strong> This standard specifies the characteristics of direct current signals for process control systems, including the 4-20 mA range, ensuring interoperability between different manufacturers' equipment.</li>
+                        <li><strong>NAMUR NE 43: Standardization of the signal range for the information processing of measured values.</strong> This recommendation from the NAMUR user association defines the behavior of instruments outside the normal 4-20 mA range (e.g., fault conditions like under-range at <3.8 mA and over-range at >20.5 mA), which is crucial for robust system design and diagnostics.</li>
+                        <li><strong>ISA-50.1: Instrumentation Symbols and Identification.</strong> While not directly about 4-20mA scaling, this foundational standard provides a uniform means of designating instruments and instrumentation systems used for measurement and control, which is essential for clear communication and understanding in complex industrial projects.</li>
+                    </ul>
+                    <p>This tool provides an accurate and reliable method for signal scaling; however, always refer to the complete official standards and consult with a qualified instrumentation engineer for final design, calibration, and safety verification, especially considering local regulations and specific application requirements.</p>
+                `;
+                standardReference.innerHTML = standardRefText;
+
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                }, 10);
+            }
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+        });
+    </script>
+</body>
+</html>

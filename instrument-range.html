@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-23Y1V450SR');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instrument Rangeability & Span Calculator - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme */
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #45a049; /* Darker Green */
+            --accent-color: #FFC107; /* Amber */
+            --bg-color: #f4f7f6; /* Light Greyish Green */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #e2e6ea;
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #3b8e3e);
+            --reset-button-bg: #FFC107; /* Yellow for reset */
+            --reset-button-hover-bg: #E0A800; /* Darker yellow */
+            --clear-button-bg: #007bff; /* Blue for clear */
+            --clear-button-hover-bg: #0056b3; /* Darker blue */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #3b8e3e, #4CAF50);
+            --button-hover-gradient: linear-gradient(45deg, #4CAF50, #5cb85c);
+            --reset-button-bg: #FFD700; /* Gold/Yellow for dark mode reset */
+            --reset-button-hover-bg: #DAA520; /* Darker gold/yellow */
+            --clear-button-bg: #17a2b8; /* Cyan for dark mode clear */
+            --clear-button-hover-bg: #138496;
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #e0e0e0);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative; /* For theme toggle positioning */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content; 
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px; /* Space between sections */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0; /* Initial state for fade-in animation */
+            transform: translateY(10px); /* Initial state for slide-up animation */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Default margin for form groups */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg); /* Use card-bg for input background */
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px; /* Gap between grid items */
+            margin-bottom: 0; /* Handled by form-group margin */
+        }
+        
+        .calculate-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px; /* Increased padding for better appearance */
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: bold;
+            margin-top: 25px; /* More space above button */
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto; /* Allow button to size based on content and padding */
+            min-width: 220px; /* Ensure a minimum width for consistency */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px; /* Space from calculate button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* For animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color); /* Highlight row on hover */
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px; /* Increased padding */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px); /* Initial state for tooltip animation */
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex; /* Use flex for centering text */
+            align-items: center;
+            justify-content: center;
+            min-width: 250px; /* Ensure it's wide enough */
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* More rounded */
+            padding: 20px; /* Increased padding */
+            margin-bottom: 25px; /* More space */
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px; /* More space */
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif; /* A font suitable for mathematical formulas */
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px; /* Increased padding */
+            background-color: var(--hover-color);
+            border-radius: 6px; /* More rounded */
+            margin: 15px 0; /* More space */
+            overflow-x: auto; /* Allow horizontal scrolling for long formulas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace; /* Monospace for steps */
+            background-color: var(--hover-color);
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 4px; /* More rounded */
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-break: break-word; /* Break long words */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px; /* Increased margin */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center; /* Center the button horizontally */
+            width: 100%; /* Ensure it takes full width to center effectively */
+            padding-top: 20px; /* Add more spacing above the button */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4); /* Green glow, slightly more pronounced */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(76, 175, 80, 0.2); /* Softer pulse */
+            }
+        }
+
+        /* Specific styles for Instrument Rangeability & Span Calculator */
+        .range-visualization-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            flex-direction: column;
+        }
+
+        .range-bar-container {
+            width: 80%;
+            height: 40px;
+            background-color: #ddd; /* Sensor full range */
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .process-range-overlay {
+            position: absolute;
+            height: 100%;
+            background-color: var(--primary-color); /* Process range */
+            transition: left 1.5s ease-out, width 1.5s ease-out;
+            border-radius: 5px;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .transmitter-span-overlay {
+            position: absolute;
+            height: 100%;
+            background-color: var(--accent-color); /* Transmitter span */
+            transition: left 1.5s ease-out, width 1.5s ease-out;
+            border-radius: 5px;
+            z-index: 2; /* On top of process range */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+        }
+
+        .range-label {
+            position: absolute;
+            font-size: 0.8em;
+            color: #555;
+            z-index: 3;
+            bottom: -20px;
+        }
+        .range-label.lrl { left: 0; }
+        .range-label.url { right: 0; }
+        .range-label.pmin { left: 0; transform: translateX(-50%); }
+        .range-label.pmax { right: 0; transform: translateX(50%); }
+        .range-label.lrv { left: 0; transform: translateX(-50%); }
+        .range-label.urv { right: 0; transform: translateX(50%); }
+
+        .range-status-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+        }
+        .range-status-display.ok {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .range-status-display.error {
+            background-color: var(--error-color);
+            color: white;
+        }
+        .range-status-display.warning {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Instrument Rangeability & Span Calculator</h2>
+            
+            <div class="tool-description">
+                <p>This tool helps instrumentation engineers define and verify the optimal span and range settings for process transmitters. Proper range and span selection are crucial for measurement accuracy, resolution, and overall process control performance across various industries worldwide.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="rangeability-calculator-form">
+                    <!-- Sensor & Process Limits -->
+                    <div class="form-section">
+                        <h3>Sensor & Process Limits</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="sensor-lrl">Sensor Lower Range Limit (LRL) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The absolute lowest measurement value the sensor can physically detect.</span></span></label>
+                                <input type="number" id="sensor-lrl" step="0.1" value="0.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="sensor-url">Sensor Upper Range Limit (URL) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The absolute highest measurement value the sensor can physically detect.</span></span></label>
+                                <input type="number" id="sensor-url" step="0.1" value="100.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="process-min">Required Process Minimum (P<sub>min</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The lowest process value expected to be measured or controlled.</span></span></label>
+                                <input type="number" id="process-min" step="0.1" value="10.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="process-max">Required Process Maximum (P<sub>max</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The highest process value expected to be measured or controlled.</span></span></label>
+                                <input type="number" id="process-max" step="0.1" value="90.0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transmitter Output & Desired Span -->
+                    <div class="form-section">
+                        <h3>Transmitter Output & Desired Span</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="output-min">Transmitter Output Minimum (O<sub>min</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The minimum output signal of the transmitter (e.g., 4 mA for 4-20 mA).</span></span></label>
+                                <input type="number" id="output-min" step="0.1" value="4.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="output-max">Transmitter Output Maximum (O<sub>max</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum output signal of the transmitter (e.g., 20 mA for 4-20 mA).</span></span></label>
+                                <input type="number" id="output-max" step="0.1" value="20.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="desired-lrv">Desired Transmitter LRV <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The desired Lower Range Value for the transmitter's calibrated span. This is the process value that corresponds to the minimum output signal.</span></span></label>
+                                <input type="number" id="desired-lrv" step="0.1" value="0.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="desired-urv">Desired Transmitter URV <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The desired Upper Range Value for the transmitter's calibrated span. This is the process value that corresponds to the maximum output signal.</span></span></label>
+                                <input type="number" id="desired-urv" step="0.1" value="100.0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Instrument Parameters -->
+                    <div class="form-section">
+                        <h3>Advanced Instrument Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="instrument-hysteresis">Instrument Hysteresis <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum difference in output for a given input when the input is first increasing and then decreasing. Expressed as a percentage of the calibrated span.</span></span></label>
+                                <input type="number" id="instrument-hysteresis" step="0.01" value="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="instrument-resolution-bits">Instrument Resolution (bits) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The number of bits used by the instrument's Analog-to-Digital Converter (ADC). Higher bits mean finer resolution. (e.g., 12, 16, 24)</span></span></label>
+                                <input type="number" id="instrument-resolution-bits" step="1" value="12" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="zero-adjust-min-percent-url">Adjustable Zero Min (% URL) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The minimum zero adjustment limit of the instrument, as a percentage of its Upper Range Limit (URL). (e.g., -100 for -100% of URL)</span></span></label>
+                                <input type="number" id="zero-adjust-min-percent-url" step="1" value="-100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="zero-adjust-max-percent-url">Adjustable Zero Max (% URL) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum zero adjustment limit of the instrument, as a percentage of its Upper Range Limit (URL). (e.g., +100 for +100% of URL)</span></span></label>
+                                <input type="number" id="zero-adjust-max-percent-url" step="1" value="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="span-adjust-min-percent-url">Adjustable Span Min (% URL) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The minimum span adjustment limit of the instrument, as a percentage of its Upper Range Limit (URL). (e.g., 10 for 10% of URL)</span></span></label>
+                                <input type="number" id="span-adjust-min-percent-url" step="1" value="10" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="span-adjust-max-percent-url">Adjustable Span Max (% URL) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum span adjustment limit of the instrument, as a percentage of its Upper Range Limit (URL). (e.g., 100 for 100% of URL)</span></span></label>
+                                <input type="number" id="span-adjust-max-percent-url" step="1" value="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="process-variable-unit">Process Variable Unit <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The unit of measurement for the process variable (e.g., psi, °C, LPM).</span></span></label>
+                                <input type="text" id="process-variable-unit" value="%" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn">Calculate Range & Span</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div class="range-visualization-container">
+                    <p style="margin-bottom: 25px; font-weight: bold; color: var(--secondary-color);">Sensor Range, Process Range, and Transmitter Span Visualization</p>
+                    <div class="range-bar-container">
+                        <div class="process-range-overlay" id="process-range-overlay">Process Range</div>
+                        <div class="transmitter-span-overlay" id="transmitter-span-overlay">Transmitter Span</div>
+                        <span class="range-label lrl" id="sensor-lrl-label">LRL</span>
+                        <span class="range-label url" id="sensor-url-label">URL</span>
+                        <span class="range-label pmin" id="process-min-label" style="display: none;">Pmin</span>
+                        <span class="range-label pmax" id="process-max-label" style="display: none;">Pmax</span>
+                        <span class="range-label lrv" id="transmitter-lrv-label" style="display: none;">LRV</span>
+                        <span class="range-label urv" id="transmitter-urv-label" style="display: none;">URV</span>
+                    </div>
+                    <p class="range-status-display" id="range-status-display">Status: N/A</p>
+                </div>
+                <div id="calculation-details">
+                    <!-- Calculation steps will be inserted here -->
+                </div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <!-- Standard reference text will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sensorLRLInput = document.getElementById('sensor-lrl');
+            const sensorURLInput = document.getElementById('sensor-url');
+            const processMinInput = document.getElementById('process-min');
+            const processMaxInput = document.getElementById('process-max');
+            const outputMinInput = document.getElementById('output-min');
+            const outputMaxInput = document.getElementById('output-max');
+            const desiredLRVInput = document.getElementById('desired-lrv');
+            const desiredURVInput = document.getElementById('desired-urv');
+
+            // New advanced inputs
+            const instrumentHysteresisInput = document.getElementById('instrument-hysteresis');
+            const instrumentResolutionBitsInput = document.getElementById('instrument-resolution-bits');
+            const zeroAdjustMinPercentURLInput = document.getElementById('zero-adjust-min-percent-url');
+            const zeroAdjustMaxPercentURLInput = document.getElementById('zero-adjust-max-percent-url');
+            const spanAdjustMinPercentURLInput = document.getElementById('span-adjust-min-percent-url');
+            const spanAdjustMaxPercentURLInput = document.getElementById('span-adjust-max-percent-url');
+            const processVariableUnitInput = document.getElementById('process-variable-unit');
+
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            const rangeStatusDisplay = document.getElementById('range-status-display');
+            const processRangeOverlay = document.getElementById('process-range-overlay');
+            const transmitterSpanOverlay = document.getElementById('transmitter-span-overlay');
+            const sensorLRL_label = document.getElementById('sensor-lrl-label');
+            const sensorURL_label = document.getElementById('sensor-url-label');
+            const processMin_label = document.getElementById('process-min-label');
+            const processMax_label = document.getElementById('process-max-label');
+            const transmitterLRV_label = document.getElementById('transmitter-lrv-label');
+            const transmitterURV_label = document.getElementById('transmitter-urv-label');
+
+
+            // Default values for resetting form
+            const defaultValues = {
+                'sensor-lrl': 0.0,
+                'sensor-url': 100.0,
+                'process-min': 10.0,
+                'process-max': 90.0,
+                'output-min': 4.0,
+                'output-max': 20.0,
+                'desired-lrv': 0.0,
+                'desired-urv': 100.0,
+                'instrument-hysteresis': 0.01, // % - Adjusted to avoid warning
+                'instrument-resolution-bits': 12, // bits
+                'zero-adjust-min-percent-url': -100, // % of URL
+                'zero-adjust-max-percent-url': 100, // % of URL
+                'span-adjust-min-percent-url': 10, // % of URL
+                'span-adjust-max-percent-url': 100, // % of URL
+                'process-variable-unit': '%', // Default unit
+            };
+
+            // Helper function to add rows to the result table
+            function addResultRow(parameter, value) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameter;
+                valueCell.innerHTML = value;
+            }
+
+            // Function to display messages (replaces alert())
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    messageBox.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        padding: 15px 25px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                        z-index: 1000;
+                        font-weight: bold;
+                        color: white;
+                        opacity: 0;
+                        transition: opacity 0.5s ease-in-out, transform 0.3s ease-out;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-width: 250px;
+                    `;
+                    document.body.appendChild(messageBox);
+                }
+
+                messageBox.textContent = message;
+                if (type === "error") {
+                    messageBox.style.backgroundColor = '#dc3545'; /* Red */
+                } else if (type === "warning") {
+                    messageBox.style.backgroundColor = '#ffc107'; /* Amber */
+                    messageBox.style.color = '#333';
+                } else {
+                    messageBox.style.backgroundColor = '#28a745'; /* Green */
+                }
+                messageBox.style.opacity = 1;
+                messageBox.style.transform = 'translateX(-50%) translateY(0)';
+
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)';
+                }, 5000);
+            }
+
+            function clearResults() {
+                resultContainer.classList.remove('show');
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = '';
+                standardReference.innerHTML = '';
+                rangeStatusDisplay.textContent = 'Status: N/A';
+                rangeStatusDisplay.classList.remove('ok', 'error', 'warning');
+
+                // Reset visualization
+                processRangeOverlay.style.width = '0%';
+                processRangeOverlay.style.left = '0%';
+                transmitterSpanOverlay.style.width = '0%';
+                transmitterSpanOverlay.style.left = '0%';
+                processRangeOverlay.style.display = 'none';
+                transmitterSpanOverlay.style.display = 'none';
+
+                // Hide labels
+                processMin_label.style.display = 'none';
+                processMax_label.style.display = 'none';
+                transmitterLRV_label.style.display = 'none';
+                transmitterURV_label.style.display = 'none';
+                sensorLRL_label.textContent = `LRL`; // Reset to generic
+                sensorURL_label.textContent = `URL`; // Reset to generic
+
+                displayMessage("Results cleared.", "info");
+            }
+
+            function resetForm() {
+                for (const key in defaultValues) {
+                    document.getElementById(key).value = defaultValues[key];
+                }
+                clearResults();
+                displayMessage("Form reset to default values.", "info");
+            }
+
+            function calculateRangeability() {
+                clearResults(); // Clear previous results
+
+                const sensorLRL = parseFloat(sensorLRLInput.value);
+                const sensorURL = parseFloat(sensorURLInput.value);
+                const processMin = parseFloat(processMinInput.value);
+                const processMax = parseFloat(processMaxInput.value);
+                const outputMin = parseFloat(outputMinInput.value);
+                const outputMax = parseFloat(outputMaxInput.value);
+                const desiredLRV = parseFloat(desiredLRVInput.value);
+                const desiredURV = parseFloat(desiredURVInput.value);
+
+                // New advanced inputs
+                const instrumentHysteresis = parseFloat(instrumentHysteresisInput.value);
+                const instrumentResolutionBits = parseInt(instrumentResolutionBitsInput.value);
+                const zeroAdjustMinPercentURL = parseFloat(zeroAdjustMinPercentURLInput.value);
+                const zeroAdjustMaxPercentURL = parseFloat(zeroAdjustMaxPercentURLInput.value);
+                const spanAdjustMinPercentURL = parseFloat(spanAdjustMinPercentURLInput.value);
+                const spanAdjustMaxPercentURL = parseFloat(spanAdjustMaxPercentURLInput.value);
+                const processVariableUnit = processVariableUnitInput.value.trim();
+
+
+                // Input Validation
+                if (isNaN(sensorLRL) || isNaN(sensorURL) || isNaN(processMin) || isNaN(processMax) ||
+                    isNaN(outputMin) || isNaN(outputMax) || isNaN(desiredLRV) || isNaN(desiredURV) ||
+                    isNaN(instrumentHysteresis) || isNaN(instrumentResolutionBits) ||
+                    isNaN(zeroAdjustMinPercentURL) || isNaN(zeroAdjustMaxPercentURL) ||
+                    isNaN(spanAdjustMinPercentURL) || isNaN(spanAdjustMaxPercentURL) ||
+                    processVariableUnit === '') {
+                    displayMessage("Please fill in all input fields with valid numbers and a unit.", "error");
+                    return;
+                }
+                if (sensorURL <= sensorLRL) {
+                    displayMessage("Sensor URL must be greater than Sensor LRL.", "error");
+                    return;
+                }
+                if (processMax <= processMin) {
+                    displayMessage("Process Max must be greater than Process Min.", "error");
+                    return;
+                }
+                if (outputMax <= outputMin) {
+                    displayMessage("Output Max must be greater than Output Min.", "error");
+                    return;
+                }
+                if (desiredURV <= desiredLRV) {
+                    displayMessage("Desired URV must be greater than Desired LRV.", "error");
+                    return;
+                }
+                if (instrumentHysteresis < 0) {
+                    displayMessage("Instrument Hysteresis cannot be negative.", "error");
+                    return;
+                }
+                if (instrumentResolutionBits <= 0 || instrumentResolutionBits > 32) { // Common max bits
+                    displayMessage("Instrument Resolution (bits) must be a positive integer (e.g., 8-32).", "error");
+                    return;
+                }
+                if (zeroAdjustMinPercentURL > zeroAdjustMaxPercentURL || spanAdjustMinPercentURL > spanAdjustMaxPercentURL) {
+                    displayMessage("Min adjustment percentage cannot be greater than Max adjustment percentage.", "error");
+                    return;
+                }
+
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters:</strong></p>`;
+                calculationHtml += `<p class="calculation-step">Sensor Lower Range Limit (LRL) = ${sensorLRL} ${processVariableUnit}</p>`;
+                calculationHtml += `<p class="calculation-step">Sensor Upper Range Limit (URL) = ${sensorURL} ${processVariableUnit}</p>`;
+                calculationHtml += `<p class="calculation-step">Required Process Minimum (P<sub>min</sub>) = ${processMin} ${processVariableUnit}</p>`;
+                calculationHtml += `<p class="calculation-step">Required Process Maximum (P<sub>max</sub>) = ${processMax} ${processVariableUnit}</p>`;
+                calculationHtml += `<p class="calculation-step">Transmitter Output Minimum (O<sub>min</sub>) = ${outputMin} mA</p>`;
+                calculationHtml += `<p class="calculation-step">Transmitter Output Maximum (O<sub>max</sub>) = ${outputMax} mA</p>`;
+                calculationHtml += `<p class="calculation-step">Desired Transmitter LRV = ${desiredLRV} ${processVariableUnit}</p>`;
+                calculationHtml += `<p class="calculation-step">Desired Transmitter URV = ${desiredURV} ${processVariableUnit}</p>`;
+                calculationHtml += `<p class="calculation-step">Instrument Hysteresis = ${instrumentHysteresis} % of span</p>`;
+                calculationHtml += `<p class="calculation-step">Instrument Resolution = ${instrumentResolutionBits} bits</p>`;
+                calculationHtml += `<p class="calculation-step">Adjustable Zero Range = ${zeroAdjustMinPercentURL}% to ${zeroAdjustMaxPercentURL}% of URL</p>`;
+                calculationHtml += `<p class="calculation-step">Adjustable Span Range = ${spanAdjustMinPercentURL}% to ${spanAdjustMaxPercentURL}% of URL</p>`;
+
+
+                // Calculations
+                // 2. Sensor Span
+                const sensorSpan = sensorURL - sensorLRL;
+                calculationHtml += `<p><strong>2. Sensor Span (S<sub>sensor</sub>):</strong></p>`;
+                calculationHtml += `<p class="formula">S<sub>sensor</sub> = URL - LRL</p>`;
+                calculationHtml += `<p class="calculation-step">S<sub>sensor</sub> = ${sensorURL} - ${sensorLRL} = ${sensorSpan} ${processVariableUnit}</p>`;
+
+                // 3. Process Span
+                const processSpan = processMax - processMin;
+                calculationHtml += `<p><strong>3. Process Span (S<sub>process</sub>):</strong></p>`;
+                calculationHtml += `<p class="formula">S<sub>process</sub> = P<sub>max</sub> - P<sub>min</sub></p>`;
+                calculationHtml += `<p class="calculation-step">S<sub>process</sub> = ${processMax} - ${processMin} = ${processSpan} ${processVariableUnit}</p>`;
+
+                // 4. Transmitter Span
+                const transmitterSpan = desiredURV - desiredLRV;
+                calculationHtml += `<p><strong>4. Transmitter Calibrated Span (S<sub>transmitter</sub>):</strong></p>`;
+                calculationHtml += `<p class="formula">S<sub>transmitter</sub> = URV - LRV</p>`;
+                calculationHtml += `<p class="calculation-step">S<sub>transmitter</sub> = ${desiredURV} - ${desiredLRV} = ${transmitterSpan} ${processVariableUnit}</p>`;
+
+                // 5. Output Span
+                const outputSpan = outputMax - outputMin;
+                calculationHtml += `<p><strong>5. Output Span (S<sub>output</sub>):</strong></p>`;
+                calculationHtml += `<p class="formula">S<sub>output</sub> = O<sub>max</sub> - O<sub>min</sub></p>`;
+                calculationHtml += `<p class="calculation-step">S<sub>output</sub> = ${outputMax} - ${outputMin} = ${outputSpan} mA</p>`;
+
+                // 6. Rangeability (Turndown Ratio)
+                calculationHtml += `<p><strong>6. Rangeability / Turndown Ratio:</strong></p>`;
+                calculationHtml += `<p>Rangeability indicates the ratio of the maximum to minimum measurable values. A higher ratio means a wider operational range.</p>`;
+                calculationHtml += `<p class="formula">Rangeability = Max Value / Min Value</p>`;
+                
+                let sensorRangeability = 'N/A';
+                if (sensorLRL !== 0) {
+                    sensorRangeability = (sensorURL / sensorLRL).toFixed(2) + ":1";
+                    calculationHtml += `<p class="calculation-step">Sensor Rangeability = ${sensorURL} / ${sensorLRL} = ${sensorRangeability}</p>`;
+                } else {
+                    sensorRangeability = 'Undefined (LRL is 0)';
+                    calculationHtml += `<p class="calculation-step">Sensor Rangeability = Undefined (LRL is 0)</p>`;
+                }
+
+                let processRangeability = 'N/A';
+                if (processMin !== 0) {
+                    processRangeability = (processMax / processMin).toFixed(2) + ":1";
+                    calculationHtml += `<p class="calculation-step">Process Rangeability = ${processMax} / ${processMin} = ${processRangeability}</p>`;
+                } else {
+                    processRangeability = 'Undefined (Pmin is 0)';
+                    calculationHtml += `<p class="calculation-step">Process Rangeability = Undefined (Pmin is 0)</p>`;
+                }
+
+                let transmitterRangeability = 'N/A';
+                if (desiredLRV !== 0) {
+                    transmitterRangeability = (desiredURV / desiredLRV).toFixed(2) + ":1";
+                    calculationHtml += `<p class="calculation-step">Transmitter Rangeability = ${desiredURV} / ${desiredLRV} = ${transmitterRangeability}</p>`;
+                } else {
+                    transmitterRangeability = 'Undefined (LRV is 0)';
+                    calculationHtml += `<p class="calculation-step">Transmitter Rangeability = Undefined (LRV is 0)</p>`;
+                }
+
+                // 7. Output at Pmin and Pmax (for the desired transmitter span)
+                const outputAtPmin = outputMin + (processMin - desiredLRV) * (outputSpan / transmitterSpan);
+                const outputAtPmax = outputMin + (processMax - desiredLRV) * (outputSpan / transmitterSpan);
+
+                calculationHtml += `<p><strong>7. Output Signal at Process Min (P<sub>min</sub>) and Process Max (P<sub>max</sub>):</strong></p>`;
+                calculationHtml += `<p>These calculations determine what the transmitter's output signal will be at the specified process minimum and maximum values, based on its configured LRV and URV.</p>`;
+                calculationHtml += `<p class="formula">Output = O<sub>min</sub> + (Process Value - LRV) &times; (S<sub>output</sub> / S<sub>transmitter</sub>)</p>`;
+                calculationHtml += `<p class="calculation-step">Output at P<sub>min</sub> (${processMin} ${processVariableUnit}) = ${outputMin} + (${processMin} - ${desiredLRV}) &times; (${outputSpan} / ${transmitterSpan}) = ${outputAtPmin.toFixed(3)} mA</p>`;
+                calculationHtml += `<p class="calculation-step">Output at P<sub>max</sub> (${processMax} ${processVariableUnit}) = ${outputMin} + (${processMax} - ${desiredLRV}) &times; (${outputSpan} / ${transmitterSpan}) = ${outputAtPmax.toFixed(3)} mA</p>`;
+
+                // 8. Percentage of Span at Pmin and Pmax
+                const percentAtPmin = ((processMin - desiredLRV) / transmitterSpan) * 100;
+                const percentAtPmax = ((processMax - desiredLRV) / transmitterSpan) * 100;
+
+                calculationHtml += `<p><strong>8. Percentage of Transmitter Span at Process Min (P<sub>min</sub>) and Process Max (P<sub>max</sub>):</strong></p>`;
+                calculationHtml += `<p>This indicates where the process operating range falls within the transmitter's calibrated span.</p>`;
+                calculationHtml += `<p class="formula">% Span = ((Process Value - LRV) / S<sub>transmitter</sub>) &times; 100</p>`;
+                calculationHtml += `<p class="calculation-step">% Span at P<sub>min</sub> (${processMin} ${processVariableUnit}) = ((${processMin} - ${desiredLRV}) / ${transmitterSpan}) &times; 100 = ${percentAtPmin.toFixed(2)} %</p>`;
+                calculationHtml += `<p class="calculation-step">% Span at P<sub>max</sub> (${processMax} ${processVariableUnit}) = ((${processMax} - ${desiredLRV}) / ${transmitterSpan}) &times; 100 = ${percentAtPmax.toFixed(2)} %</p>`;
+
+                // 9. Instrument Resolution
+                const numSteps = Math.pow(2, instrumentResolutionBits);
+                const resolutionPerStep = transmitterSpan / numSteps;
+                const hysteresisInUnits = (instrumentHysteresis / 100) * transmitterSpan;
+
+                calculationHtml += `<p><strong>9. Instrument Resolution & Hysteresis:</strong></p>`;
+                calculationHtml += `<p>Understanding instrument resolution and hysteresis is vital for assessing measurement precision and control stability.</p>`;
+                calculationHtml += `<p class="formula">Number of Steps = 2<sup>Bits</sup></p>`;
+                calculationHtml += `<p class="calculation-step">Number of Steps for ${instrumentResolutionBits} bits = 2<sup>${instrumentResolutionBits}</sup> = ${numSteps}</p>`;
+                calculationHtml += `<p class="formula">Resolution per Step = S<sub>transmitter</sub> / Number of Steps</p>`;
+                calculationHtml += `<p class="calculation-step">Resolution per Step = ${transmitterSpan.toFixed(2)} ${processVariableUnit} / ${numSteps} = ${resolutionPerStep.toExponential(2)} ${processVariableUnit}/step</p>`;
+                calculationHtml += `<p class="formula">Hysteresis in Process Units = (Hysteresis % / 100) &times; S<sub>transmitter</sub></p>`;
+                calculationHtml += `<p class="calculation-step">Hysteresis in Process Units = (${instrumentHysteresis} / 100) &times; ${transmitterSpan.toFixed(2)} = ${hysteresisInUnits.toFixed(3)} ${processVariableUnit}</p>`;
+
+
+                // 10. Zero and Span Achievability Check
+                // Calculate desired LRV and URV as percentages of the sensor's full span (sensorURL - sensorLRL)
+                // This is a more robust way to check against adjustable zero/span ranges which are usually relative to the sensor's capability.
+                const sensorFullSpan = sensorURL - sensorLRL;
+                const desiredLRVRelativeToSensorSpan = ((desiredLRV - sensorLRL) / sensorFullSpan) * 100;
+                const desiredURVRelativeToSensorSpan = ((desiredURV - sensorLRL) / sensorFullSpan) * 100;
+                const desiredSpanRelativeToSensorSpan = (transmitterSpan / sensorFullSpan) * 100;
+
+                let zeroAdjustStatus = "OK";
+                let spanAdjustStatus = "OK";
+
+                if (desiredLRVRelativeToSensorSpan < zeroAdjustMinPercentURL || desiredLRVRelativeToSensorSpan > zeroAdjustMaxPercentURL) {
+                    zeroAdjustStatus = "WARNING: Desired LRV is outside instrument's adjustable zero range.";
+                }
+                if (desiredSpanRelativeToSensorSpan < spanAdjustMinPercentURL || desiredSpanRelativeToSensorSpan > spanAdjustMaxPercentURL) {
+                    spanAdjustStatus = "WARNING: Desired Span is outside instrument's adjustable span range.";
+                }
+
+                calculationHtml += `<p><strong>10. Zero and Span Achievability Check:</strong></p>`;
+                calculationHtml += `<p>This check verifies if the desired LRV and URV can actually be configured on the instrument based on its specified adjustable zero and span limits.</p>`;
+                calculationHtml += `<p class="calculation-step">Desired LRV relative to Sensor Span = ${desiredLRVRelativeToSensorSpan.toFixed(2)} %</p>`;
+                calculationHtml += `<p class="calculation-step">Desired Span relative to Sensor Span = ${desiredSpanRelativeToSensorSpan.toFixed(2)} %</p>`;
+                calculationHtml += `<p class="calculation-step">Zero Adjustment Status: ${zeroAdjustStatus}</p>`;
+                calculationHtml += `<p class="calculation-step">Span Adjustment Status: ${spanAdjustStatus}</p>`;
+
+
+                // 11. Overall Status Checks
+                let statusMessage = "Configuration is valid.";
+                let statusClass = "ok";
+                let warnings = [];
+
+                if (desiredLRV < sensorLRL || desiredURV > sensorURL) {
+                    warnings.push("Transmitter span exceeds sensor's physical limits. Measurement errors or damage may occur.");
+                }
+                if (processMin < desiredLRV || processMax > desiredURV) {
+                    warnings.push("Process operating range is outside the transmitter's calibrated span. Some process values may not be measured.");
+                }
+                if (processMin < sensorLRL || processMax > sensorURL) {
+                    warnings.push("Process operating range is outside the sensor's physical limits. Some process values may not be measurable.");
+                }
+                // Re-evaluate this warning based on typical instrument capabilities.
+                // A common rule of thumb is that a transmitter's span should ideally be between 10% and 100% of the sensor's URL.
+                // The previous logic `transmitterSpan < (sensorSpan / 10) || transmitterSpan > sensorSpan` is reasonable.
+                if (transmitterSpan < (sensorSpan * 0.1) || transmitterSpan > sensorSpan) {
+                    warnings.push("Consider sensor/transmitter rangeability. Very narrow or very wide spans relative to sensor capability might impact accuracy or resolution.");
+                }
+                if (hysteresisInUnits > resolutionPerStep * 2) { // Hysteresis significantly larger than resolution
+                    warnings.push("Hysteresis is significantly larger than resolution. This may lead to poor control or measurement instability.");
+                }
+                if (zeroAdjustStatus.includes("WARNING")) {
+                    warnings.push(zeroAdjustStatus);
+                }
+                if (spanAdjustStatus.includes("WARNING")) {
+                    warnings.push(spanAdjustStatus);
+                }
+
+                if (warnings.length > 0) {
+                    statusMessage = "Configuration has warnings. Review details below.";
+                    statusClass = "warning";
+                    displayMessage(statusMessage, "warning");
+                } else {
+                    displayMessage(statusMessage, "info");
+                }
+                
+                // Display Results in table
+                resultTableBody.innerHTML = '';
+                addResultRow("Sensor LRL", `${sensorLRL.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Sensor URL", `${sensorURL.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Sensor Span", `${sensorSpan.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Sensor Rangeability", sensorRangeability);
+                addResultRow("Process Minimum (Pmin)", `${processMin.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Process Maximum (Pmax)", `${processMax.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Process Span", `${processSpan.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Process Rangeability", processRangeability);
+                addResultRow("Transmitter Output Minimum", `${outputMin.toFixed(1)} mA`);
+                addResultRow("Transmitter Output Maximum", `${outputMax.toFixed(1)} mA`);
+                addResultRow("Transmitter Output Span", `${outputSpan.toFixed(1)} mA`);
+                addResultRow("Desired Transmitter LRV", `${desiredLRV.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Desired Transmitter URV", `${desiredURV.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Transmitter Calibrated Span", `${transmitterSpan.toFixed(2)} ${processVariableUnit}`);
+                addResultRow("Transmitter Rangeability", transmitterRangeability);
+                addResultRow("Output at Pmin", `${outputAtPmin.toFixed(3)} mA`);
+                addResultRow("Output at Pmax", `${outputAtPmax.toFixed(3)} mA`);
+                addResultRow("Percentage of Span at Pmin", `${percentAtPmin.toFixed(2)} %`);
+                addResultRow("Percentage of Span at Pmax", `${percentAtPmax.toFixed(2)} %`);
+                addResultRow("Instrument Hysteresis (% Span)", `${instrumentHysteresis.toFixed(2)} %`);
+                addResultRow("Hysteresis in Process Units", `${hysteresisInUnits.toFixed(3)} ${processVariableUnit}`);
+                addResultRow("Instrument Resolution (bits)", `${instrumentResolutionBits} bits`);
+                addResultRow("Resolution per Step", `${resolutionPerStep.toExponential(2)} ${processVariableUnit}/step`);
+                addResultRow("Adjustable Zero Min (% URL)", `${zeroAdjustMinPercentURL}%`);
+                addResultRow("Adjustable Zero Max (% URL)", `${zeroAdjustMaxPercentURL}%`);
+                addResultRow("Adjustable Span Min (% URL)", `${spanAdjustMinPercentURL}%`);
+                addResultRow("Adjustable Span Max (% URL)", `${spanAdjustMaxPercentURL}%`);
+                addResultRow("Zero Adjustment Status", zeroAdjustStatus);
+                addResultRow("Span Adjustment Status", spanAdjustStatus);
+                addResultRow("<strong>Overall Configuration Status</strong>", `<strong class="${statusClass}">${statusMessage}</strong>`);
+
+
+                // Update Visualization
+                const rangeBarContainer = document.querySelector('.range-bar-container');
+                const containerWidth = rangeBarContainer.offsetWidth; // Get actual width of the container
+
+                // Calculate scales based on sensor's full range
+                const fullSensorRange = sensorURL - sensorLRL;
+                if (fullSensorRange <= 0) {
+                    displayMessage("Sensor URL must be greater than Sensor LRL for visualization.", "error");
+                    return;
+                }
+
+                // Function to calculate percentage position/width relative to sensor range
+                const getPercentage = (value) => ((value - sensorLRL) / fullSensorRange) * 100;
+                const getWidthPercentage = (span) => (span / fullSensorRange) * 100;
+
+                // Position and size process range overlay
+                const processRangeStartPercent = getPercentage(processMin);
+                const processRangeWidthPercent = getWidthPercentage(processSpan);
+                processRangeOverlay.style.left = `${Math.max(0, processRangeStartPercent)}%`;
+                processRangeOverlay.style.width = `${Math.min(100 - Math.max(0, processRangeStartPercent), processRangeWidthPercent)}%`;
+                processRangeOverlay.textContent = `P: ${processMin} to ${processMax} ${processVariableUnit}`;
+                processRangeOverlay.style.display = 'flex'; // Ensure it's visible
+
+                // Position and size transmitter span overlay
+                const transmitterSpanStartPercent = getPercentage(desiredLRV);
+                const transmitterSpanWidthPercent = getWidthPercentage(transmitterSpan);
+                transmitterSpanOverlay.style.left = `${Math.max(0, transmitterSpanStartPercent)}%`;
+                transmitterSpanOverlay.style.width = `${Math.min(100 - Math.max(0, transmitterSpanStartPercent), transmitterSpanWidthPercent)}%`;
+                transmitterSpanOverlay.textContent = `TX: ${desiredLRV} to ${desiredURV} ${processVariableUnit}`;
+                transmitterSpanOverlay.style.display = 'flex'; // Ensure it's visible
+
+                // Update and show labels
+                sensorLRL_label.textContent = `LRL: ${sensorLRL.toFixed(2)} ${processVariableUnit}`;
+                sensorURL_label.textContent = `URL: ${sensorURL.toFixed(2)} ${processVariableUnit}`;
+                
+                // Position labels based on their values within the sensor range
+                const positionLabel = (labelElement, value, unit) => {
+                    const percentPos = getPercentage(value);
+                    labelElement.textContent = `${labelElement.id.split('-')[0].toUpperCase()}: ${value.toFixed(2)} ${unit}`;
+                    labelElement.style.left = `${percentPos}%`;
+                    labelElement.style.transform = `translateX(-50%)`; // Center label on the point
+                    labelElement.style.display = 'block';
+                };
+
+                positionLabel(processMin_label, processMin, processVariableUnit);
+                positionLabel(processMax_label, processMax, processVariableUnit);
+                positionLabel(transmitterLRV_label, desiredLRV, processVariableUnit);
+                positionLabel(transmitterURV_label, desiredURV, processVariableUnit);
+
+                rangeStatusDisplay.textContent = `Status: ${statusMessage}`;
+                rangeStatusDisplay.classList.remove('ok', 'error', 'warning');
+                rangeStatusDisplay.classList.add(statusClass);
+
+                standardRefText = `
+                    <h4>International Standards Compliance & Best Practices:</h4>
+                    <p>Proper instrument rangeability and span selection are fundamental to achieving accurate and reliable process measurements, aligning with several international standards and industry best practices:</p>
+                    <ul>
+                        <li><strong>ISA-5.1-2007: Instrumentation Symbols and Identification.</strong> While primarily for symbology, this standard underpins the clear definition of instrument ranges (LRL, URL, LRV, URV) and their representation in documentation, which is essential for consistent setup.</li>
+                        <li><strong>IEC 60381-1: Analogue signals for process control systems - Part 1: Direct current signals.</strong> This standard (e.g., for 4-20 mA) defines the signal range, which directly relates to the output span (O<sub>max</sub> - O<sub>min</sub>) of the transmitter.</li>
+                        <li><strong>IEC 60654-1: Industrial-process measurement and control equipment - Operating conditions - Part 1: Climatic conditions.</strong> This standard, and others like it, define environmental conditions that can affect instrument performance, indirectly influencing the practical limits of a sensor's range and requiring careful span selection to maintain accuracy.</li>
+                        <li><strong>ANSI/ISA-TR20.00.01-2006: Specification Forms for Process Measurement and Control Instruments.</strong> These technical reports and specification forms guide engineers in documenting instrument requirements, including range and span, ensuring that the selected instrument meets the process needs.</li>
+                        <li><strong>Measurement Uncertainty and Accuracy (e.g., ISO/IEC Guide 98, ISO 5725):</strong> These standards provide frameworks for evaluating and expressing measurement uncertainty. Selecting an appropriate span that considers resolution, hysteresis, and linearity is critical for minimizing uncertainty and maximizing accuracy.</li>
+                        <li><strong>Process Control Performance (e.g., ISA-TR77.81.01-2016):</strong> A well-chosen instrument span ensures that the measured variable provides sufficient resolution and responsiveness for the control system to operate effectively, preventing oscillations, improving response times, and enhancing overall process stability. Hysteresis can directly impact control loop performance by introducing deadband.</li>
+                        <li><strong>Manufacturer Specifications:</strong> Always refer to the instrument manufacturer's data sheet for precise LRL, URL, adjustable zero, span limits, hysteresis, and resolution, as these vary significantly between models and types.</li>
+                    </ul>
+                    <p>This tool provides calculations and checks based on these widely accepted engineering principles and industry practices. For critical applications, always refer to the latest official standards documents, device manufacturer specifications, and consult with a qualified instrumentation and control engineer to ensure optimal system performance and compliance.</p>
+                `;
+                standardReference.innerHTML = standardRefText;
+
+                calculationDetailsDiv.innerHTML = calculationHtml; // Insert detailed steps
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    calculationDetailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to calculation details
+                }, 10);
+            }
+
+            // Event Listeners
+            calculateBtn.addEventListener('click', calculateRangeability);
+            resetFormBtn.addEventListener('click', resetForm);
+            clearResultsBtn.addEventListener('click', clearResults);
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

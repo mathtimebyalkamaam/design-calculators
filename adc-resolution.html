@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> <!-- Placeholder for G-tag ID -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX'); // Placeholder for G-tag ID
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analog-to-Digital Resolution Calculator - Instrumentation </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme */
+        :root {
+            --primary-color: #28A745; /* Green for ADC */
+            --secondary-color: #1E7E34; /* Darker Green */
+            --accent-color: #FFC107; /* Amber */
+            --bg-color: #e6f2ed; /* Light Greenish Grey */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #e2e6ea;
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #176B2F);
+            --reset-button-bg: #FFC107; /* Yellow for reset */
+            --reset-button-hover-bg: #E0A800; /* Darker yellow */
+            --clear-button-bg: #6c757d; /* Grey for clear */
+            --clear-button-hover-bg: #5a6268; /* Darker grey */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #1E7E34, #28A745);
+            --button-hover-gradient: linear-gradient(45deg, #28A745, #34B850);
+            --reset-button-bg: #FFD700; /* Gold/Yellow for dark mode reset */
+            --reset-button-hover-bg: #DAA520; /* Darker gold/yellow */
+            --clear-button-bg: #5a6268; /* Darker grey for dark mode clear */
+            --clear-button-hover-bg: #495057;
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #d0d2d6);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative; /* For theme toggle positioning */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px; /* Space between sections */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0; /* Initial state for fade-in animation */
+            transform: translateY(10px); /* Initial state for slide-up animation */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Default margin for form groups */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg); /* Use card-bg for input background */
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px; /* Gap between grid items */
+            margin-bottom: 0; /* Handled by form-group margin */
+        }
+        
+        .calculate-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px; /* Increased padding for better appearance */
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: bold;
+            margin-top: 25px; /* More space above button */
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto; /* Allow button to size based on content and padding */
+            min-width: 220px; /* Ensure a minimum width for consistency */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px; /* Space from calculate button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* For animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color); /* Highlight row on hover */
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px; /* Increased padding */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px); /* Initial state for tooltip animation */
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex; /* Use flex for centering text */
+            align-items: center;
+            justify-content: center;
+            min-width: 250px; /* Ensure it's wide enough */
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* More rounded */
+            padding: 20px; /* Increased padding */
+            margin-bottom: 25px; /* More space */
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px; /* More space */
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif; /* A font suitable for mathematical formulas */
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px; /* Increased padding */
+            background-color: var(--hover-color);
+            border-radius: 6px; /* More rounded */
+            margin: 15px 0; /* More space */
+            overflow-x: auto; /* Allow horizontal scrolling for long formulas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace; /* Monospace for steps */
+            background-color: var(--hover-color);
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 4px; /* More rounded */
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-break: break-word; /* Break long words */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px; /* Increased margin */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center; /* Center the button horizontally */
+            width: 100%; /* Ensure it takes full width to center effectively */
+            padding-top: 20px; /* Add more spacing above the button */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4); /* Green glow, slightly more pronounced */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(40, 167, 69, 0.2); /* Softer pulse */
+            }
+        }
+
+        /* Status Display (for ADC) */
+        .status-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+            width: 100%;
+        }
+        .status-display.optimal {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .status-display.sufficient {
+            background-color: #66bb6a; /* Lighter green */
+            color: white;
+        }
+        .status-display.adequate {
+            background-color: #add8e6; /* Light blue */
+            color: var(--text-color);
+        }
+        .status-display.marginal {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+        .status-display.insufficient {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        /* Practical Recommendations Section */
+        #practical-recommendations {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        #practical-recommendations h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+        #practical-recommendations ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #practical-recommendations ul li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" onclick="history.back(); return false;" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Analog-to-Digital Resolution Calculator</h2>
+            
+            <div class="tool-description">
+                <p>This calculator helps instrument engineers determine the necessary Analog-to-Digital Converter (ADC) resolution for a given input voltage range and desired measurement precision. It calculates the voltage per bit (resolution) and quantization error, providing essential insights for selecting the right ADC in industrial measurement and control systems.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="adc-calculator-form">
+                    <!-- Input Parameters -->
+                    <div class="form-section">
+                        <h3>Input Signal Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="min-input-value">Minimum Input Value <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The lowest value in the input range.</span></span></label>
+                                <input type="number" id="min-input-value" step="any" value="4" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="max-input-value">Maximum Input Value <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The highest value in the input range.</span></span></label>
+                                <input type="number" id="max-input-value" step="any" value="20" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="input-type">Input Signal Type</label>
+                                <select id="input-type" required>
+                                    <option value="current">Current (mA)</option>
+                                    <option value="voltage">Voltage (V)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shunt Resistor (Conditional for Current) -->
+                    <div class="form-section" id="shunt-resistor-section">
+                        <h3>Current-to-Voltage Conversion</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="shunt-resistor">Shunt Resistor Value (R<sub>shunt</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The value of the shunt resistor used to convert current to voltage (Ohms). Common values are 250 Ohm for 4-20mA.</span></span></label>
+                                <input type="number" id="shunt-resistor" step="any" value="250" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Noise Parameters -->
+                    <div class="form-section">
+                        <h3>Noise Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="signal-noise">Signal Noise (RMS) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The RMS value of the noise present on the signal.</span></span></label>
+                                <input type="number" id="signal-noise" step="any" value="0.0001" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="noise-unit">Noise Unit</label>
+                                <select id="noise-unit" required>
+                                    <option value="V">Volts (V)</option>
+                                    <option value="mV">Millivolts (mV)</option>
+                                    <option value="A">Amperes (A)</option>
+                                    <option value="mA">Milliamperes (mA)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculation Mode -->
+                    <div class="form-section">
+                        <h3>Calculation Mode</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="calculation-mode">Choose Calculation Type</label>
+                                <select id="calculation-mode" required>
+                                    <option value="bits-to-resolution">Calculate Resolution from Bits</option>
+                                    <option value="resolution-to-bits">Calculate Bits from Desired Resolution</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conditional Inputs -->
+                    <div class="form-section" id="bits-input-section">
+                        <h3>ADC Bits</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="num-bits">Number of Bits (N) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The theoretical resolution of the ADC in bits (e.g., 8, 10, 12, 16, 24).</span></span></label>
+                                <input type="number" id="num-bits" step="1" min="1" value="12" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" id="desired-resolution-input-section" style="display: none;">
+                        <h3>Desired Resolution</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="desired-resolution">Desired Voltage Resolution (V<sub>res_desired</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The smallest voltage change you need to detect (Volts).</span></span></label>
+                                <input type="number" id="desired-resolution" step="any" value="0.005" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn">Calculate Resolution</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <p class="status-display" id="resolution-status-display">Resolution Status: N/A</p>
+
+                <div id="calculation-details">
+                    <h4>Step-by-Step Calculation</h4>
+                    <p class="formula" id="adc-formula">
+                        <!-- Formula will be dynamically inserted here -->
+                    </p>
+                    <div id="steps-list">
+                        <!-- Calculation steps will be inserted here -->
+                    </div>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+
+                <div id="practical-recommendations" style="display: none;">
+                    <h4>Practical Considerations & Recommendations</h4>
+                    <ul id="recommendations-list">
+                        <!-- Recommendations will be dynamically inserted here -->
+                    </ul>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <p><strong>Applicable Standards and Guidelines:</strong> The selection and implementation of ADCs in industrial systems are governed by various standards to ensure reliability, accuracy, and interoperability. Key standards and considerations include:</p>
+                    <ul>
+                        <li><strong>IEC 61131-2: Programmable Controllers - Part 2: Equipment Requirements and Tests.</strong> This standard often defines requirements for analog input modules used in PLCs, which incorporate ADCs.</li>
+                        <li><strong>ISA-5.1-2007: Instrumentation Symbols and Identification.</strong> Provides guidelines for documenting instrumentation, including analog-to-digital conversion elements.</li>
+                        <li><strong>IEEE 1057: IEEE Standard for Digitizing Waveform Recorders.</strong> While more specific to waveform recorders, it provides general principles for ADC performance and testing.</li>
+                        <li><strong>NIST Traceability:</strong> For high-precision applications, ensuring that the ADC's performance is traceable to national or international standards is crucial.</li>
+                        <li><strong>Manufacturer Specifications:</strong> Always refer to the ADC manufacturer's datasheet for detailed specifications, including INL (Integral Non-Linearity), DNL (Differential Non-Linearity), noise, and temperature drift.</li>
+                        <li><strong>System Accuracy Requirements:</strong> The overall system accuracy often dictates the minimum required ADC resolution. Consider the entire measurement chain's error budget.</li>
+                    </ul>
+                    <p>This tool provides a fundamental calculation for ADC resolution. For critical industrial applications, a comprehensive system design, including noise analysis, sensor accuracy, and environmental factors, is essential.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators-Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators-Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators-Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators-Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Input elements
+            const minInputValue = document.getElementById('min-input-value');
+            const maxInputValue = document.getElementById('max-input-value');
+            const inputTypeSelect = document.getElementById('input-type');
+            const shuntResistorInput = document.getElementById('shunt-resistor');
+            const signalNoiseInput = document.getElementById('signal-noise');
+            const noiseUnitSelect = document.getElementById('noise-unit');
+            const calculationModeSelect = document.getElementById('calculation-mode');
+            const numBitsInput = document.getElementById('num-bits');
+            const desiredResolutionInput = document.getElementById('desired-resolution');
+
+            // Sections
+            const shuntResistorSection = document.getElementById('shunt-resistor-section');
+            const bitsInputSection = document.getElementById('bits-input-section');
+            const desiredResolutionInputSection = document.getElementById('desired-resolution-input-section');
+            const practicalRecommendationsDiv = document.getElementById('practical-recommendations');
+            const recommendationsList = document.getElementById('recommendations-list');
+
+            // Buttons and result containers
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const resolutionStatusDisplay = document.getElementById('resolution-status-display');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+            const adcFormula = document.getElementById('adc-formula');
+            const stepsList = document.getElementById('steps-list');
+
+            // Default values for resetting form
+            const defaultValues = {
+                'min-input-value': 4,
+                'max-input-value': 20,
+                'input-type': 'current',
+                'shunt-resistor': 250,
+                'signal-noise': 0.0001,
+                'noise-unit': 'V',
+                'calculation-mode': 'bits-to-resolution',
+                'num-bits': 12,
+                'desired-resolution': 0.005
+            };
+
+            // Function to display custom messages
+            function showCustomMessage(message, type = 'info') {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type for styling (e.g., 'error', 'success', 'info')
+
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#dc3545'; // Red
+                } else if (type === 'success') {
+                    messageBox.style.backgroundColor = '#28a745'; // Green
+                } else {
+                    messageBox.style.backgroundColor = '#28a745'; // Green (default info)
+                }
+
+                messageBox.style.opacity = '1';
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Slide down animation
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Slide up animation
+                }, 3000);
+            }
+
+            // Function to update visibility of input sections based on calculation mode and input type
+            function updateInputSectionVisibility() {
+                // Toggle between bits and desired resolution input sections
+                if (calculationModeSelect.value === 'bits-to-resolution') {
+                    bitsInputSection.style.display = 'block';
+                    desiredResolutionInputSection.style.display = 'none';
+                    desiredResolutionInput.value = defaultValues['desired-resolution']; // Clear value
+                } else {
+                    bitsInputSection.style.display = 'none';
+                    desiredResolutionInputSection.style.display = 'block';
+                    numBitsInput.value = defaultValues['num-bits']; // Clear value
+                }
+
+                // Toggle shunt resistor section based on input type
+                if (inputTypeSelect.value === 'current') {
+                    shuntResistorSection.style.display = 'block';
+                } else {
+                    shuntResistorSection.style.display = 'none';
+                    shuntResistorInput.value = defaultValues['shunt-resistor']; // Clear value
+                }
+            }
+
+            // Helper function to convert any noise value to Volts (RMS)
+            function convertNoiseToVoltsRMS(value, unit, shuntResistor, steps) {
+                let noiseInVolts;
+                let conversionStep = '';
+
+                switch (unit) {
+                    case 'V':
+                        noiseInVolts = value;
+                        conversionStep = `Noise is already in Volts: ${value} V (RMS)`;
+                        break;
+                    case 'mV':
+                        noiseInVolts = value / 1000;
+                        conversionStep = `Convert ${value} mV to Volts: ${value} / 1000 = ${noiseInVolts.toExponential(4)} V (RMS)`;
+                        break;
+                    case 'A':
+                        // Assuming current noise is converted to voltage noise across shunt resistor
+                        noiseInVolts = value * shuntResistor;
+                        conversionStep = `Convert ${value} A (noise) to Volts: V<sub>noise</sub> = I<sub>noise</sub> * R<sub>shunt</sub> = ${value} A * ${shuntResistor} &#x2126; = ${noiseInVolts.toExponential(4)} V (RMS)`;
+                        break;
+                    case 'mA':
+                        // Assuming current noise is converted to voltage noise across shunt resistor
+                        const A = value / 1000;
+                        noiseInVolts = A * shuntResistor;
+                        conversionStep = `Convert ${value} mA (noise) to Volts: V<sub>noise</sub> = (mA/1000) * R<sub>shunt</sub> = (${value}/1000) A * ${shuntResistor} &#x2126; = ${noiseInVolts.toExponential(4)} V (RMS)`;
+                        break;
+                    default:
+                        throw new Error('Unsupported noise unit for conversion.');
+                }
+                steps.push(conversionStep);
+                return noiseInVolts;
+            }
+
+
+            // Initial calls to set visibility based on default/saved values
+            updateInputSectionVisibility();
+
+            // Event listeners for changes
+            calculationModeSelect.addEventListener('change', updateInputSectionVisibility);
+            inputTypeSelect.addEventListener('change', updateInputSectionVisibility);
+
+            // Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                resultTableBody.innerHTML = ''; // Clear previous results
+                stepsList.innerHTML = ''; // Clear previous steps
+                recommendationsList.innerHTML = ''; // Clear previous recommendations
+                practicalRecommendationsDiv.style.display = 'none'; // Hide recommendations initially
+                resolutionStatusDisplay.textContent = 'Resolution Status: Calculating...';
+                resolutionStatusDisplay.className = 'status-display'; // Reset class
+
+                const minInputValueVal = parseFloat(minInputValue.value);
+                const maxInputValueVal = parseFloat(maxInputValue.value);
+                const inputType = inputTypeSelect.value;
+                const shuntResistor = parseFloat(shuntResistorInput.value);
+                const signalNoise = parseFloat(signalNoiseInput.value);
+                const noiseUnit = noiseUnitSelect.value;
+                const calculationMode = calculationModeSelect.value;
+
+                let calculationSteps = [];
+                let V_range, numBits, resolutionPerBit, quantizationError, V_noise_rms, SNR_db, ENOB;
+
+                // Input Validation
+                if (isNaN(minInputValueVal) || isNaN(maxInputValueVal)) {
+                    showCustomMessage('Please enter valid numerical values for Minimum and Maximum Input Value.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+                if (maxInputValueVal <= minInputValueVal) {
+                    showCustomMessage('Maximum Input Value must be greater than Minimum Input Value.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+                if (inputType === 'current' && (isNaN(shuntResistor) || shuntResistor <= 0)) {
+                    showCustomMessage('Shunt Resistor is required for Current input and must be a positive value.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+                if (isNaN(signalNoise) || signalNoise < 0) {
+                    showCustomMessage('Signal Noise must be a non-negative numerical value.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+                // Step 1: Determine the actual voltage range (V_range)
+                calculationSteps.push(`<strong>1. Determine the Input Voltage Range (V<sub>range</sub>):</strong>`);
+                let minVoltage, maxVoltage;
+
+                if (inputType === 'current') {
+                    minVoltage = minInputValueVal * (shuntResistor / 1000); // mA to A, then V
+                    maxVoltage = maxInputValueVal * (shuntResistor / 1000); // mA to A, then V
+                    calculationSteps.push(`Input Type: Current (mA) with Shunt Resistor R<sub>shunt</sub> = ${shuntResistor} &#x2126;`);
+                    calculationSteps.push(`V<sub>min</sub> = ${minInputValueVal} mA * (${shuntResistor}/1000) &#x2126; = ${minVoltage.toFixed(4)} V`);
+                    calculationSteps.push(`V<sub>max</sub> = ${maxInputValueVal} mA * (${shuntResistor}/1000) &#x2126; = ${maxVoltage.toFixed(4)} V`);
+                } else { // Voltage input
+                    minVoltage = minInputValueVal;
+                    maxVoltage = maxInputValueVal;
+                    calculationSteps.push(`Input Type: Voltage (V)`);
+                    calculationSteps.push(`V<sub>min</sub> = ${minVoltage.toFixed(2)} V`);
+                    calculationSteps.push(`V<sub>max</sub> = ${maxVoltage.toFixed(2)} V`);
+                }
+                V_range = maxVoltage - minVoltage;
+                calculationSteps.push(`V<sub>range</sub> = V<sub>max</sub> - V<sub>min</sub> = ${maxVoltage.toFixed(4)} V - ${minVoltage.toFixed(4)} V = ${V_range.toFixed(4)} V`);
+
+
+                // Step 2: Calculate Theoretical Resolution and Quantization Error
+                if (calculationMode === 'bits-to-resolution') {
+                    numBits = parseInt(numBitsInput.value);
+                    if (isNaN(numBits) || numBits <= 0 || numBits > 32) {
+                        showCustomMessage('Number of Bits must be a positive integer (e.g., 8, 10, 12, 16, 24) and less than or equal to 32.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+                    calculationSteps.push(`<strong>2. Calculate Theoretical Resolution (V<sub>res</sub>) and Quantization Error:</strong>`);
+                    calculationSteps.push(`Given Number of Bits (N) = ${numBits}`);
+
+                    resolutionPerBit = V_range / Math.pow(2, numBits);
+                    adcFormula.innerHTML = `V<sub>res</sub> = V<sub>range</sub> / 2<sup>N</sup>`;
+                    calculationSteps.push(`V<sub>res</sub> = ${V_range.toFixed(4)} V / 2<sup>${numBits}</sup> = ${V_range.toFixed(4)} V / ${Math.pow(2, numBits)} = ${resolutionPerBit.toExponential(4)} V/bit`);
+
+                    quantizationError = resolutionPerBit / 2;
+                    calculationSteps.push(`Quantization Error = V<sub>res</sub> / 2 = ${resolutionPerBit.toExponential(4)} V/bit / 2 = ${quantizationError.toExponential(4)} V`);
+
+                } else { // resolution-to-bits
+                    const desiredResolution = parseFloat(desiredResolutionInput.value);
+                    if (isNaN(desiredResolution) || desiredResolution <= 0 || desiredResolution >= V_range) {
+                        showCustomMessage('Desired Voltage Resolution must be a positive value and less than the Input Voltage Range.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+                    calculationSteps.push(`<strong>2. Calculate Required Number of Bits (N) from Desired Resolution:</strong>`);
+                    calculationSteps.push(`Given Desired Voltage Resolution (V<sub>res_desired</sub>) = ${desiredResolution.toExponential(4)} V/bit`);
+
+                    numBits = Math.ceil(Math.log2(V_range / desiredResolution));
+                    if (numBits > 32) {
+                         showCustomMessage(`The required number of bits (${numBits}) is very high. Consider adjusting the desired resolution or input range.`, 'warning');
+                         // Cap numBits at 32 for practical display
+                         numBits = 32;
+                    } else if (numBits <= 0) {
+                        showCustomMessage('Calculated bits are too low. Check desired resolution and input range.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+
+                    resolutionPerBit = V_range / Math.pow(2, numBits); // Actual resolution with calculated bits
+                    quantizationError = resolutionPerBit / 2; // Actual quantization error
+
+                    adcFormula.innerHTML = `N = ceil(log<sub>2</sub>(V<sub>range</sub> / V<sub>res_desired</sub>))`;
+                    calculationSteps.push(`N = ceil(log<sub>2</sub>(${V_range.toFixed(4)} V / ${desiredResolution.toExponential(4)} V/bit))`);
+                    calculationSteps.push(`N = ceil(log<sub>2</sub>(${V_range / desiredResolution})) = ceil(${Math.log2(V_range / desiredResolution).toFixed(2)}) = ${numBits} bits`);
+                    calculationSteps.push(`<strong>3. Calculate Actual Resolution with ${numBits} Bits:</strong>`);
+                    calculationSteps.push(`V<sub>res_actual</sub> = ${V_range.toFixed(4)} V / 2<sup>${numBits}</sup> = ${V_range.toFixed(4)} V / ${Math.pow(2, numBits)} = ${resolutionPerBit.toExponential(4)} V/bit`);
+                    calculationSteps.push(`<strong>4. Calculate Actual Quantization Error:</strong>`);
+                    calculationSteps.push(`Quantization Error = V<sub>res_actual</sub> / 2 = ${resolutionPerBit.toExponential(4)} V/bit / 2 = ${quantizationError.toExponential(4)} V`);
+                }
+
+                // Step 3: Calculate Effective Number of Bits (ENOB) considering noise
+                calculationSteps.push(`<strong>5. Calculate Effective Number of Bits (ENOB) considering Noise:</strong>`);
+                calculationSteps.push(`Input Signal Noise (RMS): ${signalNoise} ${noiseUnit}`);
+                V_noise_rms = convertNoiseToVoltsRMS(signalNoise, noiseUnit, shuntResistor, calculationSteps);
+
+                if (V_noise_rms <= 0) {
+                    showCustomMessage('Signal Noise (RMS) must be a positive value to calculate ENOB. Assuming ideal noise-free scenario for theoretical calculations.', 'warning');
+                    SNR_db = Infinity; // Represents ideal case
+                    ENOB = numBits; // Theoretical bits if noise is zero
+                    calculationSteps.push(`Signal Noise is zero or negligible. Assuming ideal noise-free scenario for ENOB calculation (ENOB = Theoretical Bits).`);
+                } else {
+                    const signalRMS = V_range / (2 * Math.sqrt(3)); // RMS of a full-scale sine wave, or V_range for peak-to-peak. For industrial, often assumed as V_range/2 for peak or V_range for full swing. Let's use V_range for signal amplitude.
+                    // A more robust SNR for ENOB considers the full-scale range as the signal amplitude.
+                    // SNR = 20 * log10(V_signal_RMS / V_noise_RMS)
+                    // For ADC, V_signal_RMS is often considered as V_range / (2*sqrt(2)) for sine wave, or V_range for full scale.
+                    // Let's use V_range as the peak-to-peak signal, and V_noise_rms as the total noise.
+                    // SNR = 20 * log10(V_range / V_noise_rms) if V_range is peak-to-peak and V_noise_rms is RMS
+                    // Or, a common approach for ENOB is to use the full scale range (V_range) as the signal amplitude.
+                    // SNR = 20 * log10(V_range / V_noise_rms)
+                    // Let's use the standard definition where SNR is Signal Power / Noise Power.
+                    // Signal Power ~ (V_range)^2, Noise Power ~ (V_noise_rms)^2
+                    // SNR_dB = 10 * log10( (V_range^2) / (V_noise_rms^2) ) = 20 * log10(V_range / V_noise_rms)
+                    
+                    // However, for ENOB, the signal is often considered the full-scale range and noise is the total RMS noise.
+                    // The formula ENOB = (SNR_dB - 1.76) / 6.02 uses SNR_dB as the signal-to-noise ratio of the ADC itself,
+                    // where the signal is the full-scale input and noise is the total RMS noise (including quantization noise and ADC inherent noise).
+                    // Here, we are calculating SNR based on the input signal range and the *external* noise.
+                    // Let's use the provided signal noise as the dominant noise source for ENOB calculation.
+
+                    // A more common approach for ENOB calculation from a given noise is:
+                    // SNR = 20 * log10(V_range / V_noise_rms)
+                    // Then ENOB = (SNR - 1.76) / 6.02
+                    // This assumes V_range is the peak-to-peak signal and V_noise_rms is the total RMS noise affecting the measurement.
+
+                    SNR_db = 20 * Math.log10(V_range / V_noise_rms);
+                    ENOB = (SNR_db - 1.76) / 6.02; // Standard formula for ENOB
+
+                    calculationSteps.push(`Signal-to-Noise Ratio (SNR) = 20 * log<sub>10</sub>(V<sub>range</sub> / V<sub>noise_rms</sub>) = 20 * log<sub>10</sub>(${V_range.toFixed(4)} V / ${V_noise_rms.toExponential(4)} V) = ${SNR_db.toFixed(2)} dB`);
+                    adcFormula.innerHTML += `<br>ENOB = (SNR<sub>dB</sub> - 1.76) / 6.02`;
+                    calculationSteps.push(`ENOB = (${SNR_db.toFixed(2)} - 1.76) / 6.02 = ${ENOB.toFixed(2)} bits`);
+                }
+
+                // Calculate Noise-Limited Resolution (based on ENOB)
+                let noiseLimitedResolution = V_range / Math.pow(2, ENOB);
+                calculationSteps.push(`<strong>6. Calculate Noise-Limited Resolution:</strong>`);
+                calculationSteps.push(`Noise-Limited Resolution = V<sub>range</sub> / 2<sup>ENOB</sup> = ${V_range.toFixed(4)} V / 2<sup>${ENOB.toFixed(2)}</sup> = ${noiseLimitedResolution.toExponential(4)} V/bit`);
+
+
+                // Display Results in table
+                const results = [
+                    { param: 'Minimum Input Value', value: `${minInputValueVal} ${inputType === 'current' ? 'mA' : 'V'}` },
+                    { param: 'Maximum Input Value', value: `${maxInputValueVal} ${inputType === 'current' ? 'mA' : 'V'}` },
+                    { param: 'Input Signal Type', value: inputType === 'current' ? 'Current (mA)' : 'Voltage (V)' },
+                    { param: 'Shunt Resistor (R<sub>shunt</sub>)', value: inputType === 'current' ? `${shuntResistor} &#x2126;` : 'N/A' },
+                    { param: 'Derived Min Voltage (V<sub>min</sub>)', value: `${minVoltage.toFixed(4)} V` },
+                    { param: 'Derived Max Voltage (V<sub>max</sub>)', value: `${maxVoltage.toFixed(4)} V` },
+                    { param: 'Input Voltage Range (V<sub>range</sub>)', value: `${V_range.toFixed(4)} V` },
+                    { param: 'Signal Noise (RMS)', value: `${signalNoise} ${noiseUnit}` },
+                    { param: 'Noise in Volts (RMS)', value: `${V_noise_rms.toExponential(4)} V` },
+                    { param: '<strong>Theoretical Number of Bits (N)</strong>', value: `<strong>${numBits} bits</strong>` },
+                    { param: '<strong>Theoretical Resolution (V/bit)</strong>', value: `<strong>${resolutionPerBit.toExponential(4)} V/bit</strong>` },
+                    { param: '<strong>Theoretical Quantization Error</strong>', value: `<strong>${quantizationError.toExponential(4)} V</strong>` },
+                    { param: '<strong>Signal-to-Noise Ratio (SNR)</strong>', value: `<strong>${SNR_db.toFixed(2)} dB</strong>` },
+                    { param: '<strong>Effective Number of Bits (ENOB)</strong>', value: `<strong>${ENOB.toFixed(2)} bits</strong>` },
+                    { param: '<strong>Noise-Limited Resolution</strong>', value: `<strong>${noiseLimitedResolution.toExponential(4)} V/bit</strong>` }
+                ];
+
+                results.forEach(res => {
+                    const row = resultTableBody.insertRow();
+                    const paramCell = row.insertCell(0);
+                    const valueCell = row.insertCell(1);
+                    paramCell.innerHTML = res.param;
+                    valueCell.innerHTML = res.value;
+                });
+
+                // Populate step-by-step calculations
+                stepsList.innerHTML = '';
+                calculationSteps.forEach(step => {
+                    const p = document.createElement('p');
+                    p.className = 'calculation-step';
+                    p.innerHTML = step;
+                    stepsList.appendChild(p);
+                });
+
+                // Update Status Display and Recommendations
+                let statusText = 'Resolution Status: ';
+                let statusClass = 'status-display ';
+                let recommendations = [];
+
+                // Use ENOB for more practical status assessment
+                if (ENOB >= 20) {
+                    statusText += 'Optimal (High Precision)';
+                    statusClass += 'optimal';
+                    recommendations.push("Your system's effective resolution is optimal for high-precision applications. Focus on maintaining low noise in your analog front-end.");
+                    recommendations.push("Consider using oversampling and digital filtering techniques to further enhance effective resolution if needed.");
+                    recommendations.push("Ensure your sensor and signal conditioning chain can fully utilize this high resolution without introducing additional noise or errors.");
+                } else if (ENOB >= 16) {
+                    statusText += 'Sufficient (Good Precision)';
+                    statusClass += 'sufficient';
+                    recommendations.push("The effective resolution is good for most industrial process control and data acquisition. Verify that the theoretical ADC resolution is not significantly higher than ENOB, indicating excessive noise.");
+                    recommendations.push("Pay attention to proper grounding, shielding, and power supply filtering to preserve this resolution.");
+                } else if (ENOB >= 12) {
+                    statusText += 'Adequate (Standard Industrial)';
+                    statusClass += 'adequate';
+                    recommendations.push("This resolution is adequate for many standard industrial applications. Evaluate if the noise-limited resolution meets your application's accuracy requirements.");
+                    recommendations.push("Consider noise reduction techniques if the ENOB is significantly lower than the theoretical bits of your chosen ADC.");
+                    recommendations.push("Ensure proper signal conditioning (amplification, filtering) to maximize the use of the ADC's input range.");
+                } else if (ENOB >= 8) {
+                    statusText += 'Marginal (Basic Monitoring)';
+                    statusClass += 'marginal';
+                    recommendations.push("The effective resolution is marginal for precise measurements. It may be suitable for basic monitoring or non-critical applications where high accuracy is not paramount.");
+                    recommendations.push("Strongly recommend investigating noise sources and implementing noise reduction strategies (e.g., better shielding, differential signaling).");
+                    recommendations.push("Consider increasing the theoretical ADC resolution or optimizing the input voltage range.");
+                } else { // ENOB < 8
+                    statusText += 'Insufficient (Low Precision)';
+                    statusClass += 'insufficient';
+                    recommendations.push("The effective resolution is insufficient for most industrial applications requiring accurate measurements. Significant data loss due to noise is expected.");
+                    recommendations.push("Immediate action is required: Identify and eliminate major noise sources.");
+                    recommendations.push("Consider a higher resolution ADC with better noise performance (e.g., Delta-Sigma ADCs).");
+                    recommendations.push("Review the entire signal chain, from sensor to ADC, for noise coupling and signal integrity issues.");
+                    recommendations.push("Implement robust signal conditioning, including active filtering and isolation.");
+                }
+
+                recommendationsList.innerHTML = '';
+                recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.textContent = rec;
+                    recommendationsList.appendChild(li);
+                });
+                practicalRecommendationsDiv.style.display = 'block'; // Show recommendations
+
+                resolutionStatusDisplay.textContent = statusText;
+                resolutionStatusDisplay.className = statusClass;
+
+                resultContainer.style.display = 'block';
+                // Trigger fade-in animation
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    showCustomMessage('Calculation successful!', 'success');
+                }, 100);
+
+            });
+
+            // Reset Form Logic
+            resetFormBtn.addEventListener('click', function() {
+                for (const key in defaultValues) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = defaultValues[key];
+                    }
+                }
+                updateInputSectionVisibility(); // Reset visibility after form reset
+                showCustomMessage('Form reset to default values.', 'info');
+            });
+
+            // Clear Results Logic
+            clearResultsBtn.addEventListener('click', function() {
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    resultTableBody.innerHTML = '';
+                    stepsList.innerHTML = '';
+                    adcFormula.innerHTML = '';
+                    recommendationsList.innerHTML = '';
+                    practicalRecommendationsDiv.style.display = 'none';
+                    resolutionStatusDisplay.textContent = 'Resolution Status: N/A';
+                    resolutionStatusDisplay.className = 'status-display';
+                }, 500); // Wait for fade-out transition
+                showCustomMessage('Results cleared.', 'info');
+            });
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

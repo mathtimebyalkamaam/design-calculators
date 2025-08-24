@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Converter for Mechanical Engineers - Design Calculators</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #FFC107; /* Added for warning messages */
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+            --warning-color: #FFEB3B; /* Dark mode warning color */
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            margin-left: 20px; /* Adjusted to align with container padding */
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Changed from 'block' to 'none' */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--warning-color);
+            color: #333; /* Ensure text is visible on warning yellow */
+        }
+
+        /* Calculation details section styling - Retained but not heavily used for unit converter */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+            display: none; /* Hide by default for unit converter */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">World-Class Unit Converter for Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+    <!-- Back to Tools Button -->
+    <a href="indexMech.html" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Tools
+    </a>
+
+    <main class="container">
+        <div class="tool-container">
+            <h2>Universal Unit Converter</h2>
+            <div class="tool-description">
+                <p>This comprehensive unit converter is designed for mechanical engineers across all industries, ensuring precise and reliable conversions based on approved international standards. Select a category, input your value, choose your units, and get instant results.</p>
+                <p><strong>Supported Categories:</strong></p>
+                <ul>
+                    <li><strong>Pressure:</strong> From Pascal to PSI, Bar, and more.</li>
+                    <li><strong>Flow (Volumetric):</strong> Convert between Liters/second, CFM, GPM, etc.</li>
+                    <li><strong>Energy:</strong> J, kJ, calories, kWh, BTU, ft-lb.</li>
+                    <li><strong>Temperature:</strong> Celsius, Fahrenheit, Kelvin, Rankine.</li>
+                    <li><strong>Length:</strong> Metric and Imperial units (mm, cm, m, km, inch, foot, mile).</li>
+                    <li><strong>Mass:</strong> kg, g, mg, lb, oz, tonne.</li>
+                    <li><strong>Volume:</strong> m³, Liters, gallons, cubic feet.</li>
+                    <li><strong>Power:</strong> W, kW, HP, BTU/hr, ft-lb/s.</li>
+                    <li><strong>Torque:</strong> N·m, lbf·ft, lbf·in.</li>
+                    <li><strong>Velocity:</strong> m/s, km/h, mph, ft/s.</li>
+                    <li><strong>Area:</strong> m², cm², ft², in².</li>
+                    <li><strong>Density:</b> kg/m³, g/cm³, lb/ft³.</li>
+                    <li><strong>Force:</strong> N, kN, lbf, kgf.</li>
+                    <li><strong>Frequency:</strong> Hz, kHz, MHz, RPM, rad/s.</li>
+                    <li><strong>Mass Flow Rate:</strong> kg/s, lb/s, tonne/hr.</li>
+                    <li><strong>Dynamic Viscosity:</strong> Pa·s, poise, centipoise, lbf·s/ft².</li>
+                    <li><strong>Kinematic Viscosity:</strong> m²/s, stokes, centistokes.</li>
+                    <li><strong>Specific Volume:</strong> m³/kg, ft³/lb.</li>
+                    <li><strong>Specific Energy/Heating Value:</strong> J/kg, BTU/lb.</li>
+                    <li><strong>Thermal Conductivity:</strong> W/(m·K), BTU/(hr·ft·°F).</li>
+                    <li><strong>Heat Transfer Coefficient:</strong> W/(m²·K), BTU/(hr·ft²·°F).</li>
+                    <li><strong>Power Density:</strong> W/m³, HP/in³.</li>
+                    <li><strong>Moment of Inertia (Mass):</strong> kg·m², lbm·ft².</li>
+                    <li><strong>Acceleration:</strong> m/s², ft/s², km/h·s, mph/s.</li>
+                    <li><strong>Thermal Resistance:</strong> K/W, °C/W, °F·hr/BTU.</li>
+                    <li><strong>Specific Heat Capacity:</strong> J/(kg·K), kJ/(kg·K), BTU/(lb·°F).</li>
+                    <li><strong>Linear Momentum:</strong> N·s, kg·m/s, lbf·s, lb·ft/s.</li>
+                    <li><strong>Angular Momentum:</strong> N·m·s, kg·m²/s, lbf·ft·s, lb·ft²/s.</li>
+                    <li><strong>Heat Flux (Power per Area):</strong> W/m², BTU/(hr·ft²).</li>
+                    <li><strong>Angular Velocity:</strong> rad/s, deg/s, RPM.</li>
+                    <li><strong>Angular Acceleration:</strong> rad/s², deg/s², RPM/s.</li>
+                    <li><strong>Modulus of Elasticity:</strong> Pa, GPa, psi, ksi.</li>
+                    <li><strong>Spring Constant:</strong> N/m, kN/m, lbf/in, lbf/ft.</li>
+                    <li><strong>Surface Tension:</strong> N/m, dyne/cm, lbf/in.</li>
+                    <li><strong>Thermal Expansion Coefficient:</strong> 1/K, 1/°C, 1/°F.</li>
+                    <li><strong>Area Moment of Inertia:</strong> m⁴, cm⁴, in⁴, ft⁴.</li>
+                </ul>
+                <p>Ensure accuracy in your designs and analyses by utilizing this precision tool.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="unit-converter-form">
+                    <div class="form-group">
+                        <label for="category">Category: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the physical quantity you wish to convert.</span></span></label>
+                        <select id="category" required>
+                            <option value="">Select a Category</option>
+                            <option value="pressure">Pressure</option>
+                            <option value="flow">Flow (Volumetric)</option>
+                            <option value="energy">Energy</option>
+                            <option value="temperature">Temperature</option>
+                            <option value="length">Length</option>
+                            <option value="mass">Mass</option>
+                            <option value="volume">Volume</option>
+                            <option value="power">Power</option>
+                            <option value="torque">Torque</option>
+                            <option value="velocity">Velocity</option>
+                            <option value="area">Area</option>
+                            <option value="density">Density</option>
+                            <option value="force">Force</option>
+                            <option value="frequency">Frequency</option>
+                            <option value="mass_flow_rate">Mass Flow Rate</option>
+                            <option value="dynamic_viscosity">Dynamic Viscosity</option>
+                            <option value="kinematic_viscosity">Kinematic Viscosity</option>
+                            <option value="specific_volume">Specific Volume</option>
+                            <option value="specific_energy">Specific Energy/Heating Value</option>
+                            <option value="thermal_conductivity">Thermal Conductivity</option>
+                            <option value="heat_transfer_coefficient">Heat Transfer Coefficient</option>
+                            <option value="power_density">Power Density</option>
+                            <option value="moment_of_inertia">Moment of Inertia (Mass)</option>
+                            <option value="acceleration">Acceleration</option>
+                            <option value="thermal_resistance">Thermal Resistance</option>
+                            <option value="specific_heat_capacity">Specific Heat Capacity</option>
+                            <option value="linear_momentum">Linear Momentum</option>
+                            <option value="angular_momentum">Angular Momentum</option>
+                            <option value="heat_flux">Heat Flux (Power per Area)</option>
+                            <option value="angular_velocity">Angular Velocity</option>
+                            <option value="angular_acceleration">Angular Acceleration</option>
+                            <option value="modulus_of_elasticity">Modulus of Elasticity</option>
+                            <option value="spring_constant">Spring Constant</option>
+                            <option value="surface_tension">Surface Tension</option>
+                            <option value="thermal_expansion_coefficient">Thermal Expansion Coefficient</option>
+                            <option value="area_moment_of_inertia">Area Moment of Inertia</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="value-input">Value to Convert: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Enter the numerical value you want to convert.</span></span></label>
+                            <input type="number" id="value-input" step="any" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="from-unit">From Unit: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the original unit of your value.</span></span></label>
+                            <select id="from-unit" required>
+                                <option value="">Select a Unit</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="to-unit">To Unit: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the desired unit for conversion.</span></span></label>
+                            <select id="to-unit" required>
+                                <option value="">Select a Unit</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="convert-btn" class="calculate-btn">Convert Unit</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Conversion Results</h3>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This Universal Unit Converter provides conversions based on widely accepted standard conversion factors. It is intended for general engineering calculations and estimations.</p>
+                <p><strong>Important Considerations:</strong></p>
+                <ul>
+                    <li><strong>Significant Figures:</strong> Results are rounded for display; maintain appropriate significant figures for critical applications.</li>
+                    <li><strong>Density/Specific Gravity:</strong> Flow and volume conversions do not account for fluid density, which is critical for mass flow rate calculations.</li>
+                    <li><strong>Absolute vs. Gauge Pressure:</strong> Ensure consistency (both absolute or both gauge) when dealing with pressure units.</li>
+                    <li><strong>Temperature Scales:</strong> Be mindful of absolute vs. relative temperature scales (Kelvin/Rankine vs. Celsius/Fahrenheit).</li>
+                    <li><strong>Specific Industry Standards:</strong> While generally compliant, specific industry or company standards may require particular unit usages or conversion factors. Always refer to relevant industry standards (e.g., ASME, ASTM, ISO, API) for critical design and operational applications.</li>
+                </ul>
+                <p>For highly critical applications, always cross-verify results with official engineering handbooks, specific industry standards, and qualified professionals.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Unit Converter for Mechanical Engineers!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Unit Converter for Mechanical Engineers! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Instrumentation!&body=I found this amazing Universal Unit Converter for Mechanical Engineers: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const convertBtn = document.getElementById('convert-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const categorySelect = document.getElementById('category');
+            const valueInput = document.getElementById('value-input');
+            const fromUnitSelect = document.getElementById('from-unit');
+            const toUnitSelect = document.getElementById('to-unit');
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            // Define conversion factors relative to a base unit (e.g., SI base unit)
+            const unitConversions = {
+                pressure: {
+                    baseUnit: 'Pa',
+                    units: {
+                        'Pa': { display: 'Pascal (Pa)', toBase: 1, fromBase: 1 },
+                        'kPa': { display: 'Kilopascal (kPa)', toBase: 1000, fromBase: 0.001 },
+                        'MPa': { display: 'Megapascal (MPa)', toBase: 1000000, fromBase: 0.000001 },
+                        'bar': { display: 'Bar (bar)', toBase: 100000, fromBase: 0.00001 },
+                        'psi': { display: 'Pounds per Square Inch (psi)', toBase: 6894.76, fromBase: 0.000145038 },
+                        'atm': { display: 'Standard Atmosphere (atm)', toBase: 101325, fromBase: 0.00000986923 },
+                        'mmHg': { display: 'Millimeters of Mercury (mmHg)', toBase: 133.322, fromBase: 0.00750062 },
+                        'inHg': { display: 'Inches of Mercury (inHg)', toBase: 3386.39, fromBase: 0.0002953 },
+                        'kgf/cm²': { display: 'Kilogram-force per Square Centimeter (kgf/cm²)', toBase: 98066.5, fromBase: 0.0000101972 },
+                        'N/m²': { display: 'Newton per Square Meter (N/m²)', toBase: 1, fromBase: 1 } // Same as Pa
+                    }
+                },
+                flow: { // Volumetric Flow Rate
+                    baseUnit: 'm³/s',
+                    units: {
+                        'm³/s': { display: 'Cubic Meters per Second (m³/s)', toBase: 1, fromBase: 1 },
+                        'L/s': { display: 'Liters per Second (L/s)', toBase: 0.001, fromBase: 1000 },
+                        'm³/min': { display: 'Cubic Meters per Minute (m³/min)', toBase: 1/60, fromBase: 60 },
+                        'L/min': { display: 'Liters per Minute (L/min)', toBase: 0.001/60, fromBase: 60000 },
+                        'm³/hr': { display: 'Cubic Meters per Hour (m³/hr)', toBase: 1/3600, fromBase: 3600 },
+                        'L/hr': { display: 'Liters per Hour (L/hr)', toBase: 0.001/3600, fromBase: 3600000 },
+                        'ft³/s': { display: 'Cubic Feet per Second (ft³/s)', toBase: 0.0283168, fromBase: 35.3147 },
+                        'ft³/min': { display: 'Cubic Feet per Minute (CFM)', toBase: 0.0283168/60, fromBase: 2118.88 },
+                        'gal/min (US)': { display: 'US Gallons per Minute (GPM)', toBase: 0.0000630902, fromBase: 15850.3 }
+                    }
+                },
+                energy: {
+                    baseUnit: 'J',
+                    units: {
+                        'J': { display: 'Joule (J)', toBase: 1, fromBase: 1 },
+                        'kJ': { display: 'Kilojoule (kJ)', toBase: 1000, fromBase: 0.001 },
+                        'cal': { display: 'Calorie (cal)', toBase: 4.184, fromBase: 0.239006 },
+                        'kcal': { display: 'Kilocalorie (kcal)', toBase: 4184, fromBase: 0.000239006 },
+                        'kWh': { display: 'Kilowatt-hour (kWh)', toBase: 3600000, fromBase: 0.000000277778 },
+                        'BTU': { display: 'British Thermal Unit (BTU)', toBase: 1055.06, fromBase: 0.000947817 },
+                        'ft-lb': { display: 'Foot-pound (ft-lb)', toBase: 1.35582, fromBase: 0.737562 }
+                    }
+                },
+                temperature: { // Special case for temperature (non-linear conversion)
+                    baseUnit: 'K', // Kelvin as base
+                    units: {
+                        'C': { display: 'Celsius (°C)' },
+                        'F': { display: 'Fahrenheit (°F)' },
+                        'K': { display: 'Kelvin (K)' },
+                        'R': { display: 'Rankine (°R)' }
+                    },
+                    convertToBase: function(value, unit) {
+                        switch (unit) {
+                            case 'C': return value + 273.15;
+                            case 'F': return (value - 32) * 5/9 + 273.15;
+                            case 'K': return value;
+                            case 'R': return value * 5/9;
+                            default: return NaN;
+                        }
+                    },
+                    convertFromBase: function(value, unit) {
+                        switch (unit) {
+                            case 'C': return value - 273.15;
+                            case 'F': return (value - 273.15) * 9/5 + 32;
+                            case 'K': return value;
+                            case 'R': return value * 9/5;
+                            default: return NaN;
+                        }
+                    }
+                },
+                length: {
+                    baseUnit: 'm',
+                    units: {
+                        'm': { display: 'Meter (m)', toBase: 1, fromBase: 1 },
+                        'km': { display: 'Kilometer (km)', toBase: 1000, fromBase: 0.001 },
+                        'cm': { display: 'Centimeter (cm)', toBase: 0.01, fromBase: 100 },
+                        'mm': { display: 'Millimeter (mm)', toBase: 0.001, fromBase: 1000 },
+                        'inch': { display: 'Inch (in)', toBase: 0.0254, fromBase: 39.3701 },
+                        'ft': { display: 'Foot (ft)', toBase: 0.3048, fromBase: 3.28084 },
+                        'yd': { display: 'Yard (yd)', toBase: 0.9144, fromBase: 1.09361 },
+                        'mi': { display: 'Mile (mi)', toBase: 1609.34, fromBase: 0.000621371 }
+                    }
+                },
+                mass: {
+                    baseUnit: 'kg',
+                    units: {
+                        'kg': { display: 'Kilogram (kg)', toBase: 1, fromBase: 1 },
+                        'g': { display: 'Gram (g)', toBase: 0.001, fromBase: 1000 },
+                        'mg': { display: 'Milligram (mg)', toBase: 0.000001, fromBase: 1000000 },
+                        'lb': { display: 'Pound (lb)', toBase: 0.453592, fromBase: 2.20462 },
+                        'oz': { display: 'Ounce (oz)', toBase: 0.0283495, fromBase: 35.274 },
+                        'tonne': { display: 'Metric Tonne (tonne)', toBase: 1000, fromBase: 0.001 }
+                    }
+                },
+                volume: {
+                    baseUnit: 'm³',
+                    units: {
+                        'm³': { display: 'Cubic Meter (m³)', toBase: 1, fromBase: 1 },
+                        'L': { display: 'Liter (L)', toBase: 0.001, fromBase: 1000 },
+                        'mL': { display: 'Milliliter (mL)', toBase: 0.000001, fromBase: 1000000 },
+                        'ft³': { display: 'Cubic Foot (ft³)', toBase: 0.0283168, fromBase: 35.3147 },
+                        'in³': { display: 'Cubic Inch (in³)', toBase: 0.0000163871, fromBase: 61023.7 },
+                        'gal (US)': { display: 'US Gallon (gal)', toBase: 0.00378541, fromBase: 264.172 },
+                        'gal (Imp)': { display: 'Imperial Gallon (Imp gal)', toBase: 0.00454609, fromBase: 219.969 }
+                    }
+                },
+                power: {
+                    baseUnit: 'W',
+                    units: {
+                        'W': { display: 'Watt (W)', toBase: 1, fromBase: 1 },
+                        'kW': { display: 'Kilowatt (kW)', toBase: 1000, fromBase: 0.001 },
+                        'MW': { display: 'Megawatt (MW)', toBase: 1000000, fromBase: 0.000001 },
+                        'HP (metric)': { display: 'Horsepower (metric)', toBase: 735.49875, fromBase: 0.00135962 },
+                        'HP (mech)': { display: 'Horsepower (mechanical)', toBase: 745.7, fromBase: 0.00134102 },
+                        'BTU/s': { display: 'British Thermal Units per Second (BTU/s)', toBase: 1055.06, fromBase: 0.000947817 },
+                        'BTU/hr': { display: 'British Thermal Units per Hour (BTU/hr)', toBase: 0.293071, fromBase: 3.41214 },
+                        'ft-lb/s': { display: 'Foot-pounds per Second (ft-lb/s)', toBase: 1.35582, fromBase: 0.737562 }
+                    }
+                },
+                torque: {
+                    baseUnit: 'N·m',
+                    units: {
+                        'N·m': { display: 'Newton-meter (N·m)', toBase: 1, fromBase: 1 },
+                        'kN·m': { display: 'Kilonewton-meter (kN·m)', toBase: 1000, fromBase: 0.001 },
+                        'lbf·ft': { display: 'Pound-force-foot (lbf·ft)', toBase: 1.35582, fromBase: 0.737562 },
+                        'lbf·in': { display: 'Pound-force-inch (lbf·in)', toBase: 0.112985, fromBase: 8.85075 }
+                    }
+                },
+                velocity: {
+                    baseUnit: 'm/s',
+                    units: {
+                        'm/s': { display: 'Meters per Second (m/s)', toBase: 1, fromBase: 1 },
+                        'km/h': { display: 'Kilometers per Hour (km/h)', toBase: 1/3.6, fromBase: 3.6 },
+                        'mph': { display: 'Miles per Hour (mph)', toBase: 0.44704, fromBase: 2.23694 },
+                        'ft/s': { display: 'Feet per Second (ft/s)', toBase: 0.3048, fromBase: 3.28084 },
+                        'knot': { display: 'Knot (knot)', toBase: 0.514444, fromBase: 1.94384 }
+                    }
+                },
+                area: {
+                    baseUnit: 'm²',
+                    units: {
+                        'm²': { display: 'Square Meter (m²)', toBase: 1, fromBase: 1 },
+                        'km²': { display: 'Square Kilometer (km²)', toBase: 1000000, fromBase: 0.000001 },
+                        'cm²': { display: 'Square Centimeter (cm²)', toBase: 0.0001, fromBase: 10000 },
+                        'mm²': { display: 'Millimeter (mm²)', toBase: 0.000001, fromBase: 1000000 },
+                        'ft²': { display: 'Square Foot (ft²)', toBase: 0.092903, fromBase: 10.7639 },
+                        'in²': { display: 'Square Inch (in²)', toBase: 0.00064516, fromBase: 1550 }
+                    }
+                },
+                density: {
+                    baseUnit: 'kg/m³',
+                    units: {
+                        'kg/m³': { display: 'Kilogram per Cubic Meter (kg/m³)', toBase: 1, fromBase: 1 },
+                        'g/cm³': { display: 'Gram per Cubic Centimeter (g/cm³)', toBase: 1000, fromBase: 0.001 },
+                        'lb/ft³': { display: 'Pound per Cubic Foot (lb/ft³)', toBase: 16.0185, fromBase: 0.062428 },
+                        'lb/in³': { display: 'Pound per Cubic Inch (lb/in³)', toBase: 27679.9, fromBase: 0.0000361273 }
+                    }
+                },
+                force: {
+                    baseUnit: 'N',
+                    units: {
+                        'N': { display: 'Newton (N)', toBase: 1, fromBase: 1 },
+                        'kN': { display: 'Kilonewton (kN)', toBase: 1000, fromBase: 0.001 },
+                        'lbf': { display: 'Pound-force (lbf)', toBase: 4.44822, fromBase: 0.224809 },
+                        'kgf': { display: 'Kilogram-force (kgf)', toBase: 9.80665, fromBase: 0.101972 }
+                    }
+                },
+                frequency: {
+                    baseUnit: 'Hz',
+                    units: {
+                        'Hz': { display: 'Hertz (Hz)', toBase: 1, fromBase: 1 },
+                        'kHz': { display: 'Kilohertz (kHz)', toBase: 1000, fromBase: 0.001 },
+                        'MHz': { display: 'Megahertz (MHz)', toBase: 1000000, fromBase: 0.000001 },
+                        'GHz': { display: 'Gigahertz (GHz)', toBase: 1000000000, fromBase: 0.000000001 },
+                        'RPM': { display: 'Revolutions per Minute (RPM)', toBase: 1/60, fromBase: 60 },
+                        'rad/s': { display: 'Radians per Second (rad/s)', toBase: 1/(2 * Math.PI), fromBase: (2 * Math.PI) }
+                    }
+                },
+                mass_flow_rate: {
+                    baseUnit: 'kg/s',
+                    units: {
+                        'kg/s': { display: 'Kilograms per Second (kg/s)', toBase: 1, fromBase: 1 },
+                        'g/s': { display: 'Grams per Second (g/s)', toBase: 0.001, fromBase: 1000 },
+                        'lb/s': { display: 'Pounds per Second (lb/s)', toBase: 0.453592, fromBase: 2.20462 },
+                        'tonne/hr': { display: 'Metric Tonnes per Hour (tonne/hr)', toBase: 1000 / 3600, fromBase: 3.6 },
+                        'kg/hr': { display: 'Kilograms per Hour (kg/hr)', toBase: 1 / 3600, fromBase: 3600 }
+                    }
+                },
+                dynamic_viscosity: {
+                    baseUnit: 'Pa·s',
+                    units: {
+                        'Pa·s': { display: 'Pascal-second (Pa·s)', toBase: 1, fromBase: 1 },
+                        'poise': { display: 'Poise (P)', toBase: 0.1, fromBase: 10 },
+                        'cP': { display: 'Centipoise (cP)', toBase: 0.001, fromBase: 1000 },
+                        'lbf·s/ft²': { display: 'Pound-force second per Square Foot (lbf·s/ft²)', toBase: 47.880259, fromBase: 0.0208854 }
+                    }
+                },
+                kinematic_viscosity: {
+                    baseUnit: 'm²/s',
+                    units: {
+                        'm²/s': { display: 'Square Meters per Second (m²/s)', toBase: 1, fromBase: 1 },
+                        'stokes': { display: 'Stokes (St)', toBase: 0.0001, fromBase: 10000 },
+                        'cSt': { display: 'Centistokes (cSt)', toBase: 0.000001, fromBase: 1000000 },
+                        'ft²/s': { display: 'Square Feet per Second (ft²/s)', toBase: 0.092903, fromBase: 10.7639 }
+                    }
+                },
+                specific_volume: {
+                    baseUnit: 'm³/kg',
+                    units: {
+                        'm³/kg': { display: 'Cubic Meters per Kilogram (m³/kg)', toBase: 1, fromBase: 1 },
+                        'ft³/lb': { display: 'Cubic Feet per Pound (ft³/lb)', toBase: 0.062428, fromBase: 16.0185 }
+                    }
+                },
+                specific_energy: { // Also known as Heating Value
+                    baseUnit: 'J/kg',
+                    units: {
+                        'J/kg': { display: 'Joule per Kilogram (J/kg)', toBase: 1, fromBase: 1 },
+                        'kJ/kg': { display: 'Kilojoule per Kilogram (kJ/kg)', toBase: 1000, fromBase: 0.001 },
+                        'BTU/lb': { display: 'British Thermal Unit per Pound (BTU/lb)', toBase: 2326, fromBase: 0.000430006 },
+                        'cal/g': { display: 'Calorie per Gram (cal/g)', toBase: 4184, fromBase: 0.000239006 }
+                    }
+                },
+                thermal_conductivity: {
+                    baseUnit: 'W/(m·K)',
+                    units: {
+                        'W/(m·K)': { display: 'Watt per Meter Kelvin (W/(m·K))', toBase: 1, fromBase: 1 },
+                        'BTU/(hr·ft·°F)': { display: 'BTU per Hour Foot Fahrenheit (BTU/(hr·ft·°F))', toBase: 1.730735, fromBase: 0.577789 },
+                        'kcal/(hr·m·°C)': { display: 'Kilocalorie per Hour Meter Celsius (kcal/(hr·m·°C))', toBase: 1.163, fromBase: 0.859845 }
+                    }
+                },
+                heat_transfer_coefficient: {
+                    baseUnit: 'W/(m²·K)',
+                    units: {
+                        'W/(m²·K)': { display: 'Watt per Square Meter Kelvin (W/(m²·K))', toBase: 1, fromBase: 1 },
+                        'BTU/(hr·ft²·°F)': { display: 'BTU per Hour Square Foot Fahrenheit (BTU/(hr·ft²·°F))', toBase: 5.67826, fromBase: 0.17611 },
+                        'kcal/(hr·m²·°C)': { display: 'Kilocalorie per Hour Square Meter Celsius (kcal/(hr·m²·°C))', toBase: 1.163, fromBase: 0.859845 }
+                    }
+                },
+                power_density: {
+                    baseUnit: 'W/m³',
+                    units: {
+                        'W/m³': { display: 'Watt per Cubic Meter (W/m³)', toBase: 1, fromBase: 1 },
+                        'kW/m³': { display: 'Kilowatt per Cubic Meter (kW/m³)', toBase: 1000, fromBase: 0.001 },
+                        'HP/ft³': { display: 'Horsepower per Cubic Foot (HP/ft³)', toBase: 26329.9, fromBase: 0.0000379895 },
+                        'HP/in³': { display: 'Horsepower per Cubic Inch (HP/in³)', toBase: 45543168, fromBase: 0.000000021955 }
+                    }
+                },
+                moment_of_inertia: { // Mass Moment of Inertia
+                    baseUnit: 'kg·m²',
+                    units: {
+                        'kg·m²': { display: 'Kilogram Square Meter (kg·m²)', toBase: 1, fromBase: 1 },
+                        'g·cm²': { display: 'Gram Square Centimeter (g·cm²)', toBase: 0.0000001, fromBase: 10000000 },
+                        'lb·ft²': { display: 'Pound Square Foot (lb·ft²)', toBase: 0.0421401, fromBase: 23.7259 },
+                        'lb·in²': { display: 'Pound Square Inch (lb·in²)', toBase: 0.000292639, fromBase: 3417.48 }
+                    }
+                },
+                acceleration: {
+                    baseUnit: 'm/s²',
+                    units: {
+                        'm/s²': { display: 'Meter per Second Squared (m/s²)', toBase: 1, fromBase: 1 },
+                        'ft/s²': { display: 'Foot per Second Squared (ft/s²)', toBase: 0.3048, fromBase: 3.28084 },
+                        'km/h·s': { display: 'Kilometer per Hour Second (km/h·s)', toBase: 1/3.6, fromBase: 3.6 },
+                        'mph/s': { display: 'Miles per Hour Second (mph/s)', toBase: 0.44704, fromBase: 2.23694 },
+                        'gal': { display: 'Gal (gal)', toBase: 0.01, fromBase: 100 } // 1 gal = 1 cm/s^2 = 0.01 m/s^2
+                    }
+                },
+                thermal_resistance: {
+                    baseUnit: 'K/W',
+                    units: {
+                        'K/W': { display: 'Kelvin per Watt (K/W)', toBase: 1, fromBase: 1 },
+                        '°C/W': { display: 'Celsius per Watt (°C/W)', toBase: 1, fromBase: 1 }, // Delta C = Delta K
+                        '°F·hr/BTU': { display: 'Fahrenheit Hour per BTU (°F·hr/BTU)', toBase: 1.89582, fromBase: 0.527495 }
+                    }
+                },
+                specific_heat_capacity: {
+                    baseUnit: 'J/(kg·K)',
+                    units: {
+                        'J/(kg·K)': { display: 'Joule per Kilogram Kelvin (J/(kg·K))', toBase: 1, fromBase: 1 },
+                        'kJ/(kg·K)': { display: 'Kilojoule per Kilogram Kelvin (kJ/(kg·K))', toBase: 1000, fromBase: 0.001 },
+                        'BTU/(lb·°F)': { display: 'BTU per Pound Fahrenheit (BTU/(lb·°F))', toBase: 4186.8, fromBase: 0.000238846 },
+                        'cal/(g·°C)': { display: 'Calorie per Gram Celsius (cal/(g·°C))', toBase: 4184, fromBase: 0.000239006 }
+                    }
+                },
+                linear_momentum: {
+                    baseUnit: 'N·s', // Also kg·m/s
+                    units: {
+                        'N·s': { display: 'Newton-second (N·s)', toBase: 1, fromBase: 1 },
+                        'kg·m/s': { display: 'Kilogram-meter per Second (kg·m/s)', toBase: 1, fromBase: 1 },
+                        'lbf·s': { display: 'Pound-force second (lbf·s)', toBase: 4.44822, fromBase: 0.224809 },
+                        'lb·ft/s': { display: 'Pound-foot per Second (lb·ft/s)', toBase: 0.138255, fromBase: 7.23301 } // 1 lbm = 0.453592 kg, 1 ft = 0.3048 m
+                    }
+                },
+                angular_momentum: {
+                    baseUnit: 'N·m·s', // Also kg·m²/s
+                    units: {
+                        'N·m·s': { display: 'Newton-meter second (N·m·s)', toBase: 1, fromBase: 1 },
+                        'kg·m²/s': { display: 'Kilogram-meter squared per Second (kg·m²/s)', toBase: 1, fromBase: 1 },
+                        'lbf·ft·s': { display: 'Pound-force foot second (lbf·ft·s)', toBase: 1.35582, fromBase: 0.737562 },
+                        'lb·ft²/s': { display: 'Pound-foot squared per Second (lb·ft²/s)', toBase: 0.0421401, fromBase: 23.7259 }
+                    }
+                },
+                heat_flux: { // Power per Area
+                    baseUnit: 'W/m²',
+                    units: {
+                        'W/m²': { display: 'Watt per Square Meter (W/m²)', toBase: 1, fromBase: 1 },
+                        'kW/m²': { display: 'Kilowatt per Square Meter (kW/m²)', toBase: 1000, fromBase: 0.001 },
+                        'BTU/(hr·ft²)': { display: 'BTU per Hour Square Foot (BTU/(hr·ft²))', toBase: 3.15459, fromBase: 0.317006 },
+                        'cal/(s·cm²)': { display: 'Calorie per Second Square Centimeter (cal/(s·cm²))', toBase: 41840, fromBase: 0.0000239 }
+                    }
+                },
+                angular_velocity: {
+                    baseUnit: 'rad/s',
+                    units: {
+                        'rad/s': { display: 'Radians per Second (rad/s)', toBase: 1, fromBase: 1 },
+                        'deg/s': { display: 'Degrees per Second (deg/s)', toBase: Math.PI / 180, fromBase: 180 / Math.PI },
+                        'RPM': { display: 'Revolutions per Minute (RPM)', toBase: (2 * Math.PI) / 60, fromBase: 60 / (2 * Math.PI) }
+                    }
+                },
+                angular_acceleration: {
+                    baseUnit: 'rad/s²',
+                    units: {
+                        'rad/s²': { display: 'Radians per Second Squared (rad/s²)', toBase: 1, fromBase: 1 },
+                        'deg/s²': { display: 'Degrees per Second Squared (deg/s²)', toBase: Math.PI / 180, fromBase: 180 / Math.PI },
+                        'RPM/s': { display: 'Revolutions per Minute Second (RPM/s)', toBase: (2 * Math.PI) / 60, fromBase: 60 / (2 * Math.PI) }
+                    }
+                },
+                modulus_of_elasticity: { // Young's Modulus, Stress, Pressure all have similar units
+                    baseUnit: 'Pa',
+                    units: {
+                        'Pa': { display: 'Pascal (Pa)', toBase: 1, fromBase: 1 },
+                        'kPa': { display: 'Kilopascal (kPa)', toBase: 1000, fromBase: 0.001 },
+                        'MPa': { display: 'Megapascal (MPa)', toBase: 1000000, fromBase: 0.000001 },
+                        'GPa': { display: 'Gigapascal (GPa)', toBase: 1000000000, fromBase: 0.000000001 },
+                        'psi': { display: 'Pounds per Square Inch (psi)', toBase: 6894.76, fromBase: 0.000145038 },
+                        'ksi': { display: 'Kilopounds per Square Inch (ksi)', toBase: 6894760, fromBase: 0.000000145038 }
+                    }
+                },
+                spring_constant: {
+                    baseUnit: 'N/m',
+                    units: {
+                        'N/m': { display: 'Newton per Meter (N/m)', toBase: 1, fromBase: 1 },
+                        'kN/m': { display: 'Kilonewton per Meter (kN/m)', toBase: 1000, fromBase: 0.001 },
+                        'lbf/ft': { display: 'Pound-force per Foot (lbf/ft)', toBase: 14.5939, fromBase: 0.0685218 },
+                        'lbf/in': { display: 'Pound-force per Inch (lbf/in)', toBase: 175.127, fromBase: 0.00571015 }
+                    }
+                },
+                surface_tension: {
+                    baseUnit: 'N/m',
+                    units: {
+                        'N/m': { display: 'Newton per Meter (N/m)', toBase: 1, fromBase: 1 },
+                        'dyne/cm': { display: 'Dyne per Centimeter (dyne/cm)', toBase: 0.001, fromBase: 1000 },
+                        'lbf/in': { display: 'Pound-force per Inch (lbf/in)', toBase: 175.1268, fromBase: 0.00571015 }
+                    }
+                },
+                thermal_expansion_coefficient: {
+                    baseUnit: '1/K',
+                    units: {
+                        '1/K': { display: 'Per Kelvin (1/K)', toBase: 1, fromBase: 1 },
+                        '1/°C': { display: 'Per Celsius (1/°C)', toBase: 1, fromBase: 1 }, // ΔT in °C = ΔT in K
+                        '1/°F': { display: 'Per Fahrenheit (1/°F)', toBase: 5/9, fromBase: 9/5 }
+                    }
+                },
+                area_moment_of_inertia: { // Second Moment of Area
+                    baseUnit: 'm⁴',
+                    units: {
+                        'm⁴': { display: 'Meter to the Fourth (m⁴)', toBase: 1, fromBase: 1 },
+                        'cm⁴': { display: 'Centimeter to the Fourth (cm⁴)', toBase: 0.00000001, fromBase: 100000000 },
+                        'mm⁴': { display: 'Millimeter to the Fourth (mm⁴)', toBase: 0.000000000001, fromBase: 1000000000000 },
+                        'ft⁴': { display: 'Foot to the Fourth (ft⁴)', toBase: Math.pow(0.3048, 4), fromBase: Math.pow(1 / 0.3048, 4) },
+                        'in⁴': { display: 'Inch to the Fourth (in⁴)', toBase: Math.pow(0.0254, 4), fromBase: Math.pow(1 / 0.0254, 4) }
+                    }
+                }
+            };
+
+            /**
+             * Populates the 'From Unit' and 'To Unit' dropdowns based on the selected category.
+             */
+            function populateUnitDropdowns() {
+                const selectedCategory = categorySelect.value;
+                fromUnitSelect.innerHTML = '<option value="">Select a Unit</option>';
+                toUnitSelect.innerHTML = '<option value="">Select a Unit</option>';
+
+                if (selectedCategory && unitConversions[selectedCategory]) {
+                    const units = unitConversions[selectedCategory].units;
+                    for (const unitKey in units) {
+                        if (units.hasOwnProperty(unitKey)) {
+                            const option = document.createElement('option');
+                            option.value = unitKey;
+                            option.textContent = units[unitKey].display;
+                            fromUnitSelect.appendChild(option.cloneNode(true));
+                            toUnitSelect.appendChild(option);
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Event listener for category change to update unit dropdowns
+            categorySelect.addEventListener('change', populateUnitDropdowns);
+
+            // Main Conversion Logic
+            convertBtn.addEventListener('click', function() {
+                const form = document.getElementById('unit-converter-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const value = parseFloat(valueInput.value);
+                const category = categorySelect.value;
+                const fromUnit = fromUnitSelect.value;
+                const toUnit = toUnitSelect.value;
+
+                if (isNaN(value)) {
+                    displayMessage("Please enter a valid numerical value.", "error");
+                    return;
+                }
+
+                // Specific validation for positive values where physically required
+                const nonNegativeCategories = [
+                    'pressure', 'flow', 'energy', 'length', 'mass', 'volume', 'power', 'torque', 'velocity',
+                    'area', 'density', 'force', 'frequency', 'mass_flow_rate', 'dynamic_viscosity',
+                    'kinematic_viscosity', 'specific_volume', 'specific_energy', 'thermal_conductivity',
+                    'heat_transfer_coefficient', 'power_density', 'moment_of_inertia', 'acceleration',
+                    'thermal_resistance', 'specific_heat_capacity', 'linear_momentum', 'angular_momentum',
+                    'heat_flux', 'angular_velocity', 'angular_acceleration', 'modulus_of_elasticity',
+                    'spring_constant', 'surface_tension', 'thermal_expansion_coefficient', 'area_moment_of_inertia'
+                ];
+                if (nonNegativeCategories.includes(category) && value < 0) {
+                     displayMessage("For this category, please enter a non-negative numerical value.", "error");
+                     return;
+                }
+                
+                if (!category || !fromUnit || !toUnit) {
+                    displayMessage("Please select a category, a 'From Unit', and a 'To Unit'.", "error");
+                    return;
+                }
+                if (fromUnit === toUnit) {
+                    displayMessage("Please select different units for conversion.", "warning");
+                    // Still show the result, as it's a valid "conversion"
+                    resultTableBody.innerHTML = '';
+                    addResultRow("Input Value", `${value.toFixed(4)} ${unitConversions[category].units[fromUnit].display}`);
+                    addResultRow("Converted Value", `<strong>${value.toFixed(4)} ${unitConversions[category].units[toUnit].display}</strong>`);
+                    resultContainer.classList.add('show');
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                    if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                        window.MathJax.typesetPromise([resultTableBody]);
+                    }
+                    return;
+                }
+
+                let convertedValue;
+                const categoryData = unitConversions[category];
+
+                if (category === 'temperature') {
+                    // Temperature requires specific conversion functions
+                    const valueInBase = categoryData.convertToBase(value, fromUnit);
+                    convertedValue = categoryData.convertFromBase(valueInBase, toUnit);
+                } else {
+                    // General linear conversion: Value -> Base Unit -> Target Unit
+                    const valueInBase = value * categoryData.units[fromUnit].toBase;
+                    convertedValue = valueInBase * categoryData.units[toUnit].fromBase;
+                }
+
+                // Clear previous results
+                resultTableBody.innerHTML = '';
+
+                // Populate results table
+                addResultRow("Category", categorySelect.options[categorySelect.selectedIndex].text);
+                addResultRow("Input Value", `${value.toFixed(6)} ${categoryData.units[fromUnit].display}`); // Increased precision for input
+                addResultRow("Converted Value", `<strong>${convertedValue.toFixed(6)} ${categoryData.units[toUnit].display}</strong>`); // Increased precision for output
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides conversions based on widely accepted standard conversion factors. It is intended for general engineering calculations and estimations. For highly critical applications, always cross-verify results with official engineering handbooks, specific industry standards, and qualified professionals.";
+
+                // Show results container
+                resultContainer.classList.remove('show'); // Remove 'show' class first to reset
+                resultContainer.style.display = 'block'; // Make it block
+                // Force reflow to ensure display:block is rendered before opacity transition
+                resultContainer.offsetWidth; // This line forces a reflow
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10); // Small delay to trigger transition
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Conversion completed successfully!", "info");
+
+                // Re-render MathJax if present (though not common for direct unit conversions)
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([resultTableBody]);
+                }
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            // Initial UI setup on load
+            populateUnitDropdowns(); // Populate units for the default/initial category (which is empty)
+        });
+    </script>
+</body>
+</html>

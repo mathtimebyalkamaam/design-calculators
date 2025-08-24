@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaft Power & Torque Calculator - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC100; /* Adjusted for better visibility */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i ulass="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Back to Tools link (placeholder, replace with actual index.html if available) -->
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Shaft Power & Torque Calculator (Industrial Grade)</h2>
+            <div class="tool-description">
+                <p>This calculator determines the relationship between rotational power, torque, and rotational speed for shafts in mechanical systems, incorporating factors crucial for real-world industrial applications.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Unit System:</strong> Select Metric or Imperial units for consistency in calculations.</li>
+                    <li><strong>Calculation Mode:</strong> Choose whether to calculate Power, Torque, or Speed.</li>
+                    <li><strong>Rotational Speed (\(N\)):</strong> The angular velocity of the shaft, typically in Revolutions Per Minute (RPM).</li>
+                    <li><strong>Torque (\(T\)):</strong> The rotational force at the shaft.</li>
+                    <li><strong>Power (\(P\)):</strong> The power at the shaft.</li>
+                    <li><strong>Efficiency (\(\eta\)):</strong> The efficiency of the power transmission system (e.g., motor-to-shaft, gear train, etc.) in percentage. Accounts for friction and other losses.</li>
+                    <li><strong>Service Factor (\(K_s\)):</strong> A dimensionless factor chosen based on the nature of the applied load (e.g., uniform, light shock, heavy shock). It accounts for dynamic loading, shock, and vibration, crucial for sizing components appropriately for demanding industrial conditions.</li>
+                    <li><strong>Design Factor (FoS):</strong> A dimensionless factor (also known as Factor of Safety) applied to the calculated loads to provide a margin of safety against uncertainties, material variations, and potential overloads. Typical values range from 1.5 to 3.0 or higher depending on criticality.</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Calculated Parameter:</strong> The primary unknown (Power, Torque, or Speed) based on your chosen calculation mode.</li>
+                    <li><strong>Required Input Power/Torque:</strong> The power/torque that must be supplied by the prime mover (e.g., motor) to achieve the calculated shaft conditions, considering system efficiency.</li>
+                    <li><strong>Design Power/Torque:</strong> The power/torque value that should be used for selecting and sizing components (e.g., shaft, bearings, couplings) to ensure they withstand the expected operating and dynamic loads, incorporating both the service factor and the design safety factor.</li>
+                </ul>
+            </div>
+
+            <div class="calculator-form">
+                <form id="shaft-calculator-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (kW, Nm, RPM) or Imperial (HP, lb-ft, RPM) for measurements.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (kW, N·m)</option>
+                                <option value="imperial">Imperial (HP, lb·ft)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="calc-mode">Calculate: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select which parameter you want to determine. The other two must be known.</span></span></label>
+                            <select id="calc-mode" required>
+                                <option value="power">Shaft Power (P)</option>
+                                <option value="torque">Shaft Torque (T)</option>
+                                <option value="speed">Rotational Speed (N)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>Input Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group" id="speed-group">
+                            <label for="speed">Rotational Speed (\(N\)) (RPM): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The rotational speed of the shaft in Revolutions Per Minute (RPM).</span></span></label>
+                            <input type="number" id="speed" step="any" value="1500" required min="0.01">
+                        </div>
+                        <div class="form-group" id="torque-group">
+                            <label for="torque">Shaft Torque (\(T\)) <span class="torque-unit-label">(N·m)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The rotational force at the shaft.</span></span></label>
+                            <input type="number" id="torque" step="any" value="636.62" required min="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" id="power-group">
+                            <label for="power">Shaft Power (\(P\)) <span class="power-unit-label">(kW)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The power at the shaft.</span></span></label>
+                            <input type="number" id="power" step="any" value="100" required min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="efficiency">Efficiency (\(\eta\)) (%): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Overall system efficiency (e.g., motor, gearbox, bearings). Enter as a percentage (e.g., 90 for 90%).</span></span></label>
+                            <input type="number" id="efficiency" step="0.1" value="95" required min="0.1" max="100">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="service-factor">Service Factor (\(K_s\)): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select based on the nature of load: Uniform, Light Shock, Moderate Shock, or Heavy Shock.</span></span></label>
+                            <select id="service-factor" required>
+                                <option value="1.0">1.0 - Uniform Load (e.g., generator, light conveyor)</option>
+                                <option value="1.25">1.25 - Light Shock (e.g., blowers, mixers)</option>
+                                <option value="1.5">1.5 - Moderate Shock (e.g., reciprocating pumps, heavy conveyors)</option>
+                                <option value="1.75">1.75 - Heavy Shock (e.g., crushers, punch presses)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="design-safety-factor">Design Factor (FoS): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Factor of Safety (or Design Factor). Accounts for uncertainties and desired reliability. Typical: 1.5 to 3.0+.</span></span></label>
+                            <input type="number" id="design-safety-factor" step="0.01" value="1.5" required min="1.0">
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="calculate-shaft-btn" class="calculate-btn">Calculate Shaft Parameters</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides calculations for shaft power, torque, and rotational speed, incorporating efficiency and service factor to provide more industrially relevant results. It is intended for preliminary design and analysis.</p>
+                <p><strong>While significantly improved for practical use, it does NOT fully account for:</strong></p>
+                <ul>
+                    <li><strong>Detailed Component Efficiencies:</strong> The single efficiency input is a simplified overall value; real systems have multiple efficiency losses (e.g., motor, gearbox, bearings) that require detailed analysis.</li>
+                    <li><strong>Complex Dynamic Loading Analysis:</strong> The service factor and design factor are industry-standard multipliers. Highly complex dynamic loads, resonance, fatigue, and vibration analysis require specialized software and advanced engineering methods.</li>
+                    <li><strong>Specific Material Properties & Stress Analysis:</strong> This calculator does not assess individual shaft material strength, fatigue limits, yield strength, stress concentrations, or other mechanical properties critical for detailed shaft design and failure prevention.</li>
+                    <li><strong>Comprehensive Design Standards Compliance:</strong> It does not replace the need to implement all complex design considerations from specific international standards (e.g., ISO 6336 for gears, API 610 for centrifugal pumps, ASME B106.1 for design of transmission shafting, AGMA standards for gearing). These standards require detailed stress calculations, critical speed analysis, and consideration of manufacturing processes and environmental factors.</li>
+                </ul>
+                <p>For accurate, safe, and robust design, selection, and troubleshooting in critical industrial applications, it remains <strong>imperative</strong> to consult manufacturer specifications, relevant industry standards, comprehensive machine design handbooks (e.g., Shigley's Mechanical Engineering Design, Machinery's Handbook), and qualified mechanical engineers.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Shaft Power & Torque Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-shaft-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const calcModeSelect = document.getElementById('calc-mode');
+            const speedInput = document.getElementById('speed');
+            const torqueInput = document.getElementById('torque');
+            const powerInput = document.getElementById('power');
+            const efficiencyInput = document.getElementById('efficiency');
+            const serviceFactorSelect = document.getElementById('service-factor'); // Changed to select
+            const designSafetyFactorInput = document.getElementById('design-safety-factor'); // New input
+
+            // Labels that change text
+            const torqueUnitLabel = document.querySelector('#torque-group label span.torque-unit-label');
+            const powerUnitLabel = document.querySelector('#power-group label span.power-unit-label');
+
+            // Groups for dynamic display/required attributes
+            const speedGroup = document.getElementById('speed-group');
+            const torqueGroup = document.getElementById('torque-group');
+            const powerGroup = document.getElementById('power-group');
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates unit labels and input defaults based on selected unit system.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+
+                if (unitSystem === 'metric') {
+                    torqueUnitLabel.textContent = '(N·m)';
+                    powerUnitLabel.textContent = '(kW)';
+                    // Default values for Metric
+                    speedInput.value = "1500";
+                    torqueInput.value = "636.62"; // Approx 100 kW at 1500 RPM
+                    powerInput.value = "100";
+                } else { // imperial
+                    torqueUnitLabel.textContent = '(lb·ft)';
+                    powerUnitLabel.textContent = '(HP)';
+                    // Default values for Imperial
+                    speedInput.value = "1750";
+                    torqueInput.value = "300"; // Approx 100 HP at 1750 RPM
+                    powerInput.value = "100";
+                }
+                efficiencyInput.value = "95";
+                serviceFactorSelect.value = "1.25"; // Set default for dropdown
+                designSafetyFactorInput.value = "1.5"; // Set default for new input
+
+                toggleInputVisibility(); // Adjust input fields based on calculation mode
+            }
+
+            /**
+             * Toggles visibility and required status of inputs based on calculation mode.
+             */
+            function toggleInputVisibility() {
+                const calcMode = calcModeSelect.value;
+
+                // Reset all to visible and required first, then adjust
+                speedGroup.style.display = 'block';
+                torqueGroup.style.display = 'block';
+                powerGroup.style.display = 'block';
+
+                speedInput.setAttribute('required', 'true');
+                torqueInput.setAttribute('required', 'true');
+                powerInput.setAttribute('required', 'true');
+                efficiencyInput.setAttribute('required', 'true');
+                serviceFactorSelect.setAttribute('required', 'true'); // Required for select
+                designSafetyFactorInput.setAttribute('required', 'true'); // Required for new input
+
+
+                switch (calcMode) {
+                    case 'power':
+                        powerGroup.style.display = 'none';
+                        powerInput.removeAttribute('required');
+                        break;
+                    case 'torque':
+                        torqueGroup.style.display = 'none';
+                        torqueInput.removeAttribute('required');
+                        break;
+                    case 'speed':
+                        speedGroup.style.display = 'none';
+                        speedInput.removeAttribute('required');
+                        break;
+                }
+            }
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            calcModeSelect.addEventListener('change', toggleInputVisibility);
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('shaft-calculator-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+                const calcMode = calcModeSelect.value;
+
+                let N, T, P; // Speed, Torque, Power (at the shaft)
+                let efficiency, serviceFactor, designSafetyFactor;
+
+                try {
+                    if (calcMode !== 'speed') N = parseFloat(speedInput.value);
+                    if (calcMode !== 'torque') T = parseFloat(torqueInput.value);
+                    if (calcMode !== 'power') P = parseFloat(powerInput.value);
+                    
+                    efficiency = parseFloat(efficiencyInput.value) / 100; // Convert percentage to decimal
+                    serviceFactor = parseFloat(serviceFactorSelect.value); // Get value from select
+                    designSafetyFactor = parseFloat(designSafetyFactorInput.value); // Get value from new input
+
+                } catch (e) {
+                    displayMessage("Invalid input. Please enter numerical values.", "error");
+                    return;
+                }
+
+                // Validate positive values and ranges
+                if ((N !== undefined && N <= 0) ||
+                    (T !== undefined && T <= 0) ||
+                    (P !== undefined && P <= 0) ||
+                    efficiency <= 0 || efficiency > 1 || // Efficiency must be between 0 and 1 (0% and 100%)
+                    serviceFactor < 1 ||
+                    designSafetyFactor < 1) { // Service factor and Design Factor usually >= 1
+                    displayMessage("All input values must be positive. Efficiency must be between 0.1% and 100%. Service Factor and Design Factor must be 1.0 or greater.", "error");
+                    return;
+                }
+
+                let calculatedValue = null;
+                let requiredInputPower = null;
+                let requiredInputTorque = null;
+                let designPower = null;
+                let designTorque = null;
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                
+                // Constants for unit conversion
+                const METRIC_CONSTANT = 9549.29659637; // Power (kW) = (Torque (N·m) * Speed (RPM)) / METRIC_CONSTANT
+                const IMPERIAL_CONSTANT = 5252;     // Power (HP) = (Torque (lb·ft) * Speed (RPM)) / IMPERIAL_CONSTANT
+
+                const constant = unitSystem === 'metric' ? METRIC_CONSTANT : IMPERIAL_CONSTANT;
+                const powerUnit = unitSystem === 'metric' ? 'kW' : 'HP';
+                const torqueUnit = unitSystem === 'metric' ? 'N·m' : 'lb·ft';
+
+                calculationHtml += `<p>The fundamental relationship between power, torque, and rotational speed at the shaft is:</p>`;
+                if (unitSystem === 'metric') {
+                    calculationHtml += `<p class="formula">\\[ P_{shaft, kW} = \\frac{T_{shaft, N\\cdot m} \\cdot N_{RPM}}{9549.296} \\]</p>`;
+                } else { // imperial
+                    calculationHtml += `<p class="formula">\\[ P_{shaft, HP} = \\frac{T_{shaft, lb\\cdot ft} \\cdot N_{RPM}}{5252} \\]</p>`;
+                }
+                
+                calculationHtml += `<p>Where:</p>
+                                    <ul>
+                                        <li>\\(P_{shaft}\\) is Power at the shaft</li>
+                                        <li>\\(T_{shaft}\\) is Torque at the shaft</li>
+                                        <li>\\(N\\) is Rotational Speed in RPM</li>
+                                        <li>The constant accounts for unit conversions.</li>
+                                    </ul>`;
+
+                // Perform primary calculation based on mode
+                switch (calcMode) {
+                    case 'power':
+                        // P_shaft = (T_shaft * N) / constant
+                        calculatedValue = (T * N) / constant;
+                        P = calculatedValue; // Assign calculated P for subsequent calculations
+                        
+                        calculationHtml += `<p><strong>1. Calculate Shaft Power (\\(P_{shaft}\\)):</strong></p>`;
+                        if (unitSystem === 'metric') {
+                            calculationHtml += `<p class="formula">\\[ P_{shaft, kW} = \\frac{T_{shaft, N\\cdot m} \\cdot N_{RPM}}{${METRIC_CONSTANT.toFixed(3)}} \\]</p>`;
+                            calculationHtml += `<p class="calculation-step">
+                                \\( P_{shaft} \\) = (${T.toFixed(2)} ${torqueUnit} \\( \\times \\) ${N.toFixed(2)} RPM) / ${METRIC_CONSTANT.toFixed(3)} = ${calculatedValue.toFixed(3)} ${powerUnit}
+                            </p>`;
+                        } else {
+                            calculationHtml += `<p class="formula">\\[ P_{shaft, HP} = \\frac{T_{shaft, lb\\cdot ft} \\cdot N_{RPM}}{${IMPERIAL_CONSTANT}} \\]</p>`;
+                             calculationHtml += `<p class="calculation-step">
+                                \\( P_{shaft} \\) = (${T.toFixed(2)} ${torqueUnit} \\( \\times \\) ${N.toFixed(2)} RPM) / ${IMPERIAL_CONSTANT} = ${calculatedValue.toFixed(3)} ${powerUnit}
+                            </p>`;
+                        }
+                        break;
+                    case 'torque':
+                        // T_shaft = (P_shaft * constant) / N
+                        calculatedValue = (P * constant) / N;
+                        T = calculatedValue; // Assign calculated T for subsequent calculations
+                        
+                        calculationHtml += `<p><strong>1. Calculate Shaft Torque (\\(T_{shaft}\\)):</strong></p>`;
+                        if (unitSystem === 'metric') {
+                            calculationHtml += `<p class="formula">\\[ T_{shaft, N\\cdot m} = \\frac{P_{shaft, kW} \\cdot ${METRIC_CONSTANT.toFixed(3)}}{N_{RPM}} \\]</p>`;
+                            calculationHtml += `<p class="calculation-step">
+                                \\( T_{shaft} \\) = (${P.toFixed(2)} ${powerUnit} \\( \\times \\) ${METRIC_CONSTANT.toFixed(3)}) / ${N.toFixed(2)} RPM = ${calculatedValue.toFixed(3)} ${torqueUnit}
+                            </p>`;
+                        } else {
+                            calculationHtml += `<p class="formula">\\[ T_{shaft, lb\\cdot ft} = \\frac{P_{HP} \\cdot ${IMPERIAL_CONSTANT}}{N_{RPM}} \\]</p>`;
+                             calculationHtml += `<p class="calculation-step">
+                                \\( T_{shaft} \\) = (${P.toFixed(2)} ${powerUnit} \\( \\times \\) ${IMPERIAL_CONSTANT}) / ${N.toFixed(2)} RPM = ${calculatedValue.toFixed(3)} ${torqueUnit}
+                            </p>`;
+                        }
+                        break;
+                    case 'speed':
+                        // N = (P_shaft * constant) / T_shaft
+                        calculatedValue = (P * constant) / T;
+                        N = calculatedValue; // Assign calculated N for subsequent calculations
+
+                        calculationHtml += `<p><strong>1. Calculate Rotational Speed (\\(N\\)):</strong></p>`;
+                        if (unitSystem === 'metric') {
+                            calculationHtml += `<p class="formula">\\[ N_{RPM} = \\frac{P_{shaft, kW} \\cdot ${METRIC_CONSTANT.toFixed(3)}}{T_{shaft, N\\cdot m}} \\]</p>`;
+                            calculationHtml += `<p class="calculation-step">
+                                \\( N \\) = (${P.toFixed(2)} ${powerUnit} \\( \\times \\) ${METRIC_CONSTANT.toFixed(3)}) / ${T.toFixed(2)} ${torqueUnit} = ${calculatedValue.toFixed(3)} RPM
+                            </p>`;
+                        } else {
+                            calculationHtml += `<p class="formula">\\[ N_{RPM} = \\frac{P_{HP} \\cdot ${IMPERIAL_CONSTANT}}{T_{lb\\cdot ft}} \\]</p>`;
+                             calculationHtml += `<p class="calculation-step">
+                                \\( N \\) = (${P.toFixed(2)} ${powerUnit} \\( \\times \\) ${IMPERIAL_CONSTANT}) / ${T.toFixed(2)} ${torqueUnit} = ${calculatedValue.toFixed(3)} RPM
+                            </p>`;
+                        }
+                        break;
+                }
+
+                // Calculations based on efficiency and service factor
+                calculationHtml += `<p><strong>2. Account for Efficiency (\\(\\eta\\)):</strong></p>`;
+                if (P !== undefined) { // If power is known (either input or calculated as P_shaft)
+                    requiredInputPower = P / efficiency;
+                    calculationHtml += `<p class="formula">\\[ P_{input} = \\frac{P_{shaft}}{\\eta} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( P_{input} \\) = ${P.toFixed(2)} ${powerUnit} / ${efficiency.toFixed(3)} = ${requiredInputPower.toFixed(3)} ${powerUnit}
+                    </p>`;
+                } else { // If power was calculated, then torque must have been input/calculated
+                    requiredInputTorque = T / efficiency;
+                    calculationHtml += `<p class="formula">\\[ T_{input} = \\frac{T_{shaft}}{\\eta} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( T_{input} \\) = ${T.toFixed(2)} ${torqueUnit} / ${efficiency.toFixed(3)} = ${requiredInputTorque.toFixed(3)} ${torqueUnit}
+                    </p>`;
+                }
+                
+                calculationHtml += `<p><strong>3. Account for Service Factor (\\(K_s\\)) and Design Factor (FoS):</strong></p>`;
+                if (P !== undefined) { // If power is known (either input or calculated as P_shaft)
+                    designPower = P * serviceFactor * designSafetyFactor;
+                    calculationHtml += `<p class="formula">\\[ P_{design} = P_{shaft} \\cdot K_s \\cdot FoS \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( P_{design} \\) = ${P.toFixed(2)} ${powerUnit} \\( \\times \\) ${serviceFactor.toFixed(2)} \\( \\times \\) ${designSafetyFactor.toFixed(2)} = ${designPower.toFixed(3)} ${powerUnit}
+                    </p>`;
+                } else { // If torque is known (either input or calculated as T_shaft)
+                    designTorque = T * serviceFactor * designSafetyFactor;
+                    calculationHtml += `<p class="formula">\\[ T_{design} = T_{shaft} \\cdot K_s \\cdot FoS \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( T_{design} \\) = ${T.toFixed(2)} ${torqueUnit} \\( \\times \\) ${serviceFactor.toFixed(2)} \\( \\times \\) ${designSafetyFactor.toFixed(2)} = ${designTorque.toFixed(3)} ${torqueUnit}
+                    </p>`;
+                }
+
+
+                // Clear previous results
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                // Populate results table
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial (HP, lb·ft)' : 'Metric (kW, N·m)');
+                addResultRow("Calculation Mode", calcModeSelect.options[calcModeSelect.selectedIndex].text);
+                addResultRow("Efficiency (\\(\\eta\\))", `${(efficiency * 100).toFixed(1)} %`);
+                addResultRow("Service Factor (\\(K_s\\))", `${serviceFactor.toFixed(2)} (${serviceFactorSelect.options[serviceFactorSelect.selectedIndex].text.split(' - ')[1].trim()})`);
+                addResultRow("Design Factor (FoS)", `${designSafetyFactor.toFixed(2)}`);
+
+
+                if (calcMode !== 'speed') {
+                    addResultRow("Rotational Speed (\\(N\\))", `${N.toFixed(2)} RPM`);
+                }
+                if (calcMode !== 'torque') {
+                    addResultRow(`Shaft Torque (\\(T\\))`, `${T.toFixed(2)} ${torqueUnit}`);
+                }
+                if (calcMode !== 'power') {
+                    addResultRow(`Shaft Power (\\(P\\))`, `${P.toFixed(2)} ${powerUnit}`);
+                }
+                
+                // Add calculated primary result
+                if (calcMode === 'power') {
+                    addResultRow(`Calculated Shaft Power (\\(P\\))`, `<strong>\\( ${calculatedValue.toFixed(3)} \\) ${powerUnit}</strong>`);
+                } else if (calcMode === 'torque') {
+                    addResultRow(`Calculated Shaft Torque (\\(T\\))`, `<strong>\\( ${calculatedValue.toFixed(3)} \\) ${torqueUnit}</strong>`);
+                } else if (calcMode === 'speed') {
+                    addResultRow(`Calculated Rotational Speed (\\(N\\))`, `<strong>\\( ${calculatedValue.toFixed(3)} \\) RPM</strong>`);
+                }
+
+                // Add required input and design values
+                if (requiredInputPower !== null) {
+                    addResultRow(`Required Input Power (\\(P_{input}\\))`, `<strong>\\( ${requiredInputPower.toFixed(3)} \\) ${powerUnit}</strong>`);
+                }
+                if (requiredInputTorque !== null) {
+                    addResultRow(`Required Input Torque (\\(T_{input}\\))`, `<strong>\\( ${requiredInputTorque.toFixed(3)} \\) ${torqueUnit}</strong>`);
+                }
+                if (designPower !== null) {
+                    addResultRow(`Design Power (\\(P_{design}\\))`, `<strong>\\( ${designPower.toFixed(3)} \\) ${powerUnit}</strong>`);
+                }
+                if (designTorque !== null) {
+                    addResultRow(`Design Torque (\\(T_{design}\\))`, `<strong>\\( ${designTorque.toFixed(3)} \\) ${torqueUnit}</strong>`);
+                }
+
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides calculations for shaft power, torque, and rotational speed, incorporating efficiency and service factor to provide more industrially relevant results. It is intended for preliminary design and analysis. It does NOT fully account for: <strong>Detailed Component Efficiencies:</strong> The single efficiency input is a simplified overall value; real systems have multiple efficiency losses (e.g., motor, gearbox, bearings) that require detailed analysis. <strong>Complex Dynamic Loading Analysis:</strong> The service factor and design factor are industry-standard multipliers. Highly complex dynamic loads, resonance, fatigue, and vibration analysis require specialized software and advanced engineering methods. <strong>Specific Material Properties & Stress Analysis:</strong> This calculator does not assess individual shaft material strength, fatigue limits, yield strength, stress concentrations, or other mechanical properties critical for detailed shaft design and failure prevention. <strong>Comprehensive Design Standards Compliance:</strong> It does not replace the need to implement all complex design considerations from specific international standards (e.g., ISO 6336 for gears, API 610 for centrifugal pumps, ASME B106.1 for design of transmission shafting, AGMA standards for gearing). These standards require detailed stress calculations, critical speed analysis, and consideration of manufacturing processes and environmental factors. For accurate, safe, and robust design, selection, and troubleshooting in critical industrial applications, it remains <strong>imperative</strong> to consult manufacturer specifications, relevant industry standards, comprehensive machine design handbooks (e.g., Shigley's Mechanical Engineering Design, Machinery's Handbook), and qualified mechanical engineers.";
+
+                // Ensure result container is visible and transitions smoothly
+                resultContainer.style.display = 'block'; // Make element visible
+                resultContainer.offsetHeight; // Force reflow to ensure display change is registered before transition
+                resultContainer.classList.add('show'); // Apply class that sets opacity to 1 and allows interaction
+
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

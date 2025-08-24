@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Flow & Duct Sizing Calculator - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Air Flow (CFM) & Duct Sizing Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator assists in determining air flow rates, duct dimensions, and estimating friction losses and fan power for HVAC duct systems. It supports both circular and rectangular duct geometries.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Air Flow Rate (\(\dot{Q}\)):</strong> Volume of air moved per unit time.</li>
+                    <li><strong>Air Velocity (\(V\)):</strong> Speed of air within the duct.</li>
+                    <li><strong>Duct Dimensions:</strong> Diameter for circular, Width & Height for rectangular ducts.</li>
+                    <li><strong>Duct Length (\(L\)):</strong> Total length of the duct run for friction loss calculation.</li>
+                    <li><strong>Air Density (\(\rho_{air}\)):</strong> Density of air at operating conditions.</li>
+                    <li><strong>Air Dynamic Viscosity (\(\mu_{air}\)):</strong> Dynamic viscosity of air at operating conditions.</li>
+                    <li><strong>Duct Roughness (\(\epsilon\)):</strong> Absolute roughness of the duct material.</li>
+                    <li><strong>Fan-Motor Efficiency (\(\eta_{fan}\)):</strong> Overall efficiency of the fan and motor system.</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Duct Cross-sectional Area (\(A\)):</strong> Area of the duct perpendicular to flow.</li>
+                    <li><strong>Air Velocity (\(V\)):</strong> Calculated air speed.</li>
+                    <li><strong>Air Flow Rate (\(\dot{Q}\)):</strong> Calculated volume flow rate.</li>
+                    <li><strong>Hydraulic Diameter (\(D_h\)):</strong> Equivalent diameter for non-circular ducts.</li>
+                    <li><strong>Reynolds Number (\(Re\)):</strong> Dimensionless number indicating flow regime.</li>
+                    <li><strong>Friction Factor (\(f\)):</strong> Dimensionless coefficient used in friction loss calculations (using Haaland equation).</li>
+                    <li><strong>Friction Loss per Unit Length (\(\Delta P_f/L\)):</strong> Static pressure drop per meter or 100 ft of duct.</li>
+                    <li><strong>Total Friction Loss (\(\Delta P_{total}\)):</strong> Total static pressure drop over the specified duct length.</li>
+                    <li><strong>Estimated Fan Power (\(P_{fan}\)):</strong> Approximate electrical power required by the fan.</li>
+                </ul>
+            </div>
+
+            <div class="calculator-form">
+                <form id="airflow-duct-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (m/s, m&#179;/s, mm) or Imperial (fpm, CFM, inches) units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (L/s, m/s, mm, Pa, kW)</option>
+                                <option value="imperial">Imperial (CFM, fpm, inches, in. H&#8322;O, HP)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="calculation-mode">Calculation Mode: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Choose what to calculate: Duct Dimensions or Flow/Velocity.</span></span></label>
+                            <select id="calculation-mode" required>
+                                <option value="calc-dimensions">Calculate Duct Dimensions (given flow & velocity)</option>
+                                <option value="calc-flow-velocity">Calculate Flow & Velocity (given dimensions)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duct-shape">Duct Shape: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select circular or rectangular duct.</span></span></label>
+                            <select id="duct-shape" required>
+                                <option value="circular">Circular</option>
+                                <option value="rectangular">Rectangular</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="aspect-ratio-group" style="display: none;">
+                            <label for="aspect-ratio">Rectangular Aspect Ratio (W:H): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Ratio of Width to Height for rectangular duct sizing (e.g., 2 for 2:1). Ideal range 1 to 4.</span></span></label>
+                            <input type="number" id="aspect-ratio" step="any" value="1.5" min="1" max="10">
+                        </div>
+                    </div>
+
+                    <!-- Input fields based on calculation mode and duct shape -->
+                    <div id="calc-dimensions-inputs">
+                        <h3>Inputs for Duct Dimensions Calculation</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-airflow-dim">Air Flow Rate (\(\dot{Q}\)) <span class="airflow-unit-label">(L/s)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Desired air flow rate.</span></span></label>
+                                <input type="number" id="input-airflow-dim" step="any" value="500" required min="0.01">
+                            </div>
+                            <div class="form-group">
+                                <label for="input-velocity-dim">Air Velocity (\(V\)) <span class="velocity-unit-label">(m/s)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Target air velocity in the duct.</span></span></label>
+                                <input type="number" id="input-velocity-dim" step="any" value="7" required min="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="calc-flow-velocity-inputs" style="display: none;">
+                        <h3>Inputs for Flow/Velocity Calculation</h3>
+                        <div class="form-row">
+                            <div class="form-group" id="circular-diameter-group">
+                                <label for="input-diameter">Duct Diameter (\(D\)) <span class="dimension-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Diameter for circular duct.</span></span></label>
+                                <input type="number" id="input-diameter" step="any" value="300" min="10">
+                            </div>
+                            <div id="rectangular-dimensions-group" style="display: none;">
+                                <div class="form-group">
+                                    <label for="input-width">Duct Width (\(W\)) <span class="dimension-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Width for rectangular duct.</span></span></label>
+                                    <input type="number" id="input-width" step="any" value="400" min="10">
+                                </div>
+                                <div class="form-group">
+                                    <label for="input-height">Duct Height (\(H\)) <span class="dimension-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Height for rectangular duct.</span></span></label>
+                                    <input type="number" id="input-height" step="any" value="200" min="10">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                             <div class="form-group">
+                                <label for="given-parameter-type">Given Parameter: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select whether you know the Air Flow Rate or Air Velocity.</span></span></label>
+                                <select id="given-parameter-type" required>
+                                    <option value="airflow">Air Flow Rate (\(\dot{Q}\))</option>
+                                    <option value="velocity">Air Velocity (\(V\))</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="given-parameter-value">Given Value <span id="given-value-unit-label">(L/s)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Enter the known Air Flow Rate or Air Velocity.</span></span></label>
+                                <input type="number" id="given-parameter-value" step="any" value="500" required min="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>System Parameters for Pressure Drop</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duct-length">Duct Length (\(L\)) <span class="length-unit-label">(m)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total length of the duct run for friction loss calculation.</span></span></label>
+                            <input type="number" id="duct-length" step="any" value="100" required min="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="air-density">Air Density (\(\rho_{air}\)) <span class="density-air-unit-label">(kg/m&#179;)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Density of air at operating temperature and pressure. Standard air is ~1.2 kg/m&#179;.</span></span></label>
+                            <input type="number" id="air-density" step="any" value="1.204" required min="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="air-viscosity">Air Dynamic Viscosity (\(\mu_{air}\)) <span class="viscosity-unit-label">(Pa&#183;s)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Dynamic viscosity of air. Standard air is ~1.81e-5 Pa&#183;s.</span></span></label>
+                            <input type="number" id="air-viscosity" step="any" value="0.0000181" required min="0.00000001">
+                        </div>
+                        <div class="form-group">
+                            <label for="duct-roughness">Duct Absolute Roughness (\(\epsilon\)) <span class="roughness-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Roughness of the duct material. E.g., Galvanized steel: 0.09mm - 0.15mm.</span></span></label>
+                            <input type="number" id="duct-roughness" step="any" value="0.09" required min="0.00001">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fan-motor-efficiency">Fan-Motor Efficiency (\(\eta_{fan}\)) (%): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Combined efficiency of the fan and its motor (typically 50-70%).</span></span></label>
+                            <input type="number" id="fan-motor-efficiency" step="any" value="60" required min="1" max="100">
+                        </div>
+                    </div>
+
+                    <button type="button" id="calculate-duct-btn" class="calculate-btn">Calculate Duct Sizing</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides a simplified, theoretical estimation for HVAC duct sizing and pressure drop based on fundamental fluid dynamics principles (Darcy-Weisbach and Haaland equation for friction factor). It makes assumptions regarding air properties and does not account for complex factors like dynamic losses from fittings (elbows, transitions, etc.), air compressibility effects, variations in temperature/humidity, or specific fan characteristics.</p>
+                <p>For accurate design and real-world industrial HVAC systems, it is <strong>imperative</strong> to consult comprehensive industry standards (e.g., ASHRAE Handbook - Fundamentals, SMACNA HVAC Duct Construction Standards), specialized engineering software, and qualified HVAC engineers.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in&text=Check%20out%20this%20Mechanical%20Design%20Calculator!" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20Mechanical%20Design%20Calculator!%20https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Mechanical%20Design%20Calculator" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators!&body=I found this amazing Air Flow & Duct Sizing Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-duct-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input sections and controls
+            const unitSystemSelect = document.getElementById('unit-system');
+            const calculationModeSelect = document.getElementById('calculation-mode');
+            const ductShapeSelect = document.getElementById('duct-shape');
+
+            const calcDimensionsInputs = document.getElementById('calc-dimensions-inputs');
+            const calcFlowVelocityInputs = document.getElementById('calc-flow-velocity-inputs');
+            const aspectRatioGroup = document.getElementById('aspect-ratio-group');
+
+            const inputAirflowDim = document.getElementById('input-airflow-dim');
+            const inputVelocityDim = document.getElementById('input-velocity-dim');
+
+            const inputDiameter = document.getElementById('input-diameter');
+            const circularDiameterGroup = document.getElementById('circular-diameter-group');
+            const rectangularDimensionsGroup = document.getElementById('rectangular-dimensions-group');
+            const inputWidth = document.getElementById('input-width');
+            const inputHeight = document.getElementById('input-height');
+            const givenParameterTypeSelect = document.getElementById('given-parameter-type');
+            const givenParameterValueInput = document.getElementById('given-parameter-value');
+
+            const ductLengthInput = document.getElementById('duct-length');
+            const airDensityInput = document.getElementById('air-density');
+            const airViscosityInput = document.getElementById('air-viscosity');
+            const ductRoughnessInput = document.getElementById('duct-roughness');
+            const fanMotorEfficiencyInput = document.getElementById('fan-motor-efficiency');
+            const aspectRatioInput = document.getElementById('aspect-ratio');
+
+            // Unit labels
+            const airflowUnitLabel = document.querySelector('.airflow-unit-label');
+            const velocityUnitLabel = document.querySelector('.velocity-unit-label');
+            const dimensionUnitLabels = document.querySelectorAll('.dimension-unit-label');
+            const lengthUnitLabel = document.querySelector('.length-unit-label');
+            const densityAirUnitLabel = document.querySelector('.density-air-unit-label');
+            const viscosityUnitLabel = document.querySelector('.viscosity-unit-label');
+            const roughnessUnitLabel = document.querySelector('.roughness-unit-label');
+            const givenValueUnitLabel = document.getElementById('given-value-unit-label');
+
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates the unit labels and default values based on the selected unit system.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+
+                if (unitSystem === 'metric') {
+                    airflowUnitLabel.innerHTML = '(L/s)';
+                    velocityUnitLabel.innerHTML = '(m/s)';
+                    dimensionUnitLabels.forEach(label => label.innerHTML = '(mm)');
+                    lengthUnitLabel.innerHTML = '(m)';
+                    densityAirUnitLabel.innerHTML = '(kg/m&#179;)';
+                    viscosityUnitLabel.innerHTML = '(Pa&#183;s)';
+                    roughnessUnitLabel.innerHTML = '(mm)';
+                    
+                    // Set metric defaults
+                    inputAirflowDim.value = "500";
+                    inputVelocityDim.value = "7";
+                    inputDiameter.value = "300";
+                    inputWidth.value = "400";
+                    inputHeight.value = "200";
+                    givenParameterValueInput.value = "500";
+                    ductLengthInput.value = "100";
+                    airDensityInput.value = "1.204"; // kg/m3 at 20C
+                    airViscosityInput.value = "0.0000181"; // Pa.s at 20C
+                    ductRoughnessInput.value = "0.09"; // mm for galvanized steel
+                    fanMotorEfficiencyInput.value = "60";
+                } else { // Imperial
+                    airflowUnitLabel.innerHTML = '(CFM)';
+                    velocityUnitLabel.innerHTML = '(fpm)';
+                    dimensionUnitLabels.forEach(label => label.innerHTML = '(inches)');
+                    lengthUnitLabel.innerHTML = '(ft)';
+                    densityAirUnitLabel.innerHTML = '(lb/ft&#179;)';
+                    viscosityUnitLabel.innerHTML = '(lb/ft&#183;s)';
+                    roughnessUnitLabel.innerHTML = '(inches)';
+
+                    // Set imperial defaults
+                    inputAirflowDim.value = "1000";
+                    inputVelocityDim.value = "1400";
+                    inputDiameter.value = "12";
+                    inputWidth.value = "16";
+                    inputHeight.value = "8";
+                    givenParameterValueInput.value = "1000";
+                    ductLengthInput.value = "300";
+                    airDensityInput.value = "0.075"; // lb/ft3 at 70F, 1 atm
+                    airViscosityInput.value = "0.0000122"; // lb/ft.s at 70F
+                    ductRoughnessInput.value = "0.0036"; // inches for galvanized steel
+                    fanMotorEfficiencyInput.value = "60";
+                }
+                updateGivenValueUnitLabel(); // Update unit for given parameter input
+            }
+
+            /**
+             * Toggles visibility of input sections based on calculation mode and duct shape,
+             * and sets 'required' attributes accordingly.
+             */
+            function toggleInputSections() {
+                const calcMode = calculationModeSelect.value;
+                const ductShape = ductShapeSelect.value;
+
+                // Toggle main calculation mode sections
+                if (calcMode === 'calc-dimensions') {
+                    calcDimensionsInputs.style.display = 'block';
+                    calcFlowVelocityInputs.style.display = 'none';
+
+                    // Set required for calc-dimensions inputs
+                    inputAirflowDim.setAttribute('required', 'true');
+                    inputVelocityDim.setAttribute('required', 'true');
+                    
+                    // Remove required for calc-flow-velocity inputs
+                    inputDiameter.removeAttribute('required');
+                    inputWidth.removeAttribute('required');
+                    inputHeight.removeAttribute('required');
+                    givenParameterValueInput.removeAttribute('required');
+
+                } else { // calc-flow-velocity
+                    calcDimensionsInputs.style.display = 'none';
+                    calcFlowVelocityInputs.style.display = 'block';
+
+                    // Set required for calc-flow-velocity inputs based on duct shape
+                    if (ductShape === 'circular') {
+                        inputDiameter.setAttribute('required', 'true');
+                        inputWidth.removeAttribute('required');
+                        inputHeight.removeAttribute('required');
+                    } else { // rectangular
+                        inputWidth.setAttribute('required', 'true');
+                        inputHeight.setAttribute('required', 'true');
+                        inputDiameter.removeAttribute('required');
+                    }
+                    givenParameterValueInput.setAttribute('required', 'true');
+
+                    // Remove required for calc-dimensions inputs
+                    inputAirflowDim.removeAttribute('required');
+                    inputVelocityDim.removeAttribute('required');
+                }
+
+                // Toggle duct shape specific inputs
+                if (ductShape === 'circular') {
+                    circularDiameterGroup.style.display = 'block';
+                    rectangularDimensionsGroup.style.display = 'none';
+                    aspectRatioGroup.style.display = 'none'; // Aspect ratio not needed for circular
+                    aspectRatioInput.removeAttribute('required'); // Remove required if not shown
+                } else { // rectangular
+                    circularDiameterGroup.style.display = 'none';
+                    rectangularDimensionsGroup.style.display = 'flex'; // Use flex for form-row style
+                    
+                    // Only show aspect ratio for 'calc-dimensions' mode in rectangular
+                    if (calcMode === 'calc-dimensions') {
+                         aspectRatioGroup.style.display = 'block';
+                         aspectRatioInput.setAttribute('required', 'true');
+                    } else {
+                         aspectRatioGroup.style.display = 'none';
+                         aspectRatioInput.removeAttribute('required');
+                    }
+                }
+            }
+
+            /**
+             * Updates the unit label for the "Given Value" input based on the selected type.
+             */
+            function updateGivenValueUnitLabel() {
+                const unitSystem = unitSystemSelect.value;
+                const givenParamType = givenParameterTypeSelect.value;
+
+                if (givenParamType === 'airflow') {
+                    givenValueUnitLabel.innerHTML = unitSystem === 'metric' ? '(L/s)' : '(CFM)';
+                } else { // velocity
+                    givenValueUnitLabel.innerHTML = unitSystem === 'metric' ? '(m/s)' : '(fpm)';
+                }
+            }
+
+
+            // Event Listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            unitSystemSelect.addEventListener('change', toggleInputSections); // Recalculate which fields are required
+            calculationModeSelect.addEventListener('change', toggleInputSections);
+            ductShapeSelect.addEventListener('change', toggleInputSections);
+            givenParameterTypeSelect.addEventListener('change', updateGivenValueUnitLabel);
+
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+            toggleInputSections(); // Call once to set initial state
+
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            /**
+             * Haaland equation for friction factor (explicit approximation of Colebrook-White).
+             * @param {number} Re - Reynolds number.
+             * @param {number} relativeRoughness - epsilon/Dh.
+             * @returns {number} Friction factor (f).
+             */
+            function haalandFrictionFactor(Re, relativeRoughness) {
+                if (Re < 2300) { // Laminar flow
+                    return 64 / Re;
+                }
+                // Turbulent flow - Haaland equation
+                const term1 = Math.pow(relativeRoughness / 3.7, 1.11);
+                const term2 = 6.9 / Re;
+                return Math.pow(-1.8 * Math.log10(term1 + term2), -2);
+            }
+
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('airflow-duct-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+                const calcMode = calculationModeSelect.value;
+                const ductShape = ductShapeSelect.value;
+
+                let Q_actual; // Airflow rate (m³/s for metric, ft³/min for imperial)
+                let V_actual; // Air velocity (m/s for metric, ft/min for imperial)
+                let A_duct;   // Duct area (m² for metric, ft² for imperial)
+                let D_h;      // Hydraulic diameter (m for metric, ft for imperial)
+                let ductWidth, ductHeight, ductDiameter; // For display in results
+
+                const L_input = parseFloat(ductLengthInput.value);
+                const rho_air_input = parseFloat(airDensityInput.value);
+                const mu_air_input = parseFloat(airViscosityInput.value);
+                const epsilon_input = parseFloat(ductRoughnessInput.value);
+                const fanEfficiency = parseFloat(fanMotorEfficiencyInput.value) / 100; // Convert % to decimal
+
+                let L, rho_air, mu_air, epsilon; // Standardized units for calculation
+
+                // Convert inputs to standardized units (Metric base: m, m/s, kg/m³, Pa.s, m)
+                if (unitSystem === 'metric') {
+                    L = L_input; // m
+                    rho_air = rho_air_input; // kg/m³
+                    mu_air = mu_air_input; // Pa.s
+                    epsilon = epsilon_input / 1000; // mm to m
+                } else { // Imperial
+                    L = L_input * 0.3048; // ft to m
+                    rho_air = rho_air_input * 16.0185; // lb/ft³ to kg/m³
+                    mu_air = mu_air_input * 1.488; // lb/ft.s to Pa.s (approx 1 lb/ft.s = 1.488 Pa.s)
+                    epsilon = epsilon_input * 0.0254; // inches to m
+                }
+
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters:</strong></p><ul>
+                    <li>Duct Length (\(L\)): ${L_input} ${unitSystem === 'metric' ? 'm' : 'ft'}</li>
+                    <li>Air Density (\(\rho_{air}\)): ${rho_air_input} ${unitSystem === 'metric' ? 'kg/m&#179;' : 'lb/ft&#179;'}</li>
+                    <li>Air Dynamic Viscosity (\(\mu_{air}\)): ${mu_air_input} ${unitSystem === 'metric' ? 'Pa&#183;s' : 'lb/ft&#183;s'}</li>
+                    <li>Duct Absolute Roughness (\(\epsilon\)): ${epsilon_input} ${unitSystem === 'metric' ? 'mm' : 'inches'}</li>
+                    <li>Fan-Motor Efficiency (\(\eta_{fan}\)): ${fanMotorEfficiencyInput.value}%</li>
+                </ul>`;
+
+                if (calcMode === 'calc-dimensions') {
+                    Q_actual = parseFloat(inputAirflowDim.value); // L/s or CFM
+                    V_actual = parseFloat(inputVelocityDim.value); // m/s or fpm
+
+                    let Q_metric_m3_s;
+                    let V_metric_m_s;
+
+                    if (unitSystem === 'metric') {
+                        Q_metric_m3_s = Q_actual / 1000; // L/s to m³/s
+                        V_metric_m_s = V_actual; // m/s
+                    } else { // Imperial
+                        Q_metric_m3_s = Q_actual * 0.000471947; // CFM to m³/s
+                        V_metric_m_s = V_actual * 0.00508; // fpm to m/s
+                    }
+
+                    A_duct = Q_metric_m3_s / V_metric_m_s; // Area in m²
+
+                    if (ductShape === 'circular') {
+                        D_h = 2 * Math.sqrt(A_duct / Math.PI); // Diameter in meters
+                        ductDiameter = D_h;
+                        calculationHtml += `<p><strong>2. Calculate Duct Area:</strong></p>
+                            <p class="formula">\\[ A = \\frac{\\dot{Q}}{V} \\]</p>
+                            <p class="calculation-step">\\( A \\) = ${Q_actual} ${unitSystem === 'metric' ? 'L/s' : 'CFM'} / ${V_actual} ${unitSystem === 'metric' ? 'm/s' : 'fpm'} = ${A_duct.toFixed(5)} m&#178;</p>`;
+                        calculationHtml += `<p><strong>3. Calculate Duct Diameter (Circular):</strong></p>
+                            <p class="formula">\\[ D_h = 2 \\sqrt{\\frac{A}{\\pi}} \\]</p>
+                            <p class="calculation-step">\\( D_h \\) = 2 \\sqrt{${A_duct.toFixed(5)} / \\pi} = ${D_h.toFixed(3)} m</p>`;
+                    } else { // Rectangular
+                        const aspectRatio = parseFloat(aspectRatioInput.value);
+                        ductHeight = Math.sqrt(A_duct / aspectRatio); // Height in meters
+                        ductWidth = aspectRatio * ductHeight; // Width in meters
+                        
+                        // Hydraulic diameter for rectangular duct
+                        D_h = (2 * ductWidth * ductHeight) / (ductWidth + ductHeight);
+
+                        calculationHtml += `<p><strong>2. Calculate Duct Area:</strong></p>
+                            <p class="formula">\\[ A = \\frac{\\dot{Q}}{V} \\]</p>
+                            <p class="calculation-step">\\( A \\) = ${Q_actual} ${unitSystem === 'metric' ? 'L/s' : 'CFM'} / ${V_actual} ${unitSystem === 'metric' ? 'm/s' : 'fpm'} = ${A_duct.toFixed(5)} m&#178;</p>`;
+                        calculationHtml += `<p><strong>3. Calculate Duct Dimensions (Rectangular) with Aspect Ratio ${aspectRatio}:</strong></p>
+                            <p class="formula">\\[ H = \\sqrt{\\frac{A}{AR}} \\quad W = AR \\cdot H \\]</p>
+                            <p class="calculation-step">\\( H \\) = \\( \\sqrt{${A_duct.toFixed(5)} / ${aspectRatio}} \\) = ${ductHeight.toFixed(3)} m</p>
+                            <p class="calculation-step">\\( W \\) = ${aspectRatio} \\times ${ductHeight.toFixed(3)} m = ${ductWidth.toFixed(3)} m</p>`;
+                        calculationHtml += `<p><strong>4. Calculate Hydraulic Diameter:</strong></p>
+                            <p class="formula">\\[ D_h = \\frac{2WH}{W+H} \\]</p>
+                            <p class="calculation-step">\\( D_h \\) = (2 \\times ${ductWidth.toFixed(3)} \\times ${ductHeight.toFixed(3)}) / (${ductWidth.toFixed(3)} + ${ductHeight.toFixed(3)}) = ${D_h.toFixed(3)} m</p>`;
+                    }
+                    Q_actual = Q_metric_m3_s; // Use m3/s for subsequent calculations
+                    V_actual = V_metric_m_s; // Use m/s for subsequent calculations
+                } else { // calc-flow-velocity
+                    const givenParamType = givenParameterTypeSelect.value;
+                    const givenParamValue = parseFloat(givenParameterValueInput.value);
+
+                    let D_input; // In inches or mm
+                    if (ductShape === 'circular') {
+                        D_input = parseFloat(inputDiameter.value);
+                        D_h = unitSystem === 'metric' ? D_input / 1000 : D_input * 0.0254; // Convert to meters
+                        A_duct = Math.PI * Math.pow(D_h / 2, 2); // Area in m²
+                        ductDiameter = D_input; // Keep for display in original units
+                        
+                        calculationHtml += `<p><strong>2. Calculate Duct Area (Circular):</strong></p>
+                            <p class="formula">\\[ A = \\pi (D/2)^2 \\]</p>
+                            <p class="calculation-step">\\( A \\) = \\( \\pi \\times (${D_h.toFixed(3)} / 2)^2 \\) = ${A_duct.toFixed(5)} m&#178;</p>`;
+                    } else { // Rectangular
+                        const W_input = parseFloat(inputWidth.value);
+                        const H_input = parseFloat(inputHeight.value);
+                        ductWidth = unitSystem === 'metric' ? W_input / 1000 : W_input * 0.0254; // Convert to meters
+                        ductHeight = unitSystem === 'metric' ? H_input / 1000 : H_input * 0.0254; // Convert to meters
+                        A_duct = ductWidth * ductHeight; // Area in m²
+                        D_h = (2 * ductWidth * ductHeight) / (ductWidth + ductHeight); // Hydraulic diameter in meters
+                        
+                        calculationHtml += `<p><strong>2. Calculate Duct Area (Rectangular):</strong></p>
+                            <p class="formula">\\[ A = W \\cdot H \\]</p>
+                            <p class="calculation-step">\\( A \\) = ${ductWidth.toFixed(3)} m \\times ${ductHeight.toFixed(3)} m = ${A_duct.toFixed(5)} m&#178;</p>`;
+                        calculationHtml += `<p><strong>3. Calculate Hydraulic Diameter:</strong></p>
+                            <p class="formula">\\[ D_h = \\frac{2WH}{W+H} \\]</p>
+                            <p class="calculation-step">\\( D_h \\) = (2 \\times ${ductWidth.toFixed(3)} \\times ${ductHeight.toFixed(3)}) / (${ductWidth.toFixed(3)} + ${ductHeight.toFixed(3)}) = ${D_h.toFixed(3)} m</p>`;
+                    }
+
+                    if (givenParamType === 'airflow') {
+                        Q_actual = unitSystem === 'metric' ? givenParamValue / 1000 : givenParamValue * 0.000471947; // To m³/s
+                        V_actual = Q_actual / A_duct; // m/s
+                        calculationHtml += `<p><strong>${ductShape === 'circular' ? '4' : '5'}. Calculate Air Velocity:</strong></p>
+                            <p class="formula">\\[ V = \\
+                            <p class="calculation-step">\\( V \\) = ${Q_actual.toFixed(5)} m&#179;/s / ${A_duct.toFixed(5)} m&#178; = ${V_actual.toFixed(2)} m/s</p>`;
+                    } else { // givenParamType === 'velocity'
+                        V_actual = unitSystem === 'metric' ? givenParamValue : givenParamValue * 0.00508; // To m/s
+                        Q_actual = V_actual * A_duct; // m³/s
+                        calculationHtml += `<p><strong>${ductShape === 'circular' ? '4' : '5'}. Calculate Air Flow Rate:</strong></p>
+                            <p class="formula">\\[ \\dot{Q} = V \\cdot A \\]</p>
+                            <p class="calculation-step">\\( \\dot{Q} \\) = ${V_actual.toFixed(2)} m/s \\times ${A_duct.toFixed(5)} m&#178; = ${Q_actual.toFixed(5)} m&#179;/s</p>`;
+                    }
+                }
+
+                // Ensure D_h is not zero to prevent division by zero for Reynolds and friction factor
+                if (D_h <= 0) {
+                    displayMessage("Calculated duct diameter or hydraulic diameter is zero or negative. Please check input values.", "error");
+                    return;
+                }
+
+                // 5. Calculate Reynolds Number
+                // Use standardized units (rho_air in kg/m³, V_actual in m/s, D_h in m, mu_air in Pa.s)
+                const Re = (rho_air * V_actual * D_h) / mu_air;
+                
+                calculationHtml += `<p><strong>${calcMode === 'calc-dimensions' ? '5' : (ductShape === 'circular' ? '5' : '6')}. Calculate Reynolds Number:</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ Re = \\frac{\\rho_{air} \\cdot V \\cdot D_h}{\\mu_{air}} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( Re \\) = (${rho_air.toFixed(4)} kg/m&#179; \\times ${V_actual.toFixed(2)} m/s \\times ${D_h.toFixed(4)} m) / ${mu_air.toExponential(2)} Pa&#183;s = ${Re.toFixed(2)}
+                </p>`;
+                calculationHtml += `<p>Flow Regime: ${Re < 2300 ? 'Laminar' : (Re > 4000 ? 'Turbulent' : 'Transitional')}</p>`;
+
+
+                // 6. Calculate Friction Factor (f) using Haaland Equation
+                const relativeRoughness = epsilon / D_h;
+                let f;
+                if (Re < 2300) { // Laminar
+                    f = 64 / Re;
+                    calculationHtml += `<p><strong>${calcMode === 'calc-dimensions' ? '6' : (ductShape === 'circular' ? '6' : '7')}. Calculate Friction Factor (Laminar Flow):</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ f = \\frac{64}{Re} \\]</p>`;
+                } else { // Turbulent (using Haaland for both transitional and fully turbulent for simplicity, though transitional is more complex)
+                    // Ensure relativeRoughness is not too small or large for log to work
+                    const term1 = Math.pow(relativeRoughness / 3.7, 1.11);
+                    const term2 = 6.9 / Re;
+                    f = Math.pow(-1.8 * Math.log10(term1 + term2), -2);
+                    calculationHtml += `<p><strong>${calcMode === 'calc-dimensions' ? '6' : (ductShape === 'circular' ? '6' : '7')}. Calculate Friction Factor (Turbulent Flow - Haaland Equation):</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ \\frac{1}{\\sqrt{f}} = -1.8 \\log_{10} \\left[ \\left( \\frac{\\epsilon/D_h}{3.7} \\right)^{1.11} + \\frac{6.9}{Re} \\right] \\]</p>`;
+                }
+                calculationHtml += `<p class="calculation-step">
+                    \\( f \\) = ${f.toFixed(4)}
+                </p>`;
+
+                // 7. Calculate Friction Loss per Unit Length (Pa/m)
+                // Darcy-Weisbach equation: \(\Delta P_f = f \cdot \frac{L}{D_h} \cdot \frac{\rho \cdot V^2}{2}\)
+                const velocityPressure = rho_air * Math.pow(V_actual, 2) / 2; // Pa
+                const frictionLossPerLength_Pa_m = (f / D_h) * velocityPressure; // Pa/m
+                
+                calculationHtml += `<p><strong>${calcMode === 'calc-dimensions' ? '7' : (ductShape === 'circular' ? '7' : '8')}. Calculate Friction Loss per Unit Length:</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\frac{\\Delta P_f}{L} = \\frac{f}{D_h} \\cdot \\frac{\\rho_{air} V^2}{2} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\frac{\\Delta P_f}{L} \\) = (${f.toFixed(4)} / ${D_h.toFixed(4)} m) \\times (${rho_air.toFixed(4)} kg/m&#179; \\times ${V_actual.toFixed(2)} m/s)^2 / 2 = ${frictionLossPerLength_Pa_m.toFixed(3)} Pa/m
+                </p>`;
+
+
+                // 8. Calculate Total Friction Loss
+                const totalFrictionLoss_Pa = frictionLossPerLength_Pa_m * L; // Total length in meters
+                
+                calculationHtml += `<p><strong>${calcMode === 'calc-dimensions' ? '8' : (ductShape === 'circular' ? '8' : '9')}. Calculate Total Friction Loss:</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\Delta P_{total} = \\left( \\frac{\\Delta P_f}{L} \\right) \\cdot L \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\Delta P_{total} \\) = ${frictionLossPerLength_Pa_m.toFixed(3)} Pa/m \\times ${L.toFixed(2)} m = ${totalFrictionLoss_Pa.toFixed(3)} Pa
+                </p>`;
+
+                // 9. Estimate Fan Power (kW)
+                // Power (Watts) = Q (m³/s) * ΔP (Pa) / Efficiency
+                let fanPower_kW = (Q_actual * totalFrictionLoss_Pa) / fanEfficiency / 1000; // kW
+                
+                calculationHtml += `<p><strong>${calcMode === 'calc-dimensions' ? '9' : (ductShape === 'circular' ? '9' : '10')}. Estimate Fan Power:</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ P_{fan} = \\frac{\\dot{Q}_{actual} \\cdot \\Delta P_{total}}{\\eta_{fan}} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( P_{fan} \\) = (${Q_actual.toFixed(5)} m&#179;/s \\times ${totalFrictionLoss_Pa.toFixed(3)} Pa) / ${fanEfficiency.toFixed(2)} / 1000 = ${fanPower_kW.toFixed(3)} kW
+                </p>`;
+
+
+                // Prepare results for display
+                resultTableBody.innerHTML = ''; // Clear previous results
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
+                addResultRow("Duct Shape", ductShape === 'circular' ? 'Circular' : 'Rectangular');
+                addResultRow("Calculation Mode", calcMode === 'calc-dimensions' ? 'Calculate Duct Dimensions' : 'Calculate Flow & Velocity');
+
+                let displayAirflow, displayVelocity;
+                if (unitSystem === 'metric') {
+                    displayAirflow = Q_actual * 1000; // m³/s to L/s
+                    displayVelocity = V_actual; // m/s
+                    addResultRow("Air Flow Rate (\\(\\dot{Q}\\))", `<strong>\\( ${displayAirflow.toFixed(2)} \\) L/s</strong>`);
+                    addResultRow("Air Velocity (\\(V\\))", `<strong>\\( ${displayVelocity.toFixed(2)} \\) m/s</strong>`);
+                    addResultRow("Duct Cross-sectional Area (\\(A\\))", `\\( ${(A_duct * 1000000).toFixed(2)} \\) mm&#178;`);
+                    if (ductShape === 'circular') {
+                        addResultRow("Duct Diameter (\\(D\\))", `\\( ${(ductDiameter * 1000).toFixed(2)} \\) mm`);
+                    } else {
+                        addResultRow("Duct Width (\\(W\\))", `\\( ${(ductWidth * 1000).toFixed(2)} \\) mm`);
+                        addResultRow("Duct Height (\\(H\\))", `\\( ${(ductHeight * 1000).toFixed(2)} \\) mm`);
+                        addResultRow("Hydraulic Diameter (\\(D_h\\))", `\\( ${(D_h * 1000).toFixed(2)} \\) mm`);
+                    }
+                    addResultRow("Reynolds Number (\\(Re\\))", `\\( ${Re.toFixed(0)} \\)`);
+                    addResultRow("Friction Factor (\\(f\\))", `\\( ${f.toFixed(4)} \\)`);
+                    addResultRow("Friction Loss per Unit Length (\\(\\Delta P_f/L\\))", `\\( ${frictionLossPerLength_Pa_m.toFixed(3)} \\) Pa/m`);
+                    addResultRow("Total Friction Loss (\\(\\Delta P_{total}\\))", `<strong>\\( ${totalFrictionLoss_Pa.toFixed(3)} \\) Pa</strong>`);
+                    addResultRow("Estimated Fan Power (\\(P_{fan}\\))", `<strong>\\( ${fanPower_kW.toFixed(3)} \\) kW</strong>`);
+
+                } else { // Imperial
+                    displayAirflow = Q_actual / 0.000471947; // m³/s to CFM
+                    displayVelocity = V_actual / 0.00508; // m/s to fpm
+                    addResultRow("Air Flow Rate (\\(\\dot{Q}\\))", `<strong>\\( ${displayAirflow.toFixed(2)} \\) CFM</strong>`);
+                    addResultRow("Air Velocity (\\(V\\))", `<strong>\\( ${displayVelocity.toFixed(2)} \\) fpm</strong>`);
+                    addResultRow("Duct Cross-sectional Area (\\(A\\))", `\\( ${(A_duct / 0.00092903).toFixed(2)} \\) in&#178;`); // m2 to in2 (1 m2 = 1550 in2)
+                    if (ductShape === 'circular') {
+                        addResultRow("Duct Diameter (\\(D\\))", `\\( ${(ductDiameter).toFixed(2)} \\) inches`);
+                    } else {
+                        addResultRow("Duct Width (\\(W\\))", `\\( ${(ductWidth / 0.0254).toFixed(2)} \\) inches`);
+                        addResultRow("Duct Height (\\(H\\))", `\\( ${(ductHeight / 0.0254).toFixed(2)} \\) inches`);
+                        addResultRow("Hydraulic Diameter (\\(D_h\\))", `\\( ${(D_h / 0.0254).toFixed(2)} \\) inches`);
+                    }
+                    addResultRow("Reynolds Number (\\(Re\\))", `\\( ${Re.toFixed(0)} \\)`);
+                    addResultRow("Friction Factor (\\(f\\))", `\\( ${f.toFixed(4)} \\)`);
+                    // Convert Pa/m to in. H2O / 100 ft
+                    const frictionLossPerLength_inH2O_100ft = frictionLossPerLength_Pa_m * 0.000249088 * 100 * 0.3048; // Pa/m to in H2O/ft then to in H2O/100ft
+                    addResultRow("Friction Loss per 100 ft (\\(\\Delta P_f/100ft\\))", `\\( ${frictionLossPerLength_inH2O_100ft.toFixed(4)} \\) in. H&#8322;O/100ft`);
+                    // Convert total friction loss Pa to in. H2O
+                    const totalFrictionLoss_inH2O = totalFrictionLoss_Pa * 0.000249088; // Pa to in H2O
+                    addResultRow("Total Friction Loss (\\(\\Delta P_{total}\\))", `<strong>\\( ${totalFrictionLoss_inH2O.toFixed(3)} \\) in. H&#8322;O</strong>`);
+                    // Convert kW to HP
+                    const fanPower_HP = fanPower_kW * 1.34102;
+                    addResultRow("Estimated Fan Power (\\(P_{fan}\\))", `<strong>\\( ${fanPower_HP.toFixed(3)} \\) HP</strong>`);
+                }
+                
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides a simplified, theoretical estimation for HVAC duct sizing and pressure drop based on fundamental fluid dynamics principles (Darcy-Weisbach and Haaland equation for friction factor). It makes assumptions regarding air properties and does not account for complex factors like dynamic losses from fittings (elbows, transitions, etc.), air compressibility effects, variations in temperature/humidity, or specific fan characteristics. For accurate design and real-world industrial HVAC systems, it is <strong>imperative</strong> to consult comprehensive industry standards (e.g., ASHRAE Handbook - Fundamentals, SMACNA HVAC Duct Construction Standards), specialized engineering software, and qualified HVAC engineers.";
+
+                // Show results container
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Duct Sizing Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

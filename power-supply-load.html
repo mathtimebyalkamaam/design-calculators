@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> <!-- Placeholder for G-tag ID -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX'); // Placeholder for G-tag ID
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instrument Power Supply Load Calculator - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme */
+        :root {
+            --primary-color: #007BFF; /* Blue for Power Supply */
+            --secondary-color: #0056b3; /* Darker Blue */
+            --accent-color: #FFC107; /* Amber */
+            --bg-color: #e0f2f7; /* Light Blueish Grey */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #f0f8ff; /* Lighter blue for hover */
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #004085);
+            --reset-button-bg: #FFC107; /* Yellow for reset */
+            --reset-button-hover-bg: #E0A800; /* Darker yellow */
+            --add-button-bg: #28A745; /* Green for add */
+            --add-button-hover-bg: #1E7E34; /* Darker green for add */
+            --remove-button-bg: #dc3545; /* Red for remove */
+            --remove-button-hover-bg: #c82333; /* Darker red for remove */
+            --clear-button-bg: #6c757d; /* Grey for clear */
+            --clear-button-hover-bg: #5a6268; /* Darker grey */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #0056b3, #007BFF);
+            --button-hover-gradient: linear-gradient(45deg, #007BFF, #0099ff);
+            --reset-button-bg: #FFD700; /* Gold/Yellow for dark mode reset */
+            --reset-button-hover-bg: #DAA520; /* Darker gold/yellow */
+            --add-button-bg: #1E7E34; /* Darker green for dark mode add */
+            --add-button-hover-bg: #28A745;
+            --remove-button-bg: #c82333; /* Darker red for dark mode remove */
+            --remove-button-hover-bg: #dc3545;
+            --clear-button-bg: #5a6268; /* Darker grey for dark mode clear */
+            --clear-button-hover-bg: #495057;
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #d0d2d6);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative; /* For theme toggle positioning */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px; /* Space between sections */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0; /* Initial state for fade-in animation */
+            transform: translateY(10px); /* Initial state for slide-up animation */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Default margin for form groups */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg); /* Use card-bg for input background */
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px; /* Gap between grid items */
+            margin-bottom: 0; /* Handled by form-group margin */
+        }
+        
+        .calculate-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px; /* Increased padding for better appearance */
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: bold;
+            margin-top: 25px; /* More space above button */
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto; /* Allow button to size based on content and padding */
+            min-width: 220px; /* Ensure a minimum width for consistency */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px; /* Space from calculate button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .add-device-btn {
+            background-color: var(--add-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-device-btn:hover {
+            background-color: var(--add-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .remove-device-btn {
+            background-color: var(--remove-button-bg);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        .remove-device-btn:hover {
+            background-color: var(--remove-button-hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* For animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color); /* Highlight row on hover */
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px; /* Increased padding */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px); /* Initial state for tooltip animation */
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex; /* Use flex for centering text */
+            align-items: center;
+            justify-content: center;
+            min-width: 250px; /* Ensure it's wide enough */
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* More rounded */
+            padding: 20px; /* Increased padding */
+            margin-bottom: 25px; /* More space */
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif; /* A font suitable for mathematical formulas */
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px; /* Increased padding */
+            background-color: var(--hover-color);
+            border-radius: 6px; /* More rounded */
+            margin: 15px 0; /* More space */
+            overflow-x: auto; /* Allow horizontal scrolling for long formulas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace; /* Monospace for steps */
+            background-color: var(--hover-color);
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 4px; /* More rounded */
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-break: break-word; /* Break long words */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px; /* Increased margin */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center; /* Center the button horizontally */
+            width: 100%; /* Ensure it takes full width to center effectively */
+            padding-top: 20px; /* Add more spacing above the button */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.4); /* Blue glow, slightly more pronounced */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(0, 123, 255, 0.2); /* Softer pulse */
+            }
+        }
+
+        /* Status Display (for Power Supply) */
+        .status-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+            width: 100%;
+        }
+        .status-display.optimal {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .status-display.sufficient {
+            background-color: #66bb6a; /* Lighter green */
+            color: white;
+        }
+        .status-display.adequate {
+            background-color: #add8e6; /* Light blue */
+            color: var(--text-color);
+        }
+        .status-display.marginal {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+        .status-display.insufficient {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        /* Practical Recommendations Section */
+        #practical-recommendations {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        #practical-recommendations h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+        #practical-recommendations ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #practical-recommendations ul li {
+            margin-bottom: 8px;
+        }
+
+        /* Device Entry Styling */
+        .device-entry {
+            display: grid;
+            grid-template-columns: 1fr 0.8fr 0.8fr 0.5fr auto; /* Name, Voltage, Current, Quantity, Remove Button */
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .device-entry:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .device-entry .form-group {
+            margin-bottom: 0; /* Override default form-group margin */
+        }
+        .device-entry .form-group input,
+        .device-entry .form-group select {
+            background-color: var(--bg-color); /* Use bg-color for device entry inputs */
+        }
+
+        /* Responsive adjustments for device entries */
+        @media (max-width: 768px) {
+            .device-entry {
+                grid-template-columns: 1fr; /* Stack elements on small screens */
+            }
+            .device-entry .remove-device-btn {
+                width: 100%;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Instrument Power Supply Load Calculator</h2>
+            <h2>Instrument Power Supply Load Calculator</h2>
+            
+            <div class="tool-description">
+                <p>This calculator assists instrumentation engineers in determining the appropriate power source sizing for their field devices. Accurately calculating the total current and power draw helps prevent overloading, ensures stable operation, and aids in selecting the correct power supply unit (PSU) or distributed control system (DCS) power module.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="power-supply-calculator-form">
+                    <!-- Global Parameters -->
+                    <div class="form-section">
+                        <h3>Global System Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="safety-factor">Safety Factor (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">An additional percentage added to the calculated load to account for future expansion, inrush currents, or unforeseen demands. Typically 10-25%.</span></span></label>
+                                <input type="number" id="safety-factor" step="0.1" min="0" value="20" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="power-supply-voltage">Nominal Power Supply Voltage (V<sub>DC</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The nominal output voltage of the power supply (e.g., 24 VDC).</span></span></label>
+                                <input type="number" id="power-supply-voltage" step="any" min="1" value="24" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="psu-efficiency">Power Supply Efficiency (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The efficiency of the power supply unit. A higher percentage means less power is wasted as heat. Typically 80-95%.</span></span></label>
+                                <input type="number" id="psu-efficiency" step="0.1" min="1" max="100" value="85" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="peak-current-multiplier">Peak Current Multiplier <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">A factor to account for inrush currents or momentary peak loads. E.g., 1.2 for 20% over continuous.</span></span></label>
+                                <input type="number" id="peak-current-multiplier" step="0.01" min="1" value="1.2" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Load Input Mode Selection -->
+                    <div class="form-section" id="load-input-mode-section">
+                        <h3>Load Input Method</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="load-input-mode">Choose Input Method</label>
+                                <select id="load-input-mode" required>
+                                    <option value="per-device">Calculate Per Device</option>
+                                    <option value="total-panel-load">Enter Total Panel Load</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connected Field Devices - now with an ID for toggling -->
+                    <div class="form-section" id="per-device-input-section">
+                        <h3>Connected Field Devices</h3>
+                        <div id="device-list">
+                            <!-- Device entries will be dynamically added here -->
+                            <div class="device-entry">
+                                <div class="form-group">
+                                    <label for="device-type-0">Device Type</label>
+                                    <select id="device-type-0" class="device-type" required>
+                                        <option value="Transmitter">Transmitter (4-20mA)</option>
+                                        <option value="Solenoid Valve">Solenoid Valve</option>
+                                        <option value="Positioner">Valve Positioner</option>
+                                        <option value="Indicator">Panel Indicator</option>
+                                        <option value="Actuator">Actuator</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="operating-voltage-0">Operating Voltage (V)</label>
+                                    <input type="number" id="operating-voltage-0" class="operating-voltage" step="any" min="0" value="24" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="current-consumption-0">Current Consumption (mA)</label>
+                                    <input type="number" id="current-consumption-0" class="current-consumption" step="any" min="0" value="20" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="quantity-0">Quantity</label>
+                                    <input type="number" id="quantity-0" class="quantity" step="1" min="1" value="1" required>
+                                </div>
+                                <button type="button" class="remove-device-btn" style="display:none;"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-device-btn" class="add-device-btn"><i class="fas fa-plus-circle"></i> Add Device</button>
+                    </div>
+
+                    <!-- New Total Panel Load Section - initially hidden -->
+                    <div class="form-section" id="total-panel-load-input-section" style="display: none;">
+                        <h3>Total Panel Load Details</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="total-load-value">Total Load Value <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total load of the panel.</span></span></label>
+                                <input type="number" id="total-load-value" step="any" min="0" value="100" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="total-load-unit">Total Load Unit</label>
+                                <select id="total-load-unit" required>
+                                    <option value="W">Watts (W)</option>
+                                    <option value="VA">Volt-Amperes (VA)</option>
+                                    <option value="A">Amperes (A)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn">Calculate Load</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <p class="status-display" id="load-status-display">Power Supply Load Status: N/A</p>
+
+                <div id="calculation-details">
+                    <h4>Step-by-Step Calculation</h4>
+                    <p class="formula" id="power-formula">
+                        <!-- Formula will be dynamically inserted here -->
+                    </p>
+                    <div id="steps-list">
+                        <!-- Calculation steps will be inserted here -->
+                    </div>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+
+                <div id="practical-recommendations" style="display: none;">
+                    <h4>Practical Considerations & Recommendations</h4>
+                    <ul id="recommendations-list">
+                        <!-- Recommendations will be dynamically inserted here -->
+                    </ul>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <p><strong>Applicable Standards and Guidelines:</strong> Proper power supply sizing and design in industrial automation are critical for system reliability and safety. Key standards and considerations include:</p>
+                    <ul>
+                        <li><strong>IEC 61131-2: Programmable Controllers - Part 2: Equipment Requirements and Tests.</strong> This standard covers power supply requirements for PLCs and associated modules.</li>
+                        <li><strong>NFPA 70 / National Electrical Code (NEC):</strong> Provides guidelines for electrical installations, including wiring, overcurrent protection, and power distribution.</li>
+                        <li><strong>UL 508 / CSA C22.2 No. 14: Industrial Control Equipment.</strong> Standards for industrial control panels and their components, including power supplies.</li>
+                        <li><strong>EMC Standards (e.g., IEC 61000 series):</strong> Ensures power supplies and connected devices operate without electromagnetic interference.</li>
+                        <li><strong>Redundancy and Reliability:</strong> For critical applications, consider redundant power supplies (e.g., 1+1 or N+1 configurations) and battery backup systems (UPS) to ensure continuous operation.</li>
+                        <li><strong>Voltage Drop Calculations:</strong> For long cable runs, calculate voltage drop to ensure devices receive adequate voltage.</li>
+                        <li><strong>Inrush Current:</strong> Account for the temporary high current drawn by devices when first powered on.</li>
+                        <li><strong>Temperature Derating:</strong> Power supply capacity may derate at higher operating temperatures. Ensure the selected PSU can deliver the required current at the maximum expected ambient temperature.</li>
+                    </ul>
+                    <p>This tool provides an initial estimate for power supply sizing. A detailed design should always consider specific device datasheets, cable lengths, environmental conditions, and applicable local electrical codes.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Input elements
+            const safetyFactorInput = document.getElementById('safety-factor');
+            const powerSupplyVoltageInput = document.getElementById('power-supply-voltage');
+            const psuEfficiencyInput = document.getElementById('psu-efficiency'); // New
+            const peakCurrentMultiplierInput = document.getElementById('peak-current-multiplier'); // New
+            const deviceListDiv = document.getElementById('device-list');
+            const addDeviceBtn = document.getElementById('add-device-btn');
+
+            // New input elements for load input mode
+            const loadInputModeSelect = document.getElementById('load-input-mode');
+            const perDeviceInputSection = document.getElementById('per-device-input-section');
+            const totalPanelLoadInputSection = document.getElementById('total-panel-load-input-section');
+            const totalLoadValueInput = document.getElementById('total-load-value');
+            const totalLoadUnitSelect = document.getElementById('total-load-unit');
+
+            // Buttons and result containers
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const loadStatusDisplay = document.getElementById('load-status-display');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+            const powerFormula = document.getElementById('power-formula');
+            const stepsList = document.getElementById('steps-list');
+            const practicalRecommendationsDiv = document.getElementById('practical-recommendations');
+            const recommendationsList = document.getElementById('recommendations-list');
+
+            let deviceCount = 1; // Start with 1 device already in the HTML
+
+            // Default values for resetting form
+            const defaultValues = {
+                'safety-factor': 20,
+                'power-supply-voltage': 24,
+                'psu-efficiency': 85, // New default
+                'peak-current-multiplier': 1.2, // New default
+                'load-input-mode': 'per-device', // Default mode
+                'total-load-value': 100, // Default for total panel load
+                'total-load-unit': 'W', // Default unit for total panel load
+                'device-type-0': 'Transmitter',
+                'operating-voltage-0': 24,
+                'current-consumption-0': 20,
+                'quantity-0': 1
+            };
+
+            // Function to display custom messages
+            function showCustomMessage(message, type = 'info') {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type for styling (e.g., 'error', 'success', 'info')
+
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#dc3545'; // Red
+                } else if (type === 'success') {
+                    messageBox.style.backgroundColor = '#28a745'; // Green
+                } else {
+                    messageBox.style.backgroundColor = '#007BFF'; // Blue (default info)
+                }
+
+                messageBox.style.opacity = '1';
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Slide down animation
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Slide up animation
+                }, 3000);
+            }
+
+            // Function to update visibility of input sections based on load input mode
+            function updateLoadInputSectionVisibility() {
+                if (loadInputModeSelect.value === 'per-device') {
+                    perDeviceInputSection.style.display = 'block';
+                    totalPanelLoadInputSection.style.display = 'none';
+                    // Clear total load values when switching away
+                    totalLoadValueInput.value = defaultValues['total-load-value'];
+                    totalLoadUnitSelect.value = defaultValues['total-load-unit'];
+                } else {
+                    perDeviceInputSection.style.display = 'none';
+                    totalPanelLoadInputSection.style.display = 'block';
+                    // Clear device list when switching away (optional, but good for clean state)
+                    while (deviceListDiv.children.length > 1) {
+                        deviceListDiv.removeChild(deviceListDiv.lastChild);
+                    }
+                    const firstDeviceEntry = deviceListDiv.querySelector('.device-entry:first-child');
+                    firstDeviceEntry.querySelector('.device-type').value = defaultValues['device-type-0'];
+                    firstDeviceEntry.querySelector('.operating-voltage').value = defaultValues['operating-voltage-0'];
+                    firstDeviceEntry.querySelector('.current-consumption').value = defaultValues['current-consumption-0'];
+                    firstDeviceEntry.querySelector('.quantity').value = defaultValues['quantity-0'];
+                    firstDeviceEntry.querySelector('.remove-device-btn').style.display = 'none';
+                    deviceCount = 1;
+                }
+            }
+
+            // Initial setup for the first device entry's remove button
+            const initialRemoveBtn = deviceListDiv.querySelector('.device-entry:first-child .remove-device-btn');
+            initialRemoveBtn.style.display = 'none'; // Hide initially as it's the only one
+
+            // Function to add a new device entry
+            function addDeviceEntry(initialValues = {}) {
+                const newDeviceEntry = document.createElement('div');
+                newDeviceEntry.className = 'device-entry';
+                newDeviceEntry.innerHTML = `
+                    <div class="form-group">
+                        <label for="device-type-${deviceCount}">Device Type</label>
+                        <select id="device-type-${deviceCount}" class="device-type" required>
+                            <option value="Transmitter">Transmitter (4-20mA)</option>
+                            <option value="Solenoid Valve">Solenoid Valve</option>
+                            <option value="Positioner">Valve Positioner</option>
+                            <option value="Indicator">Panel Indicator</option>
+                            <option value="Actuator">Actuator</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="operating-voltage-${deviceCount}">Operating Voltage (V)</label>
+                        <input type="number" id="operating-voltage-${deviceCount}" class="operating-voltage" step="any" min="0" value="${initialValues.operatingVoltage || 24}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="current-consumption-${deviceCount}">Current Consumption (mA)</label>
+                        <input type="number" id="current-consumption-${deviceCount}" class="current-consumption" step="any" min="0" value="${initialValues.currentConsumption || 20}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity-${deviceCount}">Quantity</label>
+                        <input type="number" id="quantity-${deviceCount}" class="quantity" step="1" min="1" value="${initialValues.quantity || 1}" required>
+                    </div>
+                    <button type="button" class="remove-device-btn"><i class="fas fa-trash"></i></button>
+                `;
+                deviceListDiv.appendChild(newDeviceEntry);
+
+                // Set initial values if provided
+                if (initialValues.deviceType) {
+                    newDeviceEntry.querySelector('.device-type').value = initialValues.deviceType;
+                }
+
+                // Add event listener for removing this device
+                newDeviceEntry.querySelector('.remove-device-btn').addEventListener('click', function() {
+                    newDeviceEntry.remove();
+                    showCustomMessage('Device removed.', 'info');
+                });
+
+                // Show remove button for the first device if more than one exists
+                const firstRemoveBtn = deviceListDiv.querySelector('.device-entry:first-child .remove-device-btn');
+                if (deviceListDiv.children.length > 1) {
+                    firstRemoveBtn.style.display = 'inline-block';
+                } else {
+                    firstRemoveBtn.style.display = 'none';
+                }
+
+                deviceCount++;
+            }
+
+            // Event listener for adding a new device
+            addDeviceBtn.addEventListener('click', function() {
+                addDeviceEntry();
+                showCustomMessage('New device added.', 'info');
+            });
+
+            // Event listener for removing the initial device entry (if it's the only one left)
+            initialRemoveBtn.addEventListener('click', function() {
+                if (deviceListDiv.children.length > 1) {
+                    this.closest('.device-entry').remove();
+                    showCustomMessage('Device removed.', 'info');
+                }
+                // After removal, re-check if there's only one left and hide its button
+                if (deviceListDiv.children.length === 1) {
+                    deviceListDiv.querySelector('.device-entry:first-child .remove-device-btn').style.display = 'none';
+                }
+            });
+
+            // Re-evaluate remove button visibility on any device removal
+            deviceListDiv.addEventListener('DOMNodeRemoved', function(event) {
+                if (event.target.classList && event.target.classList.contains('device-entry')) {
+                    if (deviceListDiv.children.length === 1) {
+                        deviceListDiv.querySelector('.device-entry:first-child .remove-device-btn').style.display = 'none';
+                    }
+                }
+            });
+
+            // Event listener for load input mode change
+            loadInputModeSelect.addEventListener('change', updateLoadInputSectionVisibility);
+
+            // Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                resultTableBody.innerHTML = ''; // Clear previous results
+                stepsList.innerHTML = ''; // Clear previous steps
+                recommendationsList.innerHTML = ''; // Clear previous recommendations
+                practicalRecommendationsDiv.style.display = 'none'; // Hide recommendations initially
+                loadStatusDisplay.textContent = 'Power Supply Load Status: Calculating...';
+                loadStatusDisplay.className = 'status-display'; // Reset class
+
+                const safetyFactor = parseFloat(safetyFactorInput.value);
+                const nominalSupplyVoltage = parseFloat(powerSupplyVoltageInput.value);
+                const psuEfficiency = parseFloat(psuEfficiencyInput.value); // New
+                const peakCurrentMultiplier = parseFloat(peakCurrentMultiplierInput.value); // New
+
+                let calculationSteps = [];
+                let totalCurrent_mA = 0; // Output current required from PSU
+                let totalPower_W = 0; // Output power required from PSU
+                let validationError = false;
+
+                // Input Validation for global parameters
+                if (isNaN(safetyFactor) || safetyFactor < 0) {
+                    showCustomMessage('Safety Factor must be a non-negative number.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+                if (isNaN(nominalSupplyVoltage) || nominalSupplyVoltage <= 0) {
+                    showCustomMessage('Nominal Power Supply Voltage must be a positive number.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+                if (isNaN(psuEfficiency) || psuEfficiency <= 0 || psuEfficiency > 100) {
+                    showCustomMessage('Power Supply Efficiency must be a positive number between 1 and 100.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+                if (isNaN(peakCurrentMultiplier) || peakCurrentMultiplier < 1) {
+                    showCustomMessage('Peak Current Multiplier must be 1 or greater.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+
+                calculationSteps.push(`<strong>1. Global System Parameters:</strong>`);
+                calculationSteps.push(`Nominal Power Supply Voltage (V<sub>nominal</sub>): ${nominalSupplyVoltage.toFixed(2)} V`);
+                calculationSteps.push(`Safety Factor: ${safetyFactor.toFixed(1)} %`);
+                calculationSteps.push(`Power Supply Efficiency: ${psuEfficiency.toFixed(1)} %`);
+                calculationSteps.push(`Peak Current Multiplier: ${peakCurrentMultiplier.toFixed(2)}`);
+
+
+                if (loadInputModeSelect.value === 'per-device') {
+                    calculationSteps.push(`<strong>2. Calculate Total Output Current and Power from Individual Devices:</strong>`);
+
+                    const deviceEntries = deviceListDiv.querySelectorAll('.device-entry');
+                    if (deviceEntries.length === 0) {
+                        showCustomMessage('Please add at least one device to calculate the load.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+
+                    deviceEntries.forEach((entry, index) => {
+                        const deviceType = entry.querySelector('.device-type').value;
+                        const operatingVoltage = parseFloat(entry.querySelector('.operating-voltage').value);
+                        const currentConsumption = parseFloat(entry.querySelector('.current-consumption').value);
+                        const quantity = parseInt(entry.querySelector('.quantity').value);
+
+                        // Validate individual device inputs
+                        if (isNaN(operatingVoltage) || operatingVoltage <= 0) {
+                            showCustomMessage(`Device ${index + 1}: Operating Voltage must be a positive number.`, 'error');
+                            validationError = true;
+                            return;
+                        }
+                        if (isNaN(currentConsumption) || currentConsumption < 0) {
+                            showCustomMessage(`Device ${index + 1}: Current Consumption must be a non-negative number.`, 'error');
+                            validationError = true;
+                            return;
+                        }
+                        if (isNaN(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+                            showCustomMessage(`Device ${index + 1}: Quantity must be a positive integer.`, 'error');
+                            validationError = true;
+                            return;
+                        }
+
+                        // Calculate current and power for this device type
+                        const deviceCurrent_mA = currentConsumption * quantity;
+                        const devicePower_W = (operatingVoltage * deviceCurrent_mA) / 1000; // mA to A, then W
+
+                        totalCurrent_mA += deviceCurrent_mA;
+                        totalPower_W += devicePower_W;
+
+                        calculationSteps.push(`- Device ${index + 1} (${deviceType}):`);
+                        calculationSteps.push(`  Operating Voltage: ${operatingVoltage.toFixed(2)} V, Current Consumption: ${currentConsumption.toFixed(2)} mA, Quantity: ${quantity}`);
+                        calculationSteps.push(`  Total Current for this device type = ${currentConsumption.toFixed(2)} mA * ${quantity} = ${deviceCurrent_mA.toFixed(2)} mA`);
+                        calculationSteps.push(`  Total Power for this device type = (${operatingVoltage.toFixed(2)} V * ${deviceCurrent_mA.toFixed(2)} mA) / 1000 = ${devicePower_W.toFixed(2)} W`);
+                    });
+
+                } else { // total-panel-load mode
+                    const totalLoadValue = parseFloat(totalLoadValueInput.value);
+                    const totalLoadUnit = totalLoadUnitSelect.value;
+
+                    if (isNaN(totalLoadValue) || totalLoadValue < 0) {
+                        showCustomMessage('Total Load Value must be a non-negative number.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+
+                    calculationSteps.push(`<strong>2. Process Total Panel Load (Input from User):</strong>`);
+                    calculationSteps.push(`Total Load Value: ${totalLoadValue.toFixed(2)} ${totalLoadUnit}`);
+
+                    switch (totalLoadUnit) {
+                        case 'W':
+                            totalPower_W = totalLoadValue;
+                            totalCurrent_mA = (totalPower_W / nominalSupplyVoltage) * 1000;
+                            calculationSteps.push(`Load Unit: Watts (W). This is the direct output power (P<sub>base</sub>).`);
+                            calculationSteps.push(`I<sub>base</sub> = P<sub>base</sub> / V<sub>nominal</sub> = ${totalPower_W.toFixed(2)} W / ${nominalSupplyVoltage.toFixed(2)} V = ${(totalPower_W / nominalSupplyVoltage).toFixed(2)} A = ${totalCurrent_mA.toFixed(2)} mA`);
+                            break;
+                        case 'VA':
+                            totalPower_W = totalLoadValue; // Assuming Power Factor of 1 for DC systems
+                            totalCurrent_mA = (totalPower_W / nominalSupplyVoltage) * 1000;
+                            calculationSteps.push(`Load Unit: Volt-Amperes (VA). For DC systems, VA is generally considered equal to Watts (Power Factor = 1).`);
+                            calculationSteps.push(`P<sub>base</sub> = ${totalLoadValue.toFixed(2)} VA = ${totalPower_W.toFixed(2)} W`);
+                            calculationSteps.push(`I<sub>base</sub> = P<sub>base</sub> / V<sub>nominal</sub> = ${totalPower_W.toFixed(2)} W / ${nominalSupplyVoltage.toFixed(2)} V = ${(totalPower_W / nominalSupplyVoltage).toFixed(2)} A = ${totalCurrent_mA.toFixed(2)} mA`);
+                            break;
+                        case 'A':
+                            totalCurrent_mA = totalLoadValue * 1000;
+                            totalPower_W = (nominalSupplyVoltage * totalCurrent_mA) / 1000;
+                            calculationSteps.push(`Load Unit: Amperes (A). This is the direct output current (I<sub>base</sub>).`);
+                            calculationSteps.push(`P<sub>base</sub> = V<sub>nominal</sub> * I<sub>base</sub> = ${nominalSupplyVoltage.toFixed(2)} V * ${totalLoadValue.toFixed(2)} A = ${totalPower_W.toFixed(2)} W`);
+                            break;
+                    }
+                }
+
+                if (validationError) {
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+                // Step 3: Calculate Total Base Load (Output from PSU)
+                calculationSteps.push(`<strong>3. Calculate Total Base Load (Output from Power Supply):</strong>`);
+                calculationSteps.push(`Total Base Current (I<sub>base_out</sub>) = ${totalCurrent_mA.toFixed(2)} mA`);
+                calculationSteps.push(`Total Base Power (P<sub>base_out</sub>) = ${totalPower_W.toFixed(2)} W`);
+
+                // Step 4: Calculate Load with Safety Factor (Output from PSU)
+                calculationSteps.push(`<strong>4. Calculate Required Output Load with Safety Factor:</strong>`);
+                const safetyFactorDecimal = safetyFactor / 100;
+                const totalCurrentWithSafety_mA = totalCurrent_mA * (1 + safetyFactorDecimal);
+                const totalPowerWithSafety_W = totalPower_W * (1 + safetyFactorDecimal);
+
+                powerFormula.innerHTML = `I<sub>total_out</sub> = I<sub>base_out</sub> * (1 + Safety Factor / 100)`;
+                powerFormula.innerHTML += `<br>P<sub>total_out</sub> = P<sub>base_out</sub> * (1 + Safety Factor / 100)`;
+
+                calculationSteps.push(`Total Output Current (I<sub>total_out</sub>) = ${totalCurrent_mA.toFixed(2)} mA * (1 + ${safetyFactor.toFixed(1)} / 100) = ${totalCurrentWithSafety_mA.toFixed(2)} mA`);
+                calculationSteps.push(`Total Output Power (P<sub>total_out</sub>) = ${totalPower_W.toFixed(2)} W * (1 + ${safetyFactor.toFixed(1)} / 100) = ${totalPowerWithSafety_W.toFixed(2)} W`);
+
+                // Step 5: Calculate Required Power Supply Input Power and Current (considering efficiency)
+                calculationSteps.push(`<strong>5. Calculate Required Power Supply Input Power and Current:</strong>`);
+                const psuEfficiencyDecimal = psuEfficiency / 100;
+                const requiredInputPower_W = totalPowerWithSafety_W / psuEfficiencyDecimal;
+                const requiredInputCurrent_A = requiredInputPower_W / nominalSupplyVoltage; // Assuming nominal supply voltage is also the input voltage for current calculation. If AC input, this would be more complex.
+
+                powerFormula.innerHTML += `<br>P<sub>input_req</sub> = P<sub>total_out</sub> / Efficiency`;
+                powerFormula.innerHTML += `<br>I<sub>input_req</sub> = P<sub>input_req</sub> / V<sub>nominal</sub>`;
+
+                calculationSteps.push(`Required Input Power (P<sub>input_req</sub>) = ${totalPowerWithSafety_W.toFixed(2)} W / ${psuEfficiencyDecimal.toFixed(2)} = ${requiredInputPower_W.toFixed(2)} W`);
+                calculationSteps.push(`Required Input Current (I<sub>input_req</sub>) = ${requiredInputPower_W.toFixed(2)} W / ${nominalSupplyVoltage.toFixed(2)} V = ${requiredInputCurrent_A.toFixed(2)} A`);
+
+
+                // Step 6: Calculate Recommended Power Supply Continuous and Peak Current Rating (Amps)
+                calculationSteps.push(`<strong>6. Calculate Recommended Power Supply Continuous and Peak Current Rating:</strong>`);
+                const recommendedContinuousCurrent_A = totalPowerWithSafety_W / nominalSupplyVoltage;
+                const recommendedPeakCurrent_A = recommendedContinuousCurrent_A * peakCurrentMultiplier;
+
+                powerFormula.innerHTML += `<br>I<sub>PSU_continuous</sub> = P<sub>total_out</sub> / V<sub>nominal</sub>`;
+                powerFormula.innerHTML += `<br>I<sub>PSU_peak</sub> = I<sub>PSU_continuous</sub> * Peak Multiplier`;
+
+                calculationSteps.push(`Recommended PSU Continuous Current (I<sub>PSU_continuous</sub>) = ${totalPowerWithSafety_W.toFixed(2)} W / ${nominalSupplyVoltage.toFixed(2)} V = ${recommendedContinuousCurrent_A.toFixed(2)} A`);
+                calculationSteps.push(`Recommended PSU Peak Current (I<sub>PSU_peak</sub>) = ${recommendedContinuousCurrent_A.toFixed(2)} A * ${peakCurrentMultiplier.toFixed(2)} = ${recommendedPeakCurrent_A.toFixed(2)} A`);
+
+
+                // Display Results in table
+                const results = [
+                    { param: 'Nominal Power Supply Voltage', value: `${nominalSupplyVoltage.toFixed(2)} V` },
+                    { param: 'Safety Factor', value: `${safetyFactor.toFixed(1)} %` },
+                    { param: 'Power Supply Efficiency', value: `${psuEfficiency.toFixed(1)} %` },
+                    { param: 'Peak Current Multiplier', value: `${peakCurrentMultiplier.toFixed(2)}` },
+                    { param: 'Total Base Output Current', value: `${totalCurrent_mA.toFixed(2)} mA` },
+                    { param: 'Total Base Output Power', value: `${totalPower_W.toFixed(2)} W` },
+                    { param: '<strong>Required Output Current (with Safety Factor)</strong>', value: `<strong>${totalCurrentWithSafety_mA.toFixed(2)} mA</strong>` },
+                    { param: '<strong>Required Output Power (with Safety Factor)</strong>', value: `<strong>${totalPowerWithSafety_W.toFixed(2)} W</strong>` },
+                    { param: 'Required Power Supply Input Power', value: `${requiredInputPower_W.toFixed(2)} W` },
+                    { param: 'Required Power Supply Input Current', value: `${requiredInputCurrent_A.toFixed(2)} A` },
+                    { param: '<strong>Recommended PSU Continuous Current Rating</strong>', value: `<strong>${recommendedContinuousCurrent_A.toFixed(2)} A</strong>` },
+                    { param: '<strong>Recommended PSU Peak Current Rating</strong>', value: `<strong>${recommendedPeakCurrent_A.toFixed(2)} A</strong>` }
+                ];
+
+                results.forEach(res => {
+                    const row = resultTableBody.insertRow();
+                    const paramCell = row.insertCell(0);
+                    const valueCell = row.insertCell(1);
+                    paramCell.innerHTML = res.param;
+                    valueCell.innerHTML = res.value;
+                });
+
+                // Populate step-by-step calculations
+                stepsList.innerHTML = '';
+                calculationSteps.forEach(step => {
+                    const p = document.createElement('p');
+                    p.className = 'calculation-step';
+                    p.innerHTML = step;
+                    stepsList.appendChild(p);
+                });
+
+                // Update Status Display and Recommendations
+                let statusText = 'Power Supply Load Status: ';
+                let statusClass = 'status-display ';
+                let recommendations = [];
+
+                if (recommendedContinuousCurrent_A < 0.5) { // Assuming very low load for very small systems
+                    statusText += 'Very Low Load';
+                    statusClass += 'optimal';
+                    recommendations.push("The calculated load is very low. A standard small power supply should be sufficient. Ensure the minimum load requirement of the PSU is met if applicable.");
+                } else if (recommendedContinuousCurrent_A <= 2) {
+                    statusText += 'Low Load (Typical Small System)';
+                    statusClass += 'sufficient';
+                    recommendations.push("The load is typical for small to medium instrumentation systems. A common 24VDC, 2-5A power supply should be adequate.");
+                    recommendations.push("Consider the physical size and heat dissipation requirements of the power supply.");
+                } else if (recommendedContinuousCurrent_A <= 5) {
+                    statusText += 'Medium Load (Standard System)';
+                    statusClass += 'adequate';
+                    recommendations.push("This load is common for standard industrial control systems. Select a power supply with a rating comfortably above the calculated continuous and peak values (e.g., 5A or 10A).");
+                    recommendations.push("Ensure proper ventilation for the power supply unit to prevent overheating.");
+                } else if (recommendedContinuousCurrent_A <= 10) {
+                    statusText += 'High Load (Larger System)';
+                    statusClass += 'marginal';
+                    recommendations.push("This indicates a significant load. You may need a larger capacity power supply or consider distributing the load across multiple PSUs.");
+                    recommendations.push("Pay close attention to wire sizing and circuit protection (fuses/breakers) for higher currents, especially considering the peak current.");
+                    recommendations.push("Evaluate the need for redundant power supplies for critical applications.");
+                } else { // recommendedContinuousCurrent_A > 10
+                    statusText += 'Very High Load (Complex System)';
+                    statusClass += 'insufficient';
+                    recommendations.push("The calculated load is very high. It is strongly recommended to distribute the load across multiple power supplies or use a high-capacity industrial power supply.");
+                    recommendations.push("Thoroughly review all device current consumptions and quantities for accuracy, and validate your peak current multiplier.");
+                    recommendations.push("Implement robust power distribution planning, including dedicated power circuits and proper grounding.");
+                    recommendations.push("Consider advanced power management techniques and redundancy for maximum reliability.");
+                    recommendations.push("Always select circuit protection (fuses/breakers) based on the *peak* current, not just continuous.");
+                }
+
+                recommendationsList.innerHTML = '';
+                recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.textContent = rec;
+                    recommendationsList.appendChild(li);
+                });
+                practicalRecommendationsDiv.style.display = 'block'; // Show recommendations
+
+                loadStatusDisplay.textContent = statusText;
+                loadStatusDisplay.className = statusClass;
+
+                resultContainer.style.display = 'block';
+                // Trigger fade-in animation
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    showCustomMessage('Calculation successful!', 'success');
+                }, 100);
+
+            });
+
+            // Reset Form Logic
+            resetFormBtn.addEventListener('click', function() {
+                safetyFactorInput.value = defaultValues['safety-factor'];
+                powerSupplyVoltageInput.value = defaultValues['power-supply-voltage'];
+                psuEfficiencyInput.value = defaultValues['psu-efficiency']; // Reset new input
+                peakCurrentMultiplierInput.value = defaultValues['peak-current-multiplier']; // Reset new input
+                loadInputModeSelect.value = defaultValues['load-input-mode']; // Reset to default mode
+                totalLoadValueInput.value = defaultValues['total-load-value']; // Reset new input
+                totalLoadUnitSelect.value = defaultValues['total-load-unit']; // Reset new input
+
+                // Clear all existing device entries except the first one
+                while (deviceListDiv.children.length > 1) {
+                    deviceListDiv.removeChild(deviceListDiv.lastChild);
+                }
+
+                // Reset the first device entry to default values
+                const firstDeviceEntry = deviceListDiv.querySelector('.device-entry:first-child');
+                firstDeviceEntry.querySelector('.device-type').value = defaultValues['device-type-0'];
+                firstDeviceEntry.querySelector('.operating-voltage').value = defaultValues['operating-voltage-0'];
+                firstDeviceEntry.querySelector('.current-consumption').value = defaultValues['current-consumption-0'];
+                firstDeviceEntry.querySelector('.quantity').value = defaultValues['quantity-0'];
+                firstDeviceEntry.querySelector('.remove-device-btn').style.display = 'none'; // Hide remove button for the single device
+
+                deviceCount = 1; // Reset device counter
+
+                updateLoadInputSectionVisibility(); // Apply visibility based on reset mode
+
+                showCustomMessage('Form reset to default values.', 'info');
+            });
+
+            // Clear Results Logic
+            clearResultsBtn.addEventListener('click', function() {
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    resultTableBody.innerHTML = '';
+                    stepsList.innerHTML = '';
+                    powerFormula.innerHTML = '';
+                    recommendationsList.innerHTML = '';
+                    practicalRecommendationsDiv.style.display = 'none';
+                    loadStatusDisplay.textContent = 'Power Supply Load Status: N/A';
+                    loadStatusDisplay.className = 'status-display';
+                }, 500); // Wait for fade-out transition
+                showCustomMessage('Results cleared.', 'info');
+            });
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+            // Initial call to set visibility based on default/saved values
+            updateLoadInputSectionVisibility();
+        });
+    </script>
+</body>
+</html>

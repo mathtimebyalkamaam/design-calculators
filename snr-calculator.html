@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> <!-- Placeholder for G-tag ID -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX'); // Placeholder for G-tag ID
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal-to-Noise Ratio (SNR) - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme */
+        :root {
+            --primary-color: #007BFF; /* Blue for SNR */
+            --secondary-color: #0056b3; /* Darker Blue */
+            --accent-color: #FFC107; /* Amber */
+            --bg-color: #f0f2f5; /* Light Greyish Blue */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #e2e6ea;
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #004085);
+            --reset-button-bg: #FFC107; /* Yellow for reset */
+            --reset-button-hover-bg: #E0A800; /* Darker yellow */
+            --clear-button-bg: #6c757d; /* Grey for clear */
+            --clear-button-hover-bg: #5a6268; /* Darker grey */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #0056b3, #007BFF);
+            --button-hover-gradient: linear-gradient(45deg, #007BFF, #008aff);
+            --reset-button-bg: #FFD700; /* Gold/Yellow for dark mode reset */
+            --reset-button-hover-bg: #DAA520; /* Darker gold/yellow */
+            --clear-button-bg: #5a6268; /* Darker grey for dark mode clear */
+            --clear-button-hover-bg: #495057;
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #d0d2d6);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative; /* For theme toggle positioning */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px; /* Space between sections */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0; /* Initial state for fade-in animation */
+            transform: translateY(10px); /* Initial state for slide-up animation */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Default margin for form groups */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg); /* Use card-bg for input background */
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px; /* Gap between grid items */
+            margin-bottom: 0; /* Handled by form-group margin */
+        }
+        
+        .calculate-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px; /* Increased padding for better appearance */
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: bold;
+            margin-top: 25px; /* More space above button */
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto; /* Allow button to size based on content and padding */
+            min-width: 220px; /* Ensure a minimum width for consistency */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px; /* Space from calculate button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* For animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color); /* Highlight row on hover */
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px; /* Increased padding */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px); /* Initial state for tooltip animation */
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex; /* Use flex for centering text */
+            align-items: center;
+            justify-content: center;
+            min-width: 250px; /* Ensure it's wide enough */
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* More rounded */
+            padding: 20px; /* Increased padding */
+            margin-bottom: 25px; /* More space */
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px; /* More space */
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif; /* A font suitable for mathematical formulas */
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px; /* Increased padding */
+            background-color: var(--hover-color);
+            border-radius: 6px; /* More rounded */
+            margin: 15px 0; /* More space */
+            overflow-x: auto; /* Allow horizontal scrolling for long formulas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace; /* Monospace for steps */
+            background-color: var(--hover-color);
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 4px; /* More rounded */
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-break: break-word; /* Break long words */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px; /* Increased margin */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center; /* Center the button horizontally */
+            width: 100%; /* Ensure it takes full width to center effectively */
+            padding-top: 20px; /* Add more spacing above the button */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.4); /* Blue glow, slightly more pronounced */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(0, 123, 255, 0.2); /* Softer pulse */
+            }
+        }
+
+        /* Status Display (for SNR) */
+        .status-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+            width: 100%;
+        }
+        .status-display.excellent {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .status-display.very-good {
+            background-color: #66bb6a; /* Lighter green */
+            color: white;
+        }
+        .status-display.good {
+            background-color: #add8e6; /* Light blue */
+            color: var(--text-color);
+        }
+        .status-display.marginal {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+        .status-display.poor {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        /* Practical Recommendations Section */
+        #practical-recommendations {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        #practical-recommendations h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+        #practical-recommendations ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #practical-recommendations ul li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Signal-to-Noise Ratio (SNR) Calculator</h2>
+            
+            <div class="tool-description">
+                <p>This calculator helps instrument engineers assess the integrity of a signal in the presence of noise. It provides Signal-to-Noise Ratio (SNR) calculations based on various input parameters, offering insights into signal quality and compliance with common industry standards for reliable measurement and control systems.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="snr-calculator-form">
+                    <!-- Signal Input -->
+                    <div class="form-section">
+                        <h3>Signal Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="signal-value">Signal Value <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The magnitude of the desired signal.</span></span></label>
+                                <input type="number" id="signal-value" step="any" value="1.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="signal-unit">Signal Unit</label>
+                                <select id="signal-unit" required>
+                                    <option value="V">Volts (V)</option>
+                                    <option value="mV">Millivolts (mV)</option>
+                                    <option value="A">Amperes (A)</option>
+                                    <option value="mA">Milliamperes (mA)</option>
+                                    <option value="W">Watts (W)</option>
+                                    <option value="mW">Milliwatts (mW)</option>
+                                    <option value="dBm">dBm</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Noise Input -->
+                    <div class="form-section">
+                        <h3>Noise Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="noise-value">Noise Value <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The magnitude of the unwanted noise.</span></span></label>
+                                <input type="number" id="noise-value" step="any" value="0.001" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="noise-unit">Noise Unit</label>
+                                <select id="noise-unit" required>
+                                    <option value="V">Volts (V)</option>
+                                    <option value="mV">Millivolts (mV)</option>
+                                    <option value="A">Amperes (A)</option>
+                                    <option value="mA">Milliamperes (mA)</option>
+                                    <option value="W">Watts (W)</option>
+                                    <option value="mW">Milliwatts (mW)</option>
+                                    <option value="dBm">dBm</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Impedance (Conditional) -->
+                    <div class="form-section" id="impedance-section" style="display: none;">
+                        <h3>Circuit Impedance</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="impedance">Impedance (R) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Load impedance for voltage/current calculations (Ohms). Required if signal or noise is in V, mV, A, or mA.</span></span></label>
+                                <input type="number" id="impedance" step="0.1" value="50" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn">Calculate SNR</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <p class="status-display" id="snr-status-display">SNR Status: N/A</p>
+
+                <div id="calculation-details">
+                    <h4>Step-by-Step Calculation</h4>
+                    <p class="formula" id="snr-formula">
+                        <!-- Formula will be dynamically inserted here -->
+                    </p>
+                    <div id="steps-list">
+                        <!-- Calculation steps will be inserted here -->
+                    </div>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+
+                <div id="practical-recommendations" style="display: none;">
+                    <h4>Practical Recommendations for Improving SNR</h4>
+                    <ul id="recommendations-list">
+                        <!-- Recommendations will be dynamically inserted here -->
+                    </ul>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <p><strong>Applicable Standards and Guidelines:</strong> A higher SNR generally indicates a better quality signal. For many industrial applications, an SNR of 20 dB or higher is considered good, while 30 dB or higher is excellent. However, acceptable SNR levels can vary significantly based on the specific application, industry, and communication protocol (e.g., analog vs. digital, type of sensor, control system requirements). Consult relevant industry standards such as IEC 60060, IEEE 100, or specific fieldbus specifications (e.g., HART, Foundation Fieldbus) for detailed requirements.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Input elements
+            const signalValueInput = document.getElementById('signal-value');
+            const signalUnitSelect = document.getElementById('signal-unit');
+            const noiseValueInput = document.getElementById('noise-value');
+            const noiseUnitSelect = document.getElementById('noise-unit');
+            const impedanceInput = document.getElementById('impedance');
+
+            // Sections
+            const impedanceSection = document.getElementById('impedance-section');
+            const practicalRecommendationsDiv = document.getElementById('practical-recommendations');
+            const recommendationsList = document.getElementById('recommendations-list');
+
+            // Buttons and result containers
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const snrStatusDisplay = document.getElementById('snr-status-display');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+            const snrFormula = document.getElementById('snr-formula');
+            const stepsList = document.getElementById('steps-list');
+
+            // Default values for resetting form
+            const defaultValues = {
+                'signal-value': 1.0,
+                'signal-unit': 'V',
+                'noise-value': 0.001,
+                'noise-unit': 'V',
+                'impedance': 50
+            };
+
+            // Function to display custom messages
+            function showCustomMessage(message, type = 'info') {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type for styling (e.g., 'error', 'success', 'info')
+
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#dc3545'; // Red
+                } else if (type === 'success') {
+                    messageBox.style.backgroundColor = '#28a745'; // Green
+                } else {
+                    messageBox.style.backgroundColor = '#007BFF'; // Blue (default info)
+                }
+
+                messageBox.style.opacity = '1';
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Slide down animation
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Slide up animation
+                }, 3000);
+            }
+
+            // Function to update visibility of impedance section
+            function updateImpedanceSectionVisibility() {
+                const signalUnit = signalUnitSelect.value;
+                const noiseUnit = noiseUnitSelect.value;
+
+                const requiresImpedance = (unit) => ['V', 'mV', 'A', 'mA'].includes(unit);
+
+                if (requiresImpedance(signalUnit) || requiresImpedance(noiseUnit)) {
+                    impedanceSection.style.display = 'block';
+                } else {
+                    impedanceSection.style.display = 'none';
+                    // Clear impedance value when not needed to prevent stale data
+                    impedanceInput.value = defaultValues['impedance'];
+                }
+            }
+
+            // Helper function to convert any input value to Watts
+            function convertToWatts(value, unit, impedance, steps) {
+                let powerInWatts;
+                let conversionStep = '';
+
+                switch (unit) {
+                    case 'V':
+                        powerInWatts = (value * value) / impedance;
+                        conversionStep = `Convert ${value} V to Watts: P = V<sup>2</sup> / R = ${value}<sup>2</sup> / ${impedance} = ${powerInWatts.toExponential(4)} W`;
+                        break;
+                    case 'mV':
+                        const V = value / 1000;
+                        powerInWatts = (V * V) / impedance;
+                        conversionStep = `Convert ${value} mV to Watts: P = (mV/1000)<sup>2</sup> / R = (${value}/1000)<sup>2</sup> / ${impedance} = ${powerInWatts.toExponential(4)} W`;
+                        break;
+                    case 'A':
+                        powerInWatts = (value * value) * impedance;
+                        conversionStep = `Convert ${value} A to Watts: P = I<sup>2</sup> * R = ${value}<sup>2</sup> * ${impedance} = ${powerInWatts.toExponential(4)} W`;
+                        break;
+                    case 'mA':
+                        const A = value / 1000;
+                        powerInWatts = (A * A) * impedance;
+                        conversionStep = `Convert ${value} mA to Watts: P = (mA/1000)<sup>2</sup> * R = (${value}/1000)<sup>2</sup> * ${impedance} = ${powerInWatts.toExponential(4)} W`;
+                        break;
+                    case 'W':
+                        powerInWatts = value;
+                        conversionStep = `Signal/Noise is already in Watts: ${value} W`;
+                        break;
+                    case 'mW':
+                        powerInWatts = value / 1000;
+                        conversionStep = `Convert ${value} mW to Watts: ${value} / 1000 = ${powerInWatts.toExponential(4)} W`;
+                        break;
+                    case 'dBm':
+                        powerInWatts = Math.pow(10, (value - 30) / 10); // 0 dBm = 1 mW = 0.001 W
+                        conversionStep = `Convert ${value} dBm to Watts: P = 10<sup>((dBm - 30) / 10)</sup> = 10<sup>((${value} - 30) / 10)</sup> = ${powerInWatts.toExponential(4)} W`;
+                        break;
+                    default:
+                        throw new Error('Unsupported unit for conversion.');
+                }
+                steps.push(conversionStep);
+                return powerInWatts;
+            }
+
+            // Initial call to set visibility based on default/saved value
+            updateImpedanceSectionVisibility();
+
+            // Event listeners for unit changes
+            signalUnitSelect.addEventListener('change', updateImpedanceSectionVisibility);
+            noiseUnitSelect.addEventListener('change', updateImpedanceSectionVisibility);
+
+            // Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                resultTableBody.innerHTML = ''; // Clear previous results
+                stepsList.innerHTML = ''; // Clear previous steps
+                recommendationsList.innerHTML = ''; // Clear previous recommendations
+                practicalRecommendationsDiv.style.display = 'none'; // Hide recommendations initially
+                snrStatusDisplay.textContent = 'SNR Status: Calculating...';
+                snrStatusDisplay.className = 'status-display'; // Reset class
+
+                const signalValue = parseFloat(signalValueInput.value);
+                const signalUnit = signalUnitSelect.value;
+                const noiseValue = parseFloat(noiseValueInput.value);
+                const noiseUnit = noiseUnitSelect.value;
+                let impedance = parseFloat(impedanceInput.value);
+
+                let calculationSteps = [];
+                let P_signal_watts, P_noise_watts;
+
+                // Input Validation
+                if (isNaN(signalValue) || isNaN(noiseValue) || signalValue < 0 || noiseValue < 0) {
+                    showCustomMessage('Please enter valid non-negative numerical values for signal and noise.', 'error');
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+                const requiresImpedance = (unit) => ['V', 'mV', 'A', 'mA'].includes(unit);
+                if ((requiresImpedance(signalUnit) || requiresImpedance(noiseUnit))) {
+                    if (isNaN(impedance) || impedance <= 0) {
+                        showCustomMessage('Impedance is required for Voltage/Current inputs and must be a positive value.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+                } else {
+                    // If impedance is not required, set a dummy value to avoid issues in convertToWatts for non-V/A units
+                    impedance = 1;
+                }
+
+                try {
+                    // Convert signal and noise to Watts
+                    calculationSteps.push(`<strong>1. Convert Signal Value to Watts:</strong>`);
+                    P_signal_watts = convertToWatts(signalValue, signalUnit, impedance, calculationSteps);
+                    calculationSteps.push(`<strong>2. Convert Noise Value to Watts:</strong>`);
+                    P_noise_watts = convertToWatts(noiseValue, noiseUnit, impedance, calculationSteps);
+
+                    if (P_noise_watts === 0) {
+                        showCustomMessage('Noise power cannot be zero. SNR would be infinite.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+                    if (P_signal_watts === 0 && P_noise_watts > 0) {
+                        showCustomMessage('Signal power is zero. SNR cannot be calculated meaningfully.', 'error');
+                        resultContainer.style.display = 'none';
+                        resultContainer.classList.remove('show');
+                        return;
+                    }
+
+
+                    // Calculate SNR
+                    const snr_ratio = P_signal_watts / P_noise_watts;
+                    const snr_db = 10 * Math.log10(snr_ratio);
+
+                    calculationSteps.push(`<strong>3. Calculate Signal-to-Noise Ratio (Ratio):</strong>`);
+                    calculationSteps.push(`P<sub>signal</sub> (W) / P<sub>noise</sub> (W) = ${P_signal_watts.toExponential(4)} / ${P_noise_watts.toExponential(4)} = ${snr_ratio.toPrecision(4)}`);
+                    calculationSteps.push(`<strong>4. Calculate SNR in dB:</strong>`);
+                    let formulaText = `SNR<sub>dB</sub> = 10 * log<sub>10</sub> (P<sub>signal</sub> / P<sub>noise</sub>)`;
+                    snrFormula.innerHTML = formulaText;
+                    calculationSteps.push(`SNR<sub>dB</sub> = 10 * log<sub>10</sub>(${snr_ratio.toPrecision(4)}) = ${snr_db.toFixed(2)} dB`);
+
+                    // Display Results in table
+                    const results = [
+                        { param: 'Signal Value Input', value: `${signalValue} ${signalUnit}` },
+                        { param: 'Noise Value Input', value: `${noiseValue} ${noiseUnit}` },
+                        { param: 'Impedance (R)', value: impedanceSection.style.display === 'block' ? `${impedance} &#x2126;` : 'N/A' },
+                        { param: 'Signal Power (P<sub>signal</sub>)', value: `${P_signal_watts.toExponential(4)} W` },
+                        { param: 'Noise Power (P<sub>noise</sub>)', value: `${P_noise_watts.toExponential(4)} W` },
+                        { param: 'SNR (Ratio)', value: snr_ratio.toPrecision(4) },
+                        { param: '<strong>SNR (dB)</strong>', value: `<strong>${snr_db.toFixed(2)} dB</strong>` }
+                    ];
+
+                    results.forEach(res => {
+                        const row = resultTableBody.insertRow();
+                        const paramCell = row.insertCell(0);
+                        const valueCell = row.insertCell(1);
+                        paramCell.innerHTML = res.param;
+                        valueCell.innerHTML = res.value;
+                    });
+
+                    // Populate step-by-step calculations
+                    stepsList.innerHTML = ''; // Clear previous steps
+                    calculationSteps.forEach(step => {
+                        const p = document.createElement('p');
+                        p.className = 'calculation-step';
+                        p.innerHTML = step;
+                        stepsList.appendChild(p);
+                    });
+
+                    // Update Status Display and Recommendations
+                    let statusText = 'SNR Status: ';
+                    let statusClass = 'status-display ';
+                    let recommendations = [];
+
+                    if (snr_db >= 40) {
+                        statusText += 'Excellent Signal Quality';
+                        statusClass += 'excellent';
+                        recommendations.push("Current signal quality is excellent. Maintain existing design and practices.");
+                    } else if (snr_db >= 30) {
+                        statusText += 'Very Good Signal Quality';
+                        statusClass += 'very-good';
+                        recommendations.push("Signal quality is very good. Continue with robust design practices.");
+                    } else if (snr_db >= 20) {
+                        statusText += 'Good Signal Quality';
+                        statusClass += 'good';
+                        recommendations.push("Signal quality is good. Consider reviewing noise sources for potential minor improvements.");
+                        recommendations.push("Ensure proper grounding and shielding of cables, especially for analog signals.");
+                    } else if (snr_db >= 10) {
+                        statusText += 'Marginal Signal Quality (May require attention)';
+                        statusClass += 'marginal';
+                        recommendations.push("Signal quality is marginal. Noise may impact reliability. Strong recommendations:");
+                        recommendations.push("Implement effective shielding and grounding techniques (e.g., star grounding).");
+                        recommendations.push("Use twisted pair cables for differential signals to reduce common-mode noise.");
+                        recommendations.push("Consider increasing signal strength at the source if feasible.");
+                        recommendations.push("Apply appropriate signal filtering (e.g., low-pass filters for high-frequency noise).");
+                        recommendations.push("Minimize cable lengths and avoid running signal cables parallel to power cables.");
+                    } else { // snr_db < 10
+                        statusText += 'Poor Signal Quality (Requires immediate attention)';
+                        statusClass += 'poor';
+                        recommendations.push("Signal quality is poor. Significant data corruption or measurement errors are likely. Immediate action is required:");
+                        recommendations.push("Thoroughly investigate and identify major noise sources (EMI, RFI, ground loops, power supply ripple).");
+                        recommendations.push("Utilize isolation barriers (e.g., optical isolators, galvanic isolators) to break ground loops.");
+                        recommendations.push("Redesign sensor/transmitter placement to be further from noise-generating equipment.");
+                        recommendations.push("Consider using robust industrial communication protocols (e.g., RS-485, Ethernet/IP) with noise immunity features.");
+                        recommendations.push("Evaluate the quality of power supplies and ensure stable, clean power delivery.");
+                        recommendations.push("Employ advanced signal processing techniques if hardware solutions are insufficient.");
+                    }
+
+                    snrStatusDisplay.textContent = statusText;
+                    snrStatusDisplay.className = statusClass;
+
+                    recommendationsList.innerHTML = '';
+                    recommendations.forEach(rec => {
+                        const li = document.createElement('li');
+                        li.textContent = rec;
+                        recommendationsList.appendChild(li);
+                    });
+                    practicalRecommendationsDiv.style.display = 'block'; // Show recommendations
+
+                    resultContainer.style.display = 'block';
+                    // Trigger fade-in animation
+                    setTimeout(() => {
+                        resultContainer.classList.add('show');
+                        showCustomMessage('Calculation successful!', 'success');
+                    }, 100);
+
+                } catch (error) {
+                    showCustomMessage('An error occurred during calculation: ' + error.message, 'error');
+                    console.error('SNR Calculation Error:', error);
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                }
+            });
+
+            // Reset Form Logic
+            resetFormBtn.addEventListener('click', function() {
+                for (const key in defaultValues) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = defaultValues[key];
+                    }
+                }
+                updateImpedanceSectionVisibility(); // Reset visibility after form reset
+                showCustomMessage('Form reset to default values.', 'info');
+            });
+
+            // Clear Results Logic
+            clearResultsBtn.addEventListener('click', function() {
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    resultTableBody.innerHTML = '';
+                    stepsList.innerHTML = '';
+                    snrFormula.innerHTML = '';
+                    recommendationsList.innerHTML = '';
+                    practicalRecommendationsDiv.style.display = 'none';
+                    snrStatusDisplay.textContent = 'SNR Status: N/A';
+                    snrStatusDisplay.className = 'status-display';
+                }, 500); // Wait for fade-out transition
+                showCustomMessage('Results cleared.', 'info');
+            });
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

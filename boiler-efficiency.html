@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boiler Efficiency Calculator - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC100; /* Adjusted for better visibility */
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Back to Tools link (placeholder, replace with actual index.html if available) -->
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Boiler Efficiency Calculator (Industrial Grade)</h2>
+            <div class="tool-description">
+                <p>This calculator determines the <strong>Boiler Thermal Efficiency (%)</strong> using the direct method (input-output method). It also calculates <strong>Equivalent Evaporation</strong>, a key metric for comparing boiler performance. This tool is designed for practical industrial applications to assess boiler energy performance and optimize operations.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Unit System:</strong> Select Metric (kg, kJ) or Imperial (lb, BTU) for consistency.</li>
+                    <li><strong>Fuel Input Rate (M<sub>fuel</sub>):</strong> The mass flow rate of fuel supplied to the boiler.</li>
+                    <li><strong>Fuel Higher Heating Value (HHV):</strong> The energy content per unit mass of the fuel. It is crucial to use the HHV (Gross Calorific Value) for this method, which includes the latent heat of vaporization of water formed during combustion. Obtain this from reliable fuel analysis (e.g., ASTM D3176 for solids, ASTM D5291 for liquids).</li>
+                    <li><strong>Steam Output Rate (M<sub>steam</sub>):</strong> The mass flow rate of steam produced by the boiler.</li>
+                    <li><strong>Enthalpy of Steam (h<sub>steam</sub>):</strong> The specific enthalpy of the generated steam at its measured pressure and temperature (e.g., kJ/kg or BTU/lb). This value is critical and must be obtained accurately from recognized steam tables (e.g., ASME Steam Tables, IAPWS-IF97) or thermodynamic software.</li>
+                    <li><strong>Enthalpy of Feedwater (h<sub>feedwater</sub>):</strong> The specific enthalpy of the feedwater entering the boiler. This value must also be obtained accurately from steam tables based on feedwater temperature.</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Total Energy Input:</strong> The total thermal energy supplied by the fuel.</li>
+                    <li><strong>Total Energy Output in Steam:</strong> The total thermal energy absorbed by the steam.</li>
+                    <li><strong>Boiler Efficiency (\(\eta\)):</strong> The percentage of the energy input from the fuel that is successfully transferred to the steam.</li>
+                    <li><strong>Equivalent Evaporation:</strong> The amount of steam generated "from and at" 100°C (212°F) per unit time, normalizing boiler output for performance comparison.</li>
+                </ul>
+                <p><strong>Important Note:</strong> For accurate results, ensure that all input data points (mass flow rates, HHV, and enthalpies) are derived from accurate field measurements under steady-state operating conditions and are consistent with the selected unit system. This calculator is a practical estimation tool and should be used in conjunction with detailed engineering analysis for critical applications.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="boiler-efficiency-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (kg, kJ) or Imperial (lb, BTU) for mass flow and enthalpy units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (kg/hr, kJ/kg)</option>
+                                <option value="imperial">Imperial (lb/hr, BTU/lb)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>Input Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fuel-input-rate">Fuel Input Rate (\(M_{fuel}\)) <span class="fuel-rate-unit">(kg/hr)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass flow rate of fuel entering the boiler. Ensure measurement accuracy.</span></span></label>
+                            <input type="number" id="fuel-input-rate" step="any" value="1000" required min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="fuel-hhv">Fuel HHV <span class="hhv-unit">(kJ/kg)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Higher Heating Value (Gross Calorific Value) of the fuel. Use measured HHV, not LHV. Typical ranges: Natural Gas ~48-55 MJ/kg, Fuel Oil ~40-44 MJ/kg, Coal ~15-30 MJ/kg.</span></span></label>
+                            <input type="number" id="fuel-hhv" step="any" value="40000" required min="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="steam-output-rate">Steam Output Rate (\(M_{steam}\)) <span class="steam-rate-unit">(kg/hr)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass flow rate of steam produced. Ensure flow meter calibration.</span></span></label>
+                            <input type="number" id="steam-output-rate" step="any" value="5000" required min="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="enthalpy-steam">Enthalpy of Steam (h<sub>steam</sub>) <span class="enthalpy-unit">(kJ/kg)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Specific enthalpy of steam at boiler outlet. Obtain from steam tables using measured pressure and temperature.</span></span></label>
+                            <input type="number" id="enthalpy-steam" step="any" value="3200" required min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="enthalpy-feedwater">Enthalpy of Feedwater (h<sub>feedwater</sub>) <span class="enthalpy-unit">(kJ/kg)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Specific enthalpy of feedwater at boiler inlet. Obtain from steam tables using measured temperature.</span></span></label>
+                            <input type="number" id="enthalpy-feedwater" step="any" value="200" required min="0">
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="calculate-boiler-btn" class="calculate-btn">Calculate Boiler Efficiency</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This Boiler Efficiency Calculator utilizes the <strong>direct method (input-output method)</strong> based on fundamental energy balance principles. It is designed as a practical tool for industrial engineers and operators to quickly assess boiler performance under steady-state conditions.</p>
+                <p><strong>Key Considerations and Limitations:</strong></p>
+                <ul>
+                    <li><strong>Data Accuracy:</strong> The accuracy of results is entirely dependent on the precision of input data (mass flow rates, HHV, and especially enthalpies from steam tables). Errors in measurement will directly translate to errors in efficiency. Always use calibrated instrumentation.</li>
+                    <li><strong>Steady-State Assumption:</strong> This method assumes steady operating conditions. Efficiency can fluctuate significantly during load changes, start-up, or shutdown. For transient analysis, dynamic models are needed.</li>
+                    <li><strong>HHV vs. LHV:</strong> This calculator *requires* the Higher Heating Value (HHV) of the fuel. Using Lower Heating Value (LHV) will yield a different (higher) efficiency number, which is common in some regions (e.g., Europe) but less so in North America. Consistency in using HHV is paramount for results based on this tool.</li>
+                    <li><strong>Simplified Energy Balance:</strong> The direct method focuses on overall energy conversion and does not break down individual losses (e.g., dry flue gas loss, moisture loss in flue gas from fuel H and water, radiation loss, unburnt carbon loss, blowdown loss). For detailed diagnostic and optimization purposes, the indirect method (heat loss method, e.g., per ASME PTC 4) is required, as it provides insights into *where* losses are occurring.</li>
+                    <li><strong>Instrumentation Requirements:</strong> Implementing this method in practice requires accurate, calibrated flow meters for fuel and steam, temperature and pressure gauges, and reliable fuel analysis data.</li>
+                    <li><strong>Specific Industrial Standards & Performance Testing:</strong> While based on sound principles, this tool does not replace formal boiler performance test codes (e.g., ASME PTC 4 for Fired Steam Generators, BS 845 for Industrial Boilers) or the expertise of qualified boiler engineers for comprehensive evaluation, troubleshooting, and compliance. Adherence to these standards involves detailed procedures for data collection, averaging, and uncertainty analysis.</li>
+                </ul>
+                <p>For critical industrial applications, plant optimization, and regulatory compliance, it is <strong>imperative</strong> to adhere to established performance test standards, conduct detailed heat balance calculations, and consult with experienced combustion and thermal engineers.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Boiler Efficiency Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-boiler-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const fuelInputRateInput = document.getElementById('fuel-input-rate');
+            const fuelHHVInput = document.getElementById('fuel-hhv');
+            const steamOutputRateInput = document.getElementById('steam-output-rate');
+            const enthalpySteamInput = document.getElementById('enthalpy-steam');
+            const enthalpyFeedwaterInput = document.getElementById('enthalpy-feedwater');
+
+            // Labels that change text
+            const fuelRateUnitLabel = document.querySelector('.fuel-rate-unit');
+            const hhvUnitLabel = document.querySelector('.hhv-unit');
+            const steamRateUnitLabel = document.querySelector('.steam-rate-unit');
+            const enthalpyUnitLabels = document.querySelectorAll('.enthalpy-unit');
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates unit labels and input defaults based on selected unit system.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+
+                if (unitSystem === 'metric') {
+                    fuelRateUnitLabel.textContent = '(kg/hr)';
+                    hhvUnitLabel.textContent = '(kJ/kg)';
+                    steamRateUnitLabel.textContent = '(kg/hr)';
+                    enthalpyUnitLabels.forEach(label => label.textContent = '(kJ/kg)');
+
+                    // Default values for Metric
+                    fuelInputRateInput.value = "1000";
+                    fuelHHVInput.value = "40000"; // typical for fuel oil/gas
+                    steamOutputRateInput.value = "5000";
+                    enthalpySteamInput.value = "3200"; // typical for superheated steam
+                    enthalpyFeedwaterInput.value = "200"; // typical for ~48°C feedwater
+                } else { // imperial
+                    fuelRateUnitLabel.textContent = '(lb/hr)';
+                    hhvUnitLabel.textContent = '(BTU/lb)';
+                    steamRateUnitLabel.textContent = '(lb/hr)';
+                    enthalpyUnitLabels.forEach(label => label.textContent = '(BTU/lb)');
+
+                    // Default values for Imperial
+                    fuelInputRateInput.value = "2200"; // approx 1000 kg/hr
+                    fuelHHVInput.value = "17200"; // approx 40000 kJ/kg
+                    steamOutputRateInput.value = "11000"; // approx 5000 kg/hr
+                    enthalpySteamInput.value = "1376"; // approx 3200 kJ/kg
+                    enthalpyFeedwaterInput.value = "86"; // approx 200 kJ/kg
+                }
+            }
+
+            // Event listener for unit system change
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('boiler-efficiency-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const fuelInputRate = parseFloat(fuelInputRateInput.value);
+                const fuelHHV = parseFloat(fuelHHVInput.value);
+                const steamOutputRate = parseFloat(steamOutputRateInput.value);
+                const enthalpySteam = parseFloat(enthalpySteamInput.value);
+                const enthalpyFeedwater = parseFloat(enthalpyFeedwaterInput.value); // Corrected usage
+                const unitSystem = unitSystemSelect.value;
+
+                // Validate positive values
+                if (fuelInputRate <= 0 || fuelHHV <= 0 || steamOutputRate <= 0 || enthalpySteam <= 0 || enthalpyFeedwater < 0) {
+                    displayMessage("All input values (except feedwater enthalpy, which can be zero for saturated liquid at 0°C) must be positive.", "error");
+                    return;
+                }
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                
+                // Units for display
+                const massRateUnit = unitSystem === 'metric' ? 'kg/hr' : 'lb/hr';
+                const energyPerMassUnit = unitSystem === 'metric' ? 'kJ/kg' : 'BTU/lb';
+                const totalEnergyUnit = unitSystem === 'metric' ? 'kJ/hr' : 'BTU/hr';
+
+                // Energy input from fuel
+                const energyInput = fuelInputRate * fuelHHV;
+                calculationHtml += `<p><strong>1. Calculate Energy Input from Fuel:</strong></p>
+                                    <p class="formula">\\[ E_{input} = M_{fuel} \\times HHV \\]</p>
+                                    <p class="calculation-step">
+                                        \\( E_{input} \\) = ${fuelInputRate.toFixed(2)} ${massRateUnit} \\( \\times \\) ${fuelHHV.toFixed(2)} ${energyPerMassUnit} = ${energyInput.toFixed(2)} ${totalEnergyUnit}
+                                    </p>`;
+
+                // Energy output in steam
+                const energyOutput = steamOutputRate * (enthalpySteam - enthalpyFeedwater);
+                calculationHtml += `<p><strong>2. Calculate Energy Output in Steam:</strong></p>
+                                    <p class="formula">\\[ E_{output} = M_{steam} \\times (h_{steam} - h_{feedwater}) \\]</p>
+                                    <p class="calculation-step">
+                                        \\( E_{output} \\) = ${steamOutputRate.toFixed(2)} ${massRateUnit} \\( \\times \\) (${enthalpySteam.toFixed(2)} - ${enthalpyFeedwater.toFixed(2)}) ${energyPerMassUnit} = ${energyOutput.toFixed(2)} ${totalEnergyUnit}
+                                    </p>`;
+
+                // Boiler Efficiency
+                const boilerEfficiency = (energyOutput / energyInput) * 100;
+                calculationHtml += `<p><strong>3. Calculate Boiler Efficiency:</strong></p>
+                                    <p class="formula">\\[ \\eta = \\frac{E_{output}}{E_{input}} \\times 100 \\% \\]</p>
+                                    <p class="calculation-step">
+                                        \\( \\eta \\) = (${energyOutput.toFixed(2)} ${totalEnergyUnit} / ${energyInput.toFixed(2)} ${totalEnergyUnit}) \\( \\times \\) 100 % = ${boilerEfficiency.toFixed(2)} %
+                                    </p>`;
+
+                // Equivalent Evaporation calculation
+                const latentHeatStdCond = unitSystem === 'metric' ? 2257.06 : 970.3; // kJ/kg or BTU/lb
+                const equivalentEvaporation = (energyOutput / latentHeatStdCond);
+                const equivEvapUnit = unitSystem === 'metric' ? 'kg/hr' : 'lb/hr';
+
+                calculationHtml += `<p><strong>4. Calculate Equivalent Evaporation (From and At 100°C / 212°F):</strong></p>
+                                    <p>Latent Heat of Vaporization at standard conditions (100°C / 212°F saturated steam enthalpy - 100°C / 212°F saturated liquid enthalpy) = ${latentHeatStdCond.toFixed(2)} ${energyPerMassUnit}</p>
+                                    <p class="formula">\\[ M_{equiv} = \\frac{E_{output}}{h_{fg,std}} \\]</p>
+                                    <p class="calculation-step">
+                                        \\( M_{equiv} \\) = ${energyOutput.toFixed(2)} ${totalEnergyUnit} / ${latentHeatStdCond.toFixed(2)} ${energyPerMassUnit} = ${equivalentEvaporation.toFixed(2)} ${equivEvapUnit}
+                                    </p>`;
+
+
+                // Clear previous results
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                // Populate results table
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial (lb/hr, BTU/lb)' : 'Metric (kg/hr, kJ/kg)');
+                addResultRow("Fuel Input Rate (\\(M_{fuel}\\))", `${fuelInputRate.toFixed(2)} ${massRateUnit}`);
+                addResultRow("Fuel HHV", `${fuelHHV.toFixed(2)} ${energyPerMassUnit}`);
+                addResultRow("Steam Output Rate (\\(M_{steam}\\))", `${steamOutputRate.toFixed(2)} ${massRateUnit}`);
+                addResultRow("Enthalpy of Steam (h<sub>steam</sub>)", `${enthalpySteam.toFixed(2)} ${energyPerMassUnit}`);
+                addResultRow("Enthalpy of Feedwater (h<sub>feedwater</sub>)", `${enthalpyFeedwater.toFixed(2)} ${energyPerMassUnit}`);
+                
+                addResultRow("Total Energy Input", `<strong>${energyInput.toFixed(2)} ${totalEnergyUnit}</strong>`);
+                addResultRow("Total Energy Output in Steam", `<strong>${energyOutput.toFixed(2)} ${totalEnergyUnit}</strong>`);
+                addResultRow("Boiler Efficiency (\\(\\eta\\))", `<strong>\\( ${boilerEfficiency.toFixed(2)} \\) %</strong>`);
+                addResultRow("Equivalent Evaporation", `<strong>\\( ${equivalentEvaporation.toFixed(2)} \\) ${equivEvapUnit}</strong>`);
+
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This Boiler Efficiency Calculator utilizes the <strong>direct method (input-output method)</strong> based on fundamental energy balance principles. It is designed as a practical tool for industrial engineers and operators to quickly assess boiler performance under steady-state conditions. <strong>Key Considerations and Limitations:</strong> <strong>Data Accuracy:</strong> The accuracy of results is entirely dependent on the precision of input data (mass flow rates, HHV, and especially enthalpies from steam tables). Errors in measurement will directly translate to errors in efficiency. Always use calibrated instrumentation. <strong>Steady-State Assumption:</strong> This method assumes steady operating conditions. Efficiency can fluctuate significantly during load changes, start-up, or shutdown. For transient analysis, dynamic models are needed. <strong>HHV vs. LHV:</strong> This calculator *requires* the Higher Heating Value (HHV) of the fuel. Using Lower Heating Value (LHV) will yield a different (higher) efficiency number, which is common in some regions (e.g., Europe) but less so in North America. Consistency in using HHV is paramount for results based on this tool. <strong>Simplified Energy Balance:</strong> The direct method focuses on overall energy conversion and does not break down individual losses (e.g., dry flue gas loss, moisture loss in flue gas from fuel H and water, radiation loss, unburnt carbon loss, blowdown loss). For detailed diagnostic and optimization purposes, the indirect method (heat loss method, e.g., per ASME PTC 4) is required, as it provides insights into *where* losses are occurring. <strong>Instrumentation Requirements:</strong> Implementing this method in practice requires accurate, calibrated flow meters for fuel and steam, temperature and pressure gauges, and reliable fuel analysis data. <strong>Specific Industrial Standards & Performance Testing:</strong> While based on sound principles, this tool does not replace formal boiler performance test codes (e.g., ASME PTC 4 for Fired Steam Generators, BS 845 for Industrial Boilers) or the expertise of qualified boiler engineers for comprehensive evaluation, troubleshooting, and compliance. Adherence to these standards involves detailed procedures for data collection, averaging, and uncertainty analysis. For critical industrial applications, plant optimization, and regulatory compliance, it is <strong>imperative</strong> to adhere to established performance test standards, conduct detailed heat balance calculations, and consult with experienced combustion and thermal engineers.";
+
+                // Ensure result container is visible and transitions smoothly
+                resultContainer.style.display = 'block'; // Make element visible
+                resultContainer.offsetHeight; // Force reflow to ensure display change is registered before transition
+                resultContainer.classList.add('show'); // Apply class that sets opacity to 1 and allows interaction
+
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Boiler efficiency calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

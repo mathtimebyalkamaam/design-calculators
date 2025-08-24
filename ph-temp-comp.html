@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en" oncontextmenu="return false;">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> <!-- Placeholder for G-tag ID -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX'); // Placeholder for G-tag ID
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pH Sensor Temperature Compensation - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme (Green) */
+        :root {
+            --primary-color: #28A745; /* Green */
+            --secondary-color: #1E7E34; /* Darker Green */
+            --accent-color: #FFC107; /* Amber (for warnings/accents) */
+            --bg-color: #e6f2ed; /* Light Greenish Grey */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey (for contrast) */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #d9ead3; /* Lighter green for hover */
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #176B2F);
+            --reset-button-bg: #6c757d; /* Grey for reset */
+            --reset-button-hover-bg: #5a6268; /* Darker grey */
+            --clear-button-bg: #FFC107; /* Amber for clear */
+            --clear-button-hover-bg: #E0A800; /* Darker amber */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #1E7E34, #28A745);
+            --button-hover-gradient: linear-gradient(45deg, #28A745, #34B850);
+            --reset-button-bg: #5a6268; /* Darker grey for dark mode reset */
+            --reset-button-hover-bg: #495057;
+            --clear-button-bg: #DAA520; /* Darker amber for dark mode clear */
+            --clear-button-hover-bg: #B8860B;
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #d0d2d6);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 0;
+        }
+        
+        .calculate-btn, .save-btn, .load-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 220px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover, .save-btn:hover, .load-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 250px;
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding-top: 20px;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            gap: 15px; /* Spacing between buttons */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4); /* Green glow */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(40, 167, 69, 0.2);
+            }
+        }
+
+        /* Status Display */
+        .status-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+            width: 100%;
+        }
+        .status-display.optimal {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .status-display.adequate {
+            background-color: #66bb6a; /* Lighter green */
+            color: white;
+        }
+        .status-display.warning {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+        .status-display.critical {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            color: white;
+            font-size: 1.5em;
+            flex-direction: column;
+            gap: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        #loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* User ID Display - Removed as Firebase is no longer used for save/load */
+        /* #user-id-display {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: var(--text-color);
+            padding: 8px;
+            background-color: var(--hover-color);
+            border-radius: 5px;
+            word-break: break-all;
+        } */
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>pH Sensor Temperature Compensation</h2>
+            
+            <div class="tool-description">
+                <p>This calculator adjusts measured pH values to a reference temperature, compensating for the temperature-dependent behavior of pH sensors and the solution itself. This ensures accurate and comparable pH readings across varying process temperatures.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="ph-compensation-calculator-form">
+                    <!-- pH Measurement Parameters -->
+                    <div class="form-section">
+                        <h3>pH Measurement Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="measured-ph">Measured pH <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The pH value read directly from the sensor at the current process temperature.</span></span></label>
+                                <input type="number" id="measured-ph" step="0.01" value="7.0" min="0" max="14" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="measured-temperature">Measured Temperature (T_measured) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The actual temperature of the solution at the time the pH reading was taken.</span></span></label>
+                                <input type="number" id="measured-temperature" step="0.1" value="25" required>
+                                <select id="measured-temperature-unit">
+                                    <option value="C">°C</option>
+                                    <option value="F">°F</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reference-temperature">Reference Temperature (T_ref) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The standard temperature to which the pH reading should be corrected (e.g., 25°C for most applications).</span></span></label>
+                                <input type="number" id="reference-temperature" step="0.1" value="25" required>
+                                <select id="reference-temperature-unit">
+                                    <option value="C">°C</option>
+                                    <option value="F">°F</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="solution-temp-coefficient">Solution Temperature Coefficient (pH/°C) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The intrinsic change in the solution's pH per degree Celsius. This value can be positive or negative. For water, it's near zero at neutral pH. For other solutions, it can be significant.</span></span></label>
+                                <input type="number" id="solution-temp-coefficient" step="0.0001" value="0.000" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sensor Specific Parameters -->
+                    <div class="form-section">
+                        <h3>pH Sensor Specific Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="isopotential-point">Isopotential Point (pH_iso) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The pH value at which the sensor's millivolt output does not change with temperature. Typically 7.0 pH.</span></span></label>
+                                <input type="number" id="isopotential-point" step="0.01" value="7.0" min="0" max="14" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nernst-slope">Nernst Slope at 25°C (Theoretical S_25) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The theoretical millivolt output per pH unit at 25°C. For an ideal sensor, it's 59.16 mV/pH. Used if 'Actual Measured Slope' is not provided.</span></span></label>
+                                <input type="number" id="nernst-slope" step="0.01" value="59.16" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="actual-measured-slope">Actual Measured Nernst Slope (mV/pH) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The actual slope of your pH sensor obtained from a two-point calibration. If provided, this value will be used for compensation, overriding the theoretical calculation.</span></span></label>
+                                <input type="number" id="actual-measured-slope" step="0.01" placeholder="e.g., 58.5" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn">Calculate Compensated pH</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <p class="status-display" id="ph-status-display">pH Compensation Status: N/A</p>
+
+                <div id="calculation-details">
+                    <h4>Step-by-Step Calculation</h4>
+                    <div id="steps-list">
+                        <!-- Calculation steps will be inserted here -->
+                    </div>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+
+                <div id="practical-recommendations" style="display: none;">
+                    <h4>Practical Considerations & Recommendations</h4>
+                    <ul id="recommendations-list">
+                        <!-- Recommendations will be dynamically inserted here -->
+                    </ul>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <p><strong>Applicable Standards and Guidelines:</strong> Accurate pH measurement and temperature compensation are critical in many industries, governed by various standards and best practices:</p>
+                    <ul>
+                        <li><strong>ASTM D1293: Standard Test Methods for pH of Water.</strong> Provides guidelines for pH measurement, including temperature considerations.</li>
+                        <li><strong>ISO 10523: Water quality — Determination of pH.</strong> International standard outlining methods for pH measurement in water.</li>
+                        <li><strong>Nernst Equation:</strong> The fundamental electrochemical principle governing pH sensor behavior. The voltage output of a pH electrode is directly proportional to the absolute temperature. The slope of the mV vs. pH curve changes by approximately 0.0033 pH units per degree Celsius deviation from 25°C.</li>
+                        <li><strong>Isopotential Point:</strong> An important sensor characteristic. At this pH, the sensor's millivolt output is zero regardless of temperature. Most modern pH electrodes have an isopotential point near 7.0 pH.</li>
+                        <li><strong>Temperature Compensation Methods:</strong>
+                            <ul>
+                                <li>**Automatic Temperature Compensation (ATC):** Uses a thermistor or RTD integrated into the pH sensor to continuously measure temperature and electronically adjust the pH reading. This is the most common and recommended method for online measurements.</li>
+                                <li>**Manual Temperature Compensation (MTC):</strong> Requires the operator to manually input the solution temperature into the pH meter, which then applies a correction. Less accurate for fluctuating temperatures.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Buffer Solutions:</strong> pH sensors are calibrated using buffer solutions with known pH values at specific temperatures. Accurate calibration is crucial for reliable compensation.</li>
+                        <li><strong>Sensor Aging and Drift:</strong> Over time, pH sensors can age, leading to changes in their slope and isopotential point. Regular calibration and maintenance are essential.</li>
+                        <li><strong>Solution Temperature Coefficient:</strong> It is crucial to understand that the pH of the solution itself changes with temperature, independently of the sensor's response. This calculator allows you to account for this intrinsic property of the solution, which is essential for highly accurate compensation, especially in non-neutral solutions.</li>
+                    </ul>
+                    <p>This tool provides an enhanced compensation based on ideal or user-provided sensor behavior and accounts for the solution's intrinsic temperature coefficient. For critical process control and quality assurance, always use properly calibrated instruments with integrated automatic temperature compensation and adhere to manufacturer guidelines and relevant industry standards.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="custom-message-box"></div>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script type="module">
+        // Removed Firebase imports as save/load functionality is removed.
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Removed Firebase initialization and related user ID display logic.
+
+            // Input elements
+            const measuredPhInput = document.getElementById('measured-ph');
+            const measuredTemperatureInput = document.getElementById('measured-temperature');
+            const measuredTemperatureUnitSelect = document.getElementById('measured-temperature-unit');
+            const referenceTemperatureInput = document.getElementById('reference-temperature');
+            const referenceTemperatureUnitSelect = document.getElementById('reference-temperature-unit');
+            const isopotentialPointInput = document.getElementById('isopotential-point');
+            const nernstSlopeInput = document.getElementById('nernst-slope'); // Theoretical S25
+            const actualMeasuredSlopeInput = document.getElementById('actual-measured-slope'); // Actual measured slope
+            const solutionTempCoefficientInput = document.getElementById('solution-temp-coefficient'); // New input for solution temperature coefficient
+
+            // Buttons and result containers
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const phStatusDisplay = document.getElementById('ph-status-display');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+            const stepsList = document.getElementById('steps-list');
+            const practicalRecommendationsDiv = document.getElementById('practical-recommendations');
+            const recommendationsList = document.getElementById('recommendations-list');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            // Default values for resetting form
+            const defaultValues = {
+                'measured-ph': 7.0,
+                'measured-temperature': 25,
+                'measured-temperature-unit': 'C',
+                'reference-temperature': 25,
+                'reference-temperature-unit': 'C',
+                'isopotential-point': 7.0,
+                'nernst-slope': 59.16,
+                'actual-measured-slope': '', // Default to empty
+                'solution-temp-coefficient': 0.000 // Default for new input
+            };
+
+            // Helper for unit conversions
+            const unitConversions = {
+                temperature: {
+                    'C_to_K': (T_c) => T_c + 273.15,
+                    'F_to_K': (T_f) => (T_f - 32) * 5/9 + 273.15,
+                    'K_to_C': (T_k) => T_k - 273.15,
+                    'K_to_F': (T_k) => (T_k - 273.15) * 9/5 + 32
+                }
+            };
+
+            // Function to display custom messages
+            function showCustomMessage(message, type = 'info') {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type for styling (e.g., 'error', 'success', 'info')
+
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#dc3545'; // Red
+                } else if (type === 'success') {
+                    messageBox.style.backgroundColor = '#28a745'; // Green
+                } else if (type === 'warning') {
+                    messageBox.style.backgroundColor = '#ffc107'; // Amber
+                    messageBox.style.color = '#333'; // Dark text for amber
+                } else {
+                    messageBox.style.backgroundColor = '#28A745'; // Green (default info)
+                }
+
+                messageBox.style.opacity = '1';
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Slide down animation
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Slide up animation
+                }, 3000);
+            }
+
+            // Function to show/hide loading overlay
+            function showLoading(message = "Loading...") {
+                loadingOverlay.querySelector('p').textContent = message;
+                loadingOverlay.classList.add('show');
+            }
+
+            function hideLoading() {
+                loadingOverlay.classList.remove('show');
+            }
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            // Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                resultTableBody.innerHTML = ''; // Clear previous results
+                stepsList.innerHTML = ''; // Clear previous steps
+                recommendationsList.innerHTML = ''; // Clear previous recommendations
+                practicalRecommendationsDiv.style.display = 'none'; // Hide recommendations initially
+                phStatusDisplay.textContent = 'pH Compensation Status: Calculating...';
+                phStatusDisplay.className = 'status-display'; // Reset class
+
+                let calculationSteps = [];
+                let currentMainStep = 1;
+                let calculationFailed = false;
+
+                // 1. Get and Validate Inputs
+                let measuredPh = parseFloat(measuredPhInput.value);
+                let measuredTemperature = parseFloat(measuredTemperatureInput.value);
+                let referenceTemperature = parseFloat(referenceTemperatureInput.value);
+                let isopotentialPoint = parseFloat(isopotentialPointInput.value);
+                let nernstSlopeTheoretical = parseFloat(nernstSlopeInput.value); // Theoretical S25
+                let actualMeasuredSlope = actualMeasuredSlopeInput.value !== '' ? parseFloat(actualMeasuredSlopeInput.value) : null;
+                let solutionTempCoefficient = parseFloat(solutionTempCoefficientInput.value); // New input
+
+                // Input validation
+                if (isNaN(measuredPh) || measuredPh < 0 || measuredPh > 14) { showCustomMessage('Measured pH must be between 0 and 14.', 'error'); calculationFailed = true; }
+                if (isNaN(measuredTemperature)) { showCustomMessage('Measured Temperature must be a number.', 'error'); calculationFailed = true; }
+                if (isNaN(referenceTemperature)) { showCustomMessage('Reference Temperature must be a number.', 'error'); calculationFailed = true; }
+                if (isNaN(isopotentialPoint) || isopotentialPoint < 0 || isopotentialPoint > 14) { showCustomMessage('Isopotential Point must be between 0 and 14.', 'error'); calculationFailed = true; }
+                if (isNaN(nernstSlopeTheoretical) || nernstSlopeTheoretical <= 0) { showCustomMessage('Theoretical Nernst Slope must be a positive number.', 'error'); calculationFailed = true; }
+                if (actualMeasuredSlope !== null && (isNaN(actualMeasuredSlope) || actualMeasuredSlope <= 0)) { showCustomMessage('Actual Measured Nernst Slope must be a positive number if provided.', 'error'); calculationFailed = true; }
+                if (isNaN(solutionTempCoefficient)) { showCustomMessage('Solution Temperature Coefficient must be a number.', 'error'); calculationFailed = true; }
+
+
+                if (calculationFailed) {
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+                // Convert temperatures to Kelvin and Celsius for different parts of the formula
+                const measuredTemperatureK = measuredTemperatureUnitSelect.value === 'C' ? unitConversions.temperature.C_to_K(measuredTemperature) : unitConversions.temperature.F_to_K(measuredTemperature);
+                const referenceTemperatureK = referenceTemperatureUnitSelect.value === 'C' ? unitConversions.temperature.C_to_K(referenceTemperature) : unitConversions.temperature.F_to_K(referenceTemperature);
+                const measuredTemperatureC = measuredTemperatureUnitSelect.value === 'C' ? measuredTemperature : unitConversions.temperature.K_to_C(measuredTemperatureK);
+                const referenceTemperatureC = referenceTemperatureUnitSelect.value === 'C' ? referenceTemperature : unitConversions.temperature.K_to_C(referenceTemperatureK);
+
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Input Parameters:</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Measured pH: ${measuredPh.toFixed(2)}`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Measured Temperature (T_measured): ${measuredTemperature.toFixed(1)} ${measuredTemperatureUnitSelect.value} (${measuredTemperatureK.toFixed(2)} K)`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Reference Temperature (T_ref): ${referenceTemperature.toFixed(1)} ${referenceTemperatureUnitSelect.value} (${referenceTemperatureK.toFixed(2)} K)`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Solution Temperature Coefficient: ${solutionTempCoefficient.toFixed(4)} pH/°C`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Isopotential Point (pH_iso): ${isopotentialPoint.toFixed(2)}`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Theoretical Nernst Slope at 25°C (S_25_theoretical): ${nernstSlopeTheoretical.toFixed(2)} mV/pH`);
+                if (actualMeasuredSlope !== null) {
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Actual Measured Nernst Slope (S_actual): ${actualMeasuredSlope.toFixed(2)} mV/pH`);
+                } else {
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Actual Measured Nernst Slope: Not provided. Will use theoretical slope.`);
+                }
+
+                // 2. Determine Nernst Slope for Calculations
+                let baseSlope;
+                let slopeSourceDescription;
+
+                if (actualMeasuredSlope !== null) {
+                    baseSlope = actualMeasuredSlope;
+                    slopeSourceDescription = 'Actual Measured Slope (S_actual)';
+                    calculationSteps.push(`<strong>${currentMainStep++}. Determine Nernst Slope Used for Calculations:</strong>`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Since 'Actual Measured Nernst Slope' is provided, it will be used as the base slope for temperature scaling: S_base = ${baseSlope.toFixed(2)} mV/pH.`);
+                } else {
+                    baseSlope = nernstSlopeTheoretical;
+                    slopeSourceDescription = 'Theoretical Nernst Slope at 25°C (S_25_theoretical)';
+                    calculationSteps.push(`<strong>${currentMainStep++}. Determine Nernst Slope Used for Calculations:</strong>`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;No 'Actual Measured Nernst Slope' provided. Using 'Theoretical Nernst Slope at 25°C' as the base slope: S_base = ${baseSlope.toFixed(2)} mV/pH.`);
+                }
+
+                // Calculate Nernst Slope at Measured and Reference Temperatures based on the base slope
+                const NERNST_REFERENCE_TEMP_K = unitConversions.temperature.C_to_K(25); // 25°C in Kelvin
+                let nernstSlopeAtMeasuredT = baseSlope * (measuredTemperatureK / NERNST_REFERENCE_TEMP_K);
+                let nernstSlopeAtReferenceT = baseSlope * (referenceTemperatureK / NERNST_REFERENCE_TEMP_K);
+
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Nernst Slope at Measured Temperature (S_measured) = S_base * (T_measured_K / ${NERNST_REFERENCE_TEMP_K.toFixed(2)} K)`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;S_measured = ${baseSlope.toFixed(2)} mV/pH * (${measuredTemperatureK.toFixed(2)} K / ${NERNST_REFERENCE_TEMP_K.toFixed(2)} K) = ${nernstSlopeAtMeasuredT.toFixed(2)} mV/pH`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Nernst Slope at Reference Temperature (S_ref) = S_base * (T_ref_K / ${NERNST_REFERENCE_TEMP_K.toFixed(2)} K)`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;S_ref = ${baseSlope.toFixed(2)} mV/pH * (${referenceTemperatureK.toFixed(2)} K / ${NERNST_REFERENCE_TEMP_K.toFixed(2)} K) = ${nernstSlopeAtReferenceT.toFixed(2)} mV/pH`);
+
+
+                // 3. Calculate the pH offset from the Isopotential Point at Measured Temperature
+                const phOffsetMeasured = measuredPh - isopotentialPoint;
+                calculationSteps.push(`<strong>${currentMainStep++}. Calculate pH Offset at Measured Temperature:</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;pH Offset at Measured Temperature = Measured pH - Isopotential Point = ${measuredPh.toFixed(2)} - ${isopotentialPoint.toFixed(2)} = ${phOffsetMeasured.toFixed(2)} pH`);
+
+                // 4. Calculate the Millivolt Output at Measured Temperature
+                const mVOutputMeasured = phOffsetMeasured * nernstSlopeAtMeasuredT;
+                calculationSteps.push(`<strong>${currentMainStep++}. Calculate Millivolt Output at Measured Temperature:</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;mV Output = pH Offset * S_measured = ${phOffsetMeasured.toFixed(2)} pH * ${nernstSlopeAtMeasuredT.toFixed(2)} mV/pH = ${mVOutputMeasured.toFixed(2)} mV`);
+
+                // 5. Calculate Sensor-Compensated pH at Reference Temperature
+                // This is the pH of the solution at T_measured, as if measured by a sensor at T_ref.
+                let phSensorCompensated = isopotentialPoint + (mVOutputMeasured / nernstSlopeAtReferenceT);
+                calculationSteps.push(`<strong>${currentMainStep++}. Calculate Sensor-Compensated pH at Reference Temperature:</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;pH_sensor_compensated = Isopotential Point + (mV Output / S_ref)`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;pH_sensor_compensated = ${isopotentialPoint.toFixed(2)} + (${mVOutputMeasured.toFixed(2)} mV / ${nernstSlopeAtReferenceT.toFixed(2)} mV/pH) = ${phSensorCompensated.toFixed(2)} pH`);
+
+                // 6. Apply Solution Temperature Coefficient for Final Compensated pH
+                // This adjusts the solution's own pH from measured temperature to reference temperature.
+                const solutionPhCorrection = (measuredTemperatureC - referenceTemperatureC) * solutionTempCoefficient;
+                let compensatedPhFinal = phSensorCompensated + solutionPhCorrection;
+
+                // Ensure pH is within 0-14 range after compensation
+                compensatedPhFinal = Math.max(0, Math.min(14, compensatedPhFinal));
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Apply Solution Temperature Correction for Final pH:</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Solution pH Correction = (T_measured_C - T_ref_C) * Solution Temperature Coefficient`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Solution pH Correction = (${measuredTemperatureC.toFixed(1)} °C - ${referenceTemperatureC.toFixed(1)} °C) * ${solutionTempCoefficient.toFixed(4)} pH/°C = ${solutionPhCorrection.toFixed(4)} pH`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Final Compensated pH = pH_sensor_compensated + Solution pH Correction`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Final Compensated pH = ${phSensorCompensated.toFixed(2)} + ${solutionPhCorrection.toFixed(4)} = ${compensatedPhFinal.toFixed(2)} pH`);
+                
+                // Display Results in table
+                const results = [
+                    { param: 'Measured pH', value: `${measuredPh.toFixed(2)}` },
+                    { param: 'Measured Temperature', value: `${measuredTemperature.toFixed(1)} ${measuredTemperatureUnitSelect.value}` },
+                    { param: 'Reference Temperature', value: `${referenceTemperature.toFixed(1)} ${referenceTemperatureUnitSelect.value}` },
+                    { param: 'Solution Temperature Coefficient', value: `${solutionTempCoefficient.toFixed(4)} pH/°C` },
+                    { param: 'Isopotential Point', value: `${isopotentialPoint.toFixed(2)} pH` },
+                    { param: 'Theoretical Nernst Slope at 25°C', value: `${nernstSlopeTheoretical.toFixed(2)} mV/pH` },
+                ];
+                if (actualMeasuredSlope !== null) {
+                    results.push({ param: 'Actual Measured Nernst Slope', value: `${actualMeasuredSlope.toFixed(2)} mV/pH` });
+                }
+                results.push(
+                    { param: 'Nernst Slope at Measured Temp', value: `${nernstSlopeAtMeasuredT.toFixed(2)} mV/pH` },
+                    { param: 'Nernst Slope at Reference Temp', value: `${nernstSlopeAtReferenceT.toFixed(2)} mV/pH` },
+                    { param: 'Sensor-Compensated pH', value: `${phSensorCompensated.toFixed(2)}` },
+                    { param: '<strong>Final Compensated pH</strong>', value: `<strong>${compensatedPhFinal.toFixed(2)}</strong>` }
+                );
+
+                results.forEach(res => {
+                    const row = resultTableBody.insertRow();
+                    const paramCell = row.insertCell(0);
+                    const valueCell = row.insertCell(1);
+                    paramCell.innerHTML = res.param;
+                    valueCell.innerHTML = res.value;
+                });
+
+                // Populate step-by-step calculations
+                stepsList.innerHTML = '';
+                calculationSteps.forEach(step => {
+                    const p = document.createElement('p');
+                    p.className = 'calculation-step';
+                    p.innerHTML = step;
+                    stepsList.appendChild(p);
+                });
+
+                // Update Status Display and Recommendations
+                let statusText = 'pH Compensation Status: ';
+                let statusClass = 'status-display ';
+                let recommendations = [];
+
+                if (measuredTemperature === referenceTemperature) {
+                    statusClass += 'optimal';
+                    statusText += 'No Temperature Compensation Needed';
+                    recommendations.push("The measured temperature is the same as the reference temperature. No compensation is required, and the compensated pH is equal to the measured pH.");
+                } else if (Math.abs(measuredTemperature - referenceTemperature) < 5) {
+                    statusClass += 'adequate';
+                    statusText += 'Minor Temperature Difference';
+                    recommendations.push("There is a minor temperature difference between measured and reference temperatures. Compensation is applied, and the result is generally reliable.");
+                } else if (Math.abs(measuredTemperature - referenceTemperature) >= 5 && Math.abs(measuredTemperature - referenceTemperature) < 20) {
+                    statusClass += 'warning';
+                    statusText += 'Moderate Temperature Difference';
+                    recommendations.push("A moderate temperature difference exists. While compensation is applied, ensure your sensor is properly calibrated and its Nernst slope and isopotential point are accurate for best results.");
+                } else {
+                    statusClass += 'critical';
+                    statusText += 'Significant Temperature Difference';
+                    recommendations.push("A significant temperature difference exists. Large temperature deviations can impact sensor accuracy and response time. Ensure proper automatic temperature compensation (ATC) is used and consider frequent calibration in such conditions.");
+                }
+                
+                recommendations.push("Always ensure your pH sensor is regularly calibrated using fresh buffer solutions at known temperatures. The accuracy of the compensation heavily relies on the quality of calibration.");
+                recommendations.push("The most accurate compensation is achieved when the 'Actual Measured Nernst Slope' from your sensor's recent two-point calibration is used. This accounts for individual sensor characteristics and aging.");
+                recommendations.push("The 'Solution Temperature Coefficient' is critical for accurate compensation, as the pH of the solution itself changes with temperature. This value is specific to the solution and its composition. For highly precise applications, especially with non-neutral solutions, this intrinsic solution temperature behavior should be accurately determined (e.g., from literature, experimental data, or specific process knowledge).");
+                recommendations.push("For highly accurate measurements in dynamic temperature environments, an integrated Automatic Temperature Compensation (ATC) element in your pH system is highly recommended.");
+
+
+                recommendationsList.innerHTML = '';
+                recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.innerHTML = rec; // Use innerHTML for bold tags in recommendations
+                    recommendationsList.appendChild(li);
+                });
+                practicalRecommendationsDiv.style.display = 'block'; // Show recommendations
+
+                phStatusDisplay.textContent = statusText;
+                phStatusDisplay.className = statusClass;
+
+                resultContainer.style.display = 'block';
+                // Trigger fade-in animation
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    showCustomMessage('Calculation successful!', 'success');
+                }, 100);
+            });
+
+            // Reset Form Logic
+            resetFormBtn.addEventListener('click', function() {
+                for (const key in defaultValues) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = defaultValues[key];
+                    }
+                }
+                showCustomMessage('Form reset to default values.', 'info');
+            });
+
+            // Clear Results Logic
+            clearResultsBtn.addEventListener('click', function() {
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    resultTableBody.innerHTML = '';
+                    stepsList.innerHTML = '';
+                    recommendationsList.innerHTML = '';
+                    practicalRecommendationsDiv.style.display = 'none';
+                    phStatusDisplay.textContent = 'pH Compensation Status: N/A';
+                    phStatusDisplay.className = 'status-display';
+                }, 500); // Wait for fade-out transition
+                showCustomMessage('Results cleared.', 'info');
+            });
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

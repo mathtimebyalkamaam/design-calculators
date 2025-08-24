@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beam Deflection & Stress Calculator - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Changed href to index.html -->
+        <a href="indexInst.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Beam Deflection & Stress Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator determines the maximum deflection, maximum bending stress, and average shear stress for common beam types (Simply Supported, Cantilever) under standard loading conditions (Point Load, Uniformly Distributed Load).</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Unit System:</strong> Select Metric or Imperial units.</li>
+                    <li><strong>Beam Type:</strong> Defines support conditions (Simply Supported or Cantilever).</li>
+                    <li><strong>Load Type:</strong> Defines the applied load (Point Load or Uniformly Distributed Load).</li>
+                    <li><strong>Load Magnitude:</strong> The value of the applied load.</li>
+                    <li><strong>Load Position:</strong> For point loads on simply supported beams (distance from left support).</li>
+                    <li><strong>Beam Length (\(L\)):</strong> The total length of the beam.</li>
+                    <li><strong>Material Type:</strong> Select common materials for Young's Modulus (E), or input custom.</li>
+                    <li><strong>Young's Modulus (\(E\)):</strong> Material property representing its stiffness.</li>
+                    <li><strong>Moment of Inertia (\(I\)):</strong> Geometric property of the beam's cross-section, representing its resistance to bending.</li>
+                    <li><strong>Distance to Neutral Axis (\(c\)):</strong> Distance from the neutral axis to the extreme fiber of the cross-section (for bending stress).</li>
+                    <li><strong>Cross-sectional Area (\(A\)):</strong> Total area of the beam's cross-section (for average shear stress).</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Max Deflection (\(\delta_{max}\)):</strong> The maximum vertical displacement of the beam.</li>
+                    <li><strong>Max Bending Moment (\(M_{max}\)):</strong> The maximum internal bending moment in the beam.</li>
+                    <li><strong>Max Bending Stress (\(\sigma_{b,max}\)):</strong> The maximum stress developed due to bending.</li>
+                    <li><strong>Max Shear Force (\(V_{max}\)):</strong> The maximum internal shear force in the beam.</li>
+                    <li><strong>Average Shear Stress (\(\tau_{avg}\)):</strong> The average stress developed due to shear force.</li>
+                </ul>
+            </div>
+
+            <div class="calculator-form">
+                <form id="beam-calculator-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (m, N, Pa) or Imperial (ft, lbf, psi) units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (m, N, Pa)</option>
+                                <option value="imperial">Imperial (ft, lbf, psi)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="beam-type">Beam Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Defines how the beam is supported (e.g., Simply Supported, Cantilever).</span></span></label>
+                            <select id="beam-type" required>
+                                <option value="simply-supported">Simply Supported</option>
+                                <option value="cantilever">Cantilever</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="load-type">Load Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Defines the type of load applied (Point Load or Uniformly Distributed Load).</span></span></label>
+                            <select id="load-type" required>
+                                <option value="point-load">Point Load (P)</option>
+                                <option value="udl">Uniformly Distributed Load (w)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="load-magnitude">Load Magnitude <span class="load-unit-label">(N)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The magnitude of the point load or distributed load.</span></span></label>
+                            <input type="number" id="load-magnitude" step="any" value="1000" required min="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" id="load-position-group">
+                            <label for="load-position">Load Position (a) <span class="length-unit-label">(m)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Distance from the left support to the point load. For mid-span, enter L/2.</span></span></label>
+                            <input type="number" id="load-position" step="any" value="5" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="beam-length">Beam Length (\(L\)) <span class="length-unit-label">(m)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total length of the beam.</span></span></label>
+                            <input type="number" id="beam-length" step="any" value="10" required min="0.1">
+                        </div>
+                    </div>
+
+                    <h3>Material & Cross-sectional Properties</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="material-select">Material Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select a common material to auto-populate Young's Modulus, or input custom.</span></span></label>
+                            <select id="material-select" required>
+                                <option value="steel">Steel</option>
+                                <option value="aluminum">Aluminum</option>
+                                <option value="concrete">Concrete</option>
+                                <option value="custom">Custom Material</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="young-modulus">Young's Modulus (\(E\)) <span class="stress-unit-label">(Pa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material's modulus of elasticity (stiffness). Enter as value (e.g., 200e9 for steel).</span></span></label>
+                            <input type="number" id="young-modulus" step="any" value="200000000000" required min="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="moment-of-inertia">Moment of Inertia (\(I\)) <span class="moi-unit-label">(m&#8308;)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Second moment of area of the cross-section. Use standard formulas for your beam shape (e.g., $bh^3/12$ for rectangle).</span></span></label>
+                            <input type="number" id="moment-of-inertia" step="any" value="0.000002" required min="1e-10">
+                        </div>
+                        <div class="form-group">
+                            <label for="neutral-axis-distance">Distance to Neutral Axis (\(c\)) <span class="length-unit-label">(m)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Distance from the neutral axis to the extreme fiber (e.g., $h/2$ for rectangular, $D/2$ for circular).</span></span></label>
+                            <input type="number" id="neutral-axis-distance" step="any" value="0.1" required min="0.001">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cross-sectional-area">Cross-sectional Area (\(A\)) <span class="area-unit-label">(m&#178;)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total cross-sectional area of the beam.</span></span></label>
+                        <input type="number" id="cross-sectional-area" step="any" value="0.02" required min="0.000001">
+                    </div>
+
+                    <button type="button" id="calculate-beam-btn" class="calculate-btn">Calculate Beam Performance</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides theoretical calculations for beam deflection and stress based on fundamental formulas from mechanics of materials (e.g., Euler-Bernoulli beam theory). It assumes linearly elastic material behavior, small deflections, and idealized support/loading conditions (e.g., uniform cross-section, no shear deformation, no axial loads, no stress concentrations).</p>
+                <p>For accurate design, safety, and compliance with building codes (e.g., AISC for steel, ACI for concrete, Eurocodes), it is <strong>imperative</strong> to consult comprehensive structural engineering handbooks, specialized finite element analysis (FEA) software, and qualified structural engineers. This tool is for preliminary estimation and educational purposes only.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Beam Deflection & Stress Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-beam-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const beamTypeSelect = document.getElementById('beam-type');
+            const loadTypeSelect = document.getElementById('load-type');
+            const loadMagnitudeInput = document.getElementById('load-magnitude');
+            const loadPositionInput = document.getElementById('load-position');
+            const beamLengthInput = document.getElementById('beam-length');
+            const materialSelect = document.getElementById('material-select');
+            const youngModulusInput = document.getElementById('young-modulus');
+            const momentOfInertiaInput = document.getElementById('moment-of-inertia');
+            const neutralAxisDistanceInput = document.getElementById('neutral-axis-distance');
+            const crossSectionalAreaInput = document.getElementById('cross-sectional-area');
+
+            // Groups for dynamic display
+            const loadPositionGroup = document.getElementById('load-position-group');
+
+            // Unit labels
+            const loadUnitLabel = document.querySelector('.load-unit-label');
+            const lengthUnitLabels = document.querySelectorAll('.length-unit-label');
+            const stressUnitLabels = document.querySelectorAll('.stress-unit-label');
+            const moiUnitLabel = document.querySelector('.moi-unit-label');
+            const areaUnitLabel = document.querySelector('.area-unit-label');
+
+            // Material properties (Young's Modulus E)
+            const materialProperties = {
+                'steel': {
+                    'metric': { E: 200e9 }, // Pa
+                    'imperial': { E: 29e6 } // psi
+                },
+                'aluminum': {
+                    'metric': { E: 69e9 }, // Pa
+                    'imperial': { E: 10e6 } // psi
+                },
+                'concrete': {
+                    'metric': { E: 30e9 }, // Pa (approx for normal strength concrete)
+                    'imperial': { E: 4.35e6 } // psi (approx for normal strength concrete)
+                }
+            };
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates unit labels and input defaults based on the selected unit system.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+                const materialType = materialSelect.value;
+                const loadType = loadTypeSelect.value;
+
+                if (unitSystem === 'metric') {
+                    loadUnitLabel.innerHTML = (loadType === 'point-load' ? '(N)' : '(N/m)');
+                    lengthUnitLabels.forEach(label => label.innerHTML = '(m)');
+                    stressUnitLabels.forEach(label => label.innerHTML = '(Pa)'); // Raw Pa for calculation steps
+                    moiUnitLabel.innerHTML = '(m&#8308;)';
+                    areaUnitLabel.innerHTML = '(m&#178;)';
+
+                    // Set metric defaults
+                    loadMagnitudeInput.value = "1000";
+                    beamLengthInput.value = "10";
+                    loadPositionInput.value = "5"; // Default for simply supported mid-span
+
+                    if (materialType !== 'custom') {
+                        youngModulusInput.value = materialProperties[materialType].metric.E;
+                    } else {
+                        if (youngModulusInput.value === "" || isNaN(parseFloat(youngModulusInput.value))) youngModulusInput.value = "200000000000"; // Default to steel if custom is empty
+                    }
+                    momentOfInertiaInput.value = "0.000002"; // 2e-6 m^4
+                    neutralAxisDistanceInput.value = "0.1"; // 0.1m = 100mm
+                    crossSectionalAreaInput.value = "0.02"; // 0.02m2 = 20000mm2
+
+                } else { // Imperial
+                    loadUnitLabel.innerHTML = (loadType === 'point-load' ? '(lbf)' : '(lbf/ft)');
+                    lengthUnitLabels.forEach(label => label.innerHTML = '(ft)');
+                    stressUnitLabels.forEach(label => label.innerHTML = '(psi)');
+                    moiUnitLabel.innerHTML = '(in&#8308;)';
+                    areaUnitLabel.innerHTML = '(in&#178;)';
+
+                    // Set imperial defaults
+                    loadMagnitudeInput.value = "200"; // lbf or lbf/ft
+                    beamLengthInput.value = "30"; // ft
+                    loadPositionInput.value = "15"; // Default for simply supported mid-span
+
+                    if (materialType !== 'custom') {
+                        youngModulusInput.value = materialProperties[materialType].imperial.E;
+                    } else {
+                        if (youngModulusInput.value === "" || isNaN(parseFloat(youngModulusInput.value))) youngModulusInput.value = "29000000"; // Default to steel if custom is empty
+                    }
+                    momentOfInertiaInput.value = "4.8"; // 4.8 in^4 (approx for a W4x13)
+                    neutralAxisDistanceInput.value = "2"; // 2 inches (approx for W4x13, h/2)
+                    crossSectionalAreaInput.value = "3.83"; // 3.83 in^2 (for W4x13)
+                }
+                toggleCustomMaterialInput();
+                toggleLoadPositionInput();
+            }
+
+            /**
+             * Toggles the disabled state of the Young's Modulus input.
+             */
+            function toggleCustomMaterialInput() {
+                const isCustom = materialSelect.value === 'custom';
+                youngModulusInput.disabled = !isCustom;
+                if (isCustom) {
+                    youngModulusInput.setAttribute('required', 'true');
+                } else {
+                    youngModulusInput.removeAttribute('required');
+                }
+            }
+
+            /**
+             * Toggles the visibility of the Load Position input based on beam and load type.
+             */
+            function toggleLoadPositionInput() {
+                const beamType = beamTypeSelect.value;
+                const loadType = loadTypeSelect.value;
+
+                if (beamType === 'simply-supported' && loadType === 'point-load') {
+                    loadPositionGroup.style.display = 'block';
+                    loadPositionInput.setAttribute('required', 'true');
+                } else {
+                    loadPositionGroup.style.display = 'none';
+                    loadPositionInput.removeAttribute('required');
+                }
+            }
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            materialSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            beamTypeSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            loadTypeSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('beam-calculator-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+                const beamType = beamTypeSelect.value;
+                const loadType = loadTypeSelect.value;
+
+                let Load_input = parseFloat(loadMagnitudeInput.value);
+                const L_input = parseFloat(beamLengthInput.value);
+                let a_input = parseFloat(loadPositionInput.value);
+                const E_input = parseFloat(youngModulusInput.value);
+                const I_input = parseFloat(momentOfInertiaInput.value);
+                const c_input = parseFloat(neutralAxisDistanceInput.value);
+                const A_input = parseFloat(crossSectionalAreaInput.value);
+
+                // Input Validation
+                if (a_input < 0 || a_input > L_input && loadPositionGroup.style.display !== 'none') {
+                    displayMessage("Load Position (a) must be between 0 and Beam Length (L).", "error");
+                    return;
+                }
+                if (L_input <= 0 || E_input <= 0 || I_input <= 0 || c_input <= 0 || A_input <= 0 || Load_input <= 0) {
+                     displayMessage("All input values must be positive and non-zero.", "error");
+                     return;
+                }
+
+
+                // Standardize inputs to SI units for calculations
+                let L_si, a_si, E_si, I_si, c_si, A_si;
+                let P_si = 0; // Point load in N
+                let w_si = 0; // UDL in N/m
+
+                if (unitSystem === 'metric') {
+                    L_si = L_input;         // m
+                    a_si = a_input;         // m
+                    E_si = E_input;         // Pa
+                    I_si = I_input;         // m^4
+                    c_si = c_input;         // m
+                    A_si = A_input;         // m^2
+                    if (loadType === 'point-load') {
+                        P_si = Load_input;  // N
+                    } else { // udl
+                        w_si = Load_input;  // N/m
+                    }
+                } else { // Imperial
+                    // Convert all to SI (meters, Newtons, Pascals)
+                    L_si = L_input * 0.3048;            // ft to m
+                    a_si = a_input * 0.3048;            // ft to m
+                    E_si = E_input * 6894.76;           // psi to Pa
+                    I_si = I_input * Math.pow(0.0254, 4); // in^4 to m^4
+                    c_si = c_input * 0.0254;            // inches to m
+                    A_si = A_input * Math.pow(0.0254, 2); // in^2 to m^2
+                    if (loadType === 'point-load') {
+                        P_si = Load_input * 4.44822;    // lbf to N
+                    } else { // udl
+                        w_si = Load_input * 4.44822 / 0.3048; // lbf/ft to N/m
+                    }
+                }
+
+                let M_max_si = 0; // Max Bending Moment in N.m
+                let V_max_si = 0; // Max Shear Force in N
+                let delta_max_si = 0; // Max Deflection in m
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters (Converted to SI Units):</strong></p><ul>
+                    <li>Beam Length (\\(L\\)): ${L_si.toFixed(3)} m</li>
+                    <li>Young's Modulus (\\(E\\)): ${E_si.toExponential(2)} Pa</li>
+                    <li>Moment of Inertia (\\(I\\)): ${I_si.toExponential(2)} m&#8308;</li>
+                    <li>Distance to Neutral Axis (\\(c\\)): ${c_si.toFixed(3)} m</li>
+                    <li>Cross-sectional Area (\\(A\\)): ${A_si.toExponential(2)} m&#178;</li>
+                `;
+                if (loadType === 'point-load') {
+                     calculationHtml += `<li>Point Load (\\(P\\)): ${P_si.toFixed(2)} N</li>`;
+                     if (beamType === 'simply-supported') {
+                         calculationHtml += `<li>Load Position (\\(a\\)): ${a_si.toFixed(3)} m</li>`;
+                     }
+                } else {
+                     calculationHtml += `<li>Uniformly Distributed Load (\\(w\\)): ${w_si.toFixed(2)} N/m</li>`;
+                }
+                calculationHtml += `</ul>`;
+
+
+                // 2. Calculate Max Bending Moment (M_max) and Max Shear Force (V_max)
+                calculationHtml += `<p><strong>2. Calculate Maximum Bending Moment (\\(M_{max}\\)) and Maximum Shear Force (\\(V_{max}\\)):</strong></p>`;
+                if (beamType === 'simply-supported') {
+                    if (loadType === 'point-load') {
+                        // Max M at load point for non-center load: P*a*b/L, where b=L-a. Max for mid-span (a=L/2) P*L/4
+                        // Max V is reaction force, P*b/L or P*a/L
+                        const b_si = L_si - a_si;
+                        M_max_si = (P_si * a_si * b_si) / L_si;
+                        V_max_si = Math.max((P_si * b_si) / L_si, (P_si * a_si) / L_si); // Max of the two reactions
+
+                        calculationHtml += `<p class="formula">\\[ M_{max} = \\frac{Pa(L-a)}{L} \\quad (\\text{at load point}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( M_{max} \\) = (${P_si.toFixed(2)} N \\times ${a_si.toFixed(3)} m \\times ${b_si.toFixed(3)} m) / ${L_si.toFixed(3)} m = ${M_max_si.toFixed(2)} N&#183;m</p>`;
+                        calculationHtml += `<p class="formula">\\[ V_{max} = \\frac{P(L-a)}{L} \\quad \\text{or} \\quad \\frac{Pa}{L} \\quad (\\text{maximum reaction force}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( V_{max} \\) = \\( \\text{max} \\left( \\frac{${P_si.toFixed(2)} \\times ${b_si.toFixed(3)}}{${L_si.toFixed(3)}}, \\frac{${P_si.toFixed(2)} \\times ${a_si.toFixed(3)}}{${L_si.toFixed(3)}} \\right) \\) = ${V_max_si.toFixed(2)} N</p>`;
+                        
+                        if (Math.abs(a_si - L_si / 2) < 1e-6) {
+                             calculationHtml += `<p><em>Note: For a point load at mid-span, \\(M_{max} = PL/4\\) and \\(V_{max} = P/2\\).</em></p>`;
+                        }
+
+                    } else { // UDL
+                        M_max_si = (w_si * Math.pow(L_si, 2)) / 8;
+                        V_max_si = (w_si * L_si) / 2;
+
+                        calculationHtml += `<p class="formula">\\[ M_{max} = \\frac{wL^2}{8} \\quad (\\text{at mid-span}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( M_{max} \\) = (${w_si.toFixed(2)} N/m \\times (${L_si.toFixed(3)} m)^2) / 8 = ${M_max_si.toFixed(2)} N&#183;m</p>`;
+                        calculationHtml += `<p class="formula">\\[ V_{max} = \\frac{wL}{2} \\quad (\\text{at supports}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( V_{max} \\) = (${w_si.toFixed(2)} N/m \\times ${L_si.toFixed(3)} m) / 2 = ${V_max_si.toFixed(2)} N</p>`;
+                    }
+                } else { // Cantilever beam
+                    if (loadType === 'point-load') {
+                        // For cantilever, load position 'a' is distance from fixed end. Max M & V at fixed end.
+                        // For load at free end, a = L
+                        M_max_si = P_si * L_si; // Max M at fixed support
+                        V_max_si = P_si;      // Max V along the beam
+
+                        calculationHtml += `<p class="formula">\\[ M_{max} = PL \\quad (\\text{at fixed end}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( M_{max} \\) = ${P_si.toFixed(2)} N \\times ${L_si.toFixed(3)} m = ${M_max_si.toFixed(2)} N&#183;m</p>`;
+                        calculationHtml += `<p class="formula">\\[ V_{max} = P \\quad (\\text{along the beam}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( V_{max} \\) = ${P_si.toFixed(2)} N</p>`;
+
+                    } else { // UDL
+                        M_max_si = (w_si * Math.pow(L_si, 2)) / 2;
+                        V_max_si = w_si * L_si;
+
+                        calculationHtml += `<p class="formula">\\[ M_{max} = \\frac{wL^2}{2} \\quad (\\text{at fixed end}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( M_{max} \\) = (${w_si.toFixed(2)} N/m \\times (${L_si.toFixed(3)} m)^2) / 2 = ${M_max_si.toFixed(2)} N&#183;m</p>`;
+                        calculationHtml += `<p class="formula">\\[ V_{max} = wL \\quad (\\text{at fixed end}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( V_{max} \\) = ${w_si.toFixed(2)} N/m \\times ${L_si.toFixed(3)} m = ${V_max_si.toFixed(2)} N</p>`;
+                    }
+                }
+
+                // 3. Calculate Max Bending Stress (\(\sigma_{b,max}\))
+                const sigma_b_max_Pa = Math.abs(M_max_si * c_si / I_si); // Pascals (absolute value)
+                
+                calculationHtml += `<p><strong>3. Calculate Maximum Bending Stress (\\(\sigma_{b,max}\\)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\sigma_{b,max} = \\frac{M_{max} \\cdot c}{I} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\sigma_{b,max} \\) = (${M_max_si.toFixed(2)} N&#183;m \\times ${c_si.toFixed(3)} m) / ${I_si.toExponential(2)} m&#8308; = ${sigma_b_max_Pa.toExponential(2)} Pa
+                </p>`;
+
+                // 4. Calculate Max Deflection (\(\delta_{max}\))
+                calculationHtml += `<p><strong>4. Calculate Maximum Deflection (\\(\delta_{max}\\)):</strong></p>`;
+                if (beamType === 'simply-supported') {
+                    if (loadType === 'point-load') {
+                        const b_si = L_si - a_si;
+                        if (Math.abs(a_si - L_si / 2) < 1e-6) { // Check if load is approximately at mid-span
+                            delta_max_si = (P_si * Math.pow(L_si, 3)) / (48 * E_si * I_si);
+                            calculationHtml += `<p class="formula">\\[ \\delta_{max} = \\frac{PL^3}{48EI} \\quad (\\text{for mid-span point load}) \\]</p>`;
+                            calculationHtml += `<p class="calculation-step">\\( \\delta_{max} \\) = (${P_si.toFixed(2)} N \\times (${L_si.toFixed(3)} m)^3) / (48 \\times ${E_si.toExponential(2)} Pa \\times ${I_si.toExponential(2)} m&#8308;) = ${delta_max_si.toExponential(2)} m</p>`;
+                        } else {
+                            // Deflection at the point of load application for eccentric load
+                            delta_max_si = (P_si * Math.pow(a_si, 2) * Math.pow(b_si, 2)) / (3 * E_si * I_si * L_si);
+                            displayMessage("For Simply Supported Beam with eccentric Point Load, deflection is calculated at the load point 'a'. This may not be the absolute maximum deflection.", "warning");
+                            calculationHtml += `<p class="formula">\\[ \\delta_{a} = \\frac{P a^2 (L-a)^2}{3 E I L} \\quad (\\text{at load point } a) \\]</p>`;
+                            calculationHtml += `<p class="calculation-step">\\( \\delta_{a} \\) = (${P_si.toFixed(2)} N \\times (${a_si.toFixed(3)} m)^2 \\times (${b_si.toFixed(3)} m)^2) / (3 \\times ${E_si.toExponential(2)} Pa \\times ${I_si.toExponential(2)} m&#8308; \\times ${L_si.toFixed(3)} m) = ${delta_max_si.toExponential(2)} m</p>`;
+                        }
+                    } else { // Simply supported UDL
+                        delta_max_si = (5 * w_si * Math.pow(L_si, 4)) / (384 * E_si * I_si);
+                        calculationHtml += `<p class="formula">\\[ \\delta_{max} = \\frac{5wL^4}{384EI} \\quad (\\text{at mid-span}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( \\delta_{max} \\) = (5 \\times ${w_si.toFixed(2)} N/m \\times (${L_si.toFixed(3)} m)^4) / (384 \\times ${E_si.toExponential(2)} Pa \\times ${I_si.toExponential(2)} m&#8308;) = ${delta_max_si.toExponential(2)} m</p>`;
+                    }
+                } else { // Cantilever beam
+                    if (loadType === 'point-load') {
+                        // Deflection at free end for a load at 'a' from fixed end
+                        if (Math.abs(a_si - L_si) < 1e-6) { // Load approximately at free end
+                            delta_max_si = (P_si * Math.pow(L_si, 3)) / (3 * E_si * I_si);
+                            calculationHtml += `<p class="formula">\\[ \\delta_{max} = \\frac{PL^3}{3EI} \\quad (\\text{at free end}) \\]</p>`;
+                            calculationHtml += `<p class="calculation-step">\\( \\delta_{max} \\) = (${P_si.toFixed(2)} N \\times (${L_si.toFixed(3)} m)^3) / (3 \\times ${E_si.toExponential(2)} Pa \\times ${I_si.toExponential(2)} m&#8308;) = ${delta_max_si.toExponential(2)} m</p>`;
+                        } else {
+                            // Load at a from fixed end, deflection at free end.
+                            delta_max_si = (P_si * Math.pow(a_si, 2) / (6 * E_si * I_si)) * (3 * L_si - a_si);
+                            displayMessage("For Cantilever Beam with Point Load, deflection is calculated at the free end for a load at 'a' from fixed end. This is the maximum deflection for this case.", "info"); 
+                            calculationHtml += `<p class="formula">\\[ \\delta_{max} = \\frac{Pa^2}{6EI}(3L-a) \\quad (\\text{at free end, load at } a \\text{ from fixed}) \\]</p>`;
+                            calculationHtml += `<p class="calculation-step">\\( \\delta_{max} \\) = (${P_si.toFixed(2)} N \\times (${a_si.toFixed(3)} m)^2) / (6 \\times ${E_si.toExponential(2)} Pa \\times ${I_si.toExponential(2)} m&#8308;) \\times (3 \\times ${L_si.toFixed(3)} m - ${a_si.toFixed(3)} m) = ${delta_max_si.toExponential(2)} m</p>`;
+                        }
+                    } else { // Cantilever UDL
+                        delta_max_si = (w_si * Math.pow(L_si, 4)) / (8 * E_si * I_si);
+                        calculationHtml += `<p class="formula">\\[ \\delta_{max} = \\frac{wL^4}{8EI} \\quad (\\text{at free end}) \\]</p>`;
+                        calculationHtml += `<p class="calculation-step">\\( \\delta_{max} \\) = (${w_si.toFixed(2)} N/m \\times (${L_si.toFixed(3)} m)^4) / (8 \\times ${E_si.toExponential(2)} Pa \\times ${I_si.toExponential(2)} m&#8308;) = ${delta_max_si.toExponential(2)} m</p>`;
+                    }
+                }
+
+                // 5. Calculate Average Shear Stress (\(\tau_{avg}\))
+                const tau_avg_Pa = V_max_si / A_si; // Pascals
+                
+                calculationHtml += `<p><strong>5. Calculate Average Shear Stress (\\(\tau_{avg}\\)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ \\tau_{avg} = \\frac{V_{max}}{A} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( \\tau_{avg} \\) = ${V_max_si.toFixed(2)} N / ${A_si.toExponential(2)} m&#178; = ${tau_avg_Pa.toExponential(2)} Pa
+                </p>`;
+                calculationHtml += `<p><em>Note: This is the average shear stress. Maximum shear stress can be significantly higher depending on the cross-section shape (e.g., 1.5 times average for rectangular, 4/3 times for circular).</em></p>`;
+
+
+                // Prepare results for display
+                resultTableBody.innerHTML = ''; // Clear previous results
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
+                addResultRow("Beam Type", beamTypeSelect.options[beamTypeSelect.selectedIndex].text);
+                addResultRow("Load Type", loadTypeSelect.options[loadTypeSelect.selectedIndex].text);
+                addResultRow("Beam Length (\\(L\\))", `${L_input.toFixed(2)} ${unitSystem === 'metric' ? 'm' : 'ft'}`);
+                if (loadType === 'point-load' && beamType === 'simply-supported') {
+                    addResultRow("Load Position (\\(a\\))", `${a_input.toFixed(2)} ${unitSystem === 'metric' ? 'm' : 'ft'}`);
+                }
+                
+                let load_display_value;
+                if (loadType === 'point-load') {
+                    load_display_value = unitSystem === 'metric' ? `${Load_input.toFixed(2)} N` : `${Load_input.toFixed(2)} lbf`;
+                } else { // UDL
+                    load_display_value = unitSystem === 'metric' ? `${Load_input.toFixed(2)} N/m` : `${Load_input.toFixed(2)} lbf/ft`;
+                }
+                addResultRow("Load Magnitude", load_display_value);
+
+                addResultRow("Young's Modulus (\\(E\\))", `${E_input.toExponential(2)} ${unitSystem === 'metric' ? 'Pa' : 'psi'}`);
+                addResultRow("Moment of Inertia (\\(I\\))", `${I_input.toExponential(2)} ${unitSystem === 'metric' ? 'm&#8308;' : 'in&#8308;'}`);
+                addResultRow("Distance to Neutral Axis (\\(c\\))", `${c_input.toFixed(3)} ${unitSystem === 'metric' ? 'm' : 'inches'}`);
+                addResultRow("Cross-sectional Area (\\(A\\))", `${A_input.toExponential(2)} ${unitSystem === 'metric' ? 'm&#178;' : 'in&#178;'}`);
+
+                let delta_max_display, M_max_display, sigma_b_max_display, V_max_display, tau_avg_display;
+
+                if (unitSystem === 'metric') {
+                    delta_max_display = delta_max_si * 1000; // m to mm
+                    M_max_display = M_max_si; // N.m
+                    sigma_b_max_display = sigma_b_max_Pa / 1e6; // Pa to MPa
+                    V_max_display = V_max_si; // N
+                    tau_avg_display = tau_avg_Pa / 1e6; // Pa to MPa
+
+                    addResultRow("Max Deflection (\\(\\delta_{max}\\))", `<strong>\\( ${delta_max_display.toPrecision(3)} \\) mm</strong>`);
+                    addResultRow("Max Bending Moment (\\(M_{max}\\))", `<strong>\\( ${M_max_display.toFixed(2)} \\) N&#183;m</strong>`);
+                    addResultRow("Max Bending Stress (\\(\\sigma_{b,max}\\))", `<strong>\\( ${sigma_b_max_display.toFixed(2)} \\) MPa</strong>`);
+                    addResultRow("Max Shear Force (\\(V_{max}\\))", `<strong>\\( ${V_max_display.toFixed(2)} \\) N</strong>`);
+                    addResultRow("Average Shear Stress (\\(\\tau_{avg}\\))", `<strong>\\( ${tau_avg_display.toFixed(2)} \\) MPa</strong>`);
+                } else { // Imperial
+                    delta_max_display = delta_max_si / 0.0254 / 12; // m to feet
+                    M_max_display = M_max_si / 1.35582; // N.m to ft-lbf 
+                    sigma_b_max_display = sigma_b_max_Pa / 6894.76; // Pa to psi
+                    V_max_display = V_max_si / 4.44822; // N to lbf
+                    tau_avg_display = tau_avg_Pa / 6894.76; // Pa to psi
+
+                    addResultRow("Max Deflection (\\(\\delta_{max}\\))", `<strong>\\( ${delta_max_display.toPrecision(3)} \\) ft</strong>`);
+                    addResultRow("Max Bending Moment (\\(M_{max}\\))", `<strong>\\( ${M_max_display.toFixed(2)} \\) ft&#183;lbf</strong>`);
+                    addResultRow("Max Bending Stress (\\(\\sigma_{b,max}\\))", `<strong>\\( ${sigma_b_max_display.toFixed(2)} \\) psi</strong>`);
+                    addResultRow("Max Shear Force (\\(V_{max}\\))", `<strong>\\( ${V_max_display.toFixed(2)} \\) lbf</strong>`);
+                    addResultRow("Average Shear Stress (\\(\\tau_{avg}\\))", `<strong>\\( ${tau_avg_display.toFixed(2)} \\) psi</strong>`);
+                }
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides theoretical calculations for beam deflection and stress based on fundamental formulas from mechanics of materials (e.g., Euler-Bernoulli beam theory). It assumes linearly elastic material behavior, small deflections, and idealized support/loading conditions (e.g., uniform cross-section, no shear deformation, no axial loads, no stress concentrations). For accurate design, safety, and compliance with building codes (e.g., AISC for steel, ACI for concrete, Eurocodes), it is <strong>imperative</strong> to consult comprehensive structural engineering handbooks, specialized finite element analysis (FEA) software, and qualified structural engineers. This tool is for preliminary estimation and educational purposes only.";
+
+                // Show results container
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Beam Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

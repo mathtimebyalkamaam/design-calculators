@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nozzle Reinforcement Calculator - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Nozzle Reinforcement Calculator (ASME VIII Div 1)</h2>
+            <div class="tool-description">
+                <p>This calculator determines the adequacy of nozzle reinforcement in pressure vessels based on simplified principles of <strong>ASME Boiler and Pressure Vessel Code, Section VIII, Division 1, Part UG-37 (Area of Reinforcement)</strong>. It compares the required area of reinforcement against the area available from the vessel, nozzle neck, and any reinforcement pad.</p>
+                <p><strong>Key Assumptions and Limitations:</strong></p>
+                <ul>
+                    <li>Assumes a circular opening in a cylindrical or spherical shell.</li>
+                    <li>Simplified calculation of areas. Does not account for all nuances like weld contributions, specific limits of reinforcement beyond basic dimensions, or multiple openings interactions as per the full ASME code.</li>
+                    <li>Ignores external loads and moment analysis (which would require Part UG-45, Appendix 1-10, etc.).</li>
+                    <li>Material properties like allowable stress are assumed based on common values or directly input.</li>
+                    <li>This tool is for preliminary assessment only. A detailed design must always be conducted by a qualified engineer using the full ASME BPVC code.</li>
+                </ul>
+                <p><strong>Units:</strong> Ensure consistency. If you use mm for length, use MPa for pressure and stress. If inches, use psi.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="nozzle-reinforcement-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (mm, MPa) or Imperial (inches, psi) units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (mm, MPa)</option>
+                                <option value="imperial">Imperial (inches, psi)</option>
+                            </select>
+                        </div>
+                         <div class="form-group">
+                            <label for="joint-efficiency">Joint Efficiency (E): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Longitudinal weld joint efficiency of the shell, from ASME UW-12. Usually between 0.70 and 1.0.</span></span></label>
+                            <input type="number" id="joint-efficiency" step="0.01" min="0.7" max="1.0" value="0.85" required>
+                        </div>
+                    </div>
+
+                    <h3>Vessel Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="shell-material-allowable-stress">Shell Material Allowable Stress (S) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Allowable stress of vessel shell material at design temperature.</span></span></label>
+                            <input type="number" id="shell-material-allowable-stress" step="0.1" value="138" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vessel-id">Vessel Inside Diameter (ID) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Inside diameter of the pressure vessel shell.</span></span></label>
+                            <input type="number" id="vessel-id" step="0.1" value="1000" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vessel-thickness">Vessel Nominal Thickness (t) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Nominal thickness of the vessel shell.</span></span></label>
+                            <input type="number" id="vessel-thickness" step="0.1" value="10" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="corrosion-allowance-vessel">Corrosion Allowance (CA_vessel) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Corrosion allowance for the vessel shell.</span></span></label>
+                            <input type="number" id="corrosion-allowance-vessel" step="0.01" value="1.5" required>
+                        </div>
+                    </div>
+                     <div class="form-row">
+                        <div class="form-group">
+                            <label for="design-pressure">Design Pressure (P) <span class="pressure-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Internal design pressure of the vessel.</span></span></label>
+                            <input type="number" id="design-pressure" step="0.01" value="1.0" required>
+                        </div>
+                         <div class="form-group">
+                            <label for="vessel-type">Vessel Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Shape of the vessel shell. Affects pressure calculations.</span></span></label>
+                            <select id="vessel-type" required>
+                                <option value="cylinder">Cylindrical</option>
+                                <option value="sphere">Spherical</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>Nozzle Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nozzle-material-allowable-stress">Nozzle Material Allowable Stress (S_n) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Allowable stress of nozzle material at design temperature.</span></span></label>
+                            <input type="number" id="nozzle-material-allowable-stress" step="0.1" value="138" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nozzle-od">Nozzle Outside Diameter (OD) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Outside diameter of the nozzle pipe.</span></span></label>
+                            <input type="number" id="nozzle-od" step="0.1" value="219.1" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nozzle-thickness">Nozzle Nominal Thickness (t_n) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Nominal wall thickness of the nozzle pipe.</span></span></label>
+                            <input type="number" id="nozzle-thickness" step="0.1" value="8.18" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="corrosion-allowance-nozzle">Corrosion Allowance (CA_nozzle) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Corrosion allowance for the nozzle neck.</span></span></label>
+                            <input type="number" id="corrosion-allowance-nozzle" step="0.01" value="1.5" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group">
+                            <label for="nozzle-projection-outside">Nozzle Projection Outside (h_proj) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Projection of the nozzle neck outside the vessel wall (used for available area calculation).</span></span></label>
+                            <input type="number" id="nozzle-projection-outside" step="0.1" value="50" required>
+                        </div>
+                         <div class="form-group">
+                            <label for="nozzle-projection-inside">Nozzle Projection Inside (h_in) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Projection of the nozzle neck inside the vessel wall (used for available area calculation).</span></span></label>
+                            <input type="number" id="nozzle-projection-inside" step="0.1" value="0" required>
+                        </div>
+                    </div>
+
+                    <h3>Reinforcement Pad Parameters (Optional)</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pad-thickness">Pad Thickness (t_p) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Thickness of the reinforcement pad. Enter 0 if no pad is used.</span></span></label>
+                            <input type="number" id="pad-thickness" step="0.1" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="pad-od">Pad Outside Diameter (OD_p) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Outside diameter of the reinforcement pad. Enter 0 if no pad.</span></span></label>
+                            <input type="number" id="pad-od" step="0.1" value="0">
+                        </div>
+                    </div>
+                     <div class="form-group">
+                            <label for="pad-material-allowable-stress">Pad Material Allowable Stress (S_p) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Allowable stress of reinforcement pad material. Only required if pad thickness > 0.</span></span></label>
+                            <input type="number" id="pad-material-allowable-stress" step="0.1" value="138">
+                        </div>
+
+                    <button type="button" id="calculate-nozzle-btn" class="calculate-btn">Calculate Reinforcement</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators!&body=I found this amazing Nozzle Reinforcement Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-nozzle-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const jointEfficiencyInput = document.getElementById('joint-efficiency');
+            const shellMaterialAllowableStressInput = document.getElementById('shell-material-allowable-stress');
+            const vesselIDInput = document.getElementById('vessel-id');
+            const vesselThicknessInput = document.getElementById('vessel-thickness');
+            const corrosionAllowanceVesselInput = document.getElementById('corrosion-allowance-vessel');
+            const designPressureInput = document.getElementById('design-pressure');
+            const vesselTypeSelect = document.getElementById('vessel-type');
+            const nozzleMaterialAllowableStressInput = document.getElementById('nozzle-material-allowable-stress');
+            const nozzleODInput = document.getElementById('nozzle-od');
+            const nozzleThicknessInput = document.getElementById('nozzle-thickness');
+            const corrosionAllowanceNozzleInput = document.getElementById('corrosion-allowance-nozzle');
+            const nozzleProjectionOutsideInput = document.getElementById('nozzle-projection-outside');
+            const nozzleProjectionInsideInput = document.getElementById('nozzle-projection-inside');
+            const padThicknessInput = document.getElementById('pad-thickness');
+            const padODInput = document.getElementById('pad-od');
+            const padMaterialAllowableStressInput = document.getElementById('pad-material-allowable-stress');
+
+            // Unit labels
+            const lengthUnitLabels = document.querySelectorAll('.length-unit-label');
+            const stressUnitLabels = document.querySelectorAll('.stress-unit-label');
+            const pressureUnitLabels = document.querySelectorAll('.pressure-unit-label');
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates the unit labels in the UI based on the selected unit system.
+             */
+            function updateUnitLabels() {
+                const unitSystem = unitSystemSelect.value;
+                const lengthUnit = unitSystem === 'imperial' ? '(in.)' : '(mm)';
+                const stressUnit = unitSystem === 'imperial' ? '(psi)' : '(MPa)';
+                const pressureUnit = unitSystem === 'imperial' ? '(psi)' : '(MPa)';
+
+                lengthUnitLabels.forEach(label => label.textContent = lengthUnit);
+                stressUnitLabels.forEach(label => label.textContent = stressUnit);
+                pressureUnitLabels.forEach(label => label.textContent = pressureUnit);
+
+                // Update input step values for better user experience based on units
+                // A more robust solution would be to update value directly but this is sufficient for steps.
+                vesselIDInput.step = unitSystem === 'imperial' ? '0.01' : '0.1';
+                vesselThicknessInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
+                corrosionAllowanceVesselInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
+                nozzleODInput.step = unitSystem === 'imperial' ? '0.01' : '0.1';
+                nozzleThicknessInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
+                corrosionAllowanceNozzleInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
+                nozzleProjectionOutsideInput.step = unitSystem === 'imperial' ? '0.01' : '0.1';
+                nozzleProjectionInsideInput.step = unitSystem === 'imperial' ? '0.01' : '0.1';
+                padThicknessInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
+            }
+
+            // Event listener for unit system change
+            unitSystemSelect.addEventListener('change', updateUnitLabels);
+
+            // Initial UI update on load
+            updateUnitLabels();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Event listener for the calculate button
+            calculateBtn.addEventListener('click', function() {
+                // Validate all required fields
+                const form = document.getElementById('nozzle-reinforcement-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                // Gather input values
+                const unitSystem = unitSystemSelect.value;
+                const E = parseFloat(jointEfficiencyInput.value);
+                const S = parseFloat(shellMaterialAllowableStressInput.value);
+                const ID = parseFloat(vesselIDInput.value);
+                const t_nom = parseFloat(vesselThicknessInput.value);
+                const CA_vessel = parseFloat(corrosionAllowanceVesselInput.value);
+                const P = parseFloat(designPressureInput.value);
+                const vesselType = vesselTypeSelect.value;
+                const S_n = parseFloat(nozzleMaterialAllowableStressInput.value);
+                const OD_n = parseFloat(nozzleODInput.value);
+                const t_n_nom = parseFloat(nozzleThicknessInput.value);
+                const CA_nozzle = parseFloat(corrosionAllowanceNozzleInput.value);
+                const h_proj = parseFloat(nozzleProjectionOutsideInput.value);
+                const h_in = parseFloat(nozzleProjectionInsideInput.value);
+                const t_p_nom = parseFloat(padThicknessInput.value);
+                const OD_p = parseFloat(padODInput.value);
+                let S_p = parseFloat(padMaterialAllowableStressInput.value);
+
+                // Handle optional pad inputs
+                if (t_p_nom > 0 && isNaN(S_p)) {
+                     displayMessage("Please enter Allowable Stress for Pad Material if a pad is used.", "error");
+                     return;
+                }
+                if (t_p_nom === 0) {
+                    S_p = 0; // No pad, so its allowable stress is irrelevant
+                } else if (isNaN(S_p)) { // If pad thickness > 0 but S_p is not a number
+                     displayMessage("Please enter a valid number for Pad Material Allowable Stress.", "error");
+                     return;
+                }
+
+                // Initialize calculation details string
+                let calculationHtml = '<h4>Detailed Calculation Steps (Simplified ASME UG-37):</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters:</strong></p>`;
+                calculationHtml += `<ul>
+                    <li>Unit System: ${unitSystem === 'imperial' ? 'Imperial (in, psi)' : 'Metric (mm, MPa)'}</li>
+                    <li>Joint Efficiency (E): ${E}</li>
+                    <li>Shell Material Allowable Stress (S): ${S} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}</li>
+                    <li>Vessel Inside Diameter (ID): ${ID} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Vessel Nominal Thickness (t_nom): ${t_nom} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Corrosion Allowance (CA_vessel): ${CA_vessel} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Design Pressure (P): ${P} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}</li>
+                    <li>Vessel Type: ${vesselType.charAt(0).toUpperCase() + vesselType.slice(1)}</li>
+                    <li>Nozzle Material Allowable Stress (S_n): ${S_n} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}</li>
+                    <li>Nozzle Outside Diameter (OD_n): ${OD_n} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Nozzle Nominal Thickness (t_n_nom): ${t_n_nom} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Corrosion Allowance (CA_nozzle): ${CA_nozzle} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Nozzle Projection Outside (h_proj): ${h_proj} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Nozzle Projection Inside (h_in): ${h_in} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Pad Thickness (t_p_nom): ${t_p_nom} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Pad Outside Diameter (OD_p): ${OD_p} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</li>
+                    <li>Pad Material Allowable Stress (S_p): ${S_p} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}</li>
+                </ul>`;
+
+                // Calculate corroded thicknesses
+                const t = t_nom - CA_vessel; // Corroded shell thickness
+                const t_n = t_n_nom - CA_nozzle; // Corroded nozzle neck thickness
+
+                if (t <= 0) {
+                    displayMessage("Vessel corroded thickness is zero or negative. Please check Vessel Nominal Thickness and Corrosion Allowance.", "error");
+                    return;
+                }
+                 if (t_n <= 0) {
+                    displayMessage("Nozzle corroded thickness is zero or negative. Please check Nozzle Nominal Thickness and Corrosion Allowance.", "error");
+                    return;
+                }
+                const d_n = OD_n - 2 * t_n_nom; // Nozzle inside diameter (approx.) for calculating opening size
+                const d = d_n; // Effective diameter of the opening, per ASME UG-37(c)(1)
+
+                // 2. Required Thickness of Shell (t_r) per ASME UG-27
+                let t_r;
+                if (vesselType === 'cylinder') {
+                    // For cylindrical shells: t_r = (P * R) / (S * E - 0.6 * P) + CA
+                    // R is internal radius = ID / 2
+                    const R = ID / 2;
+                    t_r = (P * R) / (S * E - 0.6 * P);
+                    calculationHtml += `<p><strong>2. Required Thickness of Shell (\\(t_r\\)) (ASME UG-27 for Cylindrical Shells):</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ t_r = \\frac{P \\cdot R}{S \\cdot E - 0.6 \\cdot P} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\(t_r\\) = ( ${P} \\times ${R.toFixed(2)} ) / ( ${S} \\times ${E} - 0.6 \\times ${P} ) = ${t_r.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}
+                    </p>`;
+                } else { // spherical
+                    // For spherical shells: t_r = (P * R) / (2 * S * E - 0.2 * P) + CA
+                    // R is internal radius = ID / 2
+                    const R = ID / 2;
+                    t_r = (P * R) / (2 * S * E - 0.2 * P);
+                    calculationHtml += `<p><strong>2. Required Thickness of Shell (\\(t_r\\)) (ASME UG-27 for Spherical Shells):</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ t_r = \\frac{P \\cdot R}{2 \\cdot S \\cdot E - 0.2 \\cdot P} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\(t_r\\) = ( ${P} \\times ${R.toFixed(2)} ) / ( 2 \\times ${S} \\times ${E} - 0.2 \\times ${P} ) = ${t_r.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}
+                    </p>`;
+                }
+
+                if (t_r <= 0) {
+                     displayMessage("Calculated required shell thickness is zero or negative. Check design pressure and material allowable stress.", "error");
+                     return;
+                }
+
+                // 3. Required Area of Reinforcement (A_req)
+                // F is a factor (UG-37(c)), typically 1.0 for radial nozzle in cylinder, 0.5 for spherical.
+                // For simplification, let's assume F=1.0 for now, as it's the most common case for radial nozzles.
+                const F = 1.0; // Per UG-37(c)(2)
+                const A_req = d * t_r * F;
+                calculationHtml += `<p><strong>3. Required Area of Reinforcement (\\(A_{req}\\)) (ASME UG-37(c)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ A_{req} = d \\cdot t_r \\cdot F \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\(A_{req}\\) = ${d.toFixed(3)} \\times ${t_r.toFixed(3)} \\times ${F} = ${A_req.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2
+                </p>`;
+
+                // 4. Area Available from Vessel Wall (A_1)
+                const A_1 = d * (t_nom - t_r - CA_vessel); // Area from excess thickness in shell
+                calculationHtml += `<p><strong>4. Area Available from Vessel Wall (\\(A_1\\)) (ASME UG-37(d)(1)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ A_1 = d \\cdot (t_{nom} - t_r - CA_{vessel}) \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\(A_1\\) = ${d.toFixed(3)} \\times ( ${t_nom} - ${t_r.toFixed(3)} - ${CA_vessel} ) = ${A_1.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2
+                </p>`;
+
+
+                // 5. Area Available from Nozzle Neck (A_2)
+                // ASME UG-37(d)(2) limits the length of nozzle considered for reinforcement.
+                // For simplification, let's consider the full projection here, but in real calc, it's limited.
+                const t_rn = (P * (OD_n / 2 - t_n_nom)) / (S_n * E - 0.6 * P); // Required thickness of nozzle neck
+                // A_2 = 2 * (t_n_nom - t_rn - CA_nozzle) * h_proj_effective
+                // h_proj_effective is typically the lesser of 2.5t or 2.5tn + tp
+                const h_limit_vessel = Math.min(2.5 * t, h_proj); // Simplified limit based on shell thickness
+                const h_limit_nozzle = Math.min(2.5 * t_n, h_proj); // Simplified limit based on nozzle thickness
+
+                // Area from nozzle neck - considering projection and material allowable stress ratio
+                const A_2_proj = 2 * h_proj * (t_n_nom - CA_nozzle - t_rn); // Simplified.
+                const A_2_ratio = (S_n / S); // Ratio of allowable stresses
+                const A_2 = A_2_proj * A_2_ratio;
+
+                calculationHtml += `<p><strong>5. Area Available from Nozzle Neck (\\(A_2\\)) (ASME UG-37(d)(2)):</strong></p>`;
+                calculationHtml += `<p>Required thickness of nozzle neck (\\(t_{rn}\\)):</p>`;
+                calculationHtml += `<p class="formula">\\[ t_{rn} = \\frac{P \\cdot (D_{ni}/2)}{S_n \\cdot E - 0.6 \\cdot P} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\(t_{rn}\\) = ( ${P} \\times ( ${OD_n/2} - ${t_n_nom} ) ) / ( ${S_n} \\times ${E} - 0.6 \\times ${P} ) = ${t_rn.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}
+                </p>`;
+                calculationHtml += `<p>Area from nozzle projection (simplified for demonstration, full ASME has limits):</p>`;
+                calculationHtml += `<p class="formula">\\[ A_2 = 2 \\cdot h_{proj} \\cdot (t_{n,nom} - CA_{nozzle} - t_{rn}) \\cdot \\frac{S_n}{S} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\(A_2\\) = 2 \\times ${h_proj} \\times ( ${t_n_nom} - ${CA_nozzle} - ${t_rn.toFixed(3)} ) \\times ( ${S_n} / ${S} ) = ${A_2.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2
+                </p>`;
+
+
+                // 6. Area Available from Reinforcement Pad (A_3)
+                let A_3 = 0;
+                if (t_p_nom > 0 && OD_p > OD_n) {
+                    const t_p = t_p_nom - CA_vessel; // Use vessel CA for pad if directly welded
+                    // Effective width of pad = (OD_p - d_n) / 2
+                    // A_3 = (OD_p - d_n) / 2 * t_p * 2 * (S_p / S)
+                    // Simplified area as per UG-40(b) - 2x pad thickness over the width of the opening.
+                    // This is a simplification; full calculation involves width of reinforcement.
+                    A_3 = (OD_p - OD_n) * t_p * (S_p / S); // Area of pad itself, reduced by stress ratio
+                    calculationHtml += `<p><strong>6. Area Available from Reinforcement Pad (\\(A_3\\)) (ASME UG-40):</strong></p>`;
+                    calculationHtml += `<p>Corroded pad thickness (\\(t_p\\)): ${t_p.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}</p>`;
+                    calculationHtml += `<p class="formula">\\[ A_3 = (OD_p - OD_n) \\cdot t_p \\cdot \\frac{S_p}{S} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\(A_3\\) = ( ${OD_p} - ${OD_n} ) \\times ${t_p.toFixed(3)} \\times ( ${S_p} / ${S} ) = ${A_3.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2
+                    </p>`;
+                } else if (t_p_nom > 0 && OD_p <= OD_n) {
+                    displayMessage("Pad Outside Diameter (OD_p) must be greater than Nozzle Outside Diameter (OD_n) if a pad is used.", "warning");
+                }
+
+
+                // Total Area Available
+                const A_avail = A_1 + A_2 + A_3;
+
+                // Check for reinforcement adequacy
+                const isAdequate = A_avail >= A_req;
+
+                // Prepare results for display
+                resultTableBody.innerHTML = ''; // Clear previous results
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
+                addResultRow("Design Pressure (P)", `${P} ${unitSystem === 'imperial' ? 'psi' : 'MPa'}`);
+                addResultRow("Vessel Nominal Thickness (t)", `${t_nom} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                addResultRow("Vessel Corroded Thickness (t_corr)", `${t.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                addResultRow("Nozzle Nominal Thickness (t_n)", `${t_n_nom} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                addResultRow("Nozzle Corroded Thickness (t_n_corr)", `${t_n.toFixed(3)} ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                addResultRow("Required Shell Thickness (t_r)", `\\( ${t_r.toFixed(3)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}`);
+                addResultRow("Required Area (\\(A_{req}\\))", `\\( ${A_req.toFixed(3)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2`);
+                addResultRow("Area from Vessel Wall (\\(A_1\\))", `\\( ${Math.max(0, A_1).toFixed(3)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2`); // A_1 cannot be negative
+                addResultRow("Area from Nozzle Neck (\\(A_2\\))", `\\( ${Math.max(0, A_2).toFixed(3)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2`); // A_2 cannot be negative
+                if (t_p_nom > 0) {
+                     addResultRow("Area from Reinforcement Pad (\\(A_3\\))", `\\( ${Math.max(0, A_3).toFixed(3)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2`); // A_3 cannot be negative
+                } else {
+                    addResultRow("Area from Reinforcement Pad (\\(A_3\\))", `Not used`);
+                }
+                addResultRow("Total Area Available (\\(A_{avail}\\))", `<strong>\\( ${A_avail.toFixed(3)} \\) ${unitSystem === 'imperial' ? 'in.' : 'mm'}^2</strong>`);
+                addResultRow("Reinforcement Status", isAdequate ? '<strong style="color: var(--success-color);">ADEQUATE</strong>' : '<strong style="color: var(--error-color);">INADEQUATE</strong>');
+
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                // Re-render MathJax equations
+                if (window.MathJax) {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This calculation is based on simplified principles from <strong>ASME Boiler and Pressure Vessel Code, Section VIII, Division 1, Part UG-37</strong>. For full compliance, refer to the latest edition of the ASME BPVC and conduct a complete design analysis.";
+
+                // Show results container
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality (copied from Bernoulli solver)
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

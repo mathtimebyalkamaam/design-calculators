@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en" oncontextmenu="return false;">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> <!-- Placeholder for G-tag ID -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX'); // Placeholder for G-tag ID
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Differential Pressure to Flow Conversion - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme (Green) */
+        :root {
+            --primary-color: #28A745; /* Green */
+            --secondary-color: #1E7E34; /* Darker Green */
+            --accent-color: #FFC107; /* Amber (for warnings/accents) */
+            --bg-color: #e6f2ed; /* Light Greenish Grey */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey (for contrast) */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #d9ead3; /* Lighter green for hover */
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #176B2F);
+            --reset-button-bg: #6c757d; /* Grey for reset */
+            --reset-button-hover-bg: #5a6268; /* Darker grey */
+            --clear-button-bg: #FFC107; /* Amber for clear */
+            --clear-button-hover-bg: #E0A800; /* Darker amber */
+            --ok-color: #28a745; /* Green for OK status */
+            --error-color: #dc3545; /* Red for error status */
+            --warning-color: #ffc107; /* Amber for warnings */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #1E7E34, #28A745);
+            --button-hover-gradient: linear-gradient(45deg, #28A745, #34B850);
+            --reset-button-bg: #5a6268; /* Darker grey for dark mode reset */
+            --reset-button-hover-bg: #495057;
+            --clear-button-bg: #DAA520; /* Darker amber for dark mode clear */
+            --clear-button-hover-bg: #B8860B;
+            --ok-color: #5cb85c;
+            --error-color: #e74c3c;
+            --warning-color: #DAA520;
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #d0d2d6);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 0;
+        }
+        
+        .calculate-btn, .save-btn, .load-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 220px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover, .save-btn:hover, .load-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 250px;
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding-top: 20px;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            gap: 15px; /* Spacing between buttons */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4); /* Green glow */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(40, 167, 69, 0.2);
+            }
+        }
+
+        /* Status Display (for Power Supply) */
+        .status-display {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+            width: 100%;
+        }
+        .status-display.optimal {
+            background-color: var(--ok-color);
+            color: white;
+        }
+        .status-display.adequate {
+            background-color: #66bb6a; /* Lighter green */
+            color: white;
+        }
+        .status-display.warning {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+        .status-display.critical {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        /* Dynamic Device Input Styling (Not directly used in DP Flow, but kept for consistency if needed) */
+        .device-entry {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .device-entry .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            font-size: 0.8em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+        .device-entry .remove-btn:hover {
+            background-color: #c82333;
+        }
+
+        .add-device-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+            display: block; /* Make it a block element */
+            width: fit-content; /* Fit content width */
+            margin-left: auto; /* Center it */
+            margin-right: auto; /* Center it */
+        }
+        .add-device-btn:hover {
+            background-color: var(--primary-color);
+        }
+
+        /* Custom device name input styling */
+        .custom-device-name-group {
+            margin-top: 10px;
+            display: none; /* Hidden by default */
+        }
+        .custom-device-name-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            color: white;
+            font-size: 1.5em;
+            flex-direction: column;
+            gap: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        #loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* User ID Display */
+        #user-id-display {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.85em;
+            color: var(--text-color);
+            padding: 8px;
+            background-color: var(--hover-color);
+            border-radius: 5px;
+            word-break: break-all; /* Ensure long IDs wrap */
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Differential Pressure to Flow Conversion</h2>
+            
+            <div class="tool-description">
+                <p>This calculator determines volumetric and mass flow rates based on differential pressure measurements across various primary flow elements. It considers fluid properties and common industrial units.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="dp-flow-calculator-form">
+                    <!-- Process Parameters -->
+                    <div class="form-section">
+                        <h3>Process & Device Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dp-value">Differential Pressure ($\Delta P$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The measured differential pressure across the primary element.</span></span></label>
+                                <input type="number" id="dp-value" step="any" value="100" required>
+                                <select id="dp-unit">
+                                    <option value="Pa">Pa</option>
+                                    <option value="kPa">kPa</option>
+                                    <option value="psi">psi</option>
+                                    <option value="mmH2O">mmH2O (4°C)</option>
+                                    <option value="mmHg">mmHg (0°C)</option>
+                                    <option value="mbar">mbar</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="pipe-id">Pipe Internal Diameter ($D$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The internal diameter of the pipe where the primary element is installed.</span></span></label>
+                                <input type="number" id="pipe-id" step="any" value="100" required>
+                                <select id="pipe-id-unit">
+                                    <option value="mm">mm</option>
+                                    <option value="inch">inch</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="primary-element">Primary Element Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The type of differential pressure flow element used.</span></span></label>
+                                <select id="primary-element">
+                                    <option value="Orifice Plate">Orifice Plate</option>
+                                    <option value="Venturi Tube">Venturi Tube</option>
+                                    <option value="Flow Nozzle">Flow Nozzle</option>
+                                    <option value="Pitot Tube">Pitot Tube</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="throat-diameter-group">
+                                <label for="throat-diameter">Orifice/Throat Diameter ($d$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The diameter of the orifice bore, Venturi throat, or nozzle throat.</span></span></label>
+                                <input type="number" id="throat-diameter" step="any" value="50" required>
+                                <select id="throat-diameter-unit">
+                                    <option value="mm">mm</option>
+                                    <option value="inch">inch</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fluid Properties -->
+                    <div class="form-section">
+                        <h3>Fluid Properties</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fluid-type">Fluid Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the type of fluid being measured.</span></span></label>
+                                <select id="fluid-type">
+                                    <option value="Liquid">Liquid</option>
+                                    <option value="Gas">Gas</option>
+                                    <option value="Saturated Steam">Saturated Steam</option>
+                                    <option value="Superheated Steam">Superheated Steam</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fluid-temperature">Fluid Temperature ($T$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Operating temperature of the fluid.</span></span></label>
+                                <input type="number" id="fluid-temperature" step="any" value="25" required>
+                                <select id="fluid-temperature-unit">
+                                    <option value="C">°C</option>
+                                    <option value="F">°F</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="fluid-pressure-group">
+                                <label for="fluid-pressure">Fluid Pressure ($P_1$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Operating static pressure of the fluid upstream of the primary element. Required for compressible fluids.</span></span></label>
+                                <input type="number" id="fluid-pressure" step="any" value="1" required>
+                                <select id="fluid-pressure-unit">
+                                    <option value="bar">bar</option>
+                                    <option value="kPa">kPa</option>
+                                    <option value="psi">psi</option>
+                                    <option value="atm">atm</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="fluid-density-group">
+                                <label for="fluid-density">Fluid Density ($\rho$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Density of the fluid at operating conditions. Required for liquids.</span></span></label>
+                                <input type="number" id="fluid-density" step="any" value="1000" required>
+                                <select id="fluid-density-unit">
+                                    <option value="kg/m3">kg/m³</option>
+                                    <option value="lb/ft3">lb/ft³</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="fluid-sg-group" style="display: none;">
+                                <label for="fluid-sg">Fluid Specific Gravity (SG) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Specific gravity of the liquid relative to water at 4°C (density 1000 kg/m³). Alternative to density input.</span></span></label>
+                                <input type="number" id="fluid-sg" step="any" value="1" min="0.001">
+                            </div>
+                            <div class="form-group">
+                                <label for="fluid-viscosity">Fluid Dynamic Viscosity ($\mu$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Dynamic viscosity of the fluid at operating conditions. Used for Reynolds number.</span></span></label>
+                                <input type="number" id="fluid-viscosity" step="any" value="0.001" required>
+                                <select id="fluid-viscosity-unit">
+                                    <option value="Pa.s">Pa·s</option>
+                                    <option value="cP">cP</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="specific-heat-ratio-group">
+                                <label for="specific-heat-ratio">Specific Heat Ratio ($\kappa$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Ratio of specific heats (Cp/Cv) for compressible fluids (e.g., 1.4 for air).</span></span></label>
+                                <input type="number" id="specific-heat-ratio" step="any" value="1.4" min="1" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn">Calculate Flow</button>
+                        <button type="button" id="save-config-btn" class="save-btn"><i class="fas fa-save"></i> Save Configuration</button>
+                        <button type="button" id="load-config-btn" class="load-btn"><i class="fas fa-folder-open"></i> Load Configuration</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="user-id-display"></div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <p class="status-display" id="flow-status-display">Flow Status: N/A</p>
+
+                <div id="calculation-details">
+                    <h4>Step-by-Step Calculation</h4>
+                    <div id="steps-list">
+                        <!-- Calculation steps will be inserted here -->
+                    </div>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+
+                <div id="practical-recommendations" style="display: none;">
+                    <h4>Practical Considerations & Recommendations</h4>
+                    <ul id="recommendations-list">
+                        <!-- Recommendations will be dynamically inserted here -->
+                    </ul>
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <p><strong>Applicable Standards and Guidelines:</strong> Flow measurement using differential pressure devices is governed by international standards to ensure accuracy and repeatability. Key standards and considerations include:</p>
+                    <ul>
+                        <li><strong>ISO 5167: Measurement of fluid flow by means of pressure differential devices inserted in circular cross-section conduits running full.</strong> This is the primary standard for orifice plates, nozzles, and Venturi tubes. It defines geometry, installation requirements, and calculation methods for discharge coefficients and expansion factors.</li>
+                        <li><strong>ASME MFC-3M: Measurement of Fluid Flow in Pipes Using Orifice, Nozzle, and Venturi.</strong> An American standard similar to ISO 5167.</li>
+                        <li><strong>API 14.3 / AGA Report No. 3: Orifice Metering of Natural Gas and Other Related Hydrocarbon Fluids.</strong> Specific to natural gas flow measurement using orifice plates.</li>
+                        <li><strong>Fluid Properties:</strong> Accurate fluid density, viscosity, and specific heat ratio at operating conditions are critical. These properties can vary significantly with temperature and pressure. For precise industrial applications, these properties are often obtained from fluid property databases or equations of state.</li>
+                        <li><strong>Reynolds Number:</strong> Flow meters operate reliably within specific Reynolds number ranges. Laminar flow (low Re) and highly turbulent flow (very high Re) can affect accuracy.</li>
+                        <li><strong>Beta Ratio ($\beta$):</strong> The ratio of the primary element's throat diameter to the pipe's internal diameter. It significantly influences the discharge coefficient and pressure recovery. Typical ranges are 0.2 to 0.75 for orifice plates.</li>
+                        <li><strong>Discharge Coefficient ($C_d$):</strong> An empirical factor accounting for energy losses and flow contraction. It is determined through extensive experimental data and often depends on the Reynolds number and Beta ratio. For this calculator, simplified empirical values are used; for high accuracy, refer to ISO 5167's iterative methods.</li>
+                        <li><strong>Expansion Factor ($Y$):</strong> Accounts for the change in density of compressible fluids as they expand through the primary element. It is a function of the pressure ratio across the element and the specific heat ratio of the fluid.</li>
+                    </ul>
+                    <p>This tool provides an engineering estimation for flow calculation. For critical process control and custody transfer applications, detailed design, calibration, and adherence to the latest international standards are mandatory.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="custom-message-box"></div>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db;
+        let auth;
+        let userId = 'anonymous'; // Default to anonymous
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        // Fix for ReferenceError: Cannot access 'initialAuthToken' before initialization
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize Firebase
+            if (Object.keys(firebaseConfig).length > 0) {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authenticate user
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    userId = auth.currentUser?.uid || crypto.randomUUID(); // Use UID if authenticated, else a random ID
+                    document.getElementById('user-id-display').textContent = `User ID: ${userId}`;
+                    console.log("Firebase initialized and user authenticated:", userId);
+                } catch (error) {
+                    console.error("Firebase authentication failed:", error);
+                    showCustomMessage("Failed to authenticate with Firebase. Save/Load features may not work.", 'error');
+                    userId = crypto.randomUUID(); // Fallback to a random ID
+                    document.getElementById('user-id-display').textContent = `User ID (Anonymous, no persistence): ${userId}`;
+                }
+            } else {
+                console.warn("Firebase config not found. Save/Load features will be disabled.");
+                showCustomMessage("Firebase is not configured. Save/Load features are disabled.", 'warning');
+                document.getElementById('user-id-display').textContent = `User ID (Firebase Disabled): ${userId}`;
+            }
+
+            // Input elements
+            const dpValueInput = document.getElementById('dp-value');
+            const dpUnitSelect = document.getElementById('dp-unit');
+            const pipeIdInput = document.getElementById('pipe-id');
+            const pipeIdUnitSelect = document.getElementById('pipe-id-unit');
+            const primaryElementSelect = document.getElementById('primary-element');
+            const throatDiameterGroup = document.getElementById('throat-diameter-group');
+            const throatDiameterInput = document.getElementById('throat-diameter');
+            const throatDiameterUnitSelect = document.getElementById('throat-diameter-unit');
+            const fluidTypeSelect = document.getElementById('fluid-type');
+            const fluidTemperatureInput = document.getElementById('fluid-temperature');
+            const fluidTemperatureUnitSelect = document.getElementById('fluid-temperature-unit');
+            const fluidPressureGroup = document.getElementById('fluid-pressure-group');
+            const fluidPressureInput = document.getElementById('fluid-pressure');
+            const fluidPressureUnitSelect = document.getElementById('fluid-pressure-unit');
+            const fluidDensityGroup = document.getElementById('fluid-density-group');
+            const fluidDensityInput = document.getElementById('fluid-density');
+            const fluidDensityUnitSelect = document.getElementById('fluid-density-unit');
+            const fluidSgGroup = document.getElementById('fluid-sg-group');
+            const fluidSgInput = document.getElementById('fluid-sg');
+            const fluidViscosityInput = document.getElementById('fluid-viscosity');
+            const fluidViscosityUnitSelect = document.getElementById('fluid-viscosity-unit');
+            const specificHeatRatioGroup = document.getElementById('specific-heat-ratio-group');
+            const specificHeatRatioInput = document.getElementById('specific-heat-ratio');
+
+            // Buttons and result containers
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const saveConfigBtn = document.getElementById('save-config-btn');
+            const loadConfigBtn = document.getElementById('load-config-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const flowStatusDisplay = document.getElementById('flow-status-display');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+            const stepsList = document.getElementById('steps-list');
+            const practicalRecommendationsDiv = document.getElementById('practical-recommendations');
+            const recommendationsList = document.getElementById('recommendations-list');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            // Default values for resetting form
+            const defaultValues = {
+                'dp-value': 100,
+                'dp-unit': 'Pa',
+                'pipe-id': 100,
+                'pipe-id-unit': 'mm',
+                'primary-element': 'Orifice Plate',
+                'throat-diameter': 50,
+                'throat-diameter-unit': 'mm',
+                'fluid-type': 'Liquid',
+                'fluid-temperature': 25,
+                'fluid-temperature-unit': 'C',
+                'fluid-pressure': 1,
+                'fluid-pressure-unit': 'bar',
+                'fluid-density': 1000,
+                'fluid-density-unit': 'kg/m3',
+                'fluid-sg': 1,
+                'fluid-viscosity': 0.001,
+                'fluid-viscosity-unit': 'Pa.s',
+                'specific-heat-ratio': 1.4
+            };
+
+            // Helper for unit conversions
+            const unitConversions = {
+                dp: {
+                    'Pa': 1, 'kPa': 1000, 'psi': 6894.76, 'mmH2O': 9.80665, 'mmHg': 133.322, 'mbar': 100
+                },
+                length: {
+                    'mm': 0.001, 'inch': 0.0254
+                },
+                pressure: {
+                    'Pa': 1, 'kPa': 1000, 'bar': 100000, 'psi': 6894.76, 'atm': 101325
+                },
+                density: {
+                    'kg/m3': 1, 'lb/ft3': 16.0185
+                },
+                viscosity: {
+                    'Pa.s': 1, 'cP': 0.001
+                },
+                temperature: {
+                    'C_to_K': (T_c) => T_c + 273.15,
+                    'F_to_K': (T_f) => (T_f - 32) * 5/9 + 273.15,
+                    'K_to_C': (T_k) => T_k - 273.15,
+                    'K_to_F': (T_k) => (T_k - 273.15) * 9/5 + 32
+                }
+            };
+
+            // Function to display custom messages
+            function showCustomMessage(message, type = 'info') {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type for styling (e.g., 'error', 'success', 'info')
+
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#dc3545'; // Red
+                } else if (type === 'success') {
+                    messageBox.style.backgroundColor = '#28a745'; // Green
+                } else if (type === 'warning') {
+                    messageBox.style.backgroundColor = '#ffc107'; // Amber
+                    messageBox.style.color = '#333'; // Dark text for amber
+                } else {
+                    messageBox.style.backgroundColor = '#28A745'; // Green (default info)
+                }
+
+                messageBox.style.opacity = '1';
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Slide down animation
+
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Slide up animation
+                }, 3000);
+            }
+
+            // Function to show/hide loading overlay
+            function showLoading(message = "Loading...") {
+                loadingOverlay.querySelector('p').textContent = message;
+                loadingOverlay.classList.add('show');
+            }
+
+            function hideLoading() {
+                loadingOverlay.classList.remove('show');
+            }
+
+            // Function to toggle visibility of fluid property inputs based on fluid type
+            function toggleFluidInputs() {
+                const fluidType = fluidTypeSelect.value;
+                if (fluidType === 'Liquid') {
+                    fluidPressureGroup.style.display = 'none';
+                    specificHeatRatioGroup.style.display = 'none';
+                    fluidDensityGroup.style.display = 'block';
+                    fluidSgGroup.style.display = 'block'; // Show SG as alternative for liquid
+                    fluidDensityInput.setAttribute('required', 'required');
+                    fluidPressureInput.removeAttribute('required');
+                    specificHeatRatioInput.removeAttribute('required');
+                } else { // Gas, Saturated Steam, Superheated Steam
+                    fluidPressureGroup.style.display = 'block';
+                    specificHeatRatioGroup.style.display = 'block';
+                    fluidDensityGroup.style.display = 'none'; // Hide direct density input for compressible
+                    fluidSgGroup.style.display = 'none'; // Hide SG for compressible
+                    fluidPressureInput.setAttribute('required', 'required');
+                    specificHeatRatioInput.setAttribute('required', 'required');
+                    fluidDensityInput.removeAttribute('required');
+                }
+
+                // Pitot tube doesn't require throat diameter
+                if (primaryElementSelect.value === 'Pitot Tube') {
+                    throatDiameterGroup.style.display = 'none';
+                    throatDiameterInput.removeAttribute('required');
+                } else {
+                    throatDiameterGroup.style.display = 'block';
+                    throatDiameterInput.setAttribute('required', 'required');
+                }
+            }
+
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            // Event listeners for dynamic input visibility
+            fluidTypeSelect.addEventListener('change', toggleFluidInputs);
+            primaryElementSelect.addEventListener('change', toggleFluidInputs);
+            
+            // Initial call to set correct visibility
+            toggleFluidInputs();
+
+            // Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                resultTableBody.innerHTML = ''; // Clear previous results
+                stepsList.innerHTML = ''; // Clear previous steps
+                recommendationsList.innerHTML = ''; // Clear previous recommendations
+                practicalRecommendationsDiv.style.display = 'none'; // Hide recommendations initially
+                flowStatusDisplay.textContent = 'Flow Status: Calculating...';
+                flowStatusDisplay.className = 'status-display'; // Reset class
+
+                let calculationSteps = [];
+                let currentMainStep = 1;
+                let calculationFailed = false;
+
+                // 1. Get and Validate Inputs (and convert to SI units internally)
+                let dp = parseFloat(dpValueInput.value); // Pa
+                let pipeId = parseFloat(pipeIdInput.value); // m
+                let throatDiameter = parseFloat(throatDiameterInput.value); // m
+                let fluidTemperature = parseFloat(fluidTemperatureInput.value); // K
+                let fluidPressure = parseFloat(fluidPressureInput.value); // Pa (absolute)
+                let fluidDensity = parseFloat(fluidDensityInput.value); // kg/m3
+                let fluidSg = parseFloat(fluidSgInput.value);
+                let fluidViscosity = parseFloat(fluidViscosityInput.value); // Pa.s
+                let specificHeatRatio = parseFloat(specificHeatRatioInput.value);
+
+                const primaryElement = primaryElementSelect.value;
+                const fluidType = fluidTypeSelect.value;
+
+                // Input validation
+                if (isNaN(dp) || dp < 0) { showCustomMessage('Differential Pressure must be a non-negative number.', 'error'); calculationFailed = true; }
+                if (isNaN(pipeId) || pipeId <= 0) { showCustomMessage('Pipe Internal Diameter must be a positive number.', 'error'); calculationFailed = true; }
+                if (primaryElement !== 'Pitot Tube' && (isNaN(throatDiameter) || throatDiameter <= 0)) { showCustomMessage('Orifice/Throat Diameter must be a positive number for selected element.', 'error'); calculationFailed = true; }
+                if (primaryElement !== 'Pitot Tube' && throatDiameter >= pipeId) { showCustomMessage('Orifice/Throat Diameter must be less than Pipe Internal Diameter.', 'error'); calculationFailed = true; }
+                if (isNaN(fluidTemperature)) { showCustomMessage('Fluid Temperature must be a number.', 'error'); calculationFailed = true; }
+                if (isNaN(fluidViscosity) || fluidViscosity <= 0) { showCustomMessage('Fluid Dynamic Viscosity must be a positive number.', 'error'); calculationFailed = true; }
+
+                if (fluidType === 'Liquid') {
+                    if (isNaN(fluidDensity) || fluidDensity <= 0) {
+                        if (isNaN(fluidSg) || fluidSg <= 0) {
+                            showCustomMessage('For liquid, either Fluid Density or Specific Gravity must be a positive number.', 'error');
+                            calculationFailed = true;
+                        } else {
+                            fluidDensity = fluidSg * 1000; // Convert SG to density in kg/m3 (reference water at 1000 kg/m3)
+                        }
+                    }
+                } else { // Gas, Saturated Steam, Superheated Steam
+                    if (isNaN(fluidPressure) || fluidPressure <= 0) { showCustomMessage('Fluid Pressure must be a positive number for compressible fluids.', 'error'); calculationFailed = true; }
+                    if (isNaN(specificHeatRatio) || specificHeatRatio <= 0) { showCustomMessage('Specific Heat Ratio must be a positive number for compressible fluids.', 'error'); calculationFailed = true; }
+                }
+
+                if (calculationFailed) {
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+                // Convert inputs to SI units
+                dp *= unitConversions.dp[dpUnitSelect.value];
+                pipeId *= unitConversions.length[pipeIdUnitSelect.value];
+                if (primaryElement !== 'Pitot Tube') {
+                    throatDiameter *= unitConversions.length[throatDiameterUnitSelect.value];
+                }
+                fluidTemperature = fluidTemperatureUnitSelect.value === 'C' ? unitConversions.temperature.C_to_K(fluidTemperature) : unitConversions.temperature.F_to_K(fluidTemperature);
+                fluidViscosity *= unitConversions.viscosity[fluidViscosityUnitSelect.value];
+                if (fluidType !== 'Liquid') {
+                    fluidPressure *= unitConversions.pressure[fluidPressureUnitSelect.value];
+                    // For gases, calculate density using Ideal Gas Law (simplified) or assume given for steam.
+                    // This is a simplification. Real steam properties require steam tables/equations.
+                    // For now, let's assume density is required for steam as well, or a default for ideal gas.
+                    // For "world-class", this would involve property lookups.
+                    // Let's assume for Gas, we calculate density from P, T, and a gas constant (e.g., Air).
+                    // For steam, we'll explicitly state it's a simplified model and real steam tables are needed.
+                    if (fluidType === 'Gas') {
+                        // For air (Molar mass ~28.97 g/mol = 0.02897 kg/mol)
+                        // R = 8.314 J/(mol·K)
+                        // rho = P * M / (R * T)
+                        const M_air = 0.02897; // kg/mol (approx molar mass of air)
+                        const R_ideal = 8.314; // J/(mol·K)
+                        fluidDensity = (fluidPressure * M_air) / (R_ideal * fluidTemperature);
+                        calculationSteps.push(`<strong>${currentMainStep++}. Fluid Properties Calculation:</strong>`);
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;Fluid Type: ${fluidType}`);
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;Assumed Molar Mass (Air): ${M_air.toFixed(5)} kg/mol`);
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;Ideal Gas Constant (R): ${R_ideal.toFixed(3)} J/(mol·K)`);
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;Calculated Fluid Density ($\rho$) = (P * M) / (R * T) = (${fluidPressure.toFixed(2)} Pa * ${M_air.toFixed(5)} kg/mol) / (${R_ideal.toFixed(3)} J/(mol·K) * ${fluidTemperature.toFixed(2)} K) = ${fluidDensity.toFixed(4)} kg/m³`);
+                    } else if (fluidType.includes('Steam')) {
+                        // For steam, we'd ideally use steam tables. For this calculator,
+                        // we'll require density input or use a very simplified constant.
+                        // Let's assume a default density for steam if not provided, or prompt for it.
+                        // Given the previous logic, if fluidType is not liquid, density input is hidden.
+                        // This means for steam, we'd need to calculate it from P,T or ask for it.
+                        // To avoid over-complication, let's make a note that for steam, accurate density from steam tables is crucial.
+                        // For demonstration, use a very rough estimate or require user to input density for steam as well.
+                        // Given the current UI, fluid density input is hidden for compressible fluids.
+                        // For steam, we will use a very simplified constant and add a warning.
+                        showCustomMessage("For Steam, accurate density values from steam tables are crucial. This calculator uses a simplified approach.", 'warning');
+                        // Placeholder: Assuming saturated steam at 1 bar abs (~100 kPa) has density ~0.59 kg/m3
+                        fluidDensity = 0.59; // kg/m3 - This is just a placeholder, not a real calculation.
+                        calculationSteps.push(`<strong>${currentMainStep++}. Fluid Properties (Steam - Simplified):</strong>`);
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;Fluid Type: ${fluidType}`);
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;NOTE: For steam, accurate density values from steam tables are crucial. This calculator uses a simplified approach and assumes a placeholder density of ${fluidDensity.toFixed(2)} kg/m³.`);
+                    }
+                }
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Input Parameters (Converted to SI Units):</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Differential Pressure ($\Delta P$): ${dp.toFixed(2)} Pa`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Pipe Internal Diameter ($D$): ${pipeId.toFixed(4)} m`);
+                if (primaryElement !== 'Pitot Tube') {
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Orifice/Throat Diameter ($d$): ${throatDiameter.toFixed(4)} m`);
+                }
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Fluid Temperature ($T$): ${fluidTemperature.toFixed(2)} K`);
+                if (fluidType !== 'Liquid') {
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Fluid Pressure ($P_1$): ${fluidPressure.toFixed(2)} Pa`);
+                }
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Fluid Density ($\rho$): ${fluidDensity.toFixed(4)} kg/m³`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Fluid Dynamic Viscosity ($\mu$): ${fluidViscosity.toExponential(2)} Pa·s`);
+                if (fluidType !== 'Liquid') {
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Specific Heat Ratio ($\kappa$): ${specificHeatRatio.toFixed(2)}`);
+                }
+
+                // 2. Calculate Derived Geometric Parameters
+                const pipeArea = Math.PI * Math.pow(pipeId / 2, 2); // m2
+                let throatArea = 0; // m2
+                if (primaryElement !== 'Pitot Tube') {
+                    throatArea = Math.PI * Math.pow(throatDiameter / 2, 2); // m2
+                }
+                const betaRatio = (primaryElement !== 'Pitot Tube') ? throatDiameter / pipeId : 0; // dimensionless
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Calculate Geometric Parameters:</strong>`);
+                calculationSteps.push(`&nbsp;&nbsp;&nbsp;Pipe Area (A<sub>pipe</sub>) = $\\pi \\cdot (D/2)^2 = \\pi \\cdot (${(pipeId/2).toFixed(4)})^2 = ${pipeArea.toExponential(4)} m^2$`);
+                if (primaryElement !== 'Pitot Tube') {
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Orifice/Throat Area (A<sub>throat</sub>) = $\\pi \\cdot (d/2)^2 = \\pi \\cdot (${(throatDiameter/2).toFixed(4)})^2 = ${throatArea.toExponential(4)} m^2$`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Beta Ratio ($\\beta$) = $d/D = ${throatDiameter.toFixed(4)} / ${pipeId.toFixed(4)} = ${betaRatio.toFixed(4)}$`);
+                }
+
+                // 3. Determine Discharge Coefficient (Cd) - Simplified approach
+                let dischargeCoefficient = 0;
+                let recommendations = [];
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Determine Discharge Coefficient (C<sub>d</sub>):</strong>`);
+                switch (primaryElement) {
+                    case 'Orifice Plate':
+                        // Simplified Cd for orifice. For true "world-class" ISO 5167, it's an iterative calculation
+                        // based on Reynolds number and Beta ratio. Using a common approximation here.
+                        dischargeCoefficient = 0.61; // Common approximation
+                        recommendations.push("For Orifice Plates, the Discharge Coefficient ($C_d$) is highly dependent on Reynolds number and Beta ratio. This calculator uses a common approximation ($C_d \\approx 0.61$). For precise calculations, refer to ISO 5167 iterative methods.");
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;For Orifice Plate, using a common approximation: $C_d \\approx ${dischargeCoefficient.toFixed(3)}$`);
+                        break;
+                    case 'Venturi Tube':
+                        dischargeCoefficient = 0.985; // Typical range 0.98 - 0.995
+                        recommendations.push("Venturi Tubes typically have high discharge coefficients due to their smooth contour, leading to minimal energy loss.");
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;For Venturi Tube, using typical value: $C_d \\approx ${dischargeCoefficient.toFixed(3)}$`);
+                        break;
+                    case 'Flow Nozzle':
+                        dischargeCoefficient = 0.99; // Typical range 0.98 - 0.995
+                        recommendations.push("Flow Nozzles have high discharge coefficients, similar to Venturi tubes, but with less pressure recovery.");
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;For Flow Nozzle, using typical value: $C_d \\approx ${dischargeCoefficient.toFixed(3)}$`);
+                        break;
+                    case 'Pitot Tube':
+                        dischargeCoefficient = 0.995; // Typical range 0.99 - 1.0
+                        recommendations.push("Pitot Tubes measure local velocity at a point and are generally used for velocity profiling or large ducts. The coefficient is close to 1.");
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;For Pitot Tube, using typical value: $C_d \\approx ${dischargeCoefficient.toFixed(3)}$`);
+                        break;
+                    default:
+                        dischargeCoefficient = 0;
+                        showCustomMessage('Unknown primary element type selected.', 'error');
+                        calculationFailed = true;
+                        break;
+                }
+                if (calculationFailed) {
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+                // 4. Calculate Expansion Factor (Y)
+                let expansionFactor = 1; // For liquids
+                calculationSteps.push(`<strong>${currentMainStep++}. Calculate Expansion Factor (Y):</strong>`);
+                if (fluidType !== 'Liquid') {
+                    // Simplified Y for orifice. ISO 5167 has more complex formulas.
+                    // Y = 1 - (0.41 + 0.35 * beta^4) * (dp / (kappa * P1))
+                    if (fluidPressure <= dp) {
+                        showCustomMessage('Upstream pressure must be greater than differential pressure for compressible flow.', 'error');
+                        calculationFailed = true;
+                    } else {
+                        expansionFactor = 1 - (0.41 + 0.35 * Math.pow(betaRatio, 4)) * (dp / (specificHeatRatio * fluidPressure));
+                        if (expansionFactor < 0.5 || expansionFactor > 1) { // Sanity check for Y
+                            showCustomMessage('Calculated Expansion Factor (Y) is outside typical range (0.5-1.0). Check input values.', 'warning');
+                            recommendations.push("The calculated Expansion Factor (Y) is outside the typical range (0.5-1.0). This might indicate extreme operating conditions or incorrect input values for compressible fluid properties.");
+                        }
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;For compressible fluid, using simplified formula: $Y = 1 - (0.41 + 0.35 \\cdot \\beta^4) \\cdot (\\Delta P / (\\kappa \\cdot P_1))$`);
+                        calculationSteps.push(`&nbsp;&nbsp;&nbsp;$Y = 1 - (0.41 + 0.35 \\cdot ${betaRatio.toFixed(4)}^4) \\cdot (${dp.toFixed(2)} / (${specificHeatRatio.toFixed(2)} \\cdot ${fluidPressure.toFixed(2)})) = ${expansionFactor.toFixed(4)}$`);
+                    }
+                } else {
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;For liquid, $Y = 1$`);
+                }
+                if (calculationFailed) {
+                    resultContainer.style.display = 'none';
+                    resultContainer.classList.remove('show');
+                    return;
+                }
+
+                // 5. Calculate Reynolds Number (Re) - for pipe and throat
+                // Need to calculate velocity first for Reynolds number
+                // Re = (rho * V * D) / mu
+                // V = Q / A
+                // Since flow is unknown, we'll calculate Re for the pipe based on the calculated mass flow.
+                // This implies an iterative process for true ISO 5167 compliance, but for a direct calculator,
+                // we'll calculate Re *after* flow. This means Cd is an approximation.
+                // For this calculator, we'll calculate Reynolds number based on the calculated flow.
+                // This is a simplification. In reality, Cd depends on Re, making it an iterative problem.
+
+                // 6. Calculate Flow Rate
+                let massFlowRate = 0; // kg/s
+                let volumetricFlowRate = 0; // m3/s
+
+                calculationSteps.push(`<strong>${currentMainStep++}. Calculate Flow Rate:</strong>`);
+                if (primaryElement === 'Pitot Tube') {
+                    // For Pitot Tube, flow is calculated from velocity at point.
+                    // V = Cd * sqrt(2 * dp / rho)
+                    const velocity = dischargeCoefficient * Math.sqrt((2 * dp) / fluidDensity); // m/s
+                    volumetricFlowRate = velocity * pipeArea; // m3/s
+                    massFlowRate = volumetricFlowRate * fluidDensity; // kg/s
+
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Velocity (V) = $C_d \\cdot \\sqrt{2 \\cdot \\Delta P / \\rho} = ${dischargeCoefficient.toFixed(3)} \\cdot \\sqrt{2 \\cdot ${dp.toFixed(2)} / ${fluidDensity.toFixed(4)}} = ${velocity.toFixed(4)} m/s$`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Volumetric Flow (Q) = V $\\cdot$ A<sub>pipe</sub> = ${velocity.toFixed(4)} m/s $\\cdot$ ${pipeArea.toExponential(4)} m$^2$ = ${volumetricFlowRate.toExponential(4)} m$^3$/s`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Mass Flow (m) = Q $\\cdot$ $\\rho$ = ${volumetricFlowRate.toExponential(4)} m$^3$/s $\\cdot$ ${fluidDensity.toFixed(4)} kg/m$^3$ = ${massFlowRate.toExponential(4)} kg/s`);
+                } else {
+                    // For Orifice, Venturi, Nozzle
+                    // Mass Flow (m) = Cd * Y * A_throat * sqrt(2 * dp * rho / (1 - beta^4))
+                    massFlowRate = dischargeCoefficient * expansionFactor * throatArea * Math.sqrt((2 * dp * fluidDensity) / (1 - Math.pow(betaRatio, 4))); // kg/s
+                    volumetricFlowRate = massFlowRate / fluidDensity; // m3/s
+
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Mass Flow (m) = $C_d \\cdot Y \\cdot A_{throat} \\cdot \\sqrt{(2 \\cdot \\Delta P \\cdot \\rho) / (1 - \\beta^4)}$`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;m = ${dischargeCoefficient.toFixed(3)} \\cdot ${expansionFactor.toFixed(4)} \\cdot ${throatArea.toExponential(4)} \\cdot \\sqrt{(2 \\cdot ${dp.toFixed(2)} \\cdot ${fluidDensity.toFixed(4)}) / (1 - ${betaRatio.toFixed(4)}^4)}$`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;m = ${massFlowRate.toExponential(4)} kg/s`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Volumetric Flow (Q) = m / $\\rho$ = ${massFlowRate.toExponential(4)} kg/s / ${fluidDensity.toFixed(4)} kg/m$^3$ = ${volumetricFlowRate.toExponential(4)} m$^3$/s`);
+                }
+
+                // Calculate Reynolds number based on calculated mass flow
+                let reynoldsNumber = 0;
+                if (fluidViscosity > 0) {
+                    reynoldsNumber = (4 * massFlowRate) / (Math.PI * pipeId * fluidViscosity);
+                    calculationSteps.push(`<strong>${currentMainStep++}. Calculate Reynolds Number (Re):</strong>`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Reynolds Number (Re) = $(4 \\cdot m) / (\\pi \\cdot D \\cdot \\mu)$`);
+                    calculationSteps.push(`&nbsp;&nbsp;&nbsp;Re = $(4 \\cdot ${massFlowRate.toExponential(4)}) / (\\pi \\cdot ${pipeId.toFixed(4)} \\cdot ${fluidViscosity.toExponential(2)}) = ${reynoldsNumber.toExponential(2)}$`);
+                } else {
+                    showCustomMessage('Fluid viscosity is zero. Reynolds number cannot be calculated.', 'warning');
+                    recommendations.push("Reynolds number could not be calculated because fluid viscosity was zero. Ensure a positive viscosity value for accurate flow regime assessment.");
+                }
+
+                // Display Results in table
+                const results = [
+                    { param: 'Differential Pressure ($\Delta P$)', value: `${dpValueInput.value} ${dpUnitSelect.value} (${dp.toFixed(2)} Pa)` },
+                    { param: 'Pipe Internal Diameter ($D$)', value: `${pipeIdInput.value} ${pipeIdUnitSelect.value} (${pipeId.toFixed(4)} m)` },
+                    { param: 'Primary Element Type', value: primaryElement },
+                ];
+                if (primaryElement !== 'Pitot Tube') {
+                    results.push({ param: 'Orifice/Throat Diameter ($d$)', value: `${throatDiameterInput.value} ${throatDiameterUnitSelect.value} (${throatDiameter.toFixed(4)} m)` });
+                }
+                results.push(
+                    { param: 'Fluid Type', value: fluidType },
+                    { param: 'Fluid Temperature ($T$)', value: `${fluidTemperatureInput.value} ${fluidTemperatureUnitSelect.value} (${fluidTemperature.toFixed(2)} K)` },
+                    { param: 'Fluid Density ($\rho$)', value: `${fluidDensity.toFixed(4)} kg/m³` },
+                    { param: 'Fluid Dynamic Viscosity ($\mu$)', value: `${fluidViscosityInput.value} ${fluidViscosityUnitSelect.value} (${fluidViscosity.toExponential(2)} Pa·s)` },
+                );
+                if (fluidType !== 'Liquid') {
+                    results.push(
+                        { param: 'Fluid Pressure ($P_1$)', value: `${fluidPressureInput.value} ${fluidPressureUnitSelect.value} (${fluidPressure.toFixed(2)} Pa)` },
+                        { param: 'Specific Heat Ratio ($\kappa$)', value: `${specificHeatRatio.toFixed(2)}` }
+                    );
+                }
+                
+                results.push(
+                    { param: 'Beta Ratio ($\beta$)', value: betaRatio.toFixed(4) },
+                    { param: 'Discharge Coefficient ($C_d$)', value: dischargeCoefficient.toFixed(4) },
+                    { param: 'Expansion Factor ($Y$)', value: expansionFactor.toFixed(4) },
+                    { param: 'Reynolds Number (Re)', value: reynoldsNumber.toExponential(2) },
+                    { param: '<strong>Calculated Volumetric Flow Rate</strong>', value: `<strong>${(volumetricFlowRate * 3600).toFixed(4)} m³/hr</strong>` }, // m3/s to m3/hr
+                    { param: '<strong>Calculated Mass Flow Rate</strong>', value: `<strong>${(massFlowRate * 3600).toFixed(4)} kg/hr</strong>` } // kg/s to kg/hr
+                );
+
+                results.forEach(res => {
+                    const row = resultTableBody.insertRow();
+                    const paramCell = row.insertCell(0);
+                    const valueCell = row.insertCell(1);
+                    paramCell.innerHTML = res.param;
+                    valueCell.innerHTML = res.value;
+                });
+
+                // Populate step-by-step calculations
+                stepsList.innerHTML = '';
+                calculationSteps.forEach(step => {
+                    const p = document.createElement('p');
+                    p.className = 'calculation-step';
+                    p.innerHTML = step;
+                    stepsList.appendChild(p);
+                });
+
+                // Update Status Display and Recommendations
+                let statusText = 'Flow Status: ';
+                let statusClass = 'status-display ';
+                
+                // Add recommendations based on Reynolds number
+                if (reynoldsNumber > 20000) {
+                    statusClass += 'optimal';
+                    statusText += 'Turbulent Flow (Optimal for DP Meters)';
+                    recommendations.push("The calculated Reynolds number indicates fully turbulent flow, which is ideal for differential pressure flow measurement devices, ensuring stable and predictable performance.");
+                } else if (reynoldsNumber >= 4000 && reynoldsNumber <= 20000) {
+                    statusClass += 'warning';
+                    statusText += 'Transitional Flow (Caution Recommended)';
+                    recommendations.push("The calculated Reynolds number falls within the transitional flow regime. Accuracy of differential pressure meters can be reduced in this range. Consider optimizing flow conditions or selecting a different flow meter technology if high accuracy is critical.");
+                } else if (reynoldsNumber < 4000) {
+                    statusClass += 'critical';
+                    statusText += 'Laminar Flow (Not Suitable for DP Meters)';
+                    recommendations.push("The calculated Reynolds number indicates laminar flow. Differential pressure flow meters are generally not suitable for laminar flow conditions, and accuracy will be severely compromised. Consider a different flow measurement principle (e.g., Coriolis, Positive Displacement) for such applications.");
+                } else {
+                    statusClass += 'info'; // Fallback
+                    statusText += 'Reynolds Number Not Calculated or Invalid';
+                }
+
+                recommendationsList.innerHTML = '';
+                recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.innerHTML = rec; // Use innerHTML for bold tags in recommendations
+                    recommendationsList.appendChild(li);
+                });
+                practicalRecommendationsDiv.style.display = 'block'; // Show recommendations
+
+                flowStatusDisplay.textContent = statusText;
+                flowStatusDisplay.className = statusClass;
+
+                resultContainer.style.display = 'block';
+                // Trigger fade-in animation
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    showCustomMessage('Calculation successful!', 'success');
+                }, 100);
+            });
+
+            // Reset Form Logic
+            resetFormBtn.addEventListener('click', function() {
+                for (const key in defaultValues) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = defaultValues[key];
+                    }
+                }
+                toggleFluidInputs(); // Reset visibility after setting defaults
+                showCustomMessage('Form reset to default values.', 'info');
+            });
+
+            // Clear Results Logic
+            clearResultsBtn.addEventListener('click', function() {
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    resultTableBody.innerHTML = '';
+                    stepsList.innerHTML = '';
+                    recommendationsList.innerHTML = '';
+                    practicalRecommendationsDiv.style.display = 'none';
+                    flowStatusDisplay.textContent = 'Flow Status: N/A';
+                    flowStatusDisplay.className = 'status-display';
+                }, 500); // Wait for fade-out transition
+                showCustomMessage('Results cleared.', 'info');
+            });
+
+            // Save Configuration Logic
+            saveConfigBtn.addEventListener('click', async function() {
+                if (!db || !auth || !auth.currentUser) {
+                    showCustomMessage("Firebase not initialized or user not authenticated. Cannot save configuration.", 'error');
+                    return;
+                }
+                showLoading("Saving configuration...");
+
+                try {
+                    const configData = {
+                        dpValue: parseFloat(dpValueInput.value),
+                        dpUnit: dpUnitSelect.value,
+                        pipeId: parseFloat(pipeIdInput.value),
+                        pipeIdUnit: pipeIdUnitSelect.value,
+                        primaryElement: primaryElementSelect.value,
+                        throatDiameter: parseFloat(throatDiameterInput.value),
+                        throatDiameterUnit: throatDiameterUnitSelect.value,
+                        fluidType: fluidTypeSelect.value,
+                        fluidTemperature: parseFloat(fluidTemperatureInput.value),
+                        fluidTemperatureUnit: fluidTemperatureUnitSelect.value,
+                        fluidPressure: parseFloat(fluidPressureInput.value),
+                        fluidPressureUnit: fluidPressureUnitSelect.value,
+                        fluidDensity: parseFloat(fluidDensityInput.value),
+                        fluidDensityUnit: fluidDensityUnitSelect.value,
+                        fluidSg: parseFloat(fluidSgInput.value),
+                        fluidViscosity: parseFloat(fluidViscosityInput.value),
+                        fluidViscosityUnit: fluidViscosityUnitSelect.value,
+                        specificHeatRatio: parseFloat(specificHeatRatioInput.value)
+                    };
+
+                    // Save to Firestore
+                    const configDocRef = doc(db, `artifacts/${appId}/users/${userId}/configs`, 'dpFlowCalculator');
+                    await setDoc(configDocRef, configData);
+                    showCustomMessage('Configuration saved successfully!', 'success');
+                } catch (error) {
+                    console.error("Error saving configuration:", error);
+                    showCustomMessage('Failed to save configuration. Please try again.', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            // Load Configuration Logic
+            loadConfigBtn.addEventListener('click', async function() {
+                if (!db || !auth || !auth.currentUser) {
+                    showCustomMessage("Firebase not initialized or user not authenticated. Cannot load configuration.", 'error');
+                    return;
+                }
+                showLoading("Loading configuration...");
+
+                try {
+                    const configDocRef = doc(db, `artifacts/${appId}/users/${userId}/configs`, 'dpFlowCalculator');
+                    const docSnap = await getDoc(configDocRef);
+
+                    if (docSnap.exists()) {
+                        const loadedConfig = docSnap.data();
+                        
+                        // Populate form fields
+                        dpValueInput.value = loadedConfig.dpValue;
+                        dpUnitSelect.value = loadedConfig.dpUnit;
+                        pipeIdInput.value = loadedConfig.pipeId;
+                        pipeIdUnitSelect.value = loadedConfig.pipeIdUnit;
+                        primaryElementSelect.value = loadedConfig.primaryElement;
+                        throatDiameterInput.value = loadedConfig.throatDiameter;
+                        throatDiameterUnitSelect.value = loadedConfig.throatDiameterUnit;
+                        fluidTypeSelect.value = loadedConfig.fluidType;
+                        fluidTemperatureInput.value = loadedConfig.fluidTemperature;
+                        fluidTemperatureUnitSelect.value = loadedConfig.fluidTemperatureUnit;
+                        fluidPressureInput.value = loadedConfig.fluidPressure;
+                        fluidPressureUnitSelect.value = loadedConfig.fluidPressureUnit;
+                        fluidDensityInput.value = loadedConfig.fluidDensity;
+                        fluidDensityUnitSelect.value = loadedConfig.fluidDensityUnit;
+                        fluidSgInput.value = loadedConfig.fluidSg;
+                        fluidViscosityInput.value = loadedConfig.fluidViscosity;
+                        fluidViscosityUnitSelect.value = loadedConfig.fluidViscosityUnit;
+                        specificHeatRatioInput.value = loadedConfig.specificHeatRatio;
+
+                        toggleFluidInputs(); // Adjust visibility based on loaded fluid type and primary element
+                        showCustomMessage('Configuration loaded successfully!', 'success');
+                    } else {
+                        showCustomMessage('No saved configuration found for this user.', 'info');
+                    }
+                } catch (error) {
+                    console.error("Error loading configuration:", error);
+                    showCustomMessage('Failed to load configuration. Please try again.', 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

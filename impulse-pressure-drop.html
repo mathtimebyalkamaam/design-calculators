@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-23Y1V450SR');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pressure Drop Calculator (Impulse Tubing) - Design Calculators - Instrumentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Basic CSS Variables for a consistent theme */
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #45a049; /* Darker Green */
+            --accent-color: #FFC107; /* Amber */
+            --bg-color: #f4f7f6; /* Light Greyish Green */
+            --card-bg: #ffffff; /* White */
+            --text-color: #333333; /* Dark Grey */
+            --header-bg: #2C3E50; /* Dark Blue Grey */
+            --footer-bg: #34495E; /* Slightly Lighter Dark Blue Grey */
+            --border-color: #cccccc;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --hover-color: #e2e6ea;
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --button-hover-gradient: linear-gradient(45deg, var(--secondary-color), #3b8e3e);
+            --reset-button-bg: #FFC107; /* Yellow for reset */
+            --reset-button-hover-bg: #E0A800; /* Darker yellow */
+            --clear-button-bg: #007bff; /* Blue for clear */
+            --clear-button-hover-bg: #0056b3; /* Darker blue */
+            --pressure-color: #e74c3c; /* Red for pressure drop */
+            --pressure-color-dark: #c0392b; /* Darker red for pressure drop */
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --text-color: #ecf0f1;
+            --header-bg: #2c3e50;
+            --footer-bg: #2c3e50;
+            --border-color: #555555;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --hover-color: #446688;
+            --button-gradient: linear-gradient(45deg, #3b8e3e, #4CAF50);
+            --button-hover-gradient: linear-gradient(45deg, #4CAF50, #5cb85c);
+            --reset-button-bg: #FFD700; /* Gold/Yellow for dark mode reset */
+            --reset-button-hover-bg: #DAA520; /* Darker gold/yellow */
+            --clear-button-bg: #17a2b8; /* Cyan for dark mode clear */
+            --clear-button-hover-bg: #138496;
+            --pressure-color: #ff7675; /* Lighter red for dark mode */
+            --pressure-color-dark: #d63031; /* Darker red for dark mode */
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, var(--bg-color), #e0e0e0);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative; /* For theme toggle positioning */
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            color: var(--primary-color);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1em;
+            color: #bdc3c7;
+        }
+
+        main {
+            padding: 20px 0;
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, transform 0.3s;
+            width: fit-content; 
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .form-section {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px; /* Space between sections */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0; /* Initial state for fade-in animation */
+            transform: translateY(10px); /* Initial state for slide-up animation */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px; /* Default margin for form groups */
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--card-bg); /* Use card-bg for input background */
+            color: var(--text-color);
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+            gap: 20px; /* Gap between grid items */
+            margin-bottom: 0; /* Handled by form-group margin */
+        }
+        
+        .calculate-btn {
+            background: var(--button-gradient);
+            color: white;
+            border: none;
+            padding: 12px 30px; /* Increased padding for better appearance */
+            border-radius: 25px; /* More rounded */
+            cursor: pointer;
+            font-size: 1.1em; /* Slightly larger font */
+            font-weight: bold;
+            margin-top: 25px; /* More space above button */
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto; /* Allow button to size based on content and padding */
+            min-width: 220px; /* Ensure a minimum width for consistency */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .calculate-btn:hover {
+            background: var(--button-hover-gradient);
+            transform: translateY(-5px) scale(1.02); /* Lift and slightly scale */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Deeper shadow on hover */
+        }
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-left: 15px; /* Space from calculate button */
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* For animation */
+            transform: translateY(20px); /* Initial state for animation */
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        
+        .result-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none; /* No border for the last row */
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color); /* Highlight row on hover */
+        }
+        
+        .standard-reference {
+            margin-top: 20px;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 10px;
+            border-left: 4px solid var(--primary-color);
+            background-color: var(--hover-color);
+            border-radius: 4px;
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 5px;
+            cursor: help;
+            transition: color 0.3s;
+        }
+
+        .info-icon:hover {
+            color: var(--accent-color);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px; /* Increased padding */
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px); /* Initial state for tooltip animation */
+            font-size: 0.85em;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            display: flex; /* Use flex for centering text */
+            align-items: center;
+            justify-content: center;
+            min-width: 250px; /* Ensure it's wide enough */
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px; /* More rounded */
+            padding: 20px; /* Increased padding */
+            margin-bottom: 25px; /* More space */
+            font-size: 0.95em;
+            color: var(--text-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px; /* More space */
+            text-align: center;
+            font-size: 1.2em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif; /* A font suitable for mathematical formulas */
+            font-style: italic;
+            font-size: 1.1em;
+            text-align: center;
+            padding: 12px 10px; /* Increased padding */
+            background-color: var(--hover-color);
+            border-radius: 6px; /* More rounded */
+            margin: 15px 0; /* More space */
+            overflow-x: auto; /* Allow horizontal scrolling for long formulas */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace; /* Monospace for steps */
+            background-color: var(--hover-color);
+            padding: 8px 15px; /* Increased padding */
+            border-radius: 4px; /* More rounded */
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+            white-space: pre-wrap; /* Preserve whitespace and wrap text */
+            word-break: break-word; /* Break long words */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px; /* Increased margin */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px; /* More space */
+            color: var(--text-color);
+        }
+
+        /* Style for centering the button */
+        .button-wrapper {
+            display: flex;
+            justify-content: center; /* Center the button horizontally */
+            width: 100%; /* Ensure it takes full width to center effectively */
+            padding-top: 20px; /* Add more spacing above the button */
+        }
+
+        /* Animation for input fields on focus */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4); /* Green glow, slightly more pronounced */
+            outline: none;
+            animation: pulse 0.8s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.4);
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(76, 175, 80, 0.2); /* Softer pulse */
+            }
+        }
+
+        /* Specific styles for Pressure Drop Calculator */
+        .unit-system-selector, .density-input-selector, .flow-rate-type-selector, .roughness-selector, .viscosity-input-selector {
+            margin-bottom: 20px;
+            background-color: var(--hover-color);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+        .unit-system-selector label, .density-input-selector label, .flow-rate-type-selector label, .roughness-selector label, .viscosity-input-selector label {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .density-input-selector input[type="radio"], .flow-rate-type-selector input[type="radio"], .roughness-selector input[type="radio"], .viscosity-input-selector input[type="radio"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        #density-input-group, #specific-gravity-input-group, #volumetric-flow-group, #mass-flow-group, #roughness-material-group, #roughness-direct-group, #dynamic-viscosity-group, #kinematic-viscosity-group, #elevation-change-group {
+            display: none; /* Hidden by default */
+            margin-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 15px;
+        }
+        #density-input-group.active, #specific-gravity-input-group.active, #volumetric-flow-group.active, #mass-flow-group.active, #roughness-material-group.active, #roughness-direct-group.active, #dynamic-viscosity-group.active, #kinematic-viscosity-group.active, #elevation-change-group.active {
+            display: block;
+        }
+
+        /* Pressure Drop Visualization */
+        .pressure-drop-visualization-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            flex-direction: column;
+        }
+
+        .pressure-bar-container {
+            width: 80%;
+            height: 30px;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .pressure-bar {
+            height: 100%;
+            width: 0%; /* Initial width */
+            background: linear-gradient(to right, var(--pressure-color), var(--pressure-color-dark));
+            transition: width 1.5s ease-out; /* Smooth animation */
+            border-radius: 5px;
+        }
+
+        .pressure-drop-label {
+            font-weight: bold;
+            color: var(--text-color);
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Instrumentation</h1>
+            <p class="subtitle">Smart Tools for Modern Instrumentation Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <a href="indexInst.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        </div>
+        
+        <div class="tool-container">
+            <h2>Pressure Drop Calculator (Impulse Tubing)</h2>
+            
+            <div class="tool-description">
+                <p>This tool calculates the pressure loss in impulse tubing due to fluid friction and fittings. Accurate pressure drop calculation is crucial for proper sizing of impulse lines, ensuring reliable operation of differential pressure transmitters and other instrumentation in various industrial applications worldwide.</p>
+            </div>
+        
+            <div class="calculator-form">
+                <form id="pressure-drop-form">
+                    <!-- Unit System Selection -->
+                    <div class="form-section unit-system-selector">
+                        <label for="unit-system">Select Unit System:</label>
+                        <select id="unit-system" required>
+                            <option value="metric">Metric (m, Pa, kg/m³, Pa·s, m³/s)</option>
+                            <option value="imperial">Imperial (ft, psi, lb/ft³, lb/(ft·s), ft³/s)</option>
+                        </select>
+                    </div>
+
+                    <!-- Fluid Properties -->
+                    <div class="form-section">
+                        <h3>Fluid Properties</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fluid-temperature" id="label-fluid-temperature">Fluid Temperature <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-fluid-temperature">The operating temperature of the fluid. Important for accurate density and viscosity.</span></span></label>
+                                <input type="number" id="fluid-temperature" step="0.1" value="25.0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="local-gravity" id="label-local-gravity">Local Gravity (g) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-local-gravity">The local acceleration due to gravity at your location. Standard is 9.80665 m/s² or 32.174 ft/s².</span></span></label>
+                                <input type="number" id="local-gravity" step="0.001" value="9.80665" required>
+                            </div>
+                        </div>
+                        <!-- Fluid Density Input Method -->
+                        <div class="density-input-selector">
+                            <label>Fluid Density Input Method:</label>
+                            <label>
+                                <input type="radio" name="density-input-method" value="density" checked> Direct Density
+                            </label>
+                            <label>
+                                <input type="radio" name="density-input-method" value="specific-gravity"> Specific Gravity (SG)
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" id="density-input-group" class="active">
+                                <label for="fluid-density" id="label-fluid-density-actual">Fluid Density (ρ) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-fluid-density-actual">The density of the fluid at operating conditions.</span></span></label>
+                                <input type="number" id="fluid-density" step="0.01" value="1000.0" required>
+                            </div>
+                            <div class="form-group" id="specific-gravity-input-group">
+                                <label for="specific-gravity" id="label-specific-gravity">Specific Gravity (SG) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-specific-gravity">The ratio of the fluid's density to the density of a reference fluid (usually water at 4°C for liquids). This value should be at the operating temperature.</span></span></label>
+                                <input type="number" id="specific-gravity" step="0.001" value="1.0" required>
+                            </div>
+                        </div>
+                        <!-- Viscosity Input Method -->
+                        <div class="viscosity-input-selector">
+                            <label>Viscosity Input Method:</label>
+                            <label>
+                                <input type="radio" name="viscosity-input-method" value="dynamic" checked> Dynamic Viscosity
+                            </label>
+                            <label>
+                                <input type="radio" name="viscosity-input-method" value="kinematic"> Kinematic Viscosity
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" id="dynamic-viscosity-group" class="active">
+                                <label for="dynamic-viscosity" id="label-dynamic-viscosity">Dynamic Viscosity (μ) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-dynamic-viscosity">The dynamic viscosity of the fluid at operating conditions.</span></span></label>
+                                <input type="number" id="dynamic-viscosity" step="0.000001" value="0.001" required>
+                            </div>
+                            <div class="form-group" id="kinematic-viscosity-group">
+                                <label for="kinematic-viscosity" id="label-kinematic-viscosity">Kinematic Viscosity (ν) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-kinematic-viscosity">The kinematic viscosity of the fluid at operating conditions. (μ / ρ)</span></span></label>
+                                <input type="number" id="kinematic-viscosity" step="0.000000001" value="0.000001" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tubing Properties -->
+                    <div class="form-section">
+                        <h3>Tubing Properties</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inner-diameter" id="label-inner-diameter">Inner Diameter (D) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-inner-diameter">The internal diameter of the impulse tubing.</span></span></label>
+                                <input type="number" id="inner-diameter" step="0.001" value="0.006" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tubing-length" id="label-tubing-length">Tubing Length (L) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-tubing-length">The total length of the straight impulse tubing.</span></span></label>
+                                <input type="number" id="tubing-length" step="0.1" value="10.0" required>
+                            </div>
+                            <div class="form-group" id="elevation-change-group">
+                                <label for="elevation-change" id="label-elevation-change">Elevation Change (Δh) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-elevation-change">The vertical change in height of the tubing from inlet to outlet. Positive for upward flow, negative for downward flow.</span></span></label>
+                                <input type="number" id="elevation-change" step="0.01" value="0.0" required>
+                            </div>
+                        </div>
+                        <!-- Roughness Input Method -->
+                        <div class="roughness-selector">
+                            <label>Tubing Roughness Input Method:</label>
+                            <label>
+                                <input type="radio" name="roughness-input-method" value="material" checked> By Material
+                            </label>
+                            <label>
+                                <input type="radio" name="roughness-input-method" value="direct"> Direct Input
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" id="roughness-material-group" class="active">
+                                <label for="tubing-material">Tubing Material <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select common tubing materials to auto-fill absolute roughness.</span></span></label>
+                                <select id="tubing-material">
+                                    <option value="0.0000015">Commercial Steel (0.000046 m)</option>
+                                    <option value="0.0000000015">Drawn Tubing (0.0000015 m)</option>
+                                    <option value="0.000045">Galvanized Iron (0.00015 m)</option>
+                                    <option value="0.000045">Cast Iron (0.00026 m)</option>
+                                    <option value="0.0000015" selected>Stainless Steel (0.0000015 m)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="roughness-direct-group">
+                                <label for="absolute-roughness" id="label-absolute-roughness">Absolute Roughness (ε) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-absolute-roughness">The absolute roughness of the inner surface of the tubing.</span></span></label>
+                                <input type="number" id="absolute-roughness" step="0.0000001" value="0.0000015" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flow Rate & Fittings -->
+                    <div class="form-section">
+                        <h3>Flow Rate & Fittings</h3>
+                        <div class="flow-rate-type-selector">
+                            <label>Flow Rate Input Method:</label>
+                            <label>
+                                <input type="radio" name="flow-rate-type" value="volumetric" checked> Volumetric Flow Rate
+                            </label>
+                            <label>
+                                <input type="radio" name="flow-rate-type" value="mass"> Mass Flow Rate
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group" id="volumetric-flow-group" class="active">
+                                <label for="volumetric-flow-rate" id="label-volumetric-flow-rate">Volumetric Flow Rate (Q) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-volumetric-flow-rate">The volume of fluid passing through the tubing per unit time.</span></span></label>
+                                <input type="number" id="volumetric-flow-rate" step="0.0000001" value="0.000001" required>
+                            </div>
+                            <div class="form-group" id="mass-flow-group">
+                                <label for="mass-flow-rate" id="label-mass-flow-rate">Mass Flow Rate (ṁ) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-mass-flow-rate">The mass of fluid passing through the tubing per unit time.</span></span></label>
+                                <input type="number" id="mass-flow-rate" step="0.000001" value="0.001" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="total-k-factor">Total K-Factor for Fittings (ΣK) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The sum of resistance coefficients (K-factors) for all fittings (elbows, valves, etc.) in the impulse line.</span></span></label>
+                                <input type="number" id="total-k-factor" step="0.1" value="5.0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-pressure-drop-btn" class="calculate-btn">Calculate Pressure Drop</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset Form</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div id="result-container" class="result-container">
+                <h3>Pressure Drop Calculation Results</h3>
+                <div class="pressure-drop-visualization-container">
+                    <div class="pressure-bar-container">
+                        <div class="pressure-bar" style="width: 0%;"></div>
+                    </div>
+                    <p class="pressure-drop-label">Pressure Drop: <span id="pressure-drop-display">0.00</span></p>
+                    <p class="pressure-drop-label">Flow Regime: <span id="flow-regime-display">N/A</span></p>
+                </div>
+                <div id="calculation-details">
+                    <!-- Calculation steps will be inserted here -->
+                </div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
+                </table>
+                <div style="display: flex; justify-content: center; margin-top: 20px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                </div>
+                <div class="standard-reference" id="standard-reference">
+                    <!-- Standard reference text will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>To ensure accuracy and reliability, always verify the results obtained from these tools against the relevant engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Instrumentation!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Instrumentation! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Instrumentation" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSystemSelect = document.getElementById('unit-system');
+            const densityInputMethodRadios = document.querySelectorAll('input[name="density-input-method"]');
+            const flowRateTypeRadios = document.querySelectorAll('input[name="flow-rate-type"]');
+            const roughnessInputMethodRadios = document.querySelectorAll('input[name="roughness-input-method"]');
+            const viscosityInputMethodRadios = document.querySelectorAll('input[name="viscosity-input-method"]');
+
+            const fluidTemperatureInput = document.getElementById('fluid-temperature');
+            const localGravityInput = document.getElementById('local-gravity');
+            const dynamicViscosityInput = document.getElementById('dynamic-viscosity');
+            const kinematicViscosityInput = document.getElementById('kinematic-viscosity');
+            const fluidDensityInput = document.getElementById('fluid-density');
+            const specificGravityInput = document.getElementById('specific-gravity');
+            const innerDiameterInput = document.getElementById('inner-diameter');
+            const tubingLengthInput = document.getElementById('tubing-length');
+            const elevationChangeInput = document.getElementById('elevation-change');
+            const tubingMaterialSelect = document.getElementById('tubing-material');
+            const absoluteRoughnessInput = document.getElementById('absolute-roughness');
+            const volumetricFlowRateInput = document.getElementById('volumetric-flow-rate');
+            const massFlowRateInput = document.getElementById('mass-flow-rate');
+            const totalKFactorInput = document.getElementById('total-k-factor');
+
+            const densityInputGroup = document.getElementById('density-input-group');
+            const specificGravityInputGroup = document.getElementById('specific-gravity-input-group');
+            const volumetricFlowGroup = document.getElementById('volumetric-flow-group');
+            const massFlowGroup = document.getElementById('mass-flow-group');
+            const roughnessMaterialGroup = document.getElementById('roughness-material-group');
+            const roughnessDirectGroup = document.getElementById('roughness-direct-group');
+            const dynamicViscosityGroup = document.getElementById('dynamic-viscosity-group');
+            const kinematicViscosityGroup = document.getElementById('kinematic-viscosity-group');
+            const elevationChangeGroup = document.getElementById('elevation-change-group');
+
+            const labelFluidTemperature = document.getElementById('label-fluid-temperature');
+            const labelLocalGravity = document.getElementById('label-local-gravity');
+            const labelDynamicViscosity = document.getElementById('label-dynamic-viscosity');
+            const labelKinematicViscosity = document.getElementById('label-kinematic-viscosity');
+            const labelFluidDensityActual = document.getElementById('label-fluid-density-actual');
+            const labelSpecificGravity = document.getElementById('label-specific-gravity');
+            const labelInnerDiameter = document.getElementById('label-inner-diameter');
+            const labelTubingLength = document.getElementById('label-tubing-length');
+            const labelElevationChange = document.getElementById('label-elevation-change');
+            const labelAbsoluteRoughness = document.getElementById('label-absolute-roughness');
+            const labelVolumetricFlowRate = document.getElementById('label-volumetric-flow-rate');
+            const labelMassFlowRate = document.getElementById('label-mass-flow-rate');
+
+            const calculatePressureDropBtn = document.getElementById('calculate-pressure-drop-btn');
+            const resetFormBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            const pressureBar = document.querySelector('.pressure-bar');
+            const pressureDropDisplay = document.getElementById('pressure-drop-display');
+            const flowRegimeDisplay = document.getElementById('flow-regime-display');
+
+            // Constants
+            const WATER_DENSITY_SI_REF = 1000; // kg/m³ (water at 4°C)
+            const WATER_DENSITY_IMPERIAL_REF = 62.43; // lb/ft³ (water at 4°C)
+            const GRAVITY_SI_DEFAULT = 9.80665; // m/s²
+            const GRAVITY_IMPERIAL_DEFAULT = 32.174; // ft/s²
+
+            // Roughness values in meters (for SI calculations)
+            const roughnessValues = {
+                '0.0000015': 0.0000015, // Drawn Tubing / Stainless Steel
+                '0.000046': 0.000046,   // Commercial Steel
+                '0.00015': 0.00015,     // Galvanized Iron
+                '0.00026': 0.00026      // Cast Iron
+            };
+
+            // Default values for resetting form (Metric)
+            const defaultValues = {
+                'unit-system': 'metric',
+                'density-input-method': 'density',
+                'viscosity-input-method': 'dynamic',
+                'flow-rate-type': 'volumetric',
+                'roughness-input-method': 'material',
+                'fluid-temperature': 25.0, // °C
+                'local-gravity': GRAVITY_SI_DEFAULT,
+                'dynamic-viscosity': 0.001, // Pa·s (for water at 20°C)
+                'kinematic-viscosity': 0.000001, // m²/s (for water at 20°C)
+                'fluid-density': 1000.0, // kg/m³
+                'specific-gravity': 1.0,
+                'inner-diameter': 0.006, // m (e.g., 1/4 inch tubing)
+                'tubing-length': 10.0, // m
+                'elevation-change': 0.0, // m
+                'tubing-material': '0.0000015', // Stainless Steel default
+                'absolute-roughness': 0.0000015, // m
+                'volumetric-flow-rate': 0.000001, // m³/s (1 cm³/s = 1e-6 m³/s)
+                'mass-flow-rate': 0.001, // kg/s
+                'total-k-factor': 5.0
+            };
+
+            // Unit configurations
+            const unitsConfig = {
+                'metric': {
+                    length: { label: 'm', tooltip: 'meters', toSI: 1, fromSI: 1, precision: 3 },
+                    pressure: { label: 'Pa', tooltip: 'Pascals', toSI: 1, fromSI: 1, precision: 2 },
+                    density: { label: 'kg/m³', tooltip: 'kilograms per cubic meter', toSI: 1, fromSI: 1, precision: 2 },
+                    dynamic_viscosity: { label: 'Pa·s', tooltip: 'Pascal-seconds', toSI: 1, fromSI: 1, precision: 6 },
+                    kinematic_viscosity: { label: 'm²/s', tooltip: 'square meters per second', toSI: 1, fromSI: 1, precision: 9 },
+                    volumetric_flow: { label: 'm³/s', tooltip: 'cubic meters per second', toSI: 1, fromSI: 1, precision: 7 },
+                    mass_flow: { label: 'kg/s', tooltip: 'kilograms per second', toSI: 1, fromSI: 1, precision: 6 },
+                    temperature: { label: '°C', tooltip: 'Celsius' },
+                    gravity_unit: 'm/s²',
+                    waterDensityRef: WATER_DENSITY_SI_REF,
+                    roughness_unit: 'm',
+                    gravityPrecision: 3
+                },
+                'imperial': {
+                    length: { label: 'ft', tooltip: 'feet', toSI: 0.3048, fromSI: 3.28084, precision: 2 },
+                    pressure: { label: 'psi', tooltip: 'pounds per square inch', toSI: 6894.76, fromSI: 0.000145038, precision: 3 },
+                    density: { label: 'lb/ft³', tooltip: 'pounds per cubic foot', toSI: 16.0185, fromSI: 0.062428, precision: 2 },
+                    dynamic_viscosity: { label: 'lb/(ft·s)', tooltip: 'pounds per foot-second', toSI: 1.48816, fromSI: 0.671969, precision: 6 },
+                    kinematic_viscosity: { label: 'ft²/s', tooltip: 'square feet per second', toSI: 0.092903, fromSI: 10.7639, precision: 9 },
+                    volumetric_flow: { label: 'ft³/s', tooltip: 'cubic feet per second', toSI: 0.0283168, fromSI: 35.3147, precision: 7 },
+                    mass_flow: { label: 'lb/s', tooltip: 'pounds per second', toSI: 0.453592, fromSI: 2.20462, precision: 6 },
+                    temperature: { label: '°F', tooltip: 'Fahrenheit' },
+                    gravity_unit: 'ft/s²',
+                    waterDensityRef: WATER_DENSITY_IMPERIAL_REF,
+                    roughness_unit: 'ft',
+                    gravityPrecision: 3
+                }
+            };
+
+            // Helper function to add rows to the result table
+            function addResultRow(parameter, value) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameter;
+                valueCell.innerHTML = value;
+            }
+
+            // Event Listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndTooltips);
+            densityInputMethodRadios.forEach(radio => radio.addEventListener('change', updateDensityInputMethodVisibility));
+            viscosityInputMethodRadios.forEach(radio => radio.addEventListener('change', updateViscosityInputMethodVisibility));
+            flowRateTypeRadios.forEach(radio => radio.addEventListener('change', updateFlowRateTypeVisibility));
+            roughnessInputMethodRadios.forEach(radio => radio.addEventListener('change', updateRoughnessInputMethodVisibility));
+            tubingMaterialSelect.addEventListener('change', function() {
+                if (document.querySelector('input[name="roughness-input-method"]:checked').value === 'material') {
+                    absoluteRoughnessInput.value = this.value;
+                }
+            });
+            calculatePressureDropBtn.addEventListener('click', calculatePressureDrop);
+            resetFormBtn.addEventListener('click', resetForm);
+            clearResultsBtn.addEventListener('click', clearResults);
+
+            // Initial setup
+            updateUnitLabelsAndTooltips(); // Update labels based on initial system
+            updateDensityInputMethodVisibility(); // Show/hide density/SG input fields
+            updateViscosityInputMethodVisibility(); // Show/hide dynamic/kinematic viscosity input fields
+            updateFlowRateTypeVisibility(); // Show/hide flow rate input fields
+            updateRoughnessInputMethodVisibility(); // Show/hide roughness input fields
+            
+            // Initial fade-in for form sections
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
+                setTimeout(() => {
+                    section.classList.add('fade-in');
+                }, 100 * index); // Staggered fade-in
+            });
+
+            function updateUnitLabelsAndTooltips() {
+                const selectedSystem = unitSystemSelect.value;
+                const config = unitsConfig[selectedSystem];
+                const densityInputMethod = document.querySelector('input[name="density-input-method"]:checked').value;
+                const viscosityInputMethod = document.querySelector('input[name="viscosity-input-method"]:checked').value;
+                const flowRateType = document.querySelector('input[name="flow-rate-type"]:checked').value;
+                const roughnessInputMethod = document.querySelector('input[name="roughness-input-method"]:checked').value;
+
+                labelFluidTemperature.innerHTML = `Fluid Temperature <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The operating temperature of the fluid. Important for accurate density and viscosity. Unit: ${config.temperature.tooltip}.</span></span>`;
+                labelLocalGravity.innerHTML = `Local Gravity (g) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The local acceleration due to gravity at your location. Standard is ${GRAVITY_SI_DEFAULT} m/s² or ${GRAVITY_IMPERIAL_DEFAULT} ft/s². Unit: ${config.gravity_unit}.</span></span>`;
+                labelInnerDiameter.innerHTML = `Inner Diameter (D) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The internal diameter of the impulse tubing. Unit: ${config.length.tooltip}.</span></span>`;
+                labelTubingLength.innerHTML = `Tubing Length (L) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total length of the straight impulse tubing. Unit: ${config.length.tooltip}.</span></span>`;
+                labelElevationChange.innerHTML = `Elevation Change (Δh) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The vertical change in height of the tubing from inlet to outlet. Positive for upward flow, negative for downward flow. Unit: ${config.length.tooltip}.</span></span>`;
+                
+                if (densityInputMethod === 'density') {
+                    labelFluidDensityActual.innerHTML = `Fluid Density (ρ) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The density of the fluid at operating conditions. Unit: ${config.density.tooltip}.</span></span>`;
+                } else {
+                    labelSpecificGravity.innerHTML = `Specific Gravity (SG) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The ratio of the fluid's density to the density of a reference fluid (usually water at 4°C for liquids). This value should be at the operating temperature. Unit: Dimensionless.</span></span>`;
+                }
+
+                if (viscosityInputMethod === 'dynamic') {
+                    labelDynamicViscosity.innerHTML = `Dynamic Viscosity (μ) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The dynamic viscosity of the fluid at operating conditions. Unit: ${config.dynamic_viscosity.tooltip}.</span></span>`;
+                } else {
+                    labelKinematicViscosity.innerHTML = `Kinematic Viscosity (ν) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The kinematic viscosity of the fluid at operating conditions. (μ / ρ). Unit: ${config.kinematic_viscosity.tooltip}.</span></span>`;
+                }
+
+                if (flowRateType === 'volumetric') {
+                    labelVolumetricFlowRate.innerHTML = `Volumetric Flow Rate (Q) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-volumetric-flow-rate">The volume of fluid passing through the tubing per unit time.</span></span>`;
+                } else {
+                    labelMassFlowRate.innerHTML = `Mass Flow Rate (ṁ) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-mass-flow-rate">The mass of fluid passing through the tubing per unit time.</span></span>`;
+                }
+
+                if (roughnessInputMethod === 'direct') {
+                    labelAbsoluteRoughness.innerHTML = `Absolute Roughness (ε) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext" id="tooltip-absolute-roughness">The absolute roughness of the inner surface of the tubing. Unit: ${config.roughness_unit}.</span></span>`;
+                }
+                
+                // Update input placeholders
+                fluidTemperatureInput.placeholder = `e.g., 25.0 ${config.temperature.label}`;
+                localGravityInput.placeholder = `e.g., ${config.gravity_unit === 'm/s²' ? GRAVITY_SI_DEFAULT : GRAVITY_IMPERIAL_DEFAULT}`;
+                dynamicViscosityInput.placeholder = `e.g., 0.001 ${config.dynamic_viscosity.label}`;
+                kinematicViscosityInput.placeholder = `e.g., 0.000001 ${config.kinematic_viscosity.label}`;
+                fluidDensityInput.placeholder = `e.g., 1000 ${config.density.label}`;
+                specificGravityInput.placeholder = `e.g., 1.0`;
+                innerDiameterInput.placeholder = `e.g., 0.006 ${config.length.label}`;
+                tubingLengthInput.placeholder = `e.g., 10.0 ${config.length.label}`;
+                elevationChangeInput.placeholder = `e.g., 0.0 ${config.length.label}`;
+                volumetricFlowRateInput.placeholder = `e.g., 0.000001 ${config.volumetric_flow.label}`;
+                massFlowRateInput.placeholder = `e.g., 0.001 ${config.mass_flow.label}`;
+                absoluteRoughnessInput.placeholder = `e.g., 0.0000015 ${config.roughness_unit}`;
+
+                // Update material options for imperial units (convert values)
+                tubingMaterialSelect.innerHTML = ''; // Clear existing options
+                for (const siRoughnessKey in roughnessValues) {
+                    const siRoughnessValue = roughnessValues[siRoughnessKey];
+                    const option = document.createElement('option');
+                    option.value = siRoughnessValue;
+                    let materialName;
+                    // Find the material name corresponding to the SI roughness value
+                    if (siRoughnessValue === 0.0000015) materialName = "Drawn Tubing / Stainless Steel";
+                    else if (siRoughnessValue === 0.000046) materialName = "Commercial Steel";
+                    else if (siRoughnessValue === 0.00015) materialName = "Galvanized Iron";
+                    else if (siRoughnessValue === 0.00026) materialName = "Cast Iron";
+                    else materialName = "Unknown Material"; // Fallback
+
+                    let displayRoughness;
+                    if (selectedSystem === 'metric') {
+                        displayRoughness = siRoughnessValue.toFixed(7) + ' m';
+                    } else {
+                        displayRoughness = (siRoughnessValue * unitsConfig['imperial'].fromSI).toFixed(6) + ' ft';
+                    }
+                    option.textContent = `${materialName} (${displayRoughness})`;
+                    tubingMaterialSelect.appendChild(option);
+                }
+                // Re-select the default or current value
+                tubingMaterialSelect.value = defaultValues['tubing-material'];
+                // Update direct roughness input if material is selected
+                if (roughnessInputMethod === 'material') {
+                    absoluteRoughnessInput.value = tubingMaterialSelect.value;
+                }
+
+                // Update default gravity value based on unit system
+                if (selectedSystem === 'metric') {
+                    localGravityInput.value = GRAVITY_SI_DEFAULT;
+                } else {
+                    localGravityInput.value = GRAVITY_IMPERIAL_DEFAULT;
+                }
+            }
+
+            function updateDensityInputMethodVisibility() {
+                const selectedMethod = document.querySelector('input[name="density-input-method"]:checked').value;
+                if (selectedMethod === 'density') {
+                    densityInputGroup.classList.add('active');
+                    specificGravityInputGroup.classList.remove('active');
+                    fluidDensityInput.setAttribute('required', 'required');
+                    specificGravityInput.removeAttribute('required');
+                } else {
+                    densityInputGroup.classList.remove('active');
+                    specificGravityInputGroup.classList.add('active');
+                    fluidDensityInput.removeAttribute('required');
+                    specificGravityInput.setAttribute('required', 'required');
+                }
+                updateUnitLabelsAndTooltips(); // Update labels after visibility change
+                clearResults(); // Clear results when input method changes
+            }
+
+            function updateViscosityInputMethodVisibility() {
+                const selectedMethod = document.querySelector('input[name="viscosity-input-method"]:checked').value;
+                if (selectedMethod === 'dynamic') {
+                    dynamicViscosityGroup.classList.add('active');
+                    kinematicViscosityGroup.classList.remove('active');
+                    dynamicViscosityInput.setAttribute('required', 'required');
+                    kinematicViscosityInput.removeAttribute('required');
+                } else {
+                    dynamicViscosityGroup.classList.remove('active');
+                    kinematicViscosityGroup.classList.add('active');
+                    dynamicViscosityInput.removeAttribute('required');
+                    kinematicViscosityInput.setAttribute('required', 'required');
+                }
+                updateUnitLabelsAndTooltips(); // Update labels after visibility change
+                clearResults(); // Clear results when input method changes
+            }
+
+            function updateFlowRateTypeVisibility() {
+                const selectedType = document.querySelector('input[name="flow-rate-type"]:checked').value;
+                if (selectedType === 'volumetric') {
+                    volumetricFlowGroup.classList.add('active');
+                    massFlowGroup.classList.remove('active');
+                    volumetricFlowRateInput.setAttribute('required', 'required');
+                    massFlowRateInput.removeAttribute('required');
+                } else {
+                    volumetricFlowGroup.classList.remove('active');
+                    massFlowGroup.classList.add('active');
+                    volumetricFlowRateInput.removeAttribute('required');
+                    massFlowRateInput.setAttribute('required', 'required');
+                }
+                updateUnitLabelsAndTooltips(); // Update labels after visibility change
+                clearResults(); // Clear results when input method changes
+            }
+
+            function updateRoughnessInputMethodVisibility() {
+                const selectedMethod = document.querySelector('input[name="roughness-input-method"]:checked').value;
+                if (selectedMethod === 'material') {
+                    roughnessMaterialGroup.classList.add('active');
+                    roughnessDirectGroup.classList.remove('active');
+                    tubingMaterialSelect.setAttribute('required', 'required');
+                    absoluteRoughnessInput.removeAttribute('required');
+                    // Set absolute roughness from selected material
+                    absoluteRoughnessInput.value = tubingMaterialSelect.value;
+                } else {
+                    roughnessMaterialGroup.classList.remove('active');
+                    roughnessDirectGroup.classList.add('active');
+                    tubingMaterialSelect.removeAttribute('required');
+                    absoluteRoughnessInput.setAttribute('required', 'required');
+                }
+                updateUnitLabelsAndTooltips(); // Update labels after visibility change
+                clearResults(); // Clear results when input method changes
+            }
+
+            function clearResults() {
+                resultContainer.classList.remove('show');
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = '';
+                standardReference.innerHTML = '';
+                pressureBar.style.width = '0%'; // Reset animation
+                pressureDropDisplay.textContent = '0.00'; // Reset displayed value
+                flowRegimeDisplay.textContent = 'N/A'; // Reset displayed value
+                displayMessage("Results cleared.", "info");
+            }
+
+            function resetForm() {
+                unitSystemSelect.value = defaultValues['unit-system'];
+                
+                // Reset radio buttons and trigger their change events
+                document.querySelector(`input[name="density-input-method"][value="${defaultValues['density-input-method']}"]`).checked = true;
+                updateDensityInputMethodVisibility();
+
+                document.querySelector(`input[name="viscosity-input-method"][value="${defaultValues['viscosity-input-method']}"]`).checked = true;
+                updateViscosityInputMethodVisibility();
+
+                document.querySelector(`input[name="flow-rate-type"][value="${defaultValues['flow-rate-type']}"]`).checked = true;
+                updateFlowRateTypeVisibility();
+
+                document.querySelector(`input[name="roughness-input-method"][value="${defaultValues['roughness-input-method']}"]`).checked = true;
+                updateRoughnessInputMethodVisibility();
+
+                fluidTemperatureInput.value = defaultValues['fluid-temperature'];
+                localGravityInput.value = defaultValues['local-gravity'];
+                dynamicViscosityInput.value = defaultValues['dynamic-viscosity'];
+                kinematicViscosityInput.value = defaultValues['kinematic-viscosity'];
+                fluidDensityInput.value = defaultValues['fluid-density'];
+                specificGravityInput.value = defaultValues['specific-gravity'];
+                innerDiameterInput.value = defaultValues['inner-diameter'];
+                tubingLengthInput.value = defaultValues['tubing-length'];
+                elevationChangeInput.value = defaultValues['elevation-change'];
+                tubingMaterialSelect.value = defaultValues['tubing-material'];
+                absoluteRoughnessInput.value = defaultValues['absolute-roughness'];
+                volumetricFlowRateInput.value = defaultValues['volumetric-flow-rate'];
+                massFlowRateInput.value = defaultValues['mass-flow-rate'];
+                totalKFactorInput.value = defaultValues['total-k-factor'];
+                
+                clearResults(); // Clear results again after inputs are reset
+                displayMessage("Form reset to default values (Metric).", "info");
+            }
+
+            // Function to display messages (replaces alert())
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    messageBox.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        padding: 15px 25px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                        z-index: 1000;
+                        font-weight: bold;
+                        color: white;
+                        opacity: 0;
+                        transition: opacity 0.5s ease-in-out, transform 0.3s ease-out;
+                        display: flex; /* Use flex for centering text */
+                        align-items: center;
+                        justify-content: center;
+                        min-width: 250px; /* Ensure it's wide enough */
+                    `;
+                    document.body.appendChild(messageBox);
+                }
+
+                messageBox.textContent = message;
+                if (type === "error") {
+                    messageBox.style.backgroundColor = '#dc3545'; /* Red */
+                } else if (type === "warning") {
+                    messageBox.style.backgroundColor = '#ffc107'; /* Amber */
+                    messageBox.style.color = '#333';
+                } else {
+                    messageBox.style.backgroundColor = '#28a745'; /* Green */
+                }
+                messageBox.style.opacity = 1;
+                messageBox.style.transform = 'translateX(-50%) translateY(0)'; // Bring to position
+
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                    messageBox.style.transform = 'translateX(-50%) translateY(-20px)'; // Fade out and move up
+                }, 5000);
+            }
+
+            function calculatePressureDrop() {
+                clearResults(); // Clear previous results
+                const selectedSystem = unitSystemSelect.value;
+                const config = unitsConfig[selectedSystem];
+
+                let fluidTemperature = parseFloat(fluidTemperatureInput.value);
+                let localGravity_input = parseFloat(localGravityInput.value);
+                let dynamicViscosity_input = parseFloat(dynamicViscosityInput.value);
+                let kinematicViscosity_input = parseFloat(kinematicViscosityInput.value);
+                let fluidDensity_input = parseFloat(fluidDensityInput.value);
+                let specificGravity_input = parseFloat(specificGravityInput.value);
+                let innerDiameter_input = parseFloat(innerDiameterInput.value);
+                let tubingLength_input = parseFloat(tubingLengthInput.value);
+                let elevationChange_input = parseFloat(elevationChangeInput.value);
+                let absoluteRoughness_input = parseFloat(absoluteRoughnessInput.value);
+                let volumetricFlowRate_input = parseFloat(volumetricFlowRateInput.value);
+                let massFlowRate_input = parseFloat(massFlowRateInput.value);
+                let totalKFactor = parseFloat(totalKFactorInput.value);
+
+                const densityInputMethod = document.querySelector('input[name="density-input-method"]:checked').value;
+                const viscosityInputMethod = document.querySelector('input[name="viscosity-input-method"]:checked').value;
+                const flowRateType = document.querySelector('input[name="flow-rate-type"]:checked').value;
+
+                // Input Validation
+                if (isNaN(fluidTemperature)) { displayMessage("Please enter a valid Fluid Temperature.", "error"); return; }
+                if (isNaN(localGravity_input) || localGravity_input <= 0) { displayMessage("Please enter a valid positive Local Gravity.", "error"); return; }
+                if (densityInputMethod === 'density' && (isNaN(fluidDensity_input) || fluidDensity_input <= 0)) { displayMessage("Please enter a valid positive Fluid Density.", "error"); return; }
+                if (densityInputMethod === 'specific-gravity' && (isNaN(specificGravity_input) || specificGravity_input <= 0)) { displayMessage("Please enter a valid positive Specific Gravity.", "error"); return; }
+                if (viscosityInputMethod === 'dynamic' && (isNaN(dynamicViscosity_input) || dynamicViscosity_input <= 0)) { displayMessage("Please enter a valid positive Dynamic Viscosity.", "error"); return; }
+                if (viscosityInputMethod === 'kinematic' && (isNaN(kinematicViscosity_input) || kinematicViscosity_input <= 0)) { displayMessage("Please enter a valid positive Kinematic Viscosity.", "error"); return; }
+                if (isNaN(innerDiameter_input) || innerDiameter_input <= 0) { displayMessage("Please enter a valid positive Inner Diameter.", "error"); return; }
+                if (isNaN(tubingLength_input) || tubingLength_input < 0) { displayMessage("Please enter a valid non-negative Tubing Length.", "error"); return; }
+                if (isNaN(elevationChange_input)) { displayMessage("Please enter a valid Elevation Change.", "error"); return; }
+                if (isNaN(absoluteRoughness_input) || absoluteRoughness_input < 0) { displayMessage("Please enter a valid non-negative Absolute Roughness.", "error"); return; }
+                if (flowRateType === 'volumetric' && (isNaN(volumetricFlowRate_input) || volumetricFlowRate_input <= 0)) { displayMessage("Please enter a valid positive Volumetric Flow Rate.", "error"); return; }
+                if (flowRateType === 'mass' && (isNaN(massFlowRate_input) || massFlowRate_input <= 0)) { displayMessage("Please enter a valid positive Mass Flow Rate.", "error"); return; }
+                if (isNaN(totalKFactor) || totalKFactor < 0) { displayMessage("Please enter a valid non-negative Total K-Factor.", "error"); return; }
+
+                // Convert inputs to SI units for calculation
+                let fluidDensity_si;
+                let fluidDensity_display_val;
+                let fluidDensity_display_unit;
+
+                if (densityInputMethod === 'density') {
+                    fluidDensity_si = fluidDensity_input * config.density.toSI;
+                    fluidDensity_display_val = fluidDensity_input.toFixed(config.density.precision);
+                    fluidDensity_display_unit = config.density.label;
+                } else {
+                    fluidDensity_si = specificGravity_input * config.waterDensityRef; // SG is dimensionless, water density is in SI
+                    fluidDensity_display_val = specificGravity_input.toFixed(3);
+                    fluidDensity_display_unit = 'SG';
+                }
+
+                let dynamicViscosity_si;
+                let dynamicViscosity_display_val;
+                let dynamicViscosity_display_unit;
+
+                if (viscosityInputMethod === 'dynamic') {
+                    dynamicViscosity_si = dynamicViscosity_input * config.dynamic_viscosity.toSI;
+                    dynamicViscosity_display_val = dynamicViscosity_input.toFixed(config.dynamic_viscosity.precision);
+                    dynamicViscosity_display_unit = config.dynamic_viscosity.label;
+                } else { // kinematic
+                    // Convert kinematic viscosity to SI
+                    const kinematicViscosity_si = kinematicViscosity_input * config.kinematic_viscosity.toSI;
+                    // Calculate dynamic viscosity from kinematic and density
+                    dynamicViscosity_si = kinematicViscosity_si * fluidDensity_si;
+                    dynamicViscosity_display_val = kinematicViscosity_input.toFixed(config.kinematic_viscosity.precision);
+                    dynamicViscosity_display_unit = config.kinematic_viscosity.label;
+                }
+                
+                const innerDiameter_si = innerDiameter_input * config.length.toSI;
+                const tubingLength_si = tubingLength_input * config.length.toSI;
+                const elevationChange_si = elevationChange_input * config.length.toSI;
+                const absoluteRoughness_si = absoluteRoughness_input * config.length.toSI; // Roughness is a length unit
+                const localGravity_si = localGravity_input * (selectedSystem === 'imperial' ? 0.3048 : 1); // Convert imperial gravity to m/s² if needed
+
+                let flowRate_si;
+                let flowRate_display_val;
+                let flowRate_display_unit;
+
+                if (flowRateType === 'volumetric') {
+                    flowRate_si = volumetricFlowRate_input * config.volumetric_flow.toSI;
+                    flowRate_display_val = volumetricFlowRate_input.toFixed(config.volumetric_flow.precision);
+                    flowRate_display_unit = config.volumetric_flow.label;
+                } else {
+                    flowRate_si = massFlowRate_input * config.mass_flow.toSI;
+                    flowRate_display_val = massFlowRate_input.toFixed(config.mass_flow.precision);
+                    flowRate_display_unit = config.mass_flow.label;
+                }
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>Unit System:</strong> ${selectedSystem.toUpperCase()}</p>`;
+                
+                calculationHtml += `<p><strong>1. Input Parameters and Unit Conversions:</strong></p>`;
+                calculationHtml += `<p>All input values are first converted to the International System of Units (SI) for consistent calculation, then converted back for display.</p>`;
+                calculationHtml += `<p class="calculation-step">Fluid Temperature = ${fluidTemperature.toFixed(config.tempPrecision)} ${config.temperature.label}</p>`;
+                calculationHtml += `<p class="calculation-step">Local Gravity (g) = ${localGravity_input.toFixed(config.gravityPrecision)} ${config.gravity_unit} = ${localGravity_si.toFixed(3)} m/s²</p>`;
+                calculationHtml += `<p class="calculation-step">Fluid Density (ρ) = ${fluidDensity_display_val} ${fluidDensity_display_unit} = ${fluidDensity_si.toFixed(2)} kg/m³</p>`;
+                
+                if (viscosityInputMethod === 'dynamic') {
+                    calculationHtml += `<p class="calculation-step">Dynamic Viscosity (μ) = ${dynamicViscosity_display_val} ${dynamicViscosity_display_unit} = ${dynamicViscosity_si.toExponential(2)} Pa·s</p>`;
+                } else {
+                    calculationHtml += `<p class="calculation-step">Kinematic Viscosity (ν) = ${dynamicViscosity_display_val} ${dynamicViscosity_display_unit} = ${(kinematicViscosity_input * config.kinematic_viscosity.toSI).toExponential(2)} m²/s</p>`;
+                    calculationHtml += `<p class="calculation-step">Calculated Dynamic Viscosity (μ) = ν &times; ρ = ${(kinematicViscosity_input * config.kinematic_viscosity.toSI).toExponential(2)} m²/s &times; ${fluidDensity_si.toFixed(2)} kg/m³ = ${dynamicViscosity_si.toExponential(2)} Pa·s</p>`;
+                }
+
+                calculationHtml += `<p class="calculation-step">Inner Diameter (D) = ${innerDiameter_input.toFixed(config.length.precision)} ${config.length.label} = ${innerDiameter_si.toExponential(2)} m</p>`;
+                calculationHtml += `<p class="calculation-step">Tubing Length (L) = ${tubingLength_input.toFixed(config.length.precision)} ${config.length.label} = ${tubingLength_si.toFixed(2)} m</p>`;
+                calculationHtml += `<p class="calculation-step">Elevation Change (Δh) = ${elevationChange_input.toFixed(config.length.precision)} ${config.length.label} = ${elevationChange_si.toFixed(2)} m</p>`;
+                calculationHtml += `<p class="calculation-step">Absolute Roughness (ε) = ${absoluteRoughness_input.toFixed(7)} ${config.roughness_unit} = ${absoluteRoughness_si.toExponential(2)} m</p>`;
+                calculationHtml += `<p class="calculation-step">${flowRateType === 'volumetric' ? 'Volumetric Flow Rate (Q)' : 'Mass Flow Rate (ṁ)'} = ${flowRate_display_val} ${flowRate_display_unit} = ${flowRate_si.toExponential(2)} ${flowRateType === 'volumetric' ? 'm³/s' : 'kg/s'}</p>`;
+                calculationHtml += `<p class="calculation-step">Total K-Factor for Fittings (ΣK) = ${totalKFactor.toFixed(1)} (dimensionless)</p>`;
+
+                // 2. Calculate Cross-sectional Area (A)
+                const crossSectionalArea_si = Math.PI * Math.pow(innerDiameter_si / 2, 2);
+                calculationHtml += `<p><strong>2. Calculate Cross-sectional Area (A):</strong></p>`;
+                calculationHtml += `<p>The cross-sectional area of the tubing is needed to determine the fluid velocity.</p>`;
+                calculationHtml += `<p class="formula">A = π &times; (D / 2)²</p>`;
+                calculationHtml += `<p class="calculation-step">A = π &times; (${innerDiameter_si.toExponential(2)} m / 2)² = ${crossSectionalArea_si.toExponential(3)} m²</p>`;
+
+                // 3. Calculate Average Flow Velocity (V)
+                let averageVelocity_si;
+                if (flowRateType === 'volumetric') {
+                    averageVelocity_si = flowRate_si / crossSectionalArea_si;
+                    calculationHtml += `<p><strong>3. Calculate Average Flow Velocity (V):</strong></p>`;
+                    calculationHtml += `<p>For volumetric flow, velocity is flow rate divided by cross-sectional area.</p>`;
+                    calculationHtml += `<p class="formula">V = Q / A</p>`;
+                    calculationHtml += `<p class="calculation-step">V = ${flowRate_si.toExponential(2)} m³/s / ${crossSectionalArea_si.toExponential(3)} m² = ${averageVelocity_si.toFixed(3)} m/s</p>`;
+                } else { // mass flow
+                    averageVelocity_si = flowRate_si / (fluidDensity_si * crossSectionalArea_si);
+                    calculationHtml += `<p><strong>3. Calculate Average Flow Velocity (V):</strong></p>`;
+                    calculationHtml += `<p>For mass flow, velocity is mass flow rate divided by (fluid density &times; cross-sectional area).</p>`;
+                    calculationHtml += `<p class="formula">V = ṁ / (ρ &times; A)</p>`;
+                    calculationHtml += `<p class="calculation-step">V = ${flowRate_si.toExponential(2)} kg/s / (${fluidDensity_si.toFixed(2)} kg/m³ &times; ${crossSectionalArea_si.toExponential(3)} m²) = ${averageVelocity_si.toFixed(3)} m/s</p>`;
+                }
+                
+                // 4. Calculate Reynolds Number (Re)
+                const reynoldsNumber = (fluidDensity_si * averageVelocity_si * innerDiameter_si) / dynamicViscosity_si;
+                calculationHtml += `<p><strong>4. Calculate Reynolds Number (Re):</strong></p>`;
+                calculationHtml += `<p>The Reynolds number is a dimensionless quantity that helps predict flow patterns in different fluid flow situations. It indicates whether the flow is laminar, transitional, or turbulent.</p>`;
+                calculationHtml += `<p class="formula">Re = (ρ &times; V &times; D) / μ</p>`;
+                calculationHtml += `<p class="calculation-step">Re = (${fluidDensity_si.toFixed(2)} kg/m³ &times; ${averageVelocity_si.toFixed(3)} m/s &times; ${innerDiameter_si.toExponential(2)} m) / ${dynamicViscosity_si.toExponential(2)} Pa·s</p>`;
+                calculationHtml += `<p class="calculation-step">Re = ${reynoldsNumber.toFixed(2)}</p>`;
+
+                // 5. Determine Flow Regime and Calculate Friction Factor (f)
+                let flowRegime;
+                let frictionFactor;
+                const relativeRoughness = absoluteRoughness_si / innerDiameter_si;
+
+                if (reynoldsNumber < 2000) {
+                    flowRegime = "Laminar";
+                    frictionFactor = 64 / reynoldsNumber;
+                    calculationHtml += `<p><strong>5. Determine Flow Regime and Calculate Friction Factor (f):</strong></p>`;
+                    calculationHtml += `<p>Since Re < 2000, the flow is Laminar.</p>`;
+                    calculationHtml += `<p class="formula">For Laminar Flow: f = 64 / Re</p>`;
+                    calculationHtml += `<p class="calculation-step">f = 64 / ${reynoldsNumber.toFixed(2)} = ${frictionFactor.toFixed(5)}</p>`;
+                } else if (reynoldsNumber >= 4000) {
+                    flowRegime = "Turbulent";
+                    // Swamee-Jain equation for turbulent flow
+                    const term1 = (relativeRoughness / 3.7) + (5.74 / Math.pow(reynoldsNumber, 0.9));
+                    frictionFactor = 0.25 / Math.pow(Math.log10(term1), 2);
+                    calculationHtml += `<p><strong>5. Determine Flow Regime and Calculate Friction Factor (f):</strong></p>`;
+                    calculationHtml += `<p>Since Re >= 4000, the flow is Turbulent.</p>`;
+                    calculationHtml += `<p class="calculation-step">Relative Roughness (ε/D) = ${absoluteRoughness_si.toExponential(2)} m / ${innerDiameter_si.toExponential(2)} m = ${relativeRoughness.toExponential(2)}</p>`;
+                    calculationHtml += `<p class="formula">For Turbulent Flow (Swamee-Jain Equation): f = 0.25 / [log₁₀(ε/3.7D + 5.74/Re⁰·⁹)]²</p>`;
+                    calculationHtml += `<p class="calculation-step">f = 0.25 / [log₁₀(${relativeRoughness.toExponential(2)} / 3.7 + 5.74 / ${reynoldsNumber.toFixed(2)}⁰·⁹)]² = ${frictionFactor.toFixed(5)}</p>`;
+                } else {
+                    flowRegime = "Transition (2000 <= Re < 4000)";
+                    // For simplicity, we'll use the turbulent friction factor for calculation, but note the transition zone.
+                    const term1 = (relativeRoughness / 3.7) + (5.74 / Math.pow(reynoldsNumber, 0.9));
+                    frictionFactor = 0.25 / Math.pow(Math.log10(term1), 2);
+                    calculationHtml += `<p><strong>5. Determine Flow Regime and Calculate Friction Factor (f):</strong></p>`;
+                    calculationHtml += `<p>Since 2000 <= Re < 4000, the flow is in the Transition region. For calculation, a turbulent friction factor approximation is used, but actual behavior can be complex.</p>`;
+                    calculationHtml += `<p class="calculation-step">Relative Roughness (ε/D) = ${absoluteRoughness_si.toExponential(2)} m / ${innerDiameter_si.toExponential(2)} m = ${relativeRoughness.toExponential(2)}</p>`;
+                    calculationHtml += `<p class="formula">Using Swamee-Jain Equation for Turbulent Flow: f = 0.25 / [log₁₀(ε/3.7D + 5.74/Re⁰·⁹)]²</p>`;
+                    calculationHtml += `<p class="calculation-step">f = 0.25 / [log₁₀(${relativeRoughness.toExponential(2)} / 3.7 + 5.74 / ${reynoldsNumber.toFixed(2)}⁰·⁹)]² = ${frictionFactor.toFixed(5)}</p>`;
+                }
+
+                // 6. Calculate Frictional Pressure Drop (ΔP_friction)
+                const velocityHead_si = (fluidDensity_si * Math.pow(averageVelocity_si, 2)) / 2;
+                const frictionalPressureDrop_si = (frictionFactor * (tubingLength_si / innerDiameter_si) + totalKFactor) * velocityHead_si;
+
+                calculationHtml += `<p><strong>6. Calculate Frictional Pressure Drop (ΔP<sub>friction</sub>):</strong></p>`;
+                calculationHtml += `<p>This is the pressure loss due to fluid friction along the length of the tubing and through fittings, calculated using the extended Darcy-Weisbach equation.</p>`;
+                calculationHtml += `<p class="formula">ΔP<sub>friction</sub> = (f &times; L/D + ΣK) &times; (ρ &times; V² / 2)</p>`;
+                calculationHtml += `<p class="calculation-step">Velocity Head Term (ρV²/2) = (${fluidDensity_si.toFixed(2)} kg/m³ &times; ${averageVelocity_si.toFixed(3)} m/s²) / 2 = ${velocityHead_si.toFixed(2)} Pa</p>`;
+                calculationHtml += `<p class="calculation-step">Friction Factor Term (f &times; L/D) = ${frictionFactor.toFixed(5)} &times; (${tubingLength_si.toFixed(2)} m / ${innerDiameter_si.toExponential(2)} m) = ${(frictionFactor * (tubingLength_si / innerDiameter_si)).toFixed(2)}</p>`;
+                calculationHtml += `<p class="calculation-step">Total Resistance Term = Friction Factor Term + ΣK = ${(frictionFactor * (tubingLength_si / innerDiameter_si)).toFixed(2)} + ${totalKFactor.toFixed(1)} = ${(frictionFactor * (tubingLength_si / innerDiameter_si) + totalKFactor).toFixed(2)}</p>`;
+                calculationHtml += `<p class="calculation-step">ΔP<sub>friction</sub> = ${(frictionFactor * (tubingLength_si / innerDiameter_si) + totalKFactor).toFixed(2)} &times; ${velocityHead_si.toFixed(2)} Pa = ${frictionalPressureDrop_si.toFixed(2)} Pa</p>`;
+
+                // 7. Calculate Hydrostatic Pressure Change (ΔP_hydro)
+                const hydrostaticPressureChange_si = fluidDensity_si * localGravity_si * elevationChange_si;
+                calculationHtml += `<p><strong>7. Calculate Hydrostatic Pressure Change (ΔP<sub>hydro</sub>):</strong></p>`;
+                calculationHtml += `<p>This component accounts for the pressure change due to the vertical elevation difference in the tubing. It is positive for upward flow and negative for downward flow.</p>`;
+                calculationHtml += `<p class="formula">ΔP<sub>hydro</sub> = ρ &times; g &times; Δh</p>`;
+                calculationHtml += `<p class="calculation-step">ΔP<sub>hydro</sub> = ${fluidDensity_si.toFixed(2)} kg/m³ &times; ${localGravity_si.toFixed(3)} m/s² &times; ${elevationChange_si.toFixed(2)} m = ${hydrostaticPressureChange_si.toFixed(2)} Pa</p>`;
+
+                // 8. Calculate Total Pressure Drop (ΔP_total)
+                const totalPressureDrop_si = frictionalPressureDrop_si + hydrostaticPressureChange_si;
+                calculationHtml += `<p><strong>8. Calculate Total Pressure Drop (ΔP<sub>total</sub>):</strong></p>`;
+                calculationHtml += `<p>The total pressure drop is the sum of the frictional pressure drop and the hydrostatic pressure change.</p>`;
+                calculationHtml += `<p class="formula">ΔP<sub>total</sub> = ΔP<sub>friction</sub> + ΔP<sub>hydro</sub></p>`;
+                calculationHtml += `<p class="calculation-step">ΔP<sub>total</sub> = ${frictionalPressureDrop_si.toFixed(2)} Pa + ${hydrostaticPressureChange_si.toFixed(2)} Pa = ${totalPressureDrop_si.toFixed(2)} Pa</p>`;
+
+                // Convert final pressure drop back to selected unit system for display
+                const finalPressureDrop_display = totalPressureDrop_si * config.pressure.fromSI;
+
+                // Display Results in table
+                resultTableBody.innerHTML = '';
+                addResultRow("Fluid Temperature", `${fluidTemperature.toFixed(config.tempPrecision)} ${config.temperature.label}`);
+                addResultRow("Local Gravity (g)", `${localGravity_input.toFixed(config.gravityPrecision)} ${config.gravity_unit}`);
+                addResultRow("Fluid Density Input", `${fluidDensity_display_val} ${fluidDensity_display_unit}`);
+                addResultRow("Fluid Density (Calculated)", `${fluidDensity_si.toFixed(2)} kg/m³`);
+                if (viscosityInputMethod === 'dynamic') {
+                    addResultRow("Dynamic Viscosity (μ)", `${dynamicViscosity_display_val} ${dynamicViscosity_display_unit}`);
+                } else {
+                    addResultRow("Kinematic Viscosity (ν)", `${dynamicViscosity_display_val} ${config.kinematic_viscosity.label}`);
+                    addResultRow("Dynamic Viscosity (Calculated)", `${dynamicViscosity_si.toExponential(2)} Pa·s`);
+                }
+                addResultRow("Inner Diameter (D)", `${innerDiameter_input.toFixed(config.length.precision)} ${config.length.label}`);
+                addResultRow("Tubing Length (L)", `${tubingLength_input.toFixed(config.length.precision)} ${config.length.label}`);
+                addResultRow("Elevation Change (Δh)", `${elevationChange_input.toFixed(config.length.precision)} ${config.length.label}`);
+                addResultRow("Absolute Roughness (ε)", `${absoluteRoughness_input.toFixed(7)} ${config.roughness_unit}`);
+                addResultRow(flowRateType === 'volumetric' ? "Volumetric Flow Rate (Q)" : "Mass Flow Rate (ṁ)", `${flowRate_display_val} ${flowRate_display_unit}`);
+                addResultRow("Total K-Factor for Fittings (ΣK)", `${totalKFactor.toFixed(1)}`);
+                addResultRow("Cross-sectional Area (A)", `${crossSectionalArea_si.toExponential(3)} m²`);
+                addResultRow("Average Flow Velocity (V)", `${averageVelocity_si.toFixed(3)} m/s`);
+                addResultRow("Reynolds Number (Re)", `${reynoldsNumber.toFixed(2)}`);
+                addResultRow("Flow Regime", flowRegime);
+                addResultRow("Friction Factor (f)", `${frictionFactor.toFixed(5)}`);
+                addResultRow("Frictional Pressure Drop (ΔP<sub>friction</sub>)", `${(frictionalPressureDrop_si * config.pressure.fromSI).toFixed(config.pressure.precision)} ${config.pressure.label}`);
+                addResultRow("Hydrostatic Pressure Change (ΔP<sub>hydro</sub>)", `${(hydrostaticPressureChange_si * config.pressure.fromSI).toFixed(config.pressure.precision)} ${config.pressure.label}`);
+                addResultRow("<strong>Calculated Total Pressure Drop (ΔP<sub>total</sub>)</strong>", `<strong>${finalPressureDrop_display.toFixed(config.pressure.precision)} ${config.pressure.label}</strong>`);
+                
+                // Update Pressure Drop Visualization
+                // Normalize pressure drop for visualization (e.g., max 1000 Pa or 0.1 psi for full bar)
+                const maxVizPressureDropSI = 10000; // Example max pressure drop for full bar in Pascals
+                let vizWidth = (Math.abs(totalPressureDrop_si) / maxVizPressureDropSI) * 100;
+                vizWidth = Math.max(0, Math.min(100, vizWidth)); // Clamp between 0 and 100%
+
+                pressureBar.style.width = `${vizWidth}%`;
+                pressureDropDisplay.textContent = `${finalPressureDrop_display.toFixed(config.pressure.precision)} ${config.pressure.label}`;
+                flowRegimeDisplay.textContent = flowRegime;
+
+
+                standardRefText = `
+                    <h4>International Standards Compliance:</h4>
+                    <p>This calculator adheres to fundamental principles of fluid dynamics and is applicable across various industries worldwide, aligning with common engineering standards and practices:</p>
+                    <ul>
+                        <li><strong>ISO 5167: Measurement of fluid flow by means of pressure differential devices.</strong> While this standard focuses on flow measurement devices, the underlying principles of pressure drop in pipes are essential for their correct application and sizing.</li>
+                        <li><strong>ASME B31.1, B31.3, etc. (Pressure Piping Codes):</strong> These codes provide guidelines for the design, construction, and operation of piping systems, including considerations for pressure drop and friction losses in various industrial applications.</li>
+                        <li><strong>Hydraulic Institute Standards (HI):</strong> These standards provide comprehensive information on pump and piping systems, including detailed methods for calculating friction losses in pipes and fittings.</li>
+                        <li><strong>General Principles of Fluid Mechanics:</strong> The core calculations are based on the Darcy-Weisbach equation and the Reynolds number, which are universal concepts in fluid mechanics and taught in engineering curricula worldwide. The Colebrook-White equation (approximated by Swamee-Jain) is a widely accepted method for determining friction factors in turbulent flow.</li>
+                        <li><strong>Industry Best Practices:</strong> The consideration of fluid properties (density, viscosity), pipe dimensions (diameter, length, roughness), flow rate, fitting losses (K-factors), and elevation changes are standard industry practices for accurate pressure drop calculations in impulse tubing and other piping systems, ensuring reliable instrument performance.</li>
+                    </ul>
+                    <p>This tool provides accurate calculations based on these widely accepted engineering principles and industry practices. For critical applications, always refer to the latest official standards documents, manufacturer's specifications for tubing and fittings, and consult with a qualified fluid dynamics or instrumentation professional.</p>
+                `;
+                standardReference.innerHTML = standardRefText;
+
+                calculationDetailsDiv.innerHTML = calculationHtml; // Insert detailed steps
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                    calculationDetailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Scroll to calculation details
+                }, 10);
+            }
+
+            // Theme switch logic
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

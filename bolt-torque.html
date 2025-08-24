@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolt Torque Calculator - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Changed href to index.html -->
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Bolt Torque Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator determines the required tightening torque for a bolt to achieve a desired preload. It utilizes the common torque-preload relationship involving a K-factor (nut factor) and the bolt's nominal diameter and desired preload force.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Unit System:</strong> Select Metric or Imperial units for inputs and outputs.</li>
+                    <li><strong>Bolt Type/Material:</strong> Choose a standard bolt grade to auto-populate typical Proof and Yield Strengths, and an initial K-factor.</li>
+                    <li><strong>Nominal Diameter:</strong> Select a standard bolt size to auto-populate the approximate Stress Area.</li>
+                    <li><strong>Target Preload Basis:</strong> Define how the target preload force is calculated (e.g., percentage of proof/yield strength, or a direct force input).</li>
+                    <li><strong>K-Factor (Nut Factor):</strong> An empirical coefficient that accounts for friction in the threads and under the nut. This value is highly sensitive to lubrication and surface finish and **must be verified** for critical applications.</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Bolt Proof Strength (\(S_p\)):</strong> The maximum stress a bolt can withstand without permanent deformation (used if selected as preload basis).</li>
+                    <li><strong>Bolt Yield Strength (\(S_y\)):</strong> The stress at which a bolt begins to plastically deform (used if selected as preload basis).</li>
+                    <li><strong>Bolt Stress Area (\(A_s\)):</strong> The effective cross-sectional area of the bolt's threads.</li>
+                    <li><strong>Target Preload Force (\(F_p\)):</strong> The desired axial clamping force in the bolt.</li>
+                    <li><strong>Required Torque (\(T\)):</strong> The calculated torque to achieve the target preload.</li>
+                </ul>
+            </div>
+
+            <div class="calculator-form">
+                <form id="bolt-torque-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (mm, Nm, MPa) or Imperial (inches, ft-lb, psi) units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (mm, Nm, MPa)</option>
+                                <option value="imperial">Imperial (inches, ft-lb, psi)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bolt-type">Bolt Type/Material: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select a common bolt grade. This will populate typical Proof and Yield Strengths, and an initial K-factor.</span></span></label>
+                            <select id="bolt-type" required>
+                                <option value="metric-8.8">Metric Property Class 8.8</option>
+                                <option value="metric-10.9">Metric Property Class 10.9</option>
+                                <option value="metric-12.9">Metric Property Class 12.9</option>
+                                <option value="imperial-a307">Imperial ASTM A307 Gr. A</option>
+                                <option value="imperial-a325">Imperial ASTM A325</option>
+                                <option value="imperial-a490">Imperial ASTM A490</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nominal-diameter">Nominal Diameter: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the nominal diameter of the bolt. This will populate the approximate stress area.</span></span></label>
+                            <select id="nominal-diameter" required>
+                                <!-- Options populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="stress-area">Bolt Stress Area (\(A_s\)) <span class="area-unit-label">(mm&#178;)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The tensile stress area of the bolt threads. Auto-populated but can be adjusted for specific threads.</span></span></label>
+                            <input type="number" id="stress-area" step="any" value="58" required min="0.01">
+                        </div>
+                    </div>
+
+                    <h3>Preload & Friction Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="target-preload-basis">Target Preload Basis: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select how to define the target preload force.</span></span></label>
+                            <select id="target-preload-basis" required>
+                                <option value="percent-proof">Percentage of Proof Strength</option>
+                                <option value="percent-yield">Percentage of Yield Strength</option>
+                                <option value="direct-force">Direct Preload Force</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="preload-percent-group">
+                            <label for="target-preload-percent">Target Preload (%) of Strength: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Desired preload as a percentage of selected strength (e.g., 70% to 80% is common for proof/yield).</span></span></label>
+                            <input type="number" id="target-preload-percent" step="any" value="70" required min="1" max="100">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" id="proof-strength-group">
+                            <label for="proof-strength">Proof Strength (\(S_p\)) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The maximum stress a bolt can withstand without permanent deformation. Auto-populated based on Bolt Type.</span></span></label>
+                            <input type="number" id="proof-strength" step="any" value="600" required min="0.01">
+                        </div>
+                        <div class="form-group" id="yield-strength-group" style="display: none;">
+                            <label for="yield-strength">Yield Strength (\(S_y\)) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The stress at which a bolt begins to plastically deform. Auto-populated based on Bolt Type.</span></span></label>
+                            <input type="number" id="yield-strength" step="any" value="660" required min="0.01">
+                        </div>
+                        <div class="form-group" id="direct-preload-force-group" style="display: none;">
+                            <label for="direct-preload-force">Direct Preload Force (\(F_p\)) <span class="force-unit-label">(kN)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Enter the exact target preload force desired for the bolt.</span></span></label>
+                            <input type="number" id="direct-preload-force" step="any" value="20" required min="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="k-factor">K-Factor (Nut Factor): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Empirical friction coefficient (e.g., 0.20 for dry, 0.15 for lightly oiled, 0.12 for waxed). Highly variable and lubrication dependent!</span></span></label>
+                        <input type="number" id="k-factor" step="0.001" value="0.20" required min="0.01" max="1.0">
+                    </div>
+
+                    <button type="button" id="calculate-bolt-torque-btn" class="calculate-btn">Calculate Bolt Torque</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides theoretical estimations for bolt torque based on the simplified formula \(T = K \cdot F_p \cdot D\). The K-factor (nut factor) is an empirical value that is highly sensitive to many variables, including lubrication, surface finish, thread condition, and bolt material/coating. Therefore, the calculated torque is an <strong>approximation</strong>.</p>
+                <p>For critical applications, it is <strong>imperative</strong> to use calibrated torque wrenches, conduct actual torque-tension tests, or employ tensioning methods like turn-of-nut or direct tension indicators. Always refer to relevant international standards (e.g., ASME B18.2.1, B18.2.3.1M; ASTM F1554, A307, A325, A490; ISO 898-1) and fastener manufacturer's recommendations for precise torque specifications and installation procedures. This tool is for preliminary estimation and educational purposes only.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Bolt Torque Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-bolt-torque-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const boltTypeSelect = document.getElementById('bolt-type');
+            const nominalDiameterSelect = document.getElementById('nominal-diameter');
+            const stressAreaInput = document.getElementById('stress-area');
+            const proofStrengthInput = document.getElementById('proof-strength');
+            const yieldStrengthInput = document.getElementById('yield-strength'); // New
+            const targetPreloadPercentInput = document.getElementById('target-preload-percent');
+            const kFactorInput = document.getElementById('k-factor');
+            const directPreloadForceInput = document.getElementById('direct-preload-force'); // New
+            const targetPreloadBasisSelect = document.getElementById('target-preload-basis'); // New
+
+            // Groups for dynamic display
+            const preloadPercentGroup = document.getElementById('preload-percent-group');
+            const proofStrengthGroup = document.getElementById('proof-strength-group');
+            const yieldStrengthGroup = document.getElementById('yield-strength-group');
+            const directPreloadForceGroup = document.getElementById('direct-preload-force-group');
+
+            // Unit labels
+            const areaUnitLabel = document.querySelector('.area-unit-label');
+            const stressUnitLabel = document.querySelector('.stress-unit-label');
+            const forceUnitLabel = document.querySelector('.force-unit-label'); // New
+
+
+            // --- Data for Bolt Properties ---
+            // Proof Strength (Sp) & Yield Strength (Sy) in MPa (Metric) and psi (Imperial)
+            // K-Factor (typical for unlubricated conditions, user can override)
+            const boltProperties = {
+                'metric-8.8': {
+                    'metric': { Sp: 600, Sy: 660, K_factor: 0.20 }, // MPa
+                },
+                'metric-10.9': {
+                    'metric': { Sp: 830, Sy: 940, K_factor: 0.20 }, // MPa
+                },
+                'metric-12.9': {
+                    'metric': { Sp: 970, Sy: 1080, K_factor: 0.20 }, // MPa
+                },
+                'imperial-a307': { // Typically low carbon steel, proof strength approx 55 ksi / 379 MPa
+                    'imperial': { Sp: 55000, Sy: 36000, K_factor: 0.20 }, // psi (A307 Gr A has Min Tensile 60 ksi)
+                },
+                'imperial-a325': { // Structural bolt, high strength
+                    'imperial': { Sp: 85000, Sy: 92000, K_factor: 0.20 }, // psi
+                },
+                'imperial-a490': { // Structural bolt, very high strength
+                    'imperial': { Sp: 120000, Sy: 130000, K_factor: 0.20 }, // psi
+                }
+            };
+
+            // Stress Area (As) based on nominal diameter
+            // Metric: mm² (for coarse pitch threads, ISO 898-1 / ASME B1.13M)
+            // Imperial: in² (for UNC coarse pitch threads, ASME B1.1 / ASTM F606)
+            const stressAreas = {
+                'metric': {
+                    'M10': { As: 58, D_nom: 10 },
+                    'M12': { As: 84.3, D_nom: 12 },
+                    'M14': { As: 115, D_nom: 14 },
+                    'M16': { As: 157, D_nom: 16 },
+                    'M18': { As: 192, D_nom: 18 },
+                    'M20': { As: 245, D_nom: 20 },
+                    'M22': { As: 303, D_nom: 22 },
+                    'M24': { As: 353, D_nom: 24 },
+                    'M27': { As: 459, D_nom: 27 },
+                    'M30': { As: 561, D_nom: 30 }
+                },
+                'imperial': {
+                    '1/4"': { As: 0.0318, D_nom: 0.25 },
+                    '5/16"': { As: 0.0523, D_nom: 0.3125 },
+                    '3/8"': { As: 0.0775, D_nom: 0.375 },
+                    '7/16"': { As: 0.1063, D_nom: 0.4375 },
+                    '1/2"': { As: 0.1419, D_nom: 0.5 },
+                    '5/8"': { As: 0.226, D_nom: 0.625 },
+                    '3/4"': { As: 0.334, D_nom: 0.75 },
+                    '7/8"': { As: 0.462, D_nom: 0.875 },
+                    '1"': { As: 0.606, D_nom: 1.0 },
+                    '1-1/8"': { As: 0.763, D_nom: 1.125 },
+                    '1-1/4"': { As: 0.969, D_nom: 1.25 },
+                    '1-3/8"': { As: 1.155, D_nom: 1.375 },
+                    '1-1/2"': { As: 1.405, D_nom: 1.5 }
+                }
+            };
+
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Populates the nominal diameter dropdown based on the selected unit system.
+             */
+            function populateNominalDiameters() {
+                const unitSystem = unitSystemSelect.value;
+                const diameters = stressAreas[unitSystem];
+                nominalDiameterSelect.innerHTML = ''; // Clear existing options
+
+                for (const size in diameters) {
+                    const option = document.createElement('option');
+                    option.value = size;
+                    option.textContent = size;
+                    nominalDiameterSelect.appendChild(option);
+                }
+                // Trigger change to update stress area and nominal diameter based on the first option
+                nominalDiameterSelect.dispatchEvent(new Event('change'));
+            }
+
+            /**
+             * Updates unit labels and input defaults based on selected unit system,
+             * bolt type, and nominal diameter. Also manages visibility of preload inputs.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+                const boltType = boltTypeSelect.value;
+                
+                // Update unit labels
+                areaUnitLabel.innerHTML = unitSystem === 'metric' ? '(mm&#178;)' : '(in&#178;)';
+                stressUnitLabel.innerHTML = unitSystem === 'metric' ? '(MPa)' : '(psi)';
+                forceUnitLabel.innerHTML = unitSystem === 'metric' ? '(kN)' : '(lbf)';
+                
+                // Update Bolt Type options based on Unit System
+                const boltTypeOptions = `
+                    <option value="metric-8.8" ${unitSystem === 'metric' ? '' : 'style="display:none;"'}>Metric Property Class 8.8</option>
+                    <option value="metric-10.9" ${unitSystem === 'metric' ? '' : 'style="display:none;"'}>Metric Property Class 10.9</option>
+                    <option value="metric-12.9" ${unitSystem === 'metric' ? '' : 'style="display:none;"'}>Metric Property Class 12.9</option>
+                    <option value="imperial-a307" ${unitSystem === 'imperial' ? '' : 'style="display:none;"'}>Imperial ASTM A307 Gr. A</option>
+                    <option value="imperial-a325" ${unitSystem === 'imperial' ? '' : 'style="display:none;"'}>Imperial ASTM A325</option>
+                    <option value="imperial-a490" ${unitSystem === 'imperial' ? '' : 'style="display:none;"'}>Imperial ASTM A490</option>
+                `;
+                boltTypeSelect.innerHTML = boltTypeOptions;
+
+                // Set selected bolt type correctly after updating options
+                if (boltType.startsWith(unitSystem)) {
+                    boltTypeSelect.value = boltType; // Keep current if compatible
+                } else {
+                    // Set a default compatible bolt type if not
+                    boltTypeSelect.value = unitSystem === 'metric' ? 'metric-8.8' : 'imperial-a325';
+                }
+                
+                populateNominalDiameters(); // Re-populate diameters based on new unit system
+
+                // Now set the properties based on the selected bolt type and diameter
+                updateBoltProperties();
+                updatePreloadBasisInputs(); // Crucial to call after unit/bolt updates
+            }
+
+            /**
+             * Updates proof strength, yield strength, and K-factor based on selected bolt type,
+             * and stress area based on nominal diameter.
+             */
+            function updateBoltProperties() {
+                const unitSystem = unitSystemSelect.value;
+                const boltType = boltTypeSelect.value;
+                const nominalDiameter = nominalDiameterSelect.value;
+
+                // Update Proof Strength, Yield Strength, and K-Factor
+                const properties = boltProperties[boltType];
+                if (properties && properties[unitSystem]) {
+                    proofStrengthInput.value = properties[unitSystem].Sp;
+                    yieldStrengthInput.value = properties[unitSystem].Sy;
+                    kFactorInput.value = properties[unitSystem].K_factor;
+                }
+
+                // Update Stress Area and Nominal Diameter for calculation
+                const diameterData = stressAreas[unitSystem][nominalDiameter];
+                if (diameterData) {
+                    stressAreaInput.value = diameterData.As;
+                }
+            }
+
+            /**
+             * Manages the visibility and required status of preload input fields
+             * based on the selected target preload basis.
+             */
+            function updatePreloadBasisInputs() {
+                const basis = targetPreloadBasisSelect.value;
+
+                // Hide all preload-related groups initially
+                preloadPercentGroup.style.display = 'none';
+                proofStrengthGroup.style.display = 'none';
+                yieldStrengthGroup.style.display = 'none';
+                directPreloadForceGroup.style.display = 'none';
+
+                // Remove required attributes from all
+                targetPreloadPercentInput.removeAttribute('required');
+                proofStrengthInput.removeAttribute('required');
+                yieldStrengthInput.removeAttribute('required');
+                directPreloadForceInput.removeAttribute('required');
+
+
+                if (basis === 'percent-proof') {
+                    preloadPercentGroup.style.display = 'block';
+                    proofStrengthGroup.style.display = 'block';
+                    targetPreloadPercentInput.setAttribute('required', 'true');
+                    proofStrengthInput.setAttribute('required', 'true');
+                } else if (basis === 'percent-yield') {
+                    preloadPercentGroup.style.display = 'block';
+                    yieldStrengthGroup.style.display = 'block';
+                    targetPreloadPercentInput.setAttribute('required', 'true');
+                    yieldStrengthInput.setAttribute('required', 'true');
+                } else if (basis === 'direct-force') {
+                    directPreloadForceGroup.style.display = 'block';
+                    directPreloadForceInput.setAttribute('required', 'true');
+                }
+            }
+
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            boltTypeSelect.addEventListener('change', updateBoltProperties);
+            nominalDiameterSelect.addEventListener('change', updateBoltProperties);
+            targetPreloadBasisSelect.addEventListener('change', updatePreloadBasisInputs);
+
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('bolt-torque-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+                const preloadBasis = targetPreloadBasisSelect.value;
+
+                const As_input = parseFloat(stressAreaInput.value);
+                const K_input = parseFloat(kFactorInput.value);
+
+                // Get nominal diameter (D) for the torque formula from the lookup table
+                const nominalDiameterSelected = nominalDiameterSelect.value;
+                const D_nominal_input = stressAreas[unitSystem][nominalDiameterSelected].D_nom;
+
+                let Fp_si; // Target Preload Force in Newtons (standardized)
+                let As_si; // Stress Area in m^2 (standardized)
+                let D_nominal_si; // Nominal Diameter in meters (standardized)
+
+                // Convert Stress Area and Nominal Diameter to SI units
+                if (unitSystem === 'metric') {
+                    As_si = As_input / 1e6;       // mm² to m²
+                    D_nominal_si = D_nominal_input / 1000; // mm to meters
+                } else { // Imperial
+                    As_si = As_input * (0.0254 * 0.0254); // in² to m²
+                    D_nominal_si = D_nominal_input * 0.0254; // inches to meters
+                }
+                
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters:</strong></p><ul>
+                    <li>Unit System: ${unitSystem === 'metric' ? 'Metric' : 'Imperial'}</li>
+                    <li>Bolt Type: ${boltTypeSelect.options[boltTypeSelect.selectedIndex].text}</li>
+                    <li>Nominal Diameter: ${nominalDiameterSelected}</li>
+                    <li>Bolt Stress Area (\(A_s\)): ${As_input} ${unitSystem === 'metric' ? 'mm&#178;' : 'in&#178;'}</li>
+                    <li>Target Preload Basis: ${targetPreloadBasisSelect.options[targetPreloadBasisSelect.selectedIndex].text}</li>
+                    <li>K-Factor: ${K_input}</li>
+                </ul>`;
+
+                // Calculate Fp based on selected basis
+                if (preloadBasis === 'percent-proof') {
+                    const Sp_input = parseFloat(proofStrengthInput.value);
+                    const preloadPercent_input = parseFloat(targetPreloadPercentInput.value);
+                    
+                    let Sp_si = unitSystem === 'metric' ? Sp_input * 1e6 : Sp_input * 6894.76; // MPa/psi to Pa
+                    Fp_si = (preloadPercent_input / 100) * Sp_si * As_si; // Newtons
+
+                    calculationHtml += `<ul>
+                        <li>Proof Strength (\\(S_p\\)): ${Sp_input} ${unitSystem === 'metric' ? 'MPa' : 'psi'}</li>
+                        <li>Target Preload (% of \\(S_p\\)): ${preloadPercent_input}%</li>
+                    </ul>`;
+                    calculationHtml += `<p><strong>2. Calculate Target Preload Force (\(F_p\)) from Proof Strength:</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ F_p = \\frac{\\text{Target Preload \\%}}{100} \\cdot S_p \\cdot A_s \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( F_p \\) = (${preloadPercent_input} / 100) \\times ${Sp_si.toExponential(2)} Pa \\times ${As_si.toExponential(2)} m&#178; = ${Fp_si.toExponential(4)} N
+                    </p>`;
+
+                } else if (preloadBasis === 'percent-yield') {
+                    const Sy_input = parseFloat(yieldStrengthInput.value);
+                    const preloadPercent_input = parseFloat(targetPreloadPercentInput.value);
+
+                    let Sy_si = unitSystem === 'metric' ? Sy_input * 1e6 : Sy_input * 6894.76; // MPa/psi to Pa
+                    Fp_si = (preloadPercent_input / 100) * Sy_si * As_si; // Newtons
+
+                    calculationHtml += `<ul>
+                        <li>Yield Strength (\\(S_y\\)): ${Sy_input} ${unitSystem === 'metric' ? 'MPa' : 'psi'}</li>
+                        <li>Target Preload (% of \\(S_y\\)): ${preloadPercent_input}%</li>
+                    </ul>`;
+                    calculationHtml += `<p><strong>2. Calculate Target Preload Force (\(F_p\)) from Yield Strength:</strong></p>`;
+                    calculationHtml += `<p class="formula">\\[ F_p = \\frac{\\text{Target Preload \\%}}{100} \\cdot S_y \\cdot A_s \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( F_p \\) = (${preloadPercent_input} / 100) \\times ${Sy_si.toExponential(2)} Pa \\times ${As_si.toExponential(2)} m&#178; = ${Fp_si.toExponential(4)} N
+                    </p>`;
+
+                } else { // direct-force
+                    const directFp_input = parseFloat(directPreloadForceInput.value);
+                    Fp_si = unitSystem === 'metric' ? directFp_input * 1000 : directFp_input * 4.44822 * 1000; // kN to N or lbf to N
+
+                    calculationHtml += `<ul>
+                        <li>Direct Preload Force (\\(F_p\\)): ${directFp_input} ${unitSystem === 'metric' ? 'kN' : 'lbf'}</li>
+                    </ul>`;
+                    calculationHtml += `<p><strong>2. Direct Target Preload Force (\(F_p\)):</strong></p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( F_p \\) = ${directFp_si.toExponential(4)} N
+                    </p>`;
+                }
+
+                // 3. Calculate Required Torque (T)
+                // T = K * Fp * D_nominal
+                const T_si = K_input * Fp_si * D_nominal_si; // Newton-meters
+                
+                calculationHtml += `<p><strong>3. Calculate Required Torque (\(T\)):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ T = K \\cdot F_p \\cdot D \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( T \\) = ${K_input} \\times ${Fp_si.toExponential(4)} N \\times ${D_nominal_si.toFixed(4)} m = ${T_si.toExponential(4)} N&#183;m
+                </p>`;
+
+                // Prepare results for display
+                resultTableBody.innerHTML = ''; // Clear previous results
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
+                addResultRow("Bolt Type/Material", boltTypeSelect.options[boltTypeSelect.selectedIndex].text);
+                addResultRow("Nominal Diameter", nominalDiameterSelected);
+                addResultRow("Bolt Stress Area (\\(A_s\\))", `${As_input.toFixed(3)} ${unitSystem === 'metric' ? 'mm&#178;' : 'in&#178;'}`);
+                
+                if (preloadBasis !== 'direct-force') {
+                    addResultRow("Target Preload (%)", `${parseFloat(targetPreloadPercentInput.value).toFixed(1)} %`);
+                    if (preloadBasis === 'percent-proof') {
+                         addResultRow("Proof Strength (\\(S_p\\))", `${parseFloat(proofStrengthInput.value).toFixed(0)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}`);
+                    } else { // percent-yield
+                         addResultRow("Yield Strength (\\(S_y\\))", `${parseFloat(yieldStrengthInput.value).toFixed(0)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}`);
+                    }
+                }
+                addResultRow("K-Factor", `${K_input.toFixed(3)}`);
+
+                let Fp_display, T_display;
+                if (unitSystem === 'metric') {
+                    Fp_display = Fp_si / 1000; // N to kN
+                    T_display = T_si; // N.m
+                    addResultRow("Target Preload Force (\\(F_p\\))", `<strong>\\( ${Fp_display.toFixed(2)} \\) kN</strong>`);
+                    addResultRow("Required Torque (\\(T\\))", `<strong>\\( ${T_display.toFixed(2)} \\) N&#183;m</strong>`);
+                } else { // Imperial
+                    Fp_display = Fp_si / 4.44822; // N to lbf
+                    T_display = T_si / 1.35582; // N.m to ft-lb
+                    addResultRow("Target Preload Force (\\(F_p\\))", `<strong>\\( ${Fp_display.toFixed(0)} \\) lbf</strong>`);
+                    addResultRow("Required Torque (\\(T\\))", `<strong>\\( ${T_display.toFixed(2)} \\) ft&#183;lb</strong>`);
+                }
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides theoretical estimations for bolt torque based on the simplified formula \\(T = K \\cdot F_p \\cdot D\\). The K-factor (nut factor) is an empirical value that is highly sensitive to many variables, including lubrication, surface finish, thread condition, and bolt material/coating. Therefore, the calculated torque is an <strong>approximation</strong>. For critical applications, it is <strong>imperative</strong> to use calibrated torque wrenches, conduct actual torque-tension tests, or employ tensioning methods like turn-of-nut or direct tension indicators. Always refer to relevant international standards (e.g., ASME B18.2.1, B18.2.3.1M; ASTM F1554, A307, A325, A490; ISO 898-1) and fastener manufacturer's recommendations for precise torque specifications and installation procedures. This tool is for preliminary estimation and educational purposes only.";
+
+                // Show results container
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Bolt Torque Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

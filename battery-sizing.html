@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">    
+<head>
+        <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-23Y1V450SR');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Sizing Calculator - Electrical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <style>
+        /* Basic CSS Variables for a consistent theme (Blue-based, modern) */
+        :root {
+            --primary-color: #2563eb; /* A vibrant blue */
+            --secondary-color: #1d4ed8; /* A darker shade of blue */
+            --accent-color: #10b981; /* A green for success/highlight */
+            --bg-color: #f8f9fa; /* Light background */
+            --card-bg: #ffffff; /* White card background */
+            --text-color: #343a40; /* Dark grey text */
+            --header-bg: #1f2937; /* Darker header for contrast */
+            --footer-bg: #111827; /* Even darker footer */
+            --border-color: #e5e7eb;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer, larger shadow */
+            --hover-color: #f3f4f6;
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+            --button-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            --form-row-gap: 20px; /* Consistent gap */
+        }
+
+        /* Dark Mode Variables */
+        body[data-theme="dark"] { /* Corrected selector */
+            --primary-color: #60a5fa; /* Lighter blue for dark mode */
+            --secondary-color: #3b82f6;
+            --accent-color: #34d399; /* Green */
+            --bg-color: #1a202c; /* Darker background */
+            --card-bg: #2d3748; /* Slightly lighter dark card background */
+            --text-color: #e2e8f0; /* Light text */
+            --header-bg: #1f2937;
+            --footer-bg: #111827;
+            --border-color: #4a5568;
+            --card-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+            --hover-color: #4a5568;
+            --input-bg: #2d3748;
+            --input-border: #4a5568;
+            --button-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: white; /* Keep H1 white on gradient background */
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header .subtitle {
+            margin: 5px 0 0;
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        main {
+            flex: 1;
+            padding: 30px 0;
+            animation: fadeInUp 1s ease-out 0.3s forwards;
+            opacity: 0; /* Start hidden for animation */
+        }
+
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.2);
+        }
+
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .tool-description {
+            margin-bottom: 30px;
+            color: var(--text-color);
+            font-size: 1.1em;
+            text-align: justify;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            font-weight: bold;
+            box-shadow: var(--button-shadow);
+        }
+
+        .back-button i {
+            margin-right: 8px;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            font-size: 1.3em;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            box-shadow: 0 -0.5rem 1rem rgba(0, 0, 0, 0.15);
+            margin-top: 40px;
+            animation: fadeInUp 1s ease-out 0.5s forwards;
+            opacity: 0; /* Start hidden for animation */
+        }
+        
+        footer .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        footer .disclaimer, footer .social-share, footer .credit {
+            flex: 1 1 280px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        footer .disclaimer h3, footer .social-share h3, footer .credit h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+        footer .credit p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+            margin: 10px 0;
+        }
+
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25); /* Blue shadow for focus */
+            outline: none;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: var(--form-row-gap);
+            flex-wrap: wrap;
+        }
+        
+        .form-row .form-group {
+            flex: 1 1 calc(50% - (var(--form-row-gap) / 2));
+            min-width: 250px; /* Ensure minimum width for smaller screens */
+            box-sizing: border-box;
+        }
+
+        /* Styling for input with unit select */
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between input and select */
+        }
+        .input-with-unit input {
+            flex: 1; /* Allow input to take available space */
+        }
+        .input-with-unit select {
+            width: auto; /* Allow select to size based on content */
+            min-width: 70px; /* Minimum width for unit select */
+        }
+        
+        .calculate-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: var(--button-shadow);
+            width: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .calculate-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: none; /* Hidden by default */
+            opacity: 0; /* Start hidden for animation */
+            transition: opacity 0.6s ease-out; /* Only opacity transition */
+            border: 1px solid var(--border-color);
+        }
+        
+        .result-container.show {
+            opacity: 1;
+        }
+
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners on table */
+        }
+        
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            font-size: 0.95em;
+        }
+
+        .result-table tbody tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--hover-color);
+            transition: background-color 0.3s ease-in-out;
+        }
+        
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            background-color: var(--hover-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed var(--primary-color);
+            color: var(--text-color);
+        }
+        
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 0.9em;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .info-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -125px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            font-size: 0.85em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s ease-in-out;
+            display: none;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        /* Styles for calculation details */
+        #calculation-details {
+            background-color: var(--hover-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px dashed var(--primary-color);
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            border-left: 4px solid var(--accent-color);
+        }
+        #calculation-details ul {
+            list-style-type: none; /* Changed from disc to none for custom bullet */
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        #calculation-details ul li {
+            margin-bottom: 8px;
+            padding-left: 25px; /* Space for custom bullet */
+            position: relative;
+        }
+        #calculation-details ul li::before {
+            content: "\f058"; /* FontAwesome check-circle icon */
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Animation for input group visibility change */
+        .form-row.hidden-input {
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease-out, height 0.5s ease-out;
+            margin-bottom: 0 !important; /* Override margin for smooth collapse */
+        }
+        .form-row:not(.hidden-input) {
+            opacity: 1;
+            height: auto; /* Or a specific max-height if content is variable */
+            transition: opacity 0.5s ease-out, height 0.5s ease-out;
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            header .subtitle {
+                font-size: 0.9em;
+            }
+            .theme-toggle {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            .tool-container, .calculator-form, .result-container {
+                padding: 20px;
+            }
+            .tool-container h2 {
+                font-size: 1.6em;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .form-row .form-group {
+                flex: 1 1 100%;
+                min-width: unset;
+            }
+            .back-button {
+                width: 100%;
+                justify-content: center;
+            }
+            footer .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            footer .disclaimer, footer .social-share, footer .credit {
+                flex: 1 1 100%;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            header {
+                padding: 15px 0;
+            }
+            header h1 {
+                font-size: 1.8em;
+            }
+            .back-button {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            .calculate-btn {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+            .result-table th, .result-table td {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            .tooltip .tooltiptext {
+                width: 180px;
+                margin-left: -90px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Electrical</h1>
+            <p class="subtitle">Electrical Calculations Made Easy — Learn with Every Step</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <a href="indexEle.html" class="back-button"><i class="fas fa-arrow-left"></i> Back to Tools</a>
+        
+        <div class="tool-container">
+            <h2>Industrial Battery Sizing Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator helps you determine the appropriate battery capacity (Ah) based on load requirements, backup time, and system parameters according to IEEE 450 and IEC 60896 standards. This enhanced version allows for more precise sizing by considering varying load profiles, including initial high loads and final high loads, crucial for industrial and critical applications.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="battery-sizing-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="system-voltage">System Voltage (V) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Nominal DC voltage of the battery system.</span></span></label>
+                            <select id="system-voltage" required>
+                                <option value="12">12V</option>
+                                <option value="24">24V</option>
+                                <option value="48" selected>48V</option>
+                                <option value="110">110V</option>
+                                <option value="125">125V</option>
+                                <option value="220">220V</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="backup-time">Total Required Backup Time (hours) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total duration for which the system should run on battery power.</span></span></label>
+                            <input type="number" id="backup-time" min="0.1" step="0.1" value="2" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row hidden-input" id="custom-voltage-row">
+                        <div class="form-group">
+                            <label for="custom-voltage">Custom Voltage (V)</label>
+                            <input type="number" id="custom-voltage" min="1" step="0.1" value="48">
+                        </div>
+                        <div class="form-group"></div> <!-- Placeholder for layout -->
+                    </div>
+
+                    <!-- Load Profile Inputs -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="initial-high-load">Initial High Load <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Peak load at the beginning of the backup period (e.g., motor starting, inrush). Set to 0 if not applicable.</span></span></label>
+                            <div class="input-with-unit">
+                                <input type="number" id="initial-high-load" min="0" step="1" value="1000" required>
+                                <select id="initial-high-load-unit">
+                                    <option value="W">W</option>
+                                    <option value="VA">VA</option>
+                                    <option value="A">A</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="initial-high-load-duration">Duration of Initial High Load (minutes) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">How long the initial high load persists. Must be less than total backup time.</span></span></label>
+                            <input type="number" id="initial-high-load-duration" min="0" step="1" value="5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="normal-load-power">Normal Load <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The continuous or average load during the main part of the backup period.</span></span></label>
+                            <div class="input-with-unit">
+                                <input type="number" id="normal-load-power" min="0" step="0.1" value="500" required>
+                                <select id="normal-load-power-unit">
+                                    <option value="W" selected>W</option>
+                                    <option value="VA">VA</option>
+                                    <option value="A">A</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="final-high-load">Final High Load <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Peak load at the end of the backup period (e.g., emergency shutdown, final critical loads). Set to 0 if not applicable.</span></span></label>
+                            <div class="input-with-unit">
+                                <input type="number" id="final-high-load" min="0" step="1" value="700" required>
+                                <select id="final-high-load-unit">
+                                    <option value="W">W</option>
+                                    <option value="VA">VA</option>
+                                    <option value="A">A</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group hidden-input" id="power-factor-row">
+                            <label for="power-factor">Power Factor (PF) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Ratio of real power to apparent power. Required if any load is entered in VA. Value between 0 and 1.</span></span></label>
+                            <input type="number" id="power-factor" min="0" max="1" step="0.01" value="0.8" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="final-high-load-duration">Duration of Final High Load (minutes) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">How long the final high load persists. Must be less than total backup time.</span></span></label>
+                            <input type="number" id="final-high-load-duration" min="0" step="1" value="5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="discharge-rate">Maximum Discharge Rate (C-rate) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum safe discharge rate (e.g., 0.1C = 10-hour discharge). This is a general guideline for battery health.</span></span></label>
+                            <select id="discharge-rate" required>
+                                <option value="0.05">0.05C (20-hour)</option>
+                                <option value="0.1" selected>0.1C (10-hour)</option>
+                                <option value="0.2">0.2C (5-hour)</option>
+                                <option value="0.5">0.5C (2-hour)</option>
+                                <option value="1.0">1.0C (1-hour)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="battery-type">Battery Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Type of battery technology, affecting nominal cell voltage and temperature correction.</span></span></label>
+                            <select id="battery-type" required>
+                                <option value="lead-acid">Lead Acid (VRLA/AGM)</option>
+                                <option value="gel">Gel</option>
+                                <option value="lithium">Lithium-ion</option>
+                                <option value="nickel-cadmium">Nickel-Cadmium</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="depth-of-discharge">Depth of Discharge (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum allowable depth of discharge for battery longevity. Higher DOD reduces battery lifespan.</span></span></label>
+                            <select id="depth-of-discharge" required>
+                                <option value="50">50% (Lead Acid - Standard)</option>
+                                <option value="80">80% (Deep Cycle)</option>
+                                <option value="90">90% (Lithium-ion)</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group hidden-input" id="custom-dod-row">
+                            <label for="custom-dod">Custom DOD (%)</label>
+                            <input type="number" id="custom-dod" min="10" max="95" step="1" value="80">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="temperature">Operating Temperature (°C) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Average operating temperature affects battery capacity. Lower temperatures reduce usable capacity.</span></span></label>
+                            <input type="number" id="temperature" min="-20" max="60" step="1" value="25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="efficiency">System Efficiency (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Overall system efficiency including inverter/converter losses.</span></span></label>
+                            <input type="number" id="efficiency" min="70" max="98" step="0.1" value="85" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="aging-factor">Aging Factor <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Factor to account for battery aging and capacity reduction over its service life. Typically 1.2 to 1.25.</span></span></label>
+                            <select id="aging-factor" required>
+                                <option value="1.0">No aging (New system)</option>
+                                <option value="1.2" selected>20% aging margin</option>
+                                <option value="1.25">25% aging margin</option>
+                                <option value="1.3">30% aging margin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="safety-factor">Safety Factor <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Additional safety margin for critical applications or unforeseen circumstances. Typically 1.1 to 1.2.</span></span></label>
+                            <select id="safety-factor" required>
+                                <option value="1.0">No safety factor</option>
+                                <option value="1.1">10% safety margin</option>
+                                <option value="1.2" selected>20% safety margin</option>
+                                <option value="1.25">25% safety margin</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="application-type">Application Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Type of application affects design considerations and specific standard recommendations.</span></span></label>
+                            <select id="application-type" required>
+                                <option value="ups">UPS/Standby Power</option>
+                                <option value="telecom">Telecommunications</option>
+                                <option value="solar">Solar/Renewable Energy</option>
+                                <option value="industrial">Industrial Control</option>
+                                <option value="emergency">Emergency Lighting</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="standard">Design Standard <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Standard to use for calculations. IEEE 485 is often used for load profiling.</span></span></label>
+                            <select id="standard" required>
+                                <option value="ieee450">IEEE 450</option>
+                                <option value="iec60896">IEC 60896</option>
+                                <option value="ieee1188">IEEE 1188</option>
+                                <option value="ieee485">IEEE 485 (for Load Profile)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="button" id="calculate-btn" class="calculate-btn">Calculate Battery Capacity</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Battery Sizing Results</h3>
+                <div id="calculation-details">
+                    <!-- Calculation steps will be inserted here -->
+                </div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                    </tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                
+                <p>Disclaimer: Always verify calculation results against applicable engineering standards and guidelines.</p>
+            </div>
+            <div class="credit">
+                <h3>Credit</h3>
+                <p>Developed by A Sharma</p>
+                <p>&copy; 2025 Design Calculators</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Tool</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Battery%20Sizing%20Calculator" target="_blank" class="social-btn linkedin"><i class="fab fa-linkedin"></i></a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook"><i class="fab fa-facebook"></i></a>
+                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20Battery%20Sizing%20Calculator!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20Battery%20Sizing%20Calculator!%20https://designcalculators.co.in" target="_blank" class="social-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Battery%20Sizing%20Calculator" target="_blank" class="social-btn reddit"><i class="fab fa-reddit"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <div id="custom-message-box"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- DATABASE & DATA TABLES ---
+            // Temperature correction factors for different battery types
+            const tempCorrectionFactors = {
+                'lead-acid': {
+                    '-20': 0.65, '-10': 0.75, '0': 0.85, '10': 0.92, '20': 0.98, '25': 1.0, '30': 1.02, '40': 1.05, '50': 1.07, '60': 1.08
+                },
+                'gel': {
+                    '-20': 0.70, '-10': 0.80, '0': 0.88, '10': 0.94, '20': 0.99, '25': 1.0, '30': 1.01, '40': 1.03, '50': 1.04, '60': 1.05
+                },
+                'lithium': {
+                    '-20': 0.80, '-10': 0.85, '0': 0.90, '10': 0.95, '20': 0.98, '25': 1.0, '30': 1.02, '40': 1.03, '50': 1.02, '60': 1.00
+                },
+                'nickel-cadmium': {
+                    '-20': 0.75, '-10': 0.82, '0': 0.88, '10': 0.94, '20': 0.98, '25': 1.0, '30': 1.02, '40': 1.04, '50': 1.05, '60': 1.06
+                }
+            };
+
+            // Standard battery unit (cell) capacities in Ah - common nominal sizes
+            const standardBatterySizes = [7, 12, 17, 26, 35, 55, 75, 100, 150, 200, 250, 300, 400, 500, 600, 800, 1000, 1200];
+
+            // --- UI ELEMENT REFERENCES ---
+            const systemVoltageSelect = document.getElementById('system-voltage');
+            const customVoltageRow = document.getElementById('custom-voltage-row');
+            const customVoltageInput = document.getElementById('custom-voltage');
+            const batteryTypeSelect = document.getElementById('battery-type');
+            const depthOfDischargeSelect = document.getElementById('depth-of-discharge');
+            const customDodRow = document.getElementById('custom-dod-row');
+            const customDodInput = document.getElementById('custom-dod');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReferenceDiv = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // New load profile inputs
+            const initialHighLoadInput = document.getElementById('initial-high-load');
+            const initialHighLoadDurationInput = document.getElementById('initial-high-load-duration');
+            const initialHighLoadUnitSelect = document.getElementById('initial-high-load-unit');
+
+            const normalLoadPowerInput = document.getElementById('normal-load-power');
+            const normalLoadPowerUnitSelect = document.getElementById('normal-load-power-unit');
+
+            const finalHighLoadInput = document.getElementById('final-high-load');
+            const finalHighLoadDurationInput = document.getElementById('final-high-load-duration');
+            const finalHighLoadUnitSelect = document.getElementById('final-high-load-unit');
+
+            const backupTimeInput = document.getElementById('backup-time');
+            const powerFactorInput = document.getElementById('power-factor');
+            const powerFactorRow = document.getElementById('power-factor-row');
+
+
+            // --- DYNAMIC FORM LOGIC ---
+
+            // Function to display messages (replaces alert())
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+
+                messageBox.textContent = message;
+                messageBox.style.display = 'block';
+
+                if (type === "error") {
+                    messageBox.style.backgroundColor = '#dc3545'; // Red
+                } else if (type === "warning") {
+                    messageBox.style.backgroundColor = '#ffc107'; // Amber
+                    messageBox.style.color = '#333';
+                } else {
+                    messageBox.style.backgroundColor = '#28a745'; // Green
+                    messageBox.style.color = 'white';
+                }
+                messageBox.style.opacity = 1;
+
+                // Clear any existing timeout to prevent multiple messages overlapping
+                if (messageBox.timeoutId) {
+                    clearTimeout(messageBox.timeoutId);
+                }
+
+                messageBox.timeoutId = setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                    setTimeout(() => { messageBox.style.display = 'none';}, 500); // Wait for fade out then hide
+                }, 5000);
+            }
+
+            // Helper function to find nearest temperature in correction factor table
+            function findNearestTemperature(targetTemp, tempTable) {
+                const tempKeys = Object.keys(tempTable).map(Number);
+                return tempKeys.reduce((prev, curr) => {
+                    return (Math.abs(curr - targetTemp) < Math.abs(prev - targetTemp) ? curr : prev);
+                }).toString();
+            }
+
+            // Function to toggle custom voltage input visibility
+            function toggleCustomVoltageInput() {
+                if (systemVoltageSelect.value === 'custom') {
+                    customVoltageRow.classList.remove('hidden-input');
+                    customVoltageInput.setAttribute('required', 'true');
+                } else {
+                    customVoltageRow.classList.add('hidden-input');
+                    customVoltageInput.removeAttribute('required');
+                }
+            }
+
+            // Function to update DOD options based on battery type and toggle custom DOD input visibility
+            function updateDodOptionsAndVisibility() {
+                const dodSelect = depthOfDischargeSelect;
+                const currentBatteryType = batteryTypeSelect.value;
+                
+                // Store the current custom option and its value if it exists
+                const customOption = dodSelect.querySelector('option[value="custom"]');
+                const customOptionValue = customOption ? customOption.value : '';
+                const currentSelectedDod = dodSelect.value; // Store currently selected value
+
+                // Clear existing options
+                while (dodSelect.options.length > 0) {
+                    dodSelect.remove(0);
+                }
+
+                // Add appropriate options based on battery type
+                let newOptions = [];
+                switch (currentBatteryType) {
+                    case 'lead-acid':
+                        newOptions = [
+                            { value: '50', text: '50% (Standard Lead Acid)' },
+                            { value: '80', text: '80% (Deep Cycle Lead Acid)' }
+                        ];
+                        break;
+                    case 'gel':
+                        newOptions = [
+                            { value: '50', text: '50% (Conservative)' },
+                            { value: '80', text: '80% (Standard Gel)' }
+                        ];
+                        break;
+                    case 'lithium':
+                        newOptions = [
+                            { value: '80', text: '80% (Conservative)' },
+                            { value: '90', text: '90% (Standard Lithium)' },
+                            { value: '95', text: '95% (Maximum)' }
+                        ];
+                        break;
+                    case 'nickel-cadmium':
+                        newOptions = [
+                            { value: '75', text: '75% (Standard NiCd)' },
+                            { value: '85', text: '85% (Deep Discharge)' }
+                        ];
+                        break;
+                }
+
+                // Insert new options
+                newOptions.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = opt.text;
+                    dodSelect.add(option);
+                });
+
+                // Add custom option back
+                const customOptionElement = document.createElement('option');
+                customOptionElement.value = 'custom';
+                customOptionElement.textContent = 'Custom';
+                dodSelect.add(customOptionElement);
+
+                // Re-select the previously selected value if it's still an option, otherwise select default
+                if (newOptions.some(opt => opt.value === currentSelectedDod)) {
+                    dodSelect.value = currentSelectedDod;
+                } else if (currentSelectedDod === 'custom') {
+                     dodSelect.value = 'custom';
+                } else {
+                    dodSelect.value = newOptions.length > 0 ? newOptions[0].value : '';
+                }
+                
+                // Toggle custom DOD input visibility
+                if (dodSelect.value === 'custom') {
+                    customDodRow.classList.remove('hidden-input');
+                    customDodInput.setAttribute('required', 'true');
+                } else {
+                    customDodRow.classList.add('hidden-input');
+                    customDodInput.removeAttribute('required');
+                }
+            }
+
+            // Function to toggle power factor input visibility
+            function togglePowerFactorInput() {
+                const needsPowerFactor = initialHighLoadUnitSelect.value === 'VA' || 
+                                         normalLoadPowerUnitSelect.value === 'VA' || 
+                                         finalHighLoadUnitSelect.value === 'VA';
+
+                if (needsPowerFactor) {
+                    powerFactorRow.classList.remove('hidden-input');
+                    powerFactorInput.setAttribute('required', 'true');
+                } else {
+                    powerFactorRow.classList.add('hidden-input');
+                    powerFactorInput.removeAttribute('required');
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            systemVoltageSelect.addEventListener('change', toggleCustomVoltageInput);
+            batteryTypeSelect.addEventListener('change', updateDodOptionsAndVisibility);
+            depthOfDischargeSelect.addEventListener('change', updateDodOptionsAndVisibility); 
+            calculateBtn.addEventListener('click', calculateBatteryCapacity);
+
+            // Event listeners for load unit changes to toggle power factor visibility
+            initialHighLoadUnitSelect.addEventListener('change', togglePowerFactorInput);
+            normalLoadPowerUnitSelect.addEventListener('change', togglePowerFactorInput);
+            finalHighLoadUnitSelect.addEventListener('change', togglePowerFactorInput);
+
+
+            // --- CALCULATION LOGIC ---
+            function calculateBatteryCapacity() {
+                // 1. Get all input values
+                let systemVoltageValue = systemVoltageSelect.value;
+                const totalBackupTimeHours = parseFloat(backupTimeInput.value);
+
+                const initialHighLoadValue = parseFloat(initialHighLoadInput.value);
+                const initialHighLoadDurationMinutes = parseFloat(initialHighLoadDurationInput.value);
+                const initialHighLoadUnit = initialHighLoadUnitSelect.value;
+
+                const normalLoadPowerValue = parseFloat(normalLoadPowerInput.value);
+                const normalLoadPowerUnit = normalLoadPowerUnitSelect.value;
+
+                const finalHighLoadValue = parseFloat(finalHighLoadInput.value);
+                const finalHighLoadDurationMinutes = parseFloat(finalHighLoadDurationInput.value);
+                const finalHighLoadUnit = finalHighLoadUnitSelect.value;
+
+                const dischargeRate = parseFloat(document.getElementById('discharge-rate').value);
+                const batteryType = batteryTypeSelect.value;
+                let depthOfDischargeValue = depthOfDischargeSelect.value;
+                const temperature = parseFloat(document.getElementById('temperature').value);
+                const efficiency = parseFloat(document.getElementById('efficiency').value) / 100;
+                const agingFactor = parseFloat(document.getElementById('aging-factor').value);
+                const safetyFactor = parseFloat(document.getElementById('safety-factor').value);
+                const applicationType = document.getElementById('application-type').value; 
+                const standard = document.getElementById('standard').value;
+
+                let powerFactor = 1.0; // Default to 1.0 if not needed
+                if (!powerFactorRow.classList.contains('hidden-input')) {
+                    powerFactor = parseFloat(powerFactorInput.value);
+                }
+
+                // Handle custom voltage and DOD values
+                if (systemVoltageSelect.value === 'custom') {
+                    systemVoltageValue = parseFloat(customVoltageInput.value);
+                } else {
+                    systemVoltageValue = parseFloat(systemVoltageValue);
+                }
+
+                if (depthOfDischargeSelect.value === 'custom') {
+                    depthOfDischargeValue = parseFloat(customDodInput.value) / 100;
+                } else {
+                    depthOfDischargeValue = parseFloat(depthOfDischargeValue) / 100;
+                }
+
+                // 2. Input Validation
+                if (isNaN(systemVoltageValue) || isNaN(totalBackupTimeHours) || 
+                    isNaN(initialHighLoadValue) || isNaN(initialHighLoadDurationMinutes) ||
+                    isNaN(normalLoadPowerValue) || 
+                    isNaN(finalHighLoadValue) || isNaN(finalHighLoadDurationMinutes) || 
+                    isNaN(efficiency)) {
+                    displayMessage("Please fill in all load and system parameters with valid numbers.", "error");
+                    return;
+                }
+                if (systemVoltageValue <= 0 || totalBackupTimeHours <= 0 || efficiency <= 0) {
+                    displayMessage("System Voltage, Total Backup Time, and System Efficiency must be positive.", "error");
+                    return;
+                }
+                if (depthOfDischargeValue <= 0 || depthOfDischargeValue > 1) {
+                    displayMessage("Depth of Discharge must be between 10% and 95%.", "error");
+                    return;
+                }
+                if (isNaN(temperature) || temperature < -20 || temperature > 60) {
+                    displayMessage("Operating Temperature must be between -20°C and 60°C.", "error");
+                    return;
+                }
+                if (isNaN(agingFactor) || agingFactor < 1) {
+                    displayMessage("Aging Factor must be 1.0 or greater.", "error");
+                    return;
+                }
+                if (isNaN(safetyFactor) || safetyFactor < 1) {
+                    displayMessage("Safety Factor must be 1.0 or greater.", "error");
+                    return;
+                }
+                if (!powerFactorRow.classList.contains('hidden-input') && (isNaN(powerFactor) || powerFactor <= 0 || powerFactor > 1)) {
+                    displayMessage("Power Factor must be between 0.01 and 1.0.", "error");
+                    return;
+                }
+
+                const totalHighLoadDurationMinutes = initialHighLoadDurationMinutes + finalHighLoadDurationMinutes;
+                if (totalHighLoadDurationMinutes / 60 > totalBackupTimeHours) {
+                    displayMessage("The sum of initial and final high load durations cannot exceed the total backup time.", "error");
+                    return;
+                }
+
+                // 3. Convert all loads to Watts for calculation
+                let initialHighLoadWatts = initialHighLoadValue;
+                let normalLoadPowerWatts = normalLoadPowerValue;
+                let finalHighLoadWatts = finalHighLoadValue;
+
+                let conversionHtml = '<h4>Load Conversion to Watts:</h4>';
+
+                // Initial High Load Conversion
+                if (initialHighLoadUnit === 'VA') {
+                    initialHighLoadWatts = initialHighLoadValue * powerFactor;
+                    conversionHtml += `<p class="calculation-step">Initial High Load (W) = ${initialHighLoadValue} VA × ${powerFactor.toFixed(2)} PF = ${initialHighLoadWatts.toFixed(2)} W</p>`;
+                } else if (initialHighLoadUnit === 'A') {
+                    initialHighLoadWatts = initialHighLoadValue * systemVoltageValue;
+                    conversionHtml += `<p class="calculation-step">Initial High Load (W) = ${initialHighLoadValue} A × ${systemVoltageValue.toFixed(0)} V = ${initialHighLoadWatts.toFixed(2)} W</p>`;
+                } else {
+                    conversionHtml += `<p class="calculation-step">Initial High Load is already in Watts: ${initialHighLoadWatts.toFixed(2)} W</p>`;
+                }
+
+                // Normal Load Conversion
+                if (normalLoadPowerUnit === 'VA') {
+                    normalLoadPowerWatts = normalLoadPowerValue * powerFactor;
+                    conversionHtml += `<p class="calculation-step">Normal Load (W) = ${normalLoadPowerValue} VA × ${powerFactor.toFixed(2)} PF = ${normalLoadPowerWatts.toFixed(2)} W</p>`;
+                } else if (normalLoadPowerUnit === 'A') {
+                    normalLoadPowerWatts = normalLoadPowerValue * systemVoltageValue;
+                    conversionHtml += `<p class="calculation-step">Normal Load (W) = ${normalLoadPowerValue} A × ${systemVoltageValue.toFixed(0)} V = ${normalLoadPowerWatts.toFixed(2)} W</p>`;
+                } else {
+                    conversionHtml += `<p class="calculation-step">Normal Load is already in Watts: ${normalLoadPowerWatts.toFixed(2)} W</p>`;
+                }
+
+                // Final High Load Conversion
+                if (finalHighLoadUnit === 'VA') {
+                    finalHighLoadWatts = finalHighLoadValue * powerFactor;
+                    conversionHtml += `<p class="calculation-step">Final High Load (W) = ${finalHighLoadValue} VA × ${powerFactor.toFixed(2)} PF = ${finalHighLoadWatts.toFixed(2)} W</p>`;
+                } else if (finalHighLoadUnit === 'A') {
+                    finalHighLoadWatts = finalHighLoadValue * systemVoltageValue;
+                    conversionHtml += `<p class="calculation-step">Final High Load (W) = ${finalHighLoadValue} A × ${systemVoltageValue.toFixed(0)} V = ${finalHighLoadWatts.toFixed(2)} W</p>`;
+                } else {
+                    conversionHtml += `<p class="calculation-step">Final High Load is already in Watts: ${finalHighLoadWatts.toFixed(2)} W</p>`;
+                }
+
+                // 4. Perform Calculations (Load Profiling)
+                let basicAhRequirement = 0;
+                let calculationHtml = conversionHtml + '<h4>Detailed Calculation Steps:</h4>';
+
+                calculationHtml += `<p><strong>Given Parameters:</strong></p>`;
+                calculationHtml += `<ul>
+                    <li>System Voltage: ${systemVoltageValue.toFixed(0)} V</li>
+                    <li>Total Required Backup Time: ${totalBackupTimeHours.toFixed(2)} hours</li>
+                    <li>System Efficiency: ${(efficiency * 100).toFixed(1)}%</li>
+                </ul>`;
+
+                // Calculate Ah for Initial High Load Period
+                let initialAh = 0;
+                if (initialHighLoadWatts > 0 && initialHighLoadDurationMinutes > 0) {
+                    const initialDurationHours = initialHighLoadDurationMinutes / 60;
+                    initialAh = (initialHighLoadWatts / systemVoltageValue) * initialDurationHours / efficiency;
+                    basicAhRequirement += initialAh;
+                    calculationHtml += `<p><strong>1. Amp-hours for Initial High Load Period:</strong></p>`;
+                    calculationHtml += `<p class="formula">$$Ah_{initial} = \\frac{\\text{Initial High Load (W)}}{\\text{System Voltage (V)}} \\times \\frac{\\text{Duration (min)}}{60} \\times \\frac{1}{\\text{Efficiency}}$$</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        $Ah_{initial} = \\frac{${initialHighLoadWatts.toFixed(2)}}{${systemVoltageValue.toFixed(0)}} \\times \\frac{${initialHighLoadDurationMinutes.toFixed(0)}}{60} \\times \\frac{1}{${efficiency.toFixed(2)}} = ${initialAh.toFixed(2)} \\text{ Ah}$
+                    </p>`;
+                } else {
+                    calculationHtml += `<p><strong>1. Initial High Load Period:</strong> Not applicable (Load or Duration is zero).</p>`;
+                }
+
+                // Calculate Ah for Final High Load Period
+                let finalAh = 0;
+                if (finalHighLoadWatts > 0 && finalHighLoadDurationMinutes > 0) {
+                    const finalDurationHours = finalHighLoadDurationMinutes / 60;
+                    finalAh = (finalHighLoadWatts / systemVoltageValue) * finalDurationHours / efficiency;
+                    basicAhRequirement += finalAh;
+                    calculationHtml += `<p><strong>2. Amp-hours for Final High Load Period:</strong></p>`;
+                    calculationHtml += `<p class="formula">$$Ah_{final} = \\frac{\\text{Final High Load (W)}}{\\text{System Voltage (V)}} \\times \\frac{\\text{Duration (min)}}{60} \\times \\frac{1}{\\text{Efficiency}}$$</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        $Ah_{final} = \\frac{${finalHighLoadWatts.toFixed(2)}}{${systemVoltageValue.toFixed(0)}} \\times \\frac{${finalHighLoadDurationMinutes.toFixed(0)}}{60} \\times \\frac{1}{${efficiency.toFixed(2)}} = ${finalAh.toFixed(2)} \\text{ Ah}$
+                    </p>`;
+                } else {
+                    calculationHtml += `<p><strong>2. Final High Load Period:</strong> Not applicable (Load or Duration is zero).</p>`;
+                }
+
+                // Calculate Ah for Normal Load Period
+                let normalAh = 0;
+                const normalLoadDurationHours = totalBackupTimeHours - (initialHighLoadDurationMinutes / 60) - (finalHighLoadDurationMinutes / 60);
+                if (normalLoadPowerWatts > 0 && normalLoadDurationHours > 0) {
+                    normalAh = (normalLoadPowerWatts / systemVoltageValue) * normalLoadDurationHours / efficiency;
+                    basicAhRequirement += normalAh;
+                    calculationHtml += `<p><strong>3. Amp-hours for Normal Load Period:</strong></p>`;
+                    calculationHtml += `<p>Normal Load Duration = Total Backup Time - Initial Load Duration - Final Load Duration</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        Normal Load Duration = ${totalBackupTimeHours.toFixed(2)} hours - ${initialHighLoadDurationMinutes.toFixed(0)} min - ${finalHighLoadDurationMinutes.toFixed(0)} min = ${normalLoadDurationHours.toFixed(2)} hours
+                    </p>`;
+                    calculationHtml += `<p class="formula">$$Ah_{normal} = \\frac{\\text{Normal Load Power (W)}}{\\text{System Voltage (V)}} \\times \\text{Duration (hours)} \\times \\frac{1}{\\text{Efficiency}}$$</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        $Ah_{normal} = \\frac{${normalLoadPowerWatts.toFixed(2)}}{${systemVoltageValue.toFixed(0)}} \\times ${normalLoadDurationHours.toFixed(2)} \\times \\frac{1}{${efficiency.toFixed(2)}} = ${normalAh.toFixed(2)} \\text{ Ah}$
+                    </p>`;
+                } else {
+                    calculationHtml += `<p><strong>3. Normal Load Period:</strong> Not applicable (Load or Duration is zero/negative).</p>`;
+                }
+
+                // Total Basic Ah Requirement
+                calculationHtml += `<p><strong>4. Total Basic Amp-hour (Ah) Requirement ($Ah_{basic}$):</strong></p>`;
+                calculationHtml += `<p>The sum of Amp-hours required for all load periods.</p>`;
+                calculationHtml += `<p class="formula">$$Ah_{basic} = Ah_{initial} + Ah_{normal} + Ah_{final}$$</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    $Ah_{basic} = ${initialAh.toFixed(2)} + ${normalAh.toFixed(2)} + ${finalAh.toFixed(2)} = ${basicAhRequirement.toFixed(2)} \\text{ Ah}$
+                </p>`;
+
+                // Apply temperature correction
+                const nearestTemp = findNearestTemperature(temperature, tempCorrectionFactors[batteryType]);
+                const tempCorrectionFactor = tempCorrectionFactors[batteryType][nearestTemp];
+                
+                // Apply depth of discharge correction
+                const dodCorrectedCapacity = basicAhRequirement / depthOfDischargeValue;
+
+                // Apply temperature correction to DOD corrected capacity
+                const tempCorrectedCapacity = dodCorrectedCapacity / tempCorrectionFactor;
+
+                // Apply aging and safety factors
+                const finalCapacity = tempCorrectedCapacity * agingFactor * safetyFactor;
+
+                // Check discharge rate compatibility
+                const totalLoadPowerWatts = (initialHighLoadWatts * (initialHighLoadDurationMinutes / 60)) + (normalLoadPowerWatts * normalLoadDurationHours) + (finalHighLoadWatts * (finalHighLoadDurationMinutes / 60));
+                const averageLoadPowerWatts = totalLoadPowerWatts / totalBackupTimeHours;
+
+                const requiredDischargeRate = totalBackupTimeHours > 0 ? (averageLoadPowerWatts / systemVoltageValue) / (finalCapacity / agingFactor / safetyFactor) : 0; // Simplified C-rate check based on average load
+                const dischargeRateOk = requiredDischargeRate <= dischargeRate;
+
+                // Determine nominal voltage per cell/unit based on battery type
+                let nominalUnitVoltage;
+                switch (batteryType) {
+                    case 'lead-acid':
+                    case 'gel':
+                        nominalUnitVoltage = 2.0; // Assuming 2V cells for industrial sizing (VRLA also commonly 2V cells)
+                        break;
+                    case 'nickel-cadmium':
+                        nominalUnitVoltage = 1.2;
+                        break;
+                    case 'lithium':
+                        nominalUnitVoltage = 3.6; // Assuming 3.6V cells
+                        break;
+                    default:
+                        nominalUnitVoltage = 2.0; // Default to 2V if type is unknown
+                }
+
+                let selectedUnitAhCapacity = standardBatterySizes[0]; 
+                for (const size of standardBatterySizes) {
+                    if (size >= finalCapacity / 1) { 
+                        selectedUnitAhCapacity = size;
+                        break;
+                    }
+                    selectedUnitAhCapacity = size; 
+                }
+                if (finalCapacity > standardBatterySizes[standardBatterySizes.length - 1] && selectedUnitAhCapacity !== standardBatterySizes[standardBatterySizes.length - 1]) {
+                    selectedUnitAhCapacity = standardBatterySizes[standardBatterySizes.length - 1];
+                }
+
+                const numSeriesUnits = Math.round(systemVoltageValue / nominalUnitVoltage);
+                if (Math.abs(systemVoltageValue - (numSeriesUnits * nominalUnitVoltage)) > 0.1) { 
+                    displayMessage(`Warning: System voltage (${systemVoltageValue}V) is not a direct multiple of the nominal unit voltage (${nominalUnitVoltage}V) for ${batteryType.replace('-', ' ')} batteries. The number of series units will be rounded to ${numSeriesUnits}. Actual series voltage will be ${numSeriesUnits * nominalUnitVoltage}V. Consider adjusting system voltage or checking battery specifications.`, "warning");
+                }
+                const numParallelStrings = Math.ceil(finalCapacity / selectedUnitAhCapacity);
+                const totalBatteriesRequired = numSeriesUnits * numParallelStrings;
+                const actualAhProvidedByBank = selectedUnitAhCapacity * numParallelStrings;
+                const actualBackupTime = (actualAhProvidedByBank * depthOfDischargeValue * systemVoltageValue * efficiency) / averageLoadPowerWatts;
+
+
+                // Add remaining calculation steps to HTML
+                calculationHtml += `<p><strong>5. Depth of Discharge Corrected Capacity ($Ah_{DOD}$):</strong></p>`;
+                calculationHtml += `<p class="formula">$$Ah_{DOD} = \\frac{Ah_{basic}}{\\text{Depth of Discharge (DOD)}}$$</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    $Ah_{DOD} = \\frac{${basicAhRequirement.toFixed(2)}}{${depthOfDischargeValue.toFixed(2)}} = ${dodCorrectedCapacity.toFixed(2)} \\text{ Ah}$
+                </p>`;
+
+                calculationHtml += `<p><strong>6. Temperature Corrected Capacity ($Ah_{Temp}$):</strong></p>`;
+                calculationHtml += `<p class="formula">$$Ah_{Temp} = \\frac{Ah_{DOD}}{\\text{Temperature Correction Factor}}$$</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    $Ah_{Temp} = \\frac{${dodCorrectedCapacity.toFixed(2)}}{${tempCorrectionFactor.toFixed(3)}} = ${tempCorrectedCapacity.toFixed(2)} \\text{ Ah}$
+                </p>`;
+
+                calculationHtml += `<p><strong>7. Final Calculated Battery Capacity ($Ah_{final}$):</strong></p>`;
+                calculationHtml += `<p class="formula">$$Ah_{final} = Ah_{Temp} \\times \\text{Aging Factor} \\times \\text{Safety Factor}$$</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    $Ah_{final} = ${tempCorrectedCapacity.toFixed(2)} \\times ${agingFactor.toFixed(2)} \\times ${safetyFactor.toFixed(2)} = ${finalCapacity.toFixed(2)} \\text{ Ah}$
+                </p>`;
+
+                calculationHtml += `<p><strong>8. Battery Bank Configuration:</strong></p>`;
+                calculationHtml += `<p><strong>Number of Series Units ($N_{series}$):</strong></p>`;
+                calculationHtml += `<p class="formula">$$N_{series} = \\frac{\\text{System Voltage}}{\\text{Nominal Voltage per Unit}}$$</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    $N_{series} = \\frac{${systemVoltageValue.toFixed(0)}}{${nominalUnitVoltage.toFixed(1)}} = ${numSeriesUnits} \\text{ units}$
+                </p>`;
+
+                calculationHtml += `<p><strong>Number of Parallel Strings ($N_{parallel}$):</strong></p>`;
+                calculationHtml += `<p class="formula">$$N_{parallel} = \\text{Ceil}\\left(\\frac{Ah_{final}}{\\text{Selected Unit Ah Capacity}}\\right)$$</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    $N_{parallel} = \\text{Ceil}\\left(\\frac{${finalCapacity.toFixed(2)}}{${selectedUnitAhCapacity.toFixed(0)}}\\right) = ${numParallelStrings} \\text{ strings}$
+                </p>`;
+
+                calculationHtml += `<p><strong>Total Number of Batteries/Cells Required ($N_{total}$):</strong></p>`;
+                calculationHtml += `<p class="formula">$$N_{total} = N_{series} \\times N_{parallel}$$</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    $N_{total} = ${numSeriesUnits} \\times ${numParallelStrings} = ${totalBatteriesRequired} \\text{ batteries/cells}$
+                </p>`;
+
+                calculationDetailsDiv.innerHTML = calculationHtml;
+                if (window.MathJax) {
+                    window.MathJax.typesetPromise([calculationDetailsDiv]);
+                }
+
+                // 4. Display Summarized Results
+                resultTableBody.innerHTML = '';
+                function addResultRow(parameter, value) {
+                    const row = document.createElement('tr');
+                    const paramCell = document.createElement('td');
+                    paramCell.innerHTML = parameter; 
+                    const valueCell = document.createElement('td');
+                    valueCell.innerHTML = value; 
+                    row.appendChild(paramCell);
+                    row.appendChild(valueCell);
+                    resultTableBody.appendChild(row);
+                }
+
+                addResultRow("System Voltage", systemVoltageValue + " V");
+                addResultRow("Total Required Backup Time", totalBackupTimeHours.toFixed(2) + " hours");
+                addResultRow("Initial High Load", `${initialHighLoadValue.toFixed(2)} ${initialHighLoadUnit} (${initialHighLoadWatts.toFixed(2)} W)`);
+                addResultRow("Initial High Load Duration", initialHighLoadDurationMinutes.toFixed(0) + " minutes");
+                addResultRow("Normal Load", `${normalLoadPowerValue.toFixed(2)} ${normalLoadPowerUnit} (${normalLoadPowerWatts.toFixed(2)} W)`);
+                addResultRow("Final High Load", `${finalHighLoadValue.toFixed(2)} ${finalHighLoadUnit} (${finalHighLoadWatts.toFixed(2)} W)`);
+                addResultRow("Final High Load Duration", finalHighLoadDurationMinutes.toFixed(0) + " minutes");
+                if (!powerFactorRow.classList.contains('hidden-input')) {
+                    addResultRow("Power Factor", powerFactor.toFixed(2));
+                }
+                addResultRow("Battery Type", batteryType.charAt(0).toUpperCase() + batteryType.slice(1).replace('-', ' '));
+                addResultRow("Depth of Discharge", (depthOfDischargeValue * 100).toFixed(1) + "%");
+                addResultRow("Operating Temperature", temperature.toFixed(0) + "°C");
+                addResultRow("System Efficiency", (efficiency * 100).toFixed(1) + "%");
+                addResultRow("Aging Factor", agingFactor.toFixed(2));
+                addResultRow("Safety Factor", safetyFactor.toFixed(2));
+                addResultRow("Calculated Battery Capacity (Minimum Required)", finalCapacity.toFixed(2) + " Ah");
+                addResultRow("Nominal Voltage per Unit/Cell", nominalUnitVoltage + " V");
+                addResultRow("Selected Standard Unit Capacity (per unit/cell)", selectedUnitAhCapacity + " Ah");
+                addResultRow("Number of Units/Cells in Series", numSeriesUnits);
+                addResultRow("Number of Parallel Strings", numParallelStrings);
+                addResultRow("Total Number of Batteries/Cells Required", totalBatteriesRequired);
+                addResultRow("Total System Capacity Provided (Actual)", actualAhProvidedByBank.toFixed(2) + " Ah");
+                addResultRow("Actual Backup Time Provided", actualBackupTime.toFixed(2) + " hours");
+                if (!dischargeRateOk) {
+                    addResultRow("Discharge Rate Warning", "Required discharge rate (" + requiredDischargeRate.toFixed(2) + "C) exceeds the max specified (" + dischargeRate + "C). Consider a higher C-rate battery or longer backup time.");
+                } else {
+                    addResultRow("Discharge Rate Check", "Required discharge rate (" + requiredDischargeRate.toFixed(2) + "C) is within safe limits (Max " + dischargeRate + "C).");
+                }
+
+                // Set standard reference text
+                let referenceText = "";
+                switch (standard) {
+                    case 'ieee450':
+                        referenceText = "Calculation based on **IEEE 450** (Recommended Practice for Maintenance, Testing, and Replacement of Vented Lead-Acid Batteries for Stationary Applications).";
+                        break;
+                    case 'iec60896':
+                        referenceText = "Calculation based on **IEC 60896** (Stationary Lead-Acid Batteries - General Requirements and Test Methods).";
+                        break;
+                    case 'ieee1188':
+                        referenceText = "Calculation based on **IEEE 1188** (Recommended Practice for Maintenance, Testing, and Replacement of Valve-Regulated Lead-Acid (VRLA) Batteries for Stationary Applications).";
+                        break;
+                    case 'ieee485':
+                        referenceText = "Calculation based on **IEEE 485** (Recommended Practice for Sizing Large Lead-Acid Batteries for Stationary Applications), which provides methodologies for sizing based on varying load profiles.";
+                        break;
+                    default:
+                        referenceText = "Calculation based on general electrical engineering principles. Refer to relevant IEEE/IEC standards for specific applications.";
+                }
+                standardReferenceDiv.innerHTML = referenceText;
+
+                // Show result container
+                resultContainer.style.display = "block";
+                resultContainer.classList.add('show'); // Trigger animation
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // --- INITIALIZE FORM ---
+            toggleCustomVoltageInput(); // Set initial visibility for custom voltage
+            updateDodOptionsAndVisibility(); // Set initial DOD options and visibility
+            togglePowerFactorInput(); // Set initial visibility for power factor
+
+            // --- THEME SWITCH LOGIC ---
+            const themeSwitch = document.getElementById('theme-switch');
+            const body = document.body;
+
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                body.setAttribute('data-theme', 'dark');
+                themeSwitch.checked = true;
+            }
+
+            themeSwitch.addEventListener('change', function() {
+                if (this.checked) {
+                    body.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    body.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

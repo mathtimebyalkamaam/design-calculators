@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Table Tool - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling (used for formulas if any) */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+
+        /* Styling specific to Steam Table Tool */
+        .input-mode-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .input-mode-option {
+            flex: 1 1 calc(50% - 10px);
+            min-width: 200px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--bg-color);
+        }
+
+        .input-mode-option.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            box-shadow: 0 4px 10px rgba(var(--primary-color-rgb), 0.4);
+            transform: translateY(-3px);
+        }
+
+        .input-mode-option:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .input-mode-option input[type="radio"] {
+            display: none;
+        }
+
+        .input-mode-option label {
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 0;
+            color: inherit;
+        }
+
+        .form-section {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            background-color: var(--bg-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            border-bottom: 1px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Steam Table Tool (Saturated Steam)</h2>
+            <div class="tool-description">
+                <p>This tool provides a quick lookup for saturated water and steam properties based on either input temperature or input pressure. It's designed to help mechanical engineers in preliminary calculations and quick estimations.</p>
+                <p><strong>Calculated Properties:</strong></p>
+                <ul>
+                    <li><strong>Temperature (T):</strong> Saturation temperature.</li>
+                    <li><strong>Pressure (P):</strong> Saturation pressure.</li>
+                    <li><strong>Specific Volume:</strong>
+                        <ul>
+                            <li><strong>\(v_f\):</strong> Specific volume of saturated liquid.</li>
+                            <li><strong>\(v_g\):):</strong> Specific volume of saturated vapor.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Enthalpy:</strong>
+                        <ul>
+                            <li><strong>\(h_f\):</strong> Enthalpy of saturated liquid.</li>
+                            <li><strong>\(h_g\):</strong> Enthalpy of saturated vapor.</li>
+                            <li><strong>\(h_{fg}\):</strong> Latent heat of vaporization (\(h_g - h_f\)).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Entropy:</strong>
+                        <ul>
+                            <li><strong>\(s_f\):</strong> Entropy of saturated liquid.</li>
+                            <li><strong>\(s_g\):</strong> Entropy of saturated vapor.</li>
+                            <li><strong>\(s_{fg}\):</strong> Entropy of vaporization (\(s_g - s_f\)).</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p><strong>Units:</strong> Ensure consistency based on your selected unit system.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="steam-table-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric or Imperial units for all properties.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric (&#176;C, kPa, kJ/kg, kJ/kg.K, m&#179;/kg)</option>
+                                <option value="imperial">Imperial (&#176;F, psi, Btu/lb, Btu/lb.&#176;F, ft&#179;/lb)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Input Mode</h3>
+                        <div class="input-mode-options">
+                            <div class="input-mode-option" data-mode="temperature">
+                                <input type="radio" id="mode-temperature" name="inputMode" value="temperature" checked>
+                                <label for="mode-temperature">Input Temperature (T)</label>
+                            </div>
+                            <div class="input-mode-option" data-mode="pressure">
+                                <input type="radio" id="mode-pressure" name="inputMode" value="pressure">
+                                <label for="mode-pressure">Input Pressure (P)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="temperature-mode-input" class="form-section">
+                        <h3>Temperature Input</h3>
+                        <div class="form-group">
+                            <label for="input-temperature">Temperature (T) <span class="temp-unit-label">(&#176;C)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Enter the temperature to find saturated properties. Range for this tool: 0.01 to 373.95 &#176;C.</span></span></label>
+                            <input type="number" id="input-temperature" step="any" value="100" required min="0.01" max="373.95">
+                        </div>
+                    </div>
+
+                    <div id="pressure-mode-input" class="form-section" style="display: none;">
+                        <h3>Pressure Input</h3>
+                        <div class="form-group">
+                            <label for="input-pressure">Pressure (P) <span class="pressure-unit-label">(kPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Enter the pressure to find saturated properties. Range for this tool: 0.611657 to 22064 kPa.</span></span></label>
+                            <input type="number" id="input-pressure" step="any" value="101.325" required min="0.611657" max="22064">
+                        </div>
+                    </div>
+
+                    <button type="button" id="calculate-steam-btn" class="calculate-btn">Calculate Properties</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results (Saturated Steam)</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides approximate saturated steam properties based on a simplified lookup table and linear interpolation. For high-precision engineering applications, always refer to the full IAPWS-IF97 standard or official steam tables and consult qualified professionals.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators!&body=I found this amazing Steam Table Tool and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-steam-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const inputModeOptions = document.querySelectorAll('.input-mode-option');
+            const temperatureModeInputSection = document.getElementById('temperature-mode-input');
+            const pressureModeInputSection = document.getElementById('pressure-mode-input');
+
+            const inputTemperature = document.getElementById('input-temperature');
+            const inputPressure = document.getElementById('input-pressure');
+
+            // Unit labels
+            const tempUnitLabels = document.querySelectorAll('.temp-unit-label');
+            const pressureUnitLabels = document.querySelectorAll('.pressure-unit-label');
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates the unit labels and input min/max/step values in the UI based on the selected unit system.
+             */
+            function updateUnitLabels() {
+                const unitSystem = unitSystemSelect.value;
+                const tempUnit = unitSystem === 'imperial' ? '(&#176;F)' : '(&#176;C)';
+                const pressureUnit = unitSystem === 'imperial' ? '(psi)' : '(kPa)';
+
+                tempUnitLabels.forEach(label => label.innerHTML = tempUnit);
+                pressureUnitLabels.forEach(label => label.innerHTML = pressureUnit);
+
+                // Update input ranges and steps based on units
+                // Set step to 'any' to allow for full floating-point precision in user input.
+                // Min/Max are still applied for range validation.
+                if (unitSystem === 'metric') {
+                    inputTemperature.min = "0.01"; inputTemperature.max = "373.95"; inputTemperature.step = "any";
+                    inputPressure.min = "0.611657"; inputPressure.max = "22064"; inputPressure.step = "any";
+                } else { // imperial
+                    inputTemperature.min = "32.018"; inputTemperature.max = "705.11"; inputTemperature.step = "any"; // Converted critical point
+                    inputPressure.min = "0.0886"; inputPressure.max = "3199.6"; inputPressure.step = "any"; // Converted critical point
+                }
+            }
+
+            /**
+             * Toggles visibility of input sections based on selected input mode.
+             */
+            function toggleInputModeSections() {
+                const selectedMode = document.querySelector('input[name="inputMode"]:checked').value;
+                if (selectedMode === 'temperature') {
+                    temperatureModeInputSection.style.display = 'block';
+                    pressureModeInputSection.style.display = 'none';
+                    inputTemperature.setAttribute('required', 'true');
+                    inputPressure.removeAttribute('required');
+                } else { // pressure mode
+                    temperatureModeInputSection.style.display = 'none';
+                    pressureModeInputSection.style.display = 'block';
+                    inputPressure.setAttribute('required', 'true');
+                    inputTemperature.removeAttribute('required');
+                }
+            }
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabels);
+            inputModeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    inputModeOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                    toggleInputModeSections();
+                });
+            });
+
+            // Initial UI update on load
+            updateUnitLabels();
+            document.querySelector('.input-mode-option[data-mode="temperature"]').classList.add('selected');
+            toggleInputModeSections();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            /**
+             * Linear interpolation function.
+             * @param {number} x - The value to interpolate for.
+             * @param {number} x1 - First x-coordinate.
+             * @param {number} number y1 - First y-coordinate.
+             * @param {number} x2 - Second x-coordinate.
+             * @param {number} y2 - Second y-coordinate.
+             * @returns {number} The interpolated y-value.
+             */
+            function interpolate(x, x1, y1, x2, y2) {
+                if (x1 === x2) return y1; // Avoid division by zero
+                return y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+            }
+
+            // Saturated Steam Data (Metric Base)
+            // Format: [T_C, P_kPa, hf_kJkg, hg_kJkg, sf_kJkgK, sg_kJkgK, vf_m3kg, vg_m3kg]
+            const saturatedSteamDataMetric = [
+                [0.01, 0.611657, 0.0, 2501.3, 0.0, 9.1556, 0.001000, 206.13], // Triple point
+                [5, 0.8725, 20.98, 2510.6, 0.0761, 8.9482, 0.001000, 147.12],
+                [10, 1.2276, 42.02, 2519.8, 0.151, 8.749, 0.001000, 106.38],
+                [15, 1.7057, 62.99, 2528.9, 0.2245, 8.5583, 0.001001, 77.92],
+                [20, 2.338, 83.91, 2537.4, 0.2965, 8.3752, 0.001002, 57.76],
+                [25, 3.169, 104.88, 2546.5, 0.3672, 8.1994, 0.001003, 43.34],
+                [30, 4.246, 125.79, 2555.6, 0.4369, 8.0305, 0.001004, 32.89],
+                [35, 5.628, 146.68, 2564.7, 0.5053, 7.8685, 0.001006, 25.22],
+                [40, 7.384, 167.57, 2573.5, 0.5724, 7.7126, 0.001008, 19.52],
+                [45, 9.593, 188.45, 2582.3, 0.6385, 7.562, 0.001009, 15.26],
+                [50, 12.349, 209.34, 2590.9, 0.7038, 7.4168, 0.001012, 12.03],
+                [60, 19.947, 251.13, 2609.6, 0.8313, 7.1359, 0.001017, 7.679],
+                [70, 31.201, 293.07, 2628.3, 0.9549, 6.8773, 0.001023, 4.981],
+                [80, 47.419, 335.02, 2646.6, 1.0753, 6.6375, 0.001029, 3.407],
+                [90, 70.18, 376.99, 2664.1, 1.1932, 6.414, 0.001036, 2.361],
+                [100, 101.42, 419.11, 2676.0, 1.3069, 7.3549, 0.001043, 1.6729], // Boiling point at 1 atm
+                [110, 143.27, 461.3, 2686.0, 1.4178, 6.027, 0.001050, 1.2103],
+                [120, 198.54, 503.7, 2694.8, 1.5262, 5.8698, 0.001059, 0.8919],
+                [130, 270.13, 546.4, 2701.4, 1.6324, 5.7262, 0.001067, 0.6685],
+                [140, 361.38, 589.1, 2706.7, 1.7366, 5.5947, 0.001077, 0.5085],
+                [150, 476.03, 632.22, 2710.8, 1.8418, 5.4746, 0.001088, 0.4005],
+                [160, 617.9, 675.6, 2712.1, 1.9442, 5.3672, 0.001099, 0.3071],
+                [170, 792.0, 719.1, 2714.4, 2.0456, 5.2612, 0.001111, 0.2428],
+                [180, 1002.3, 762.8, 2715.4, 2.1456, 5.1611, 0.001124, 0.1940],
+                [190, 1254.3, 806.9, 2715.1, 2.2443, 5.0661, 0.001138, 0.1565],
+                [200, 1553.8, 850.5, 2713.8, 2.3418, 4.9757, 0.001153, 0.1274],
+                [210, 1908.4, 895.8, 2710.8, 2.4370, 4.8943, 0.001169, 0.1042],
+                [220, 2320.7, 940.3, 2708.1, 2.5317, 4.8117, 0.001187, 0.086],
+                [230, 2798.2, 985.3, 2704.1, 2.6247, 4.7335, 0.001205, 0.0711],
+                [240, 3348.6, 1030.7, 2698.8, 2.7163, 4.6589, 0.001225, 0.0592],
+                [250, 3973.6, 1076.5, 2692.1, 2.8066, 4.5878, 0.001247, 0.0501],
+                [260, 4687.9, 1123.6, 2683.3, 2.9009, 4.5186, 0.001271, 0.0425],
+                [270, 5500.8, 1170.8, 2673.7, 2.9882, 4.4503, 0.001297, 0.0362],
+                [280, 6426.8, 1218.6, 2662.6, 3.0746, 4.3855, 0.001326, 0.0308],
+                [290, 7479.5, 1267.4, 2649.9, 3.1601, 4.3235, 0.001358, 0.0263],
+                [300, 8671.0, 1317.0, 2635.4, 3.245, 4.263, 0.001393, 0.0227],
+                [310, 9904.3, 1368.5, 2617.9, 3.3995, 4.1911, 0.001433, 0.0195],
+                [320, 11367.6, 1421.3, 2600.8, 3.4862, 4.1378, 0.001479, 0.0169],
+                [330, 13002.3, 1475.9, 2581.5, 3.5732, 4.0864, 0.001533, 0.0146],
+                [340, 14830.0, 1532.7, 2559.4, 3.6607, 4.0366, 0.001599, 0.0125],
+                [350, 16867.0, 1592.5, 2533.9, 3.7496, 3.9877, 0.001679, 0.0108],
+                [360, 19131.0, 1656.7, 2503.2, 3.8407, 3.9392, 0.001784, 0.0090],
+                [370, 21644.0, 1727.0, 2465.1, 3.9348, 3.8906, 0.001931, 0.0072],
+                [373.95, 22064.0, 2030.0, 2030.0, 4.407, 4.407, 0.003155, 0.003155] // Critical Point (approx)
+            ];
+
+            // Conversion factors
+            const KPA_TO_PSI = 0.1450377;
+            const KJ_KG_TO_BTU_LB = 0.429923;
+            const KJ_KGK_TO_BTU_LBF = 0.238846;
+            const M3_KG_TO_FT3_LB = 16.0185;
+
+            /**
+             * Converts temperature from Celsius to Fahrenheit.
+             * @param {number} tempC - Temperature in Celsius.
+             * @returns {number} Temperature in Fahrenheit.
+             */
+            function convertCToF(tempC) {
+                return tempC * 1.8 + 32;
+            }
+
+            /**
+             * Converts temperature from Fahrenheit to Celsius.
+             * @param {number} tempF - Temperature in Fahrenheit.
+             * @returns {number} Temperature in Celsius.
+             */
+            function convertFToC(tempF) {
+                return (tempF - 32) / 1.8;
+            }
+
+            /**
+             * Calculates steam properties based on input and unit system.
+             */
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('steam-table-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity();
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+                const inputMode = document.querySelector('input[name="inputMode"]:checked').value;
+
+                let inputValue;
+                let results = {}; // Object to store all calculated properties
+
+                if (inputMode === 'temperature') {
+                    inputValue = parseFloat(inputTemperature.value);
+                    let tempC = (unitSystem === 'imperial') ? convertFToC(inputValue) : inputValue;
+
+                    // Find two bounding data points
+                    let lowerBound = saturatedSteamDataMetric[0];
+                    let upperBound = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1];
+                    let found = false;
+
+                    for (let i = 0; i < saturatedSteamDataMetric.length - 1; i++) {
+                        if (tempC >= saturatedSteamDataMetric[i][0] && tempC <= saturatedSteamDataMetric[i + 1][0]) {
+                            lowerBound = saturatedSteamDataMetric[i];
+                            upperBound = saturatedSteamDataMetric[i + 1];
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found && tempC < saturatedSteamDataMetric[0][0]) {
+                        displayMessage(`Temperature ${inputValue} ${unitSystem === 'imperial' ? '&#176;F' : '&#176;C'} is below the table range (min: ${saturatedSteamDataMetric[0][0]}&#176;C). Using minimum table values.`, "warning");
+                        lowerBound = saturatedSteamDataMetric[0];
+                        upperBound = saturatedSteamDataMetric[0]; // Effectively no interpolation
+                        tempC = saturatedSteamDataMetric[0][0];
+                    } else if (!found && tempC > saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1][0]) {
+                        displayMessage(`Temperature ${inputValue} ${unitSystem === 'imperial' ? '&#176;F' : '&#176;C'} is above the table range (max: ${saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1][0]}&#176;C). Using maximum table values (critical point).`, "warning");
+                        lowerBound = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1];
+                        upperBound = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1]; // Effectively no interpolation
+                        tempC = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1][0];
+                    }
+
+                    // Interpolate all properties based on temperature
+                    results.T_C = tempC;
+                    results.P_kPa = interpolate(tempC, lowerBound[0], lowerBound[1], upperBound[0], upperBound[1]);
+                    results.hf_kJkg = interpolate(tempC, lowerBound[0], lowerBound[2], upperBound[0], upperBound[2]);
+                    results.hg_kJkg = interpolate(tempC, lowerBound[0], lowerBound[3], upperBound[0], upperBound[3]);
+                    results.sf_kJkgK = interpolate(tempC, lowerBound[0], lowerBound[4], upperBound[0], upperBound[4]);
+                    results.sg_kJkgK = interpolate(tempC, lowerBound[0], lowerBound[5], upperBound[0], upperBound[5]);
+                    results.vf_m3kg = interpolate(tempC, lowerBound[0], lowerBound[6], upperBound[0], upperBound[6]);
+                    results.vg_m3kg = interpolate(tempC, lowerBound[0], lowerBound[7], upperBound[0], upperBound[7]);
+
+                } else { // inputMode === 'pressure'
+                    inputValue = parseFloat(inputPressure.value);
+                    let pressurekPa = (unitSystem === 'imperial') ? inputValue / KPA_TO_PSI : inputValue;
+
+                    // Find two bounding data points (based on pressure)
+                    let lowerBound = saturatedSteamDataMetric[0];
+                    let upperBound = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1];
+                    let found = false;
+
+                    for (let i = 0; i < saturatedSteamDataMetric.length - 1; i++) {
+                        if (pressurekPa >= saturatedSteamDataMetric[i][1] && pressurekPa <= saturatedSteamDataMetric[i + 1][1]) {
+                            lowerBound = saturatedSteamDataMetric[i];
+                            upperBound = saturatedSteamDataMetric[i + 1];
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found && pressurekPa < saturatedSteamDataMetric[0][1]) {
+                        displayMessage(`Pressure ${inputValue} ${unitSystem === 'imperial' ? 'psi' : 'kPa'} is below the table range (min: ${saturatedSteamDataMetric[0][1]} kPa). Using minimum table values.`, "warning");
+                        lowerBound = saturatedSteamDataMetric[0];
+                        upperBound = saturatedSteamDataMetric[0]; // Effectively no interpolation
+                        pressurekPa = saturatedSteamDataMetric[0][1];
+                    } else if (!found && pressurekPa > saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1][1]) {
+                        displayMessage(`Pressure ${inputValue} ${unitSystem === 'imperial' ? 'psi' : 'kPa'} is above the table range (max: ${saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1][1]} kPa). Using maximum table values (critical point).`, "warning");
+                        lowerBound = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1];
+                        upperBound = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1]; // Effectively no interpolation
+                        pressurekPa = saturatedSteamDataMetric[saturatedSteamDataMetric.length - 1][1];
+                    }
+
+                    // Interpolate all properties based on pressure
+                    results.P_kPa = pressurekPa;
+                    results.T_C = interpolate(pressurekPa, lowerBound[1], lowerBound[0], upperBound[1], upperBound[0]);
+                    results.hf_kJkg = interpolate(pressurekPa, lowerBound[1], lowerBound[2], upperBound[1], upperBound[2]);
+                    results.hg_kJkg = interpolate(pressurekPa, lowerBound[1], lowerBound[3], upperBound[1], upperBound[3]);
+                    results.sf_kJkgK = interpolate(pressurekPa, lowerBound[1], lowerBound[4], upperBound[1], upperBound[4]);
+                    results.sg_kJkgK = interpolate(pressurekPa, lowerBound[1], lowerBound[5], upperBound[1], upperBound[5]);
+                    results.vf_m3kg = interpolate(pressurekPa, lowerBound[1], lowerBound[6], upperBound[1], upperBound[6]);
+                    results.vg_m3kg = interpolate(pressurekPa, lowerBound[1], lowerBound[7], upperBound[1], upperBound[7]);
+                }
+
+                resultTableBody.innerHTML = ''; // Clear previous results
+                calculationDetailsDiv.innerHTML = ''; // Clear details, as no complex steps here
+
+                // Display results based on unit system
+                if (unitSystem === 'metric') {
+                    addResultRow("Input Parameter", `${inputMode === 'temperature' ? 'Temperature' : 'Pressure'}: <strong>${inputValue.toFixed(inputMode === 'temperature' ? 2 : 3)} ${inputMode === 'temperature' ? '&#176;C' : 'kPa'}</strong>`);
+                    addResultRow("Saturation Temperature (T)", `\\( ${results.T_C.toFixed(3)} \\) &#176;C`);
+                    addResultRow("Saturation Pressure (P)", `\\( ${results.P_kPa.toFixed(3)} \\) kPa`);
+                    addResultRow("Specific Volume - Liquid (\\(v_f\\))", `\\( ${results.vf_m3kg.toExponential(4)} \\) m&#179;/kg`);
+                    addResultRow("Specific Volume - Vapor (\\(v_g\\))", `\\( ${results.vg_m3kg.toFixed(4)} \\) m&#179;/kg`);
+                    addResultRow("Enthalpy - Liquid (\\(h_f\\))", `\\( ${results.hf_kJkg.toFixed(2)} \\) kJ/kg`);
+                    addResultRow("Enthalpy - Vapor (\\(h_g\\))", `\\( ${results.hg_kJkg.toFixed(2)} \\) kJ/kg`);
+                    addResultRow("Latent Heat (\\(h_{fg}\\))", `\\( ${(results.hg_kJkg - results.hf_kJkg).toFixed(2)} \\) kJ/kg`);
+                    addResultRow("Entropy - Liquid (\\(s_f\\))", `\\( ${results.sf_kJkgK.toFixed(4)} \\) kJ/kg.K`);
+                    addResultRow("Entropy - Vapor (\\(s_g\\))", `\\( ${results.sg_kJkgK.toFixed(4)} \\) kJ/kg.K`);
+                    addResultRow("Entropy of Vaporization (\\(s_{fg}\\))", `\\( ${(results.sg_kJkgK - results.sf_kJkgK).toFixed(4)} \\) kJ/kg.K`);
+                } else { // Imperial
+                    addResultRow("Input Parameter", `${inputMode === 'temperature' ? 'Temperature' : 'Pressure'}: <strong>${inputValue.toFixed(inputMode === 'temperature' ? 2 : 3)} ${inputMode === 'temperature' ? '&#176;F' : 'psi'}</strong>`);
+                    addResultRow("Saturation Temperature (T)", `\\( ${convertCToF(results.T_C).toFixed(3)} \\) &#176;F`);
+                    addResultRow("Saturation Pressure (P)", `\\( ${(results.P_kPa * KPA_TO_PSI).toFixed(3)} \\) psi`);
+                    addResultRow("Specific Volume - Liquid (\\(v_f\\))", `\\( ${(results.vf_m3kg * M3_KG_TO_FT3_LB).toExponential(4)} \\) ft&#179;/lb`);
+                    addResultRow("Specific Volume - Vapor (\\(v_g\\))", `\\( ${(results.vg_m3kg * M3_KG_TO_FT3_LB).toFixed(4)} \\) ft&#179;/lb`);
+                    addResultRow("Enthalpy - Liquid (\\(h_f\\))", `\\( ${(results.hf_kJkg * KJ_KG_TO_BTU_LB).toFixed(2)} \\) Btu/lb`);
+                    addResultRow("Enthalpy - Vapor (\\(h_g\\))", `\\( ${(results.hg_kJkg * KJ_KG_TO_BTU_LB).toFixed(2)} \\) Btu/lb`);
+                    addResultRow("Latent Heat (\\(h_{fg}\\))", `\\( ${((results.hg_kJkg - results.hf_kJkg) * KJ_KG_TO_BTU_LB).toFixed(2)} \\) Btu/lb`);
+                    addResultRow("Entropy - Liquid (\\(s_f\\))", `\\( ${(results.sf_kJkgK * KJ_KGK_TO_BTU_LBF).toFixed(4)} \\) Btu/lb.&#176;F`);
+                    addResultRow("Entropy - Vapor (\\(s_g\\))", `\\( ${(results.sg_kJkgK * KJ_KGK_TO_BTU_LBF).toFixed(4)} \\) Btu/lb.&#176;F`);
+                    addResultRow("Entropy of Vaporization (\\(s_{fg}\\))", `\\( ${((results.sg_kJkgK - results.sf_kJkgK) * KJ_KGK_TO_BTU_LBF).toFixed(4)} \\) Btu/lb.&#176;F`);
+                }
+
+                // Re-render MathJax equations
+                if (window.MathJax) {
+                    window.MathJax.typesetPromise([resultTableBody]);
+                }
+
+                standardReference.innerHTML = `
+                    <p>This tool uses a simplified, pre-defined lookup table and linear interpolation for demonstration purposes.</p>
+                    <p>For high-precision engineering applications, it is <strong>imperative</strong> to use professional-grade software or libraries that rigorously implement the <strong>IAPWS-IF97 (International Association for the Properties of Water and Steam - Industrial Formulation 1997)</strong> standard or official steam table data from recognized bodies (e.g., NIST, ASME).</p>
+                `;
+
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Saturated properties calculated successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

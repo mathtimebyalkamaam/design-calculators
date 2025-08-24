@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compressor Power Calculator - Design Calculators - Mechanical</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        // MathJax configuration to support inline and display LaTeX
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true
+            }
+        };
+    </script>
+    <style>
+        /* CSS Variables for theming (light and dark mode) */
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --accent-color: #FFC107;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --header-bg: #2C3E50;
+            --footer-bg: #34495E;
+            --border-color: #cccccc;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            --hover-color: #e2e6ea;
+            --primary-color-rgb: 33, 150, 243;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        /* Dark mode overrides */
+        body.dark-mode {
+            --primary-color: #5DADE2;
+            --secondary-color: #2874A6;
+            --bg-color: #252D3A;
+            --card-bg: #2F3C4C;
+            --text-color: #E0E6EB;
+            --header-bg: #252D3A;
+            --footer-bg: #252D3A;
+            --border-color: #4C5C70;
+            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            --hover-color: #3A475C;
+            --primary-color-rgb: 93, 173, 226;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        /* Base body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+        }
+        /* Container for content width limitation and centering */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header styling */
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.8em;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        header .subtitle {
+            margin: 8px 0 0;
+            font-size: 1.1em;
+            color: #bdc3c7;
+        }
+        /* Main content area styling */
+        main {
+            padding: 30px 0;
+        }
+        /* Tool container styling */
+        .tool-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .tool-container:hover {
+            transform: translateY(-5px);
+        }
+        .tool-container h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2em;
+        }
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text-color);
+            font-size: 1.05em;
+        }
+        .tool-description ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .tool-description ul li {
+            margin-bottom: 8px;
+        }
+        .tool-description strong {
+            color: var(--primary-color);
+        }
+        /* Back button styling */
+        .back-button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: background-color 0.3s, transform 0.2s ease-in-out;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.03);
+        }
+        /* Theme toggle switch styling */
+        .theme-toggle {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            align-items: center;
+        }
+        .theme-toggle .light-icon,
+        .theme-toggle .dark-icon {
+            color: white;
+            margin: 0 8px;
+            font-size: 1.3em;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 65px;
+            height: 38px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 30px;
+            width: 30px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(27px);
+        }
+        .slider.round {
+            border-radius: 38px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        /* Footer styling */
+        footer {
+            background-color: var(--footer-bg);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+        }
+        footer .disclaimer h3,
+        footer .social-share h3 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        footer .disclaimer p {
+            font-size: 0.95em;
+            color: #bdc3c7;
+        }
+        .social-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .social-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            font-size: 1.4em;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        /* Specific social button colors */
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .social-btn.reddit { background-color: #FF4500; }
+        .social-btn.email { background-color: #7f8c8d; }
+        /* Calculator form styling */
+        .calculator-form {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: var(--card-shadow);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
+            outline: none;
+        }
+        /* Responsive form row layout */
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+        }
+        .form-row .form-group {
+            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+        /* Media query for single column on small screens */
+        @media (max-width: 600px) {
+            .form-row .form-group {
+                flex: 1 1 100%; /* Single column */
+            }
+        }
+        /* Calculate button styling */
+        .calculate-btn {
+            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 18px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%; /* Full width button */
+        }
+        .calculate-btn:hover {
+            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* Result container styling */
+        .result-container {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            box-shadow: var(--card-shadow);
+            display: block; /* Always block, but opacity controls visibility */
+            opacity: 0;
+            transition: opacity 0.6s ease-out;
+            pointer-events: none; /* Prevents interaction when hidden */
+        }
+        .result-container.show {
+            opacity: 1;
+            pointer-events: auto; /* Allows interaction when shown */
+        }
+        .result-container h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        /* Result table styling */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .result-table th, .result-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-table th {
+            background-color: var(--hover-color);
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+        /* Standard reference text styling */
+        .standard-reference {
+            margin-top: 25px;
+            font-style: italic;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        /* Tooltip styling */
+        .info-icon {
+            color: var(--primary-color);
+            margin-left: 8px;
+            cursor: help;
+            font-size: 1em;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the element */
+            left: 50%;
+            margin-left: -110px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* Arrow at the bottom */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        /* Custom message box for alerts */
+        #custom-message-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 30px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, background-color 0.3s;
+            font-size: 1.1em;
+        }
+        #custom-message-box.info {
+            background-color: var(--success-color);
+        }
+        #custom-message-box.error {
+            background-color: var(--error-color);
+        }
+        #custom-message-box.warning {
+            background-color: var(--accent-color);
+            color: #333;
+        }
+
+        /* Calculation details section styling */
+        #calculation-details {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 0.98em;
+            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+        }
+        #calculation-details h4 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        #calculation-details p.formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 12px 0;
+            background-color: var(--hover-color);
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px dashed var(--border-color);
+            white-space: nowrap; /* Prevent formula from wrapping */
+        }
+        #calculation-details p.calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--hover-color);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            white-space: nowrap; /* Prevent calculation steps from wrapping */
+        }
+        #calculation-details ul {
+            list-style-type: disc;
+            margin-left: 25px;
+            padding-left: 0;
+        }
+        #calculation-details ul li {
+            margin-bottom: 5px;
+        }
+        /* Specific styling for required inputs to highlight visually */
+        input:required:invalid {
+            border-color: var(--error-color);
+        }
+        input:required:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Design Calculators - Mechanical</h1>
+            <p class="subtitle">Smart Tools for Modern Mechanical Engineers</p>
+            <div class="theme-toggle">
+                <span class="light-icon"><i class="fas fa-sun"></i></span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider round"></span>
+                </label>
+                <span class="dark-icon"><i class="fas fa-moon"></i></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Back to Tools link -->
+        <a href="indexMech.html" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Tools
+        </a>
+
+        <div class="tool-container">
+            <h2>Compressor Power Calculator</h2>
+            <div class="tool-description">
+                <p>This calculator estimates the ideal (adiabatic or polytropic) and actual power required for a compressor, based on gas properties, pressures, inlet temperature, flow rate, and compressor efficiency.</p>
+                <p><strong>Key Inputs:</strong></p>
+                <ul>
+                    <li><strong>Unit System:</strong> Select Metric (kPa, m&#179;/min, &#176;C, kW) or Imperial (psi, ft&#179;/min, &#176;F, HP).</li>
+                    <li><strong>Gas Type:</strong> Choose common gases to auto-populate the Specific Heat Ratio (\(k\)), Molar Mass (\(M\)), and a suggested Polytropic Exponent (\(n\)).</li>
+                    <li><strong>Calculation Type:</strong> Select 'Adiabatic (Isentropic)' for ideal constant-entropy compression, or 'Polytropic' for a more realistic process including heat transfer.</li>
+                    <li><strong>Inlet Pressure (\(P_1\)):</strong> The absolute pressure at the compressor's suction.</li>
+                    <li><strong>Inlet Temperature (\(T_1\)):</strong> The absolute temperature of the gas at the compressor's suction.</li>
+                    <li><strong>Discharge Pressure (\(P_2\)):</strong> The absolute pressure at the compressor's discharge.</li>
+                    <li><strong>Inlet Volumetric Flow Rate (\(Q_1\)):</strong> The volumetric flow rate of the gas at inlet conditions.</li>
+                    <li><strong>Specific Heat Ratio (\(k\)):</strong> The ratio of specific heats (\(C_p/C_v\)) for the gas (for adiabatic calculation).</li>
+                    <li><strong>Molar Mass (\(M\)):</strong> The average mass of one mole of the gas mixture.</li>
+                    <li><strong>Polytropic Exponent (\(n\)):</strong> An empirical exponent describing the actual compression process (for polytropic calculation). Typically \(1 < n < k\).</li>
+                    <li><strong>Inlet Compressibility Factor (\(Z_1\)):</strong> Accounts for real gas deviation from ideal gas law at inlet conditions. Defaults to 1.0 for ideal gas.</li>
+                    <li><strong>Compressor Efficiency (\(\eta_{comp}\)):</strong> The overall isentropic/polytropic efficiency of the compressor, as a percentage.</li>
+                    <li><strong>Mechanical Efficiency (\(\eta_{mech}\)):</strong> The efficiency of the mechanical drive system (e.g., motor, gears) transferring power to the compressor shaft, as a percentage.</li>
+                </ul>
+                <p><strong>Calculated Outputs:</strong></p>
+                <ul>
+                    <li><strong>Pressure Ratio (\(P_2/P_1\)):</strong> The ratio of discharge to inlet pressure.</li>
+                    <li><strong>Specific Gas Constant (\(R_{specific}\)):</strong> The gas constant for the specific gas, derived from universal gas constant and molar mass.</li>
+                    <li><strong>Mass Flow Rate (\(\dot{m}\)):</strong> The mass of gas flowing per unit time.</li>
+                    <li><strong>Ideal (Isentropic/Polytropic) Discharge Temperature (\(T_{2,ideal}\)):</strong> The theoretical temperature of the gas at discharge.</li>
+                    <li><strong>Ideal Power (\(P_{ideal}\)):</strong> The theoretical power required for the chosen ideal compression process.</li>
+                    <li><strong>Actual Power (Brake Power) (\(P_{actual}\)):</strong> The mechanical power required at the compressor shaft, accounting for both compressor efficiency and mechanical efficiency.</li>
+                </ul>
+            </div>
+
+            <div class="calculator-form">
+                <form id="compressor-power-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (kPa, m&#179;/min, &#176;C, kW) or Imperial (psi, ft&#179;/min, &#176;F, HP) units.</span></span></label>
+                            <select id="unit-system" required>
+                                <option value="metric">Metric</option>
+                                <option value="imperial">Imperial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="gas-type">Gas Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select a common gas to auto-populate properties, or enter custom.</span></span></label>
+                            <select id="gas-type" required>
+                                <option value="air">Air</option>
+                                <option value="natural-gas">Natural Gas (Methane approx)</option>
+                                <option value="custom">Custom Gas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>Gas Properties & Process Type</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="calculation-type">Calculation Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Choose Adiabatic (Isentropic) or Polytropic compression.</span></span></label>
+                            <select id="calculation-type" required>
+                                <option value="adiabatic">Adiabatic (Isentropic)</option>
+                                <option value="polytropic">Polytropic</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="specific-heat-ratio-group">
+                            <label for="specific-heat-ratio">Specific Heat Ratio (\(k\)): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Ratio of specific heats ($C_p/C_v$). Typical values: Air ~1.4, Natural Gas ~1.3.</span></span></label>
+                            <input type="number" id="specific-heat-ratio" step="0.001" value="1.4" required min="1.001">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="molar-mass">Molar Mass (\(M\)) <span class="molar-mass-unit-label">(g/mol)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Average mass of one mole of the gas. Air ~28.97 g/mol, Methane ~16.04 g/mol.</span></span></label>
+                            <input type="number" id="molar-mass" step="0.01" value="28.97" required min="0.01">
+                        </div>
+                        <div class="form-group" id="polytropic-exponent-group" style="display: none;">
+                            <label for="polytropic-exponent">Polytropic Exponent (\(n\)): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Empirical exponent for polytropic process ($1 < n < k$). Typical for air compression: 1.2 to 1.3.</span></span></label>
+                            <input type="number" id="polytropic-exponent" step="0.001" value="1.25" required min="1.001">
+                        </div>
+                    </div>
+
+                    <h3>Operating Conditions & Efficiencies</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="inlet-pressure">Inlet Pressure (\(P_1\)) <span class="pressure-unit-label">(kPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Absolute pressure at suction. Standard atmospheric pressure is ~101.325 kPa or ~14.7 psi.</span></span></label>
+                            <input type="number" id="inlet-pressure" step="any" value="101.325" required min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="inlet-temperature">Inlet Temperature (\(T_1\)) <span class="temp-unit-label">(&#176;C)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Temperature of the gas at suction. Must be in absolute units (Kelvin or Rankine) for calculations.</span></span></label>
+                            <input type="number" id="inlet-temperature" step="any" value="20" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="discharge-pressure">Discharge Pressure (\(P_2\)) <span class="pressure-unit-label">(kPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Absolute pressure at discharge. Must be greater than inlet pressure.</span></span></label>
+                            <input type="number" id="discharge-pressure" step="any" value="300" required min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="inlet-flow-rate">Inlet Volumetric Flow Rate (\(Q_1\)) <span class="flow-rate-unit-label">(m&#179;/min)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The volumetric flow rate of the gas at the inlet conditions.</span></span></label>
+                            <input type="number" id="inlet-flow-rate" step="any" value="10" required min="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="inlet-compressibility-factor">Inlet Compressibility Factor (\(Z_1\)): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Accounts for real gas behavior at inlet. Use 1.0 for ideal gas. Can be found from Z-charts or equations of state.</span></span></label>
+                            <input type="number" id="inlet-compressibility-factor" step="0.001" value="1.0" required min="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="compressor-efficiency">Compressor Efficiency (\(\eta_{comp}\)) (%): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Isentropic or Polytropic efficiency of the compressor itself. Typical range: 60-85%.</span></span></label>
+                            <input type="number" id="compressor-efficiency" step="any" value="75" required min="1" max="100">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="mechanical-efficiency">Mechanical Efficiency (\(\eta_{mech}\)) (%): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Efficiency of the mechanical drive system (motor, gears) transferring power to the compressor shaft. Typical range: 90-98%.</span></span></label>
+                        <input type="number" id="mechanical-efficiency" step="any" value="95" required min="1" max="100">
+                    </div>
+
+                    <button type="button" id="calculate-compressor-btn" class="calculate-btn">Calculate Compressor Power</button>
+                </form>
+            </div>
+
+            <div id="result-container" class="result-container">
+                <h3>Calculation Results</h3>
+                <div id="calculation-details"></div>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body"></tbody>
+                </table>
+                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="disclaimer">
+                <h3>Disclaimer</h3>
+                <p>This tool provides theoretical calculations for compressor power based on ideal gas laws, adiabatic/polytropic compression models, and includes consideration for compressibility and mechanical efficiency. It offers a more advanced estimation for conceptual design and educational purposes.</p>
+                <p><strong>It does NOT account for:</strong> Multi-stage compression with specific intercooling stages, specific compressor types (e.g., reciprocating, centrifugal) with their unique performance maps, complex real gas equations of state (beyond a single Z factor), dynamic effects, variable efficiency with load and speed, complex sealing losses, or specific international standards like ASME PTC 10 (Performance Test Codes for Compressors) which require detailed testing and analysis.</p>
+                <p>For accurate design, selection, and safety in real-world industrial applications, especially for critical systems, it is <strong>imperative</strong> to consult compressor manufacturer's detailed performance curves and data, comprehensive thermodynamics and turbomachinery handbooks, advanced specialized simulation software (e.g., CFD, process simulators), and qualified mechanical engineers.</p>
+            </div>
+            <div class="credit">
+                <p>Created by A Sharma</p>
+            </div>
+            <div class="social-share">
+                <h3>Share This Site</h3>
+                <div class="social-buttons">
+                    <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn linkedin">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" class="social-btn facebook">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?text=Check out this amazing Design Calculators - Mechanical!&url=https://designcalculators.co.in" target="_blank" class="social-btn twitter">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text=Check out this amazing Design Calculators - Mechanical! https://designcalculators.co.in" target="_blank" class="social-btn whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="https://www.reddit.com/submit?url=https://designcalculators.co.in&title=Design Calculators - Mechanical" target="_blank" class="social-btn reddit">
+                        <i class="fab fa-reddit"></i>
+                    </a>
+                    <a href="mailto:?subject=Check out Design Calculators - Mechanical!&body=I found this amazing Compressor Power Calculator and other mechanical tools: https://designcalculators.co.in" class="social-btn email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get references to DOM elements
+            const calculateBtn = document.getElementById('calculate-compressor-btn');
+            const resultContainer = document.getElementById('result-container');
+            const resultTableBody = document.getElementById('result-table-body');
+            const standardReference = document.getElementById('standard-reference');
+            const calculationDetailsDiv = document.getElementById('calculation-details');
+
+            // Input fields
+            const unitSystemSelect = document.getElementById('unit-system');
+            const gasTypeSelect = document.getElementById('gas-type');
+            const specificHeatRatioInput = document.getElementById('specific-heat-ratio');
+            const molarMassInput = document.getElementById('molar-mass'); // New
+            const polytropicExponentInput = document.getElementById('polytropic-exponent');
+            const calculationTypeSelect = document.getElementById('calculation-type');
+            const inletPressureInput = document.getElementById('inlet-pressure');
+            const inletTemperatureInput = document.getElementById('inlet-temperature');
+            const dischargePressureInput = document.getElementById('discharge-pressure');
+            const inletFlowRateInput = document.getElementById('inlet-flow-rate');
+            const inletCompressibilityFactorInput = document.getElementById('inlet-compressibility-factor'); // New
+            const compressorEfficiencyInput = document.getElementById('compressor-efficiency'); // Renamed conceptually
+            const mechanicalEfficiencyInput = document.getElementById('mechanical-efficiency'); // New
+
+            // Groups for dynamic display
+            const specificHeatRatioGroup = document.getElementById('specific-heat-ratio-group');
+            const polytropicExponentGroup = document.getElementById('polytropic-exponent-group');
+
+            // Unit labels
+            const pressureUnitLabels = document.querySelectorAll('.pressure-unit-label');
+            const tempUnitLabel = document.querySelector('.temp-unit-label');
+            const flowRateUnitLabel = document.querySelector('.flow-rate-unit-label');
+            const molarMassUnitLabel = document.querySelector('.molar-mass-unit-label'); // New
+
+            // Gas Properties (k - specific heat ratio, M - molar mass g/mol, n - suggested polytropic exponent)
+            const gasProperties = {
+                'air': {
+                    k: 1.4,
+                    M: 28.97, // g/mol
+                    n_suggested: 1.25
+                },
+                'natural-gas': {
+                    k: 1.31, // Slightly more precise k for Methane
+                    M: 16.04, // g/mol (Methane as approximation)
+                    n_suggested: 1.2
+                },
+                // Add more gases as needed
+            };
+
+            // Universal Gas Constant (R_u)
+            const R_universal_SI = 8.314462618; // J/(mol·K) or Pa·m³/(mol·K)
+            const R_universal_Imperial = 10.73157; // psi·ft³/(lbmol·°R)
+
+            /**
+             * Displays a custom message box at the top of the screen.
+             * @param {string} message - The message to display.
+             * @param {string} type - The type of message ('info', 'error', 'warning').
+             */
+            function displayMessage(message, type = "info") {
+                let messageBox = document.getElementById('custom-message-box');
+                if (!messageBox) {
+                    messageBox = document.createElement('div');
+                    messageBox.id = 'custom-message-box';
+                    document.body.appendChild(messageBox);
+                }
+                messageBox.textContent = message;
+                messageBox.className = ''; // Clear previous classes
+                messageBox.classList.add(type); // Add type class for styling
+                messageBox.style.opacity = 1;
+
+                // Hide message after 5 seconds
+                setTimeout(() => {
+                    messageBox.style.opacity = 0;
+                }, 5000);
+            }
+
+            /**
+             * Updates unit labels and input defaults based on selected unit system and gas type.
+             */
+            function updateUnitLabelsAndDefaults() {
+                const unitSystem = unitSystemSelect.value;
+                const gasType = gasTypeSelect.value;
+                const calcType = calculationTypeSelect.value;
+
+                // Update unit labels
+                if (unitSystem === 'metric') {
+                    pressureUnitLabels.forEach(label => label.innerHTML = '(kPa)');
+                    tempUnitLabel.innerHTML = '(&#176;C)';
+                    flowRateUnitLabel.innerHTML = '(m&#179;/min)';
+                    molarMassUnitLabel.innerHTML = '(g/mol)'; // Always g/mol for consistency with standard tables
+
+                    inletPressureInput.value = "101.325";
+                    inletTemperatureInput.value = "20";
+                    dischargePressureInput.value = "300";
+                    inletFlowRateInput.value = "10"; // m3/min
+
+                } else { // Imperial
+                    pressureUnitLabels.forEach(label => label.innerHTML = '(psi)');
+                    tempUnitLabel.innerHTML = '(&#176;F)';
+                    flowRateUnitLabel.innerHTML = '(ft&#179;/min)';
+                    molarMassUnitLabel.innerHTML = '(lbm/lbmol)'; // Imperial molar mass is usually lbm/lbmol (numerically same as g/mol)
+
+                    inletPressureInput.value = "14.7";
+                    inletTemperatureInput.value = "68";
+                    dischargePressureInput.value = "45";
+                    inletFlowRateInput.value = "300"; // ft3/min
+                }
+                
+                // Update gas properties and polytropic exponent
+                updateGasProperties();
+                toggleExponentInputs();
+            }
+
+            /**
+             * Updates k, M, and n_suggested based on selected gas type.
+             */
+            function updateGasProperties() {
+                const gasType = gasTypeSelect.value;
+                const unitSystem = unitSystemSelect.value; // Used for suggested n
+
+                if (gasType !== 'custom') {
+                    specificHeatRatioInput.value = gasProperties[gasType].k;
+                    molarMassInput.value = gasProperties[gasType].M;
+                    polytropicExponentInput.value = gasProperties[gasType].n_suggested; // n_suggested is a single value now
+                    specificHeatRatioInput.disabled = true;
+                    molarMassInput.disabled = true;
+                } else {
+                    specificHeatRatioInput.disabled = false;
+                    molarMassInput.disabled = false;
+                    // Reset to common defaults if custom is chosen and fields are empty/invalid
+                    if (specificHeatRatioInput.value === "" || isNaN(parseFloat(specificHeatRatioInput.value))) {
+                        specificHeatRatioInput.value = "1.4"; // Default to Air's k
+                    }
+                    if (molarMassInput.value === "" || isNaN(parseFloat(molarMassInput.value))) {
+                         molarMassInput.value = "28.97"; // Default to Air's M
+                    }
+                    // Polytropic exponent is always enabled and user-defined for custom, or suggested from gas type
+                    if (polytropicExponentInput.value === "" || isNaN(parseFloat(polytropicExponentInput.value))) {
+                        polytropicExponentInput.value = "1.25"; // Default to Air's suggested n
+                    }
+                }
+                // Ensure required attributes are managed correctly regardless of disabled status
+                specificHeatRatioInput.setAttribute('required', 'true');
+                molarMassInput.setAttribute('required', 'true');
+                polytropicExponentInput.setAttribute('required', 'true'); // Required but hidden if not applicable
+            }
+
+            /**
+             * Toggles visibility of Specific Heat Ratio (k) and Polytropic Exponent (n) inputs.
+             */
+            function toggleExponentInputs() {
+                const calcType = calculationTypeSelect.value;
+                
+                if (calcType === 'adiabatic') {
+                    specificHeatRatioGroup.style.display = 'block';
+                    polytropicExponentGroup.style.display = 'none';
+                    specificHeatRatioInput.setAttribute('required', 'true');
+                    polytropicExponentInput.removeAttribute('required'); // No longer required for form validity
+                } else { // polytropic
+                    specificHeatRatioGroup.style.display = 'none';
+                    polytropicExponentGroup.style.display = 'block';
+                    specificHeatRatioInput.removeAttribute('required'); // No longer required for form validity
+                    polytropicExponentInput.setAttribute('required', 'true');
+                }
+                // Re-apply disabled state based on gasType (custom vs preset)
+                updateGasProperties(); 
+            }
+
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            gasTypeSelect.addEventListener('change', updateGasProperties);
+            calculationTypeSelect.addEventListener('change', toggleExponentInputs);
+
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
+
+            /**
+             * Adds a row to the result table.
+             * @param {string} parameterHtml - The HTML content for the parameter column.
+             * @param {string} valueHtml - The HTML content for the value column.
+             */
+            function addResultRow(parameterHtml, valueHtml) {
+                const row = resultTableBody.insertRow();
+                const paramCell = row.insertCell();
+                const valueCell = row.insertCell();
+                paramCell.innerHTML = parameterHtml;
+                valueCell.innerHTML = valueHtml;
+            }
+
+            // Main Calculation Logic
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('compressor-power-form');
+                if (!form.checkValidity()) {
+                    displayMessage("Please fill in all required fields correctly.", "error");
+                    form.reportValidity(); // Show native browser validation messages
+                    return;
+                }
+
+                const unitSystem = unitSystemSelect.value;
+                const calcType = calculationTypeSelect.value;
+
+                let k_value = parseFloat(specificHeatRatioInput.value);
+                const M_input = parseFloat(molarMassInput.value);
+                let n_value = parseFloat(polytropicExponentInput.value);
+                const P1_input = parseFloat(inletPressureInput.value);
+                const T1_input = parseFloat(inletTemperatureInput.value);
+                const P2_input = parseFloat(dischargePressureInput.value);
+                const Q1_input = parseFloat(inletFlowRateInput.value);
+                const Z1_input = parseFloat(inletCompressibilityFactorInput.value); // New
+                const eta_comp_percent = parseFloat(compressorEfficiencyInput.value); // Renamed
+                const eta_mech_percent = parseFloat(mechanicalEfficiencyInput.value); // New
+
+                // Input Validation
+                if (P1_input <= 0 || T1_input <= -273.15 || P2_input <= 0 || Q1_input <= 0 || Z1_input <= 0 ||
+                    eta_comp_percent <= 0 || eta_comp_percent > 100 || eta_mech_percent <= 0 || eta_mech_percent > 100) {
+                    displayMessage("All pressures, flow rate, compressibility factor, and efficiencies must be positive. Temperature must be above absolute zero. Efficiencies must be between 1 and 100.", "error");
+                    return;
+                }
+                if (P2_input <= P1_input) {
+                    displayMessage("Discharge Pressure (P2) must be greater than Inlet Pressure (P1) for compression.", "error");
+                    return;
+                }
+                if (calcType === 'adiabatic' && k_value <= 1) {
+                    displayMessage("Specific Heat Ratio (k) must be greater than 1 for adiabatic compression.", "error");
+                    return;
+                }
+                if (calcType === 'polytropic' && (n_value <= 1 || n_value >= k_value)) {
+                    displayMessage("Polytropic Exponent (n) must be greater than 1 and less than the Specific Heat Ratio (k).", "error");
+                    return;
+                }
+                
+                const eta_comp = eta_comp_percent / 100; // Convert efficiency to a decimal
+                const eta_mech = eta_mech_percent / 100; // Convert efficiency to a decimal
+
+                // Standardize inputs to SI units for calculations
+                let P1_si, T1_si, P2_si, Q1_si; // Pa, K, Pa, m^3/s
+                let M_kg_per_mol; // kg/mol
+                let R_specific_SI; // J/(kg·K)
+
+                if (unitSystem === 'metric') {
+                    P1_si = P1_input * 1000;         // kPa to Pa
+                    T1_si = T1_input + 273.15;       // °C to K
+                    P2_si = P2_input * 1000;         // kPa to Pa
+                    Q1_si = Q1_input / 60;           // m³/min to m³/s
+                    M_kg_per_mol = M_input / 1000;   // g/mol to kg/mol
+                    R_specific_SI = R_universal_SI / M_kg_per_mol; // J/(kg·K)
+                } else { // Imperial
+                    // Convert Imperial inputs to SI for calculation consistency
+                    P1_si = P1_input * 6894.76;      // psi to Pa
+                    T1_si = (T1_input - 32) * 5/9 + 273.15; // °F to K
+                    P2_si = P2_input * 6894.76;      // psi to Pa
+                    Q1_si = Q1_input * 0.0004719474; // ft³/min to m³/s
+
+                    // Molar Mass from lbm/lbmol to kg/mol (numerically the same as g/mol)
+                    M_kg_per_mol = M_input / 1000; // Assuming M_input for imperial is also g/mol or lbm/lbmol which are numerically same for R_universal_SI / (M_kg/mol)
+                    // For imperial, calculate R_specific directly using imperial R_universal
+                    const M_lbm_per_lbmol = M_input; // Assume M_input is lbm/lbmol if unit system is imperial
+                    R_specific_SI = R_universal_Imperial / M_lbm_per_lbmol * 4.44822 / 0.3048; // Convert R_universal_Imperial (psi·ft³/(lbmol·°R)) to J/(kg·K)
+                    // More accurately, convert to J/kg.K for calculations.
+                    // R_specific (J/kg.K) = (R_universal_Imperial * 1716.48) / (M_lbm_per_lbmol) (1716.48 is conversion factor from ft.lbf/(lbm.R) to J/(kg.K))
+                    // Let's use simpler path: calculate R_specific_SI directly from R_universal_SI and M_kg_per_mol
+                    R_specific_SI = R_universal_SI / M_kg_per_mol; // Stick to one R_specific in J/kg.K
+                }
+
+                const pressureRatio = P2_si / P1_si;
+
+                // Calculate Mass Flow Rate (kg/s)
+                const m_dot_kg_per_s = (P1_si * Q1_si) / (Z1_input * R_specific_SI * T1_si);
+
+                let idealPower_watts; // Ideal power in Watts
+                let T2_ideal_K; // Ideal discharge temperature in Kelvin
+
+                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+                calculationHtml += `<p><strong>1. Input Parameters (Converted to SI Units for calculation):</strong></p><ul>
+                    <li>Inlet Pressure (\\(P_1\\)): ${P1_si.toExponential(3)} Pa</li>
+                    <li>Inlet Temperature (\\(T_1\\)): ${T1_si.toFixed(2)} K</li>
+                    <li>Discharge Pressure (\\(P_2\\)): ${P2_si.toExponential(3)} Pa</li>
+                    <li>Inlet Volumetric Flow Rate (\\(Q_1\\)): ${Q1_si.toExponential(3)} m&#179;/s</li>
+                    <li>Inlet Compressibility Factor (\\(Z_1\\)): ${Z1_input.toFixed(3)}</li>
+                    <li>Compressor Efficiency (\\(\\eta_{comp}\\)): ${eta_comp_percent.toFixed(1)}% \\( \\rightarrow \\) ${eta_comp.toFixed(2)} (decimal)</li>
+                    <li>Mechanical Efficiency (\\(\\eta_{mech}\\)): ${eta_mech_percent.toFixed(1)}% \\( \\rightarrow \\) ${eta_mech.toFixed(2)} (decimal)</li>
+                    <li>Molar Mass (\\(M\\)): ${M_input.toFixed(2)} ${unitSystem === 'metric' ? 'g/mol' : 'lbm/lbmol'}</li>
+                    <li>Specific Gas Constant (\\(R_{specific}\\)): ${R_specific_SI.toFixed(2)} J/(kg&#183;K)</li>
+                    <li>Pressure Ratio (\\(P_2/P_1\\)): ${pressureRatio.toFixed(3)}</li>
+                </ul>`;
+
+                // Calculate Ideal Power and Ideal Discharge Temperature
+                calculationHtml += `<p><strong>2. Calculate Ideal Compression Power and Discharge Temperature (${calcType === 'adiabatic' ? 'Adiabatic (Isentropic)' : 'Polytropic'}):</strong></p>`;
+
+                if (calcType === 'adiabatic') {
+                    idealPower_watts = (k_value / (k_value - 1)) * R_specific_SI * T1_si * m_dot_kg_per_s * (Math.pow(pressureRatio, (k_value - 1) / k_value) - 1);
+                    T2_ideal_K = T1_si * Math.pow(pressureRatio, (k_value - 1) / k_value);
+                    
+                    calculationHtml += `<ul><li>Specific Heat Ratio (\\(k\\)): ${k_value.toFixed(3)}</li></ul>`;
+                    calculationHtml += `<p class="formula">\\[ P_{ideal} = \\dot{m} \\cdot \\frac{k}{k-1} \\cdot R_{specific} \\cdot T_1 \\left[ \\left( \\frac{P_2}{P_1} \\right)^{\\frac{k-1}{k}} - 1 \\right] \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( P_{ideal} \\) = ${m_dot_kg_per_s.toExponential(3)} kg/s \\( \\times \\) ( ${k_value.toFixed(3)} / (${k_value.toFixed(3)} - 1) ) \\( \\times \\) ${R_specific_SI.toFixed(2)} J/(kg&#183;K) \\( \\times \\) ${T1_si.toFixed(2)} K \\( \\times \\) [ ( ${pressureRatio.toFixed(3)} )^((${k_value.toFixed(3)} - 1) / ${k_value.toFixed(3)}) - 1 ]
+                        = ${idealPower_watts.toFixed(2)} Watts
+                    </p>`;
+                    calculationHtml += `<p class="formula">\\[ T_{2,ideal} = T_1 \\left( \\frac{P_2}{P_1} \\right)^{\\frac{k-1}{k}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( T_{2,ideal} \\) = ${T1_si.toFixed(2)} K \\( \\times \\) ( ${pressureRatio.toFixed(3)} )^((${k_value.toFixed(3)} - 1) / ${k_value.toFixed(3)}) = ${T2_ideal_K.toFixed(2)} K
+                    </p>`;
+
+                } else { // polytropic
+                    idealPower_watts = (n_value / (n_value - 1)) * R_specific_SI * T1_si * m_dot_kg_per_s * (Math.pow(pressureRatio, (n_value - 1) / n_value) - 1);
+                    T2_ideal_K = T1_si * Math.pow(pressureRatio, (n_value - 1) / n_value);
+
+                    calculationHtml += `<ul><li>Polytropic Exponent (\\(n\\)): ${n_value.toFixed(3)}</li></ul>`;
+                    calculationHtml += `<p class="formula">\\[ P_{ideal} = \\dot{m} \\cdot \\frac{n}{n-1} \\cdot R_{specific} \\cdot T_1 \\left[ \\left( \\frac{P_2}{P_1} \\right)^{\\frac{n-1}{n}} - 1 \\right] \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( P_{ideal} \\) = ${m_dot_kg_per_s.toExponential(3)} kg/s \\( \\times \\) ( ${n_value.toFixed(3)} / (${n_value.toFixed(3)} - 1) ) \\( \\times \\) ${R_specific_SI.toFixed(2)} J/(kg&#183;K) \\( \\times \\) ${T1_si.toFixed(2)} K \\( \\times \\) [ ( ${pressureRatio.toFixed(3)} )^((${n_value.toFixed(3)} - 1) / ${n_value.toFixed(3)}) - 1 ]
+                        = ${idealPower_watts.toFixed(2)} Watts
+                    </p>`;
+                    calculationHtml += `<p class="formula">\\[ T_{2,ideal} = T_1 \\left( \\frac{P_2}{P_1} \\right)^{\\frac{n-1}{n}} \\]</p>`;
+                    calculationHtml += `<p class="calculation-step">
+                        \\( T_{2,ideal} \\) = ${T1_si.toFixed(2)} K \\( \\times \\) ( ${pressureRatio.toFixed(3)} )^((${n_value.toFixed(3)} - 1) / ${n_value.toFixed(3)}) = ${T2_ideal_K.toFixed(2)} K
+                    </p>`;
+                }
+
+                // Calculate Actual Power (Brake Power)
+                const actualPower_watts = idealPower_watts / (eta_comp * eta_mech);
+                calculationHtml += `<p><strong>3. Calculate Actual Power (Brake Power):</strong></p>`;
+                calculationHtml += `<p class="formula">\\[ P_{actual} = \\frac{P_{ideal}}{\\eta_{comp} \\cdot \\eta_{mech}} \\]</p>`;
+                calculationHtml += `<p class="calculation-step">
+                    \\( P_{actual} \\) = ${idealPower_watts.toFixed(2)} Watts / ( ${eta_comp.toFixed(2)} \\( \\times \\) ${eta_mech.toFixed(2)} ) = ${actualPower_watts.toFixed(2)} Watts
+                </p>`;
+
+
+                // Prepare results for display
+                resultTableBody.innerHTML = ''; // Clear previous results
+                calculationDetailsDiv.innerHTML = calculationHtml;
+
+                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
+                addResultRow("Gas Type", gasTypeSelect.options[gasTypeSelect.selectedIndex].text);
+                addResultRow("Calculation Type", calculationTypeSelect.options[calculationTypeSelect.selectedIndex].text);
+                if (calcType === 'adiabatic') {
+                    addResultRow("Specific Heat Ratio (\\(k\\))", `${k_value.toFixed(3)}`);
+                } else {
+                    addResultRow("Polytropic Exponent (\\(n\\))", `${n_value.toFixed(3)}`);
+                }
+                addResultRow("Molar Mass (\\(M\\))", `${M_input.toFixed(2)} ${unitSystem === 'metric' ? 'g/mol' : 'lbm/lbmol'}`);
+                addResultRow("Specific Gas Constant (\\(R_{specific}\\))", `${R_specific_SI.toFixed(2)} J/(kg&#183;K)`);
+                addResultRow("Inlet Pressure (\\(P_1\\))", `${P1_input.toFixed(2)} ${unitSystem === 'metric' ? 'kPa' : 'psi'}`);
+                addResultRow("Inlet Temperature (\\(T_1\\))", `${T1_input.toFixed(1)} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}`);
+                addResultRow("Discharge Pressure (\\(P_2\\))", `${P2_input.toFixed(2)} ${unitSystem === 'metric' ? 'kPa' : 'psi'}`);
+                addResultRow("Inlet Volumetric Flow Rate (\\(Q_1\\))", `${Q1_input.toFixed(2)} ${unitSystem === 'metric' ? 'm&#179;/min' : 'ft&#179;/min'}`);
+                addResultRow("Inlet Compressibility Factor (\\(Z_1\\))", `${Z1_input.toFixed(3)}`);
+                addResultRow("Compressor Efficiency (\\(\\eta_{comp}\\))", `${eta_comp_percent.toFixed(1)}%`);
+                addResultRow("Mechanical Efficiency (\\(\\eta_{mech}\\))", `${eta_mech_percent.toFixed(1)}%`);
+                addResultRow("Pressure Ratio (\\(P_2/P_1\\))", `<strong>\\( ${pressureRatio.toFixed(3)} \\)</strong>`);
+                
+                let m_dot_display;
+                if (unitSystem === 'metric') {
+                    m_dot_display = m_dot_kg_per_s; // kg/s
+                    addResultRow("Mass Flow Rate (\\(\\dot{m}\\))", `<strong>\\( ${m_dot_display.toPrecision(3)} \\) kg/s</strong>`);
+                } else { // Imperial
+                    m_dot_display = m_dot_kg_per_s * 2.20462; // kg/s to lbm/s
+                    addResultRow("Mass Flow Rate (\\(\\dot{m}\\))", `<strong>\\( ${m_dot_display.toPrecision(3)} \\) lbm/s</strong>`);
+                }
+
+                let T2_ideal_display;
+                if (unitSystem === 'metric') {
+                    T2_ideal_display = T2_ideal_K - 273.15; // K to °C
+                    addResultRow("Ideal Discharge Temperature (\\(T_{2,ideal}\\))", `<strong>\\( ${T2_ideal_display.toFixed(1)} \\) &#176;C</strong>`);
+                } else { // Imperial
+                    T2_ideal_display = (T2_ideal_K - 273.15) * 9/5 + 32; // K to °F
+                    addResultRow("Ideal Discharge Temperature (\\(T_{2,ideal}\\))", `<strong>\\( ${T2_ideal_display.toFixed(1)} \\) &#176;F</strong>`);
+                }
+
+                let idealPower_display, actualPower_display;
+                if (unitSystem === 'metric') {
+                    idealPower_display = idealPower_watts / 1000; // Watts to kW
+                    actualPower_display = actualPower_watts / 1000; // Watts to kW
+                    addResultRow("Ideal Power (\\(P_{ideal}\\))", `<strong>\\( ${idealPower_display.toFixed(2)} \\) kW</strong>`);
+                    addResultRow("Actual Power (Brake) (\\(P_{actual}\\))", `<strong>\\( ${actualPower_display.toFixed(2)} \\) kW</strong>`);
+                } else { // Imperial
+                    idealPower_display = idealPower_watts / 745.7; // Watts to HP
+                    actualPower_display = actualPower_watts / 745.7; // Watts to HP
+                    addResultRow("Ideal Power (\\(P_{ideal}\\))", `<strong>\\( ${idealPower_display.toFixed(2)} \\) HP</strong>`);
+                    addResultRow("Actual Power (Brake) (\\(P_{actual}\\))", `<strong>\\( ${actualPower_display.toFixed(2)} \\) HP</strong>`);
+                }
+
+                // Re-render MathJax equations - ensure MathJax is fully loaded
+                if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                }
+
+                // Display standard reference
+                standardReference.innerHTML = "This tool provides theoretical calculations for compressor power based on ideal gas laws, adiabatic/polytropic compression models, and includes consideration for compressibility and mechanical efficiency. It offers a more advanced estimation for conceptual design and educational purposes. For accurate design, selection, and safety in real-world industrial applications, especially for critical systems, it is <strong>imperative</strong> to consult compressor manufacturer's detailed performance curves and data, comprehensive thermodynamics and turbomachinery handbooks, advanced specialized simulation software (e.g., CFD, process simulators), and qualified mechanical engineers.";
+
+                // Show results container
+                resultContainer.style.display = 'block';
+                setTimeout(() => {
+                    resultContainer.classList.add('show');
+                }, 10);
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+
+                displayMessage("Compressor Power Calculation completed successfully!", "info");
+            });
+
+            // Theme switch functionality
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeSwitch.checked = true;
+                }
+                themeSwitch.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
