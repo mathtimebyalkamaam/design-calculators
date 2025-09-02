@@ -319,7 +319,7 @@
             border-radius: 12px;
             background-color: var(--card-bg);
             box-shadow: var(--card-shadow);
-            display: block;
+            display: none; /* Changed from block to none */
             opacity: 0;
             transition: opacity 0.6s ease-out;
             pointer-events: none;
@@ -414,8 +414,12 @@
             font-weight: bold;
             color: white;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            font-size: 1.1em;
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            pointer-events: none; /* Allow clicks through */
+        }
+        #custom-message-box.show {
+            opacity: 1;
+            transform: translate(-50%, 10px);
         }
         #calculation-details {
             background-color: var(--bg-color);
@@ -450,6 +454,7 @@
             border-radius: 5px;
             margin-bottom: 8px;
             font-size: 0.95em;
+            word-wrap: break-word;
         }
         #calculation-details ul {
             list-style-type: disc;
@@ -461,7 +466,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
     <header>
         <div class="container">
             <h1>Design Calculators - Mechanical</h1>
@@ -477,7 +482,7 @@
         </div>
     </header>
     <main class="container">
-        <a href="indexMech.html" class="back-button">
+        <a class='back-button' href='/indexmech'>
             <i class="fas fa-arrow-left"></i> Back to Tools
         </a>
         <div class="tool-container">
@@ -548,11 +553,10 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="tube-length">Tube Length <span class="length-unit-label">(\(\text{m}\))</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total length of the finned tube.</span></span></label>
+                            <label for="tube-length">Tube Length <span class="tube-length-unit-label">(\(\text{m}\))</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total length of the finned tube.</span></span></label>
                             <input type="number" id="tube-length" step="0.1" value="1" min="0.1" required>
                         </div>
                     </div>
-
                     <button type="button" id="calculate-finned-heat-transfer-btn" class="calculate-btn">Calculate Heat Transfer</button>
                 </form>
             </div>
@@ -608,12 +612,31 @@
     </footer>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- ANTI-CODE COPYING SCRIPT ---
+            document.addEventListener('keydown', function(e) {
+                // Disable Ctrl+U
+                if (e.ctrlKey && e.key === 'u') {
+                    e.preventDefault();
+                }
+                // Disable Ctrl+S
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                }
+                // Disable F12
+                if (e.key === 'F12') {
+                    e.preventDefault();
+                }
+            });
+            
+            // The oncontextmenu="return false;" in the body tag handles right-click
+
+            // --- CALCULATOR LOGIC ---
             const calculateBtn = document.getElementById('calculate-finned-heat-transfer-btn');
             const resultContainer = document.getElementById('result-container');
             const resultTableBody = document.getElementById('result-table-body');
             const standardReference = document.getElementById('standard-reference');
             const calculationDetailsDiv = document.getElementById('calculation-details');
-
+            
             const unitSystemSelect = document.getElementById('unit-system');
             const tubeOuterDiameterInput = document.getElementById('tube-outer-diameter');
             const finHeightInput = document.getElementById('fin-height');
@@ -628,13 +651,14 @@
 
             const diameterUnitLabels = document.querySelectorAll('.diameter-unit-label');
             const lengthUnitLabels = document.querySelectorAll('.length-unit-label');
+            const tubeLengthUnitLabel = document.querySelector('.tube-length-unit-label'); // Specific label for tube length
             const tempUnitLabels = document.querySelectorAll('.temp-unit-label');
             const finsUnitLabels = document.querySelectorAll('.fins-unit-label');
             const conductivityUnitLabels = document.querySelectorAll('.conductivity-unit-label');
             const convectionUnitLabels = document.querySelectorAll('.convection-unit-label');
 
             const STEFAN_BOLTZMANN = 5.67e-8; // Stefan-Boltzmann constant W/(m^2 K^4)
-
+            
             function displayMessage(message, type = "info") {
                 let messageBox = document.getElementById('custom-message-box');
                 if (!messageBox) {
@@ -649,37 +673,41 @@
                 } else if (type === "warning") {
                     messageBox.style.backgroundColor = '#ffc107';
                     messageBox.style.color = '#333';
-                } else {
+                } else { // "info"
                     messageBox.style.backgroundColor = '#28a745';
                     messageBox.style.color = 'white';
                 }
-                messageBox.style.opacity = 1;
+                
+                messageBox.classList.add('show');
+                
                 setTimeout(() => {
-                    messageBox.style.opacity = 0;
+                    messageBox.classList.remove('show');
                 }, 5000);
             }
 
             function updateUI() {
                 const unitSystem = unitSystemSelect.value;
 
-                // Update unit labels
                 if (unitSystem === 'imperial') {
                     diameterUnitLabels.forEach(label => label.innerHTML = '(\\(\text{inch}\\))');
-                    lengthUnitLabels.forEach(label => label.innerHTML = '(\\(\text{inch}\\))'); // For fin height, fin thickness
-                    document.querySelector('label[for="tube-length"]').innerHTML = `Tube Length <span class="length-unit-label">(\(\text{ft}\))</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total length of the finned tube.</span></span>`;
+                    lengthUnitLabels.forEach(label => label.innerHTML = '(\\(\text{inch}\\))');
+                    tubeLengthUnitLabel.innerHTML = '(\\(\text{ft}\\))';
                     tempUnitLabels.forEach(label => label.innerHTML = '(\\(\text{°F}\\))');
                     finsUnitLabels.forEach(label => label.innerHTML = '(\\(\text{fins/ft}\\))');
                     conductivityUnitLabels.forEach(label => label.innerHTML = '(\\(\text{BTU/h ft°F}\\))');
                     convectionUnitLabels.forEach(label => label.innerHTML = '(\\(\text{BTU/h ft}^2\text{°F}\\))');
-
                 } else { // Metric
                     diameterUnitLabels.forEach(label => label.innerHTML = '(\\(\text{mm}\\))');
-                    lengthUnitLabels.forEach(label => label.innerHTML = '(\\(\text{mm}\\))'); // For fin height, fin thickness
-                    document.querySelector('label[for="tube-length"]').innerHTML = `Tube Length <span class="length-unit-label">(\(\text{m}\))</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total length of the finned tube.</span></span>`;
+                    lengthUnitLabels.forEach(label => label.innerHTML = '(\\(\text{mm}\\))');
+                    tubeLengthUnitLabel.innerHTML = '(\\(\text{m}\\))';
                     tempUnitLabels.forEach(label => label.innerHTML = '(\\(\text{°C}\\))');
                     finsUnitLabels.forEach(label => label.innerHTML = '(\\(\text{fins/m}\\))');
                     conductivityUnitLabels.forEach(label => label.innerHTML = '(\\(\text{W/mK}\\))');
                     convectionUnitLabels.forEach(label => label.innerHTML = '(\\(\text{W/m}^2\text{°C}\\))');
+                }
+                
+                if (window.MathJax && window.MathJax.typeset) {
+                    window.MathJax.typeset();
                 }
             }
 
@@ -687,252 +715,170 @@
             updateUI(); // Initial UI update
 
             calculateBtn.addEventListener('click', function() {
+                // 1. Read all raw input values
                 const unitSystem = unitSystemSelect.value;
+                const D_tube_outer_val = parseFloat(tubeOuterDiameterInput.value);
+                const H_fin_val = parseFloat(finHeightInput.value);
+                const t_fin_val = parseFloat(finThicknessInput.value);
+                const N_fins_per_unit_length_val = parseFloat(finsPerUnitLengthInput.value);
+                const k_fin_val = parseFloat(finConductivityInput.value);
+                const T_base_val = parseFloat(baseTemperatureInput.value);
+                const T_ambient_val = parseFloat(ambientTemperatureInput.value);
+                const h_external_val = parseFloat(externalConvectionCoefficientInput.value);
+                const epsilon_val = parseFloat(surfaceEmissivityInput.value);
+                const L_tube_val = parseFloat(tubeLengthInput.value);
 
-                let D_tube_outer = parseFloat(tubeOuterDiameterInput.value); // mm or inch
-                let H_fin = parseFloat(finHeightInput.value); // mm or inch
-                let t_fin = parseFloat(finThicknessInput.value); // mm or inch
-                let N_fins_per_unit_length = parseFloat(finsPerUnitLengthInput.value); // fins/m or fins/ft
-                let k_fin = parseFloat(finConductivityInput.value); // W/mK or BTU/h ft°F
-                let T_base = parseFloat(baseTemperatureInput.value); // °C or °F
-                let T_ambient = parseFloat(ambientTemperatureInput.value); // °C or °F
-                let h_external = parseFloat(externalConvectionCoefficientInput.value); // W/m²°C or BTU/h ft²°F
-                let epsilon = parseFloat(surfaceEmissivityInput.value);
-                L_tube_m = parseFloat(tubeLengthInput.value); // m or ft
-
-                // Input validation
-                const inputs = [D_tube_outer, H_fin, t_fin, N_fins_per_unit_length, k_fin, T_base, T_ambient, h_external, epsilon, L_tube_m];
-                for (let i = 0; i < inputs.length; i++) {
-                    if (isNaN(inputs[i]) || inputs[i] < (i === 8 ? 0 : 0.001)) { // Emissivity can be 0. Others > 0.001 (very small positive).
-                        displayMessage("Please enter valid positive numbers for all required fields.", "error");
-                        return;
-                    }
-                    if (i === 8 && inputs[i] > 1) { // Emissivity max 1
-                        displayMessage("Surface Emissivity must be between 0 and 1.", "error");
-                        return;
-                    }
+                // 2. Input validation
+                const inputs = [D_tube_outer_val, H_fin_val, t_fin_val, N_fins_per_unit_length_val, k_fin_val, T_base_val, T_ambient_val, h_external_val, epsilon_val, L_tube_val];
+                if (inputs.some(isNaN)) {
+                    displayMessage("Please ensure all fields have valid numbers.", "error");
+                    return;
                 }
-                if (T_base <= T_ambient) {
-                    displayMessage("Tube Base Temperature must be greater than Ambient Fluid Temperature for heat transfer.", "error");
+                if (inputs.slice(0, 8).some(v => v <= 0) || inputs[9] <= 0) {
+                     displayMessage("All dimensional and thermal inputs must be positive numbers.", "error");
+                     return;
+                }
+                 if (epsilon_val < 0 || epsilon_val > 1) {
+                    displayMessage("Surface Emissivity must be between 0 and 1.", "error");
+                    return;
+                }
+                if (T_base_val <= T_ambient_val) {
+                    displayMessage("Tube Base Temperature must be greater than Ambient Fluid Temperature.", "error");
                     return;
                 }
 
+                // 3. Declare SI unit variables and perform conversions
                 let D_tube_outer_m, H_fin_m, t_fin_m, N_fins_per_m, k_fin_si, T_base_K, T_ambient_K, h_external_si, L_tube_m;
-                let Q_unit_display;
+                let Q_unit_display, T_unit_display, L_unit_display_short, D_unit_display_short, L_unit_display_long, Fins_unit_display, K_unit_display, H_unit_display;
 
-                // Convert all inputs to SI units for calculations
                 if (unitSystem === 'imperial') {
-                    D_tube_outer_m = D_tube_outer * 0.0254; // inch to meter
-                    H_fin_m = H_fin * 0.0254; // inch to meter
-                    t_fin_m = t_fin * 0.0254; // inch to meter
-                    N_fins_per_m = N_fins_per_unit_length * 3.28084; // fins/ft to fins/m
-                    k_fin_si = k_fin * 1.730735; // BTU/h ft°F to W/mK
-                    T_base_K = (T_base - 32) * 5/9 + 273.15; // °F to Kelvin
-                    T_ambient_K = (T_ambient - 32) * 5/9 + 273.15; // °F to Kelvin
-                    h_external_si = h_external * 5.67826; // BTU/h ft²°F to W/m²°C
-                    L_tube_m = L_tube * 0.3048; // ft to meter
+                    D_tube_outer_m = D_tube_outer_val * 0.0254; // inch to meter
+                    H_fin_m = H_fin_val * 0.0254; // inch to meter
+                    t_fin_m = t_fin_val * 0.0254; // inch to meter
+                    N_fins_per_m = N_fins_per_unit_length_val * 3.28084; // fins/ft to fins/m
+                    k_fin_si = k_fin_val * 1.730735; // BTU/h ft°F to W/mK
+                    T_base_K = (T_base_val - 32) * 5 / 9 + 273.15; // °F to Kelvin
+                    T_ambient_K = (T_ambient_val - 32) * 5 / 9 + 273.15; // °F to Kelvin
+                    h_external_si = h_external_val * 5.67826; // BTU/h ft²°F to W/m²°C
+                    L_tube_m = L_tube_val * 0.3048; // ft to meter
+                    
                     Q_unit_display = '\\(\\text{BTU/h}\\)';
-                    displayMessage("Imperial units are converted to Metric for calculations. Results will be converted back.", "info");
                 } else { // Metric
-                    D_tube_outer_m = D_tube_outer / 1000; // mm to meter
-                    H_fin_m = H_fin / 1000; // mm to meter
-                    t_fin_m = t_fin / 1000; // mm to meter
-                    N_fins_per_m = N_fins_per_unit_length; // fins/m
-                    k_fin_si = k_fin; // W/mK
-                    T_base_K = T_base + 273.15; // °C to Kelvin
-                    T_ambient_K = T_ambient + 273.15; // °C to Kelvin
-                    h_external_si = h_external; // W/m²°C
-                    L_tube_m = L_tube; // m
+                    D_tube_outer_m = D_tube_outer_val / 1000; // mm to meter
+                    H_fin_m = H_fin_val / 1000; // mm to meter
+                    t_fin_m = t_fin_val / 1000; // mm to meter
+                    N_fins_per_m = N_fins_per_unit_length_val; // fins/m
+                    k_fin_si = k_fin_val; // W/mK
+                    T_base_K = T_base_val + 273.15; // °C to Kelvin
+                    T_ambient_K = T_ambient_val + 273.15; // °C to Kelvin
+                    h_external_si = h_external_val; // W/m²°C
+                    L_tube_m = L_tube_val; // m
+
                     Q_unit_display = '\\(\\text{W}\\)';
                 }
 
+                // --- 4. Perform Calculations in SI units ---
                 let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
-                calculationHtml += `<p><strong>1. Input Parameters (Converted to SI Units):</strong></p>`;
-                calculationHtml += `<ul>
-                    <li>Tube Outer Diameter (\\(D_{tube,outer}\\)): ${D_tube_outer_m.toFixed(4)} m</li>
-                    <li>Fin Height (\\(H_{fin}\\)): ${H_fin_m.toFixed(4)} m</li>
-                    <li>Fin Thickness (\\(t_{fin}\\)): ${t_fin_m.toExponential(2)} m</li>
-                    <li>Fins per meter (\\(N_{fins}\\)): ${N_fins_per_m.toFixed(2)} fins/m</li>
-                    <li>Fin Material Conductivity (\\(k_{fin}\\)): ${k_fin_si.toFixed(2)} W/mK</li>
-                    <li>Tube Base Temperature (\\(T_{base}\\)): ${T_base_K.toFixed(2)} K</li>
-                    <li>Ambient Fluid Temperature (\\(T_{ambient}\\)): ${T_ambient_K.toFixed(2)} K</li>
-                    <li>External Convection Coefficient (\\(h_{external}\\)): ${h_external_si.toFixed(2)} W/m²°C</li>
-                    <li>Surface Emissivity (\\(\\epsilon\\)): ${epsilon.toFixed(2)}</li>
-                    <li>Tube Length (\\(L_{tube}\\)): ${L_tube_m.toFixed(2)} m</li>
-                </ul>`;
+                calculationHtml += `<p><strong>1. Input Parameters (Converted to SI Units):</strong></p><ul>
+                    <li>Tube Outer Diameter (\\(D_{o}\\)): ${D_tube_outer_m.toFixed(4)} m</li>
+                    <li>Fin Height (\\(H_{f}\\)): ${H_fin_m.toFixed(4)} m</li>
+                    <li>Fin Thickness (\\(t_{f}\\)): ${t_fin_m.toExponential(2)} m</li>
+                    <li>Fins per meter (\\(N_{f}\\)): ${N_fins_per_m.toFixed(1)} fins/m</li>
+                    <li>Fin Conductivity (\\(k_{f}\\)): ${k_fin_si.toFixed(2)} W/mK</li>
+                    <li>Base Temperature (\\(T_{b}\\)): ${T_base_K.toFixed(2)} K</li>
+                    <li>Ambient Temperature (\\(T_{\\infty}\\)): ${T_ambient_K.toFixed(2)} K</li>
+                    <li>Convection Coeff. (\\(h\\)): ${h_external_si.toFixed(2)} W/m²°C</li>
+                    <li>Emissivity (\\(\\epsilon\\)): ${epsilon_val.toFixed(2)}</li>
+                    <li>Tube Length (\\(L\\)): ${L_tube_m.toFixed(2)} m</li></ul>`;
 
-                // Calculate geometry
                 const r_tube = D_tube_outer_m / 2;
                 const r_fin_tip = r_tube + H_fin_m;
                 
-                // For annular fins, the corrected length Lc is H_fin + t_fin/2
-                // A common parameter m is sqrt(h_c * P / k * A_c)
-                // For a straight fin, m = sqrt(2h/kt)
-                // For an annular fin, it's more complex. We'll approximate for simplicity using a corrected fin length.
-                // For circular fins, a parameter 'm' is defined with the external convection coefficient.
                 const m_param = Math.sqrt((2 * h_external_si) / (k_fin_si * t_fin_m));
-                
-                // Corrected fin length for annular fin based on standard heat transfer texts (e.g., Incropera)
-                // Lc = H_fin + t_fin/2
-                // This is a common approximation for circular fins.
                 const L_corrected = H_fin_m + (t_fin_m / 2);
-                const r_2c = r_fin_tip + (t_fin_m / 2); // Corrected outer radius
-                const r_1 = r_tube; // Inner radius (tube outer radius)
-                
-                // A simplified approach for fin efficiency for circular fin from a tube (using Incropera's Fig. 3.23 approximations)
-                // This formula is typically used with a chart for circular fins, but we can derive an approximate form
-                // Let's use the equivalent straight fin approximation first, and mention its limitation.
-                // A better approximation for circular fins involves modified Bessel functions, which are not standard Math. functions in JS.
-                // For a more practical approach, we will use a common simplified form for fin efficiency, noting its approximation.
-                
-                // Simplified fin efficiency for a circular fin (often approximated as a rectangular fin with corrected length)
-                // This approximation is common when Bessel functions are avoided.
-                const Xi = m_param * L_corrected; // xi parameter for circular fin
-                let fin_efficiency_eta_f;
-                // Check if Xi is too small, which can cause division by zero or NaN if tanh(Xi) is very small.
-                if (Xi < 1e-6) { // Very small Xi means fin is very efficient, approach 1
-                    fin_efficiency_eta_f = 1;
-                } else {
-                    // This approximation is for straight fins, often applied as a simplified case for circular fins
-                    // For more accuracy, a specific chart or Bessel function solution for annular fins is required.
-                    fin_efficiency_eta_f = Math.tanh(Xi) / Xi;
-                }
+                const Xi = m_param * L_corrected;
+                const fin_efficiency_eta_f = Xi < 1e-6 ? 1 : Math.tanh(Xi) / Xi;
 
-                calculationHtml += `<p><strong>2. Intermediate Calculations:</strong></p>`;
-                calculationHtml += `<p class="calculation-step">Tube Radius (\\(r_{tube}\\)) = \\(D_{tube,outer} / 2\\) = ${r_tube.toFixed(4)} m</p>`;
-                calculationHtml += `<p class="calculation-step">Fin Tip Radius (\\(r_{fin,tip}\\)) = \\(r_{tube} + H_{fin}\\) = ${r_fin_tip.toFixed(4)} m</p>`;
-                calculationHtml += `<p class="calculation-step">Parameter \\(m\\) = \\(\\sqrt{2 \\times h_{external} / (k_{fin} \\times t_{fin})}\\) = \\(\\sqrt{2 \\times ${h_external_si.toFixed(2)} / (${k_fin_si.toFixed(2)} \\times ${t_fin_m.toExponential(2)})}\\) = ${m_param.toFixed(2)} m\text{\(^{-1}\)}</p>`;
-                calculationHtml += `<p class="calculation-step">Corrected Fin Length (\\(L_c\\)) = \\(H_{fin} + t_{fin}/2\\) = ${L_corrected.toFixed(4)} m</p>`;
-                calculationHtml += `<p class="calculation-step">Fin Efficiency (\\(\\eta_f\\)) approx = \\(\\tanh(m L_c) / (m L_c)\\) = ${fin_efficiency_eta_f.toFixed(4)}</p>`;
-                
-                // Calculate surface areas per unit length
-                const fin_outer_radius_area_per_fin = Math.PI * (Math.pow(r_fin_tip, 2) - Math.pow(r_tube, 2)); // Area of one side of annular fin
-                const fin_edge_area_per_fin = Math.PI * r_fin_tip * t_fin_m; // Area of the fin edge (very small)
+                calculationHtml += `<p><strong>2. Intermediate Calculations:</strong></p>
+                    <p class="calculation-step">Tube Radius (\\(r_{tube}\\)) = ${r_tube.toFixed(4)} m</p>
+                    <p class="calculation-step">Fin Tip Radius (\\(r_{fin,tip}\\)) = ${r_fin_tip.toFixed(4)} m</p>
+                    <p class="calculation-step">Parameter \\(m\\) = \\(\\sqrt{2h / (k_f t_f)}\\) = ${m_param.toFixed(3)} m⁻¹</p>
+                    <p class="calculation-step">Corrected Fin Length (\\(L_c\\)) = ${L_corrected.toFixed(4)} m</p>
+                    <p class="calculation-step">Fin Efficiency (\\(\\eta_f\\)) ≈ \\(\\tanh(m L_c) / (m L_c)\\) = ${fin_efficiency_eta_f.toFixed(4)}</p>`;
 
-                // Total surface area of one fin (two sides + edge)
-                // Simplification: typically, fin surface area is considered as 2 * (Area of one side)
-                const A_fin_per_fin_total = 2 * (fin_outer_radius_area_per_fin) + fin_edge_area_per_fin; // m^2 per fin
+                const fin_side_area = Math.PI * (Math.pow(r_fin_tip, 2) - Math.pow(r_tube, 2));
+                const fin_edge_area = 2 * Math.PI * r_fin_tip * t_fin_m;
+                const A_fin_per_fin_total = 2 * fin_side_area; // Edge area often negligible and omitted for simplicity in many texts
                 
-                // Area of fins per unit length
-                const A_fins_per_m = N_fins_per_m * A_fin_per_fin_total; // m^2/m
-
-                // Area of exposed tube per unit length
-                // The pitch of fins is 1/N_fins_per_m
-                const fin_spacing = (1 / N_fins_per_m) - t_fin_m;
-                if (fin_spacing < 0) {
-                     displayMessage("Fin thickness is too large for the given number of fins per unit length. Fins are overlapping.", "error");
+                const A_fins_per_m = N_fins_per_m * A_fin_per_fin_total;
+                
+                const fin_pitch = 1 / N_fins_per_m;
+                if (t_fin_m >= fin_pitch) {
+                     displayMessage("Fin thickness is too large for the given number of fins. Fins are overlapping.", "error");
                      return;
                 }
-                const A_tube_exposed_per_m = Math.PI * D_tube_outer_m * fin_spacing * N_fins_per_m; // Exposed area of tube between fins, m^2/m
+                const A_tube_exposed_per_m = Math.PI * D_tube_outer_m * (fin_pitch - t_fin_m) * N_fins_per_m;
+                const A_total_outer_per_m = A_fins_per_m + A_tube_exposed_per_m;
+
+                const overall_efficiency_eta_o = (A_tube_exposed_per_m + fin_efficiency_eta_f * A_fins_per_m) / A_total_outer_per_m;
                 
-                // Total outer surface area per unit length
-                const A_total_outer_per_m = A_fins_per_m + A_tube_exposed_per_m; // m^2/m
-
-                // Overall surface efficiency
-                const overall_efficiency_eta_o = 1 - (A_fins_per_m / A_total_outer_per_m) * (1 - fin_efficiency_eta_f);
-
-                calculationHtml += `<p class="calculation-step">Total Surface Area of one fin = ${A_fin_per_fin_total.toExponential(2)} m²</p>`;
-                calculationHtml += `<p class="calculation-step">Area of all fins per meter (\\(A_{fins}'\\)) = \\(N_{fins} \\times A_{fin,total}\\) = ${A_fins_per_m.toFixed(2)} m²/m</p>`;
-                calculationHtml += `<p class="calculation-step">Fin Spacing = \\((1 / N_{fins}) - t_{fin}\\) = ${fin_spacing.toExponential(2)} m</p>`;
-                calculationHtml += `<p class="calculation-step">Area of exposed tube per meter (\\(A_{tube,exposed}'\\)) = \\(\\pi \\times D_{tube,outer} \\times \\text{Fin Spacing} \\times N_{fins}\\) = ${A_tube_exposed_per_m.toFixed(2)} m²/m</p>`;
-                calculationHtml += `<p class="calculation-step">Total Outer Surface Area per meter (\\(A_{total,outer}'\\)) = \\(A_{fins}' + A_{tube,exposed}'\\) = ${A_total_outer_per_m.toFixed(2)} m²/m</p>`;
-                calculationHtml += `<p class="calculation-step">Overall Surface Efficiency (\\(\\eta_o\\)) = \\(1 - (A_{fins}' / A_{total,outer}') \\times (1 - \\eta_f)\\) = ${overall_efficiency_eta_o.toFixed(4)}</p>`;
+                calculationHtml += `<p class="calculation-step">Area of all fins per meter (\\(A'_{fins}\\)) = ${A_fins_per_m.toFixed(3)} m²/m</p>
+                    <p class="calculation-step">Area of exposed tube per meter (\\(A'_{tube}\\)) = ${A_tube_exposed_per_m.toFixed(3)} m²/m</p>
+                    <p class="calculation-step">Total Outer Surface Area per meter (\\(A'_{total}\\)) = ${A_total_outer_per_m.toFixed(3)} m²/m</p>
+                    <p class="calculation-step">Overall Surface Efficiency (\\(\\eta_o\\)) = \\((A'_{tube} + \\eta_f A'_{fins}) / A'_{total}\\) = ${overall_efficiency_eta_o.toFixed(4)}</p>`;
                 
-                // Heat transfer calculation
-                // Convective heat transfer from total outer surface
-                const Q_convection_per_m = h_external_si * A_total_outer_per_m * overall_efficiency_eta_o * (T_base_K - T_ambient_K); // W/m
+                const Q_convection_per_m = h_external_si * A_total_outer_per_m * overall_efficiency_eta_o * (T_base_K - T_ambient_K);
+                const Q_radiation_per_m = epsilon_val * STEFAN_BOLTZMANN * A_total_outer_per_m * (Math.pow(T_base_K, 4) - Math.pow(T_ambient_K, 4));
+                const Q_total_per_m = Q_convection_per_m + Q_radiation_per_m;
+                const Q_total_si = Q_total_per_m * L_tube_m;
 
-                // Radiative heat transfer from total outer surface (assuming entire total outer area radiates at base temperature effectively for simplification)
-                // This is a simplification; ideally, radiation from fins should account for fin efficiency and temperature gradient.
-                // For practical calculators, it's often approximated from the overall effective surface temperature or base temp.
-                const Q_radiation_per_m = epsilon * STEFAN_BOLTZMANN * A_total_outer_per_m * (Math.pow(T_base_K, 4) - Math.pow(T_ambient_K, 4)); // W/m
+                calculationHtml += `<p><strong>3. Heat Transfer Calculation:</strong></p>
+                    <p class="formula">\\( Q'_{conv} = h A'_{total} \\eta_o (T_b - T_{\\infty}) \\)</p>
+                    <p class="calculation-step">\\( Q'_{conv} \\) = ${Q_convection_per_m.toFixed(2)} W/m</p>
+                    <p class="formula">\\( Q'_{rad} = \\epsilon \\sigma A'_{total} (T_b^4 - T_{\\infty}^4) \\)</p>
+                    <p class="calculation-step">\\( Q'_{rad} \\) = ${Q_radiation_per_m.toFixed(2)} W/m</p>
+                    <p class="formula">\\( Q_{total} = (Q'_{conv} + Q'_{rad}) \\times L \\)</p>
+                    <p class="calculation-step">\\( Q_{total} \\) = (${Q_convection_per_m.toFixed(2)} + ${Q_radiation_per_m.toFixed(2)}) W/m \\times ${L_tube_m.toFixed(2)} m = <strong>${Q_total_si.toFixed(2)} W</strong></p>`;
 
-                const Q_total_per_m = Q_convection_per_m + Q_radiation_per_m; // W/m
-
-                const Q_total = Q_total_per_m * L_tube_m; // Total heat transfer for the entire tube length, Watts
-
-                calculationHtml += `<p><strong>3. Heat Transfer Calculation:</strong></p>`;
-                calculationHtml += `<p class="formula">
-                    \\( Q_{convection}' = h_{external} \\times A_{total,outer}' \\times \\eta_o \\times (T_{base} - T_{ambient}) \\)
-                </p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( Q_{convection}' \\) = ${h_external_si.toFixed(2)} \\times ${A_total_outer_per_m.toFixed(2)} \\times ${overall_efficiency_eta_o.toFixed(4)} \\times (${T_base_K.toFixed(2)} - ${T_ambient_K.toFixed(2)}) = ${Q_convection_per_m.toFixed(2)} W/m
-                </p>`;
-                 calculationHtml += `<p class="formula">
-                    \\( Q_{radiation}' = \\epsilon \\sigma A_{total,outer}' (T_{base}^4 - T_{ambient}^4) \\)
-                </p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( Q_{radiation}' \\) = ${epsilon.toFixed(2)} \\times ${STEFAN_BOLTZMANN.toExponential(2)} \\times ${A_total_outer_per_m.toFixed(2)} \\times (${T_base_K.toFixed(2)}^4 - ${T_ambient_K.toFixed(2)}^4) = ${Q_radiation_per_m.toFixed(2)} W/m
-                </p>`;
-                calculationHtml += `<p class="formula">
-                    \\( Q_{total}' = Q_{convection}' + Q_{radiation}' \\)
-                </p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( Q_{total}' \\) = ${Q_convection_per_m.toFixed(2)} + ${Q_radiation_per_m.toFixed(2)} = ${Q_total_per_m.toFixed(2)} W/m
-                </p>`;
-                calculationHtml += `<p class="formula">
-                    \\( Q_{total} = Q_{total}' \\times L_{tube} \\)
-                </p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( Q_{total} \\) = ${Q_total_per_m.toFixed(2)} \\times ${L_tube_m.toFixed(2)} = ${Q_total.toFixed(2)} W
-                </p>`;
-
-
-                // Convert total Q back to original unit system for display
-                let displayQ;
-                if (unitSystem === 'imperial') {
-                    displayQ = Q_total * 3.41214; // Watts to BTU/h
-                } else {
-                    displayQ = Q_total;
-                }
+                // 5. Convert total Q back for display
+                const displayQ = unitSystem === 'imperial' ? Q_total_si * 3.41214 : Q_total_si;
 
                 calculationDetailsDiv.innerHTML = calculationHtml;
-                if (window.MathJax) {
-                    window.MathJax.typesetPromise([calculationDetailsDiv]);
-                }
 
-                // Populate results table
+                // 6. Populate results table
                 resultTableBody.innerHTML = '';
-                function addResultRow(parameterHtml, valueHtml) {
-                    const row = resultTableBody.insertRow();
-                    const paramCell = row.insertCell();
-                    const valueCell = row.insertCell();
-                    paramCell.innerHTML = parameterHtml;
-                    valueCell.innerHTML = valueHtml;
-                }
-
-                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
-                addResultRow("Tube Outer Diameter (Root)", `${D_tube_outer} ${unitSystem === 'imperial' ? '\\(\\text{inch}\\)' : '\\(\\text{mm}\\)'}`);
-                addResultRow("Fin Height", `${H_fin} ${unitSystem === 'imperial' ? '\\(\\text{inch}\\)' : '\\(\\text{mm}\\)'}`);
-                addResultRow("Fin Thickness", `${t_fin} ${unitSystem === 'imperial' ? '\\(\\text{inch}\\)' : '\\(\\text{mm}\\)'}`);
-                addResultRow("Fins per Unit Length", `${N_fins_per_unit_length} ${unitSystem === 'imperial' ? '\\(\\text{fins/ft}\\)' : '\\(\\text{fins/m}\\)'}`);
-                addResultRow("Fin Material Conductivity", `${k_fin} ${unitSystem === 'imperial' ? '\\(\\text{BTU/h ft°F}\\)' : '\\(\\text{W/mK}\\)'}`);
-                addResultRow("Tube Base Temperature", `${T_base} ${unitSystem === 'imperial' ? '\\(\\text{°F}\\)' : '\\(\\text{°C}\\)'}`);
-                addResultRow("Ambient Fluid Temperature", `${T_ambient} ${unitSystem === 'imperial' ? '\\(\\text{°F}\\)' : '\\(\\text{°C}\\)'}`);
-                addResultRow("External Convection Coefficient", `${h_external} ${unitSystem === 'imperial' ? '\\(\\text{BTU/h ft}^2\\text{°F}\\)' : '\\(\\text{W/m}^2\\text{°C}\\)'}`);
-                addResultRow("Surface Emissivity (\\(\\epsilon\\))", epsilon);
-                addResultRow("Tube Length", `${L_tube} ${unitSystem === 'imperial' ? '\\(\\text{ft}\\)' : '\\(\\text{m}\\)'}`);
+                const results = {
+                    "Fin Efficiency (\\(\\eta_f\\))": `<strong>${fin_efficiency_eta_f.toFixed(4)}</strong>`,
+                    "Overall Surface Efficiency (\\(\\eta_o\\))": `<strong>${overall_efficiency_eta_o.toFixed(4)}</strong>`,
+                    "Convective Heat Transfer": `<strong>${(unitSystem === 'imperial' ? Q_convection_per_m * L_tube_m * 3.41214 : Q_convection_per_m * L_tube_m).toFixed(2)} ${Q_unit_display}</strong>`,
+                    "Radiative Heat Transfer": `<strong>${(unitSystem === 'imperial' ? Q_radiation_per_m * L_tube_m * 3.41214 : Q_radiation_per_m * L_tube_m).toFixed(2)} ${Q_unit_display}</strong>`,
+                    "Total Heat Transfer Rate (\\(Q\\))": `<strong style="color:var(--primary-color); font-size:1.2em;">${displayQ.toFixed(2)} ${Q_unit_display}</strong>`
+                };
                 
-                addResultRow("Fin Efficiency (\\(\\eta_f\\))", `<strong>${fin_efficiency_eta_f.toFixed(4)}</strong>`);
-                addResultRow("Overall Surface Efficiency (\\(\\eta_o\\))", `<strong>${overall_efficiency_eta_o.toFixed(4)}</strong>`);
-                addResultRow(`Total Heat Transfer Rate (\\(Q\\))`, `<strong>${displayQ.toFixed(2)} ${Q_unit_display}</strong>`);
-
-                if (window.MathJax) {
-                    window.MathJax.typesetPromise([resultTableBody, ...diameterUnitLabels, ...lengthUnitLabels, ...tempUnitLabels, ...finsUnitLabels, ...conductivityUnitLabels, ...convectionUnitLabels]);
+                for (const [key, value] of Object.entries(results)) {
+                    const row = resultTableBody.insertRow();
+                    row.insertCell().innerHTML = key;
+                    row.insertCell().innerHTML = value;
                 }
-
+                
+                if (window.MathJax && window.MathJax.typeset) {
+                    window.MathJax.typeset([calculationDetailsDiv, resultTableBody]);
+                }
+                
                 standardReference.innerHTML = "Finned tube heat transfer calculations are complex and often rely on empirical correlations and dimensionless numbers (e.g., Reynolds, Prandtl, Nusselt numbers) specific to fin geometry and flow conditions. For detailed design and compliance with international standards, refer to specialized heat transfer engineering handbooks such as <strong>Kern, D. Q., 'Process Heat Transfer'</strong>, <strong>Kays, W. M., & London, A. L., 'Compact Heat Exchangers'</strong>, and standards from organizations like TEMA, ASHRAE, and API.";
-
+                
                 resultContainer.style.display = 'block';
                 setTimeout(() => {
                     resultContainer.classList.add('show');
+                    resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 10);
-                resultContainer.scrollIntoView({ behavior: 'smooth' });
+                
                 displayMessage("Calculation completed successfully!", "info");
             });
 
             const themeSwitch = document.getElementById('theme-switch');
             if (themeSwitch) {
+                // Check local storage for theme preference
                 if (localStorage.getItem('theme') === 'dark') {
                     document.body.classList.add('dark-mode');
                     themeSwitch.checked = true;
