@@ -463,6 +463,102 @@ transition: opacity 0.5s ease-in-out, visibility 0.5s;
     opacity: 1;
     visibility: visible;
 }
+
+.advanced-factors-section {
+    margin-top: 25px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--hover-color);
+}
+.advanced-factors-section h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+.advanced-toggle {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+.advanced-toggle input {
+    margin-right: 10px;
+}
+.life-chart-container {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+}
+.life-chart-container h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+}
+#life-chart {
+    width: 100%;
+    height: 300px;
+}
+.export-section {
+    margin-top: 25px;
+    text-align: center;
+}
+.export-btn {
+    background-color: var(--secondary-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.export-btn:hover {
+    background-color: var(--primary-color);
+}
+.failure-analysis {
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+}
+.failure-analysis h4 {
+    color: var(--primary-color);
+    margin-top: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+.failure-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: var(--hover-color);
+}
+.failure-item.critical {
+    border-left: 4px solid var(--fail-color);
+}
+.failure-item.warning {
+    border-left: 4px solid var(--accent-color);
+}
+.failure-item.info {
+    border-left: 4px solid var(--secondary-color);
+}
+.failure-item h5 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.failure-item p {
+    margin: 0;
+}
 @keyframes fadeInSlideUp {
 from {
 opacity: 0;
@@ -533,6 +629,9 @@ padding: 15px;
 .tool-container {
 padding: 20px;
 }
+.bearing-search-row {
+    grid-template-columns: 1fr;
+}
 }
 </style>
 </head>
@@ -572,6 +671,7 @@ padding: 20px;
 <form id="bearing-life-form">
 
 <div class="form-section-header">Bearing & Load Parameters</div>
+
 <div class="form-row">
     <div class="form-group">
         <label for="bearing-type">Bearing Type</label>
@@ -643,19 +743,69 @@ padding: 20px;
     </div>
 </div>
 
+<div class="advanced-factors-section">
+    <div class="advanced-toggle">
+        <input type="checkbox" id="advanced-factors-toggle">
+        <label for="advanced-factors-toggle">Show Advanced ISO 281 Factors (Viscosity & Contamination)</label>
+    </div>
+    <div id="advanced-factors" style="display: none;">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="operating-viscosity">Operating Viscosity, ν (mm²/s) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Kinematic viscosity of lubricant at operating temperature</span></span></label>
+                <input type="number" id="operating-viscosity" value="32" min="1" step="1">
+            </div>
+            <div class="form-group">
+                <label for="required-viscosity">Required Viscosity, ν₁ (mm²/s) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Minimum required viscosity based on speed and bearing size</span></span></label>
+                <input type="number" id="required-viscosity" value="13" min="1" step="1">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="contamination-factor">Contamination Factor (e<sub>c</sub>) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Accounts for particle contamination in the lubricant</span></span></label>
+                <select id="contamination-factor">
+                    <option value="1.0" selected>Very Clean (Laboratory conditions)</option>
+                    <option value="0.8">Clean (Filtration, sealed housing)</option>
+                    <option value="0.6">Normal (Standard industrial conditions)</option>
+                    <option value="0.5">Slight Contamination</option>
+                    <option value="0.3">Typical Contamination</option>
+                    <option value="0.1">Heavy Contamination</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
 <button type="button" id="calculate-btn" class="calculate-btn">Calculate Bearing Life</button>
 </form>
 </div>
+
 <div id="result-container" class="result-container">
 <h3>ISO 281 Step-by-Step Life Calculation</h3>
 <div id="calculation-steps">
 <!-- Calculation steps will be dynamically inserted here -->
 </div>
+
+<div class="life-chart-container">
+    <h4>Bearing Life Distribution</h4>
+    <canvas id="life-chart"></canvas>
+</div>
+
+<div class="failure-analysis">
+    <h4>Failure Mode Analysis</h4>
+    <div id="failure-analysis-content">
+        <!-- Failure analysis will be dynamically inserted here -->
+    </div>
+</div>
+
 <div class="recommendations">
 <h4>Applicable Standards & Recommendations</h4>
 <div id="recommendations-content">
 <!-- Recommendations will be dynamically inserted here -->
 </div>
+</div>
+
+<div class="export-section">
+    <button id="export-report" class="export-btn"><i class="fas fa-file-pdf"></i> Export Calculation Report</button>
 </div>
 </div>
 </div>
@@ -701,13 +851,33 @@ padding: 20px;
 </footer>
 
 <div id="custom-message-box"></div>
+
+<!-- Chart.js for life distribution visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const calculateBtn = document.getElementById('calculate-btn');
     const resultContainer = document.getElementById('result-container');
     const calculationStepsDiv = document.getElementById('calculation-steps');
     const recommendationsDiv = document.getElementById('recommendations-content');
+    const failureAnalysisDiv = document.getElementById('failure-analysis-content');    
+    const advancedToggle = document.getElementById('advanced-factors-toggle');
+    const advancedFactors = document.getElementById('advanced-factors');
+    const exportReportBtn = document.getElementById('export-report');
     
+    // Chart initialization
+    let lifeChart = null;
+    
+    // Advanced factors toggle
+    advancedToggle.addEventListener('change', function() {
+        if (this.checked) {
+            advancedFactors.style.display = 'block';
+        } else {
+            advancedFactors.style.display = 'none';
+        }
+    });
+                   
     calculateBtn.addEventListener('click', (e) => {
         const ripple = document.createElement('span');
         const diameter = Math.max(calculateBtn.clientWidth, calculateBtn.clientHeight);
@@ -750,8 +920,13 @@ document.addEventListener('DOMContentLoaded', function() {
             a1: parseFloat(document.getElementById('reliability-factor').value),
             a2: parseFloat(document.getElementById('material-factor').value),
             a3: parseFloat(document.getElementById('lubrication-factor').value),
+            useAdvanced: advancedToggle.checked,
+            v: parseFloat(document.getElementById('operating-viscosity').value) || 32,
+            v1: parseFloat(document.getElementById('required-viscosity').value) || 13,
+            ec: parseFloat(document.getElementById('contamination-factor').value) || 1.0
         };
         calculationStepsDiv.innerHTML = '';
+        failureAnalysisDiv.innerHTML = '';
 
         // --- Step 1: Calculate Equivalent Dynamic Load (P) ---
         const p = (inputs.type.toLowerCase().includes('ball')) ? 3 : 10/3;
@@ -772,18 +947,66 @@ document.addEventListener('DOMContentLoaded', function() {
             `L₁₀ = ${L10.toFixed(2)} million revolutions<br>L₁₀ₕ = ${L10h.toLocaleString('en-US', {maximumFractionDigits: 0})} hours`);
 
         // --- Step 3: Adjusted Rating Life (Lna) ---
-        const Lna = inputs.a1 * inputs.a2 * inputs.a3 * L10;
+        let aISO = 1.0;
+        let advancedDetails = '';
+        
+        if (inputs.useAdvanced) {
+            // Calculate viscosity ratio
+            const kappa = inputs.v / inputs.v1;
+            advancedDetails += `Viscosity ratio κ = ν/ν₁ = ${inputs.v}/${inputs.v1} = ${kappa.toFixed(2)}<br>`;
+            
+            // Calculate aISO according to ISO 281:2007
+            if (kappa >= 4) {
+                aISO = 0.1;
+                advancedDetails += `For κ ≥ 4, a<sub>ISO</sub> = 0.1 (elastohydrodynamic lubrication)<br>`;
+            } else if (kappa >= 2) {
+                aISO = 0.1 * Math.pow(kappa, 0.68);
+                advancedDetails += `For 2 ≤ κ < 4, a<sub>ISO</sub> = 0.1 × κ<sup>0.68</sup> = ${aISO.toFixed(3)}<br>`;
+            } else if (kappa >= 1) {
+                aISO = 0.1 * Math.pow(kappa, 0.31);
+                advancedDetails += `For 1 ≤ κ < 2, a<sub>ISO</sub> = 0.1 × κ<sup>0.31</sup> = ${aISO.toFixed(3)}<br>`;
+            } else if (kappa >= 0.4) {
+                aISO = 0.1 * Math.pow(kappa, 0.31) / Math.pow(2 - kappa, 0.31);
+                advancedDetails += `For 0.4 ≤ κ < 1, a<sub>ISO</sub> = 0.1 × κ<sup>0.31</sup> / (2-κ)<sup>0.31</sup> = ${aISO.toFixed(3)}<br>`;
+            } else {
+                aISO = 0.05;
+                advancedDetails += `For κ < 0.4, a<sub>ISO</sub> = 0.05 (boundary lubrication)<br>`;
+            }
+            
+            // Apply contamination factor
+            aISO *= inputs.ec;
+            advancedDetails += `Applying contamination factor e<sub>c</sub> = ${inputs.ec}, final a<sub>ISO</sub> = ${aISO.toFixed(3)}<br>`;
+            
+            addCalculationStep(3, 'ISO 281 Life Adjustment Factor (a<sub>ISO</sub>)', 
+                `Based on viscosity ratio κ = ν/ν₁ and contamination factor e<sub>c</sub>`,
+                advancedDetails,
+                `a<sub>ISO</sub> = ${aISO.toFixed(3)}`);
+        }
+        
+        const Lna = inputs.a1 * inputs.a2 * inputs.a3 * aISO * L10;
         const Lnah = (1000000 / (inputs.n * 60)) * Lna;
-         addCalculationStep(3, 'Adjusted Rating Life (Lna)', `$$L_{na} = a_1 a_2 a_3 L_{10}$$`,
+        
+        addCalculationStep(inputs.useAdvanced ? 4 : 3, 'Adjusted Rating Life (Lna)', 
+            inputs.useAdvanced ? 
+            `$$L_{na} = a_1 a_2 a_3 a_{ISO} L_{10}$$` :
+            `$$L_{na} = a_1 a_2 a_3 L_{10}$$`,
+            inputs.useAdvanced ?
+            `a₁=${inputs.a1}, a₂=${inputs.a2}, a₃=${inputs.a3}, a<sub>ISO</sub>=${aISO.toFixed(3)}` :
             `a₁=${inputs.a1}, a₂=${inputs.a2}, a₃=${inputs.a3}`,
             `Lₙₐ = ${Lna.toFixed(2)} million revolutions`);
 
         // Final Verdict
         const verdictDiv = document.createElement('div');
-        verdictDiv.className = `final-verdict safe`;
+        verdictDiv.className = `final-verdict ${Lnah > 20000 ? 'safe' : 'fail'}`;
         verdictDiv.innerHTML = `<i class="fas fa-clock"></i> Adjusted Life (L<sub>nah</sub>) = ${Lnah.toLocaleString('en-US', {maximumFractionDigits: 0})} hours`;
         calculationStepsDiv.appendChild(verdictDiv);
 
+        // Create life distribution chart
+        createLifeChart(L10h, Lnah, inputs);
+        
+        // Perform failure analysis
+        performFailureAnalysis(inputs, P, L10h, Lnah);
+        
         if (window.MathJax) {
             window.MathJax.typesetPromise([calculationStepsDiv]);
         }
@@ -883,7 +1106,173 @@ document.addEventListener('DOMContentLoaded', function() {
         stepContainer.innerHTML = content;
         calculationStepsDiv.appendChild(stepContainer);
     }
-
+    
+    function createLifeChart(L10h, Lnah, inputs) {
+        const ctx = document.getElementById('life-chart').getContext('2d');
+        
+        // Destroy previous chart if exists
+        if (lifeChart) {
+            lifeChart.destroy();
+        }
+        
+        // Create data for Weibull distribution (bearing life distribution)
+        const dataPoints = [];
+        const reliabilityLevels = [0.99, 0.96, 0.90, 0.70, 0.50, 0.30, 0.10];
+        const weibullSlope = 1.5; // Typical for rolling bearings
+        
+        reliabilityLevels.forEach(reliability => {
+            const lifeFactor = Math.pow(-Math.log(reliability), 1/weibullSlope);
+            const lifeHours = L10h * lifeFactor;
+            dataPoints.push({
+                reliability: reliability * 100,
+                life: lifeHours
+            });
+        });
+        
+        lifeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dataPoints.map(point => point.reliability + '%'),
+                datasets: [{
+                    label: 'Basic L10 Life Distribution',
+                    data: dataPoints.map(point => point.life),
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Adjusted Life (Lna)',
+                    data: Array(dataPoints.length).fill(Lnah),
+                    borderColor: 'rgba(245, 158, 11, 1)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Bearing Life vs Reliability'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += Math.round(context.parsed.y).toLocaleString() + ' hours';
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Reliability'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Life (hours)'
+                        },
+                        type: 'logarithmic'
+                    }
+                }
+            }
+        });
+    }
+    
+    function performFailureAnalysis(inputs, P, L10h, Lnah) {
+        let analysisHTML = '';
+        
+        // Check for excessive load
+        const loadRatio = P / inputs.C;
+        if (loadRatio > 0.5) {
+            analysisHTML += `
+                <div class="failure-item critical">
+                    <h5><i class="fas fa-exclamation-triangle"></i> High Load Condition</h5>
+                    <p>The equivalent dynamic load (${P.toFixed(0)} N) is ${(loadRatio*100).toFixed(1)}% of the dynamic load rating. 
+                    This high load ratio may lead to premature fatigue failure. Consider selecting a bearing with higher load capacity.</p>
+                </div>
+            `;
+        } else if (loadRatio > 0.3) {
+            analysisHTML += `
+                <div class="failure-item warning">
+                    <h5><i class="fas fa-exclamation-circle"></i> Moderate Load Condition</h5>
+                    <p>The equivalent dynamic load (${P.toFixed(0)} N) is ${(loadRatio*100).toFixed(1)}% of the dynamic load rating. 
+                    This is acceptable but monitor for signs of wear during operation.</p>
+                </div>
+            `;
+        } else {
+            analysisHTML += `
+                <div class="failure-item info">
+                    <h5><i class="fas fa-check-circle"></i> Optimal Load Condition</h5>
+                    <p>The equivalent dynamic load (${P.toFixed(0)} N) is ${(loadRatio*100).toFixed(1)}% of the dynamic load rating. 
+                    This is within the optimal range for long bearing life.</p>
+                </div>
+            `;
+        }
+        
+        // Check for life expectancy
+        if (Lnah < 10000) {
+            analysisHTML += `
+                <div class="failure-item critical">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Short Expected Life</h5>
+                    <p>The adjusted bearing life of ${Lnah.toLocaleString('en-US', {maximumFractionDigits: 0})} hours may be insufficient for many industrial applications. 
+                    Consider improving lubrication conditions, selecting a higher-grade bearing, or reducing operating loads.</p>
+                </div>
+            `;
+        } else if (Lnah < 30000) {
+            analysisHTML += `
+                <div class="failure-item warning">
+                    <h5><i class="fas fa-exclamation-circle"></i> Moderate Expected Life</h5>
+                    <p>The adjusted bearing life of ${Lnah.toLocaleString('en-US', {maximumFractionDigits: 0})} hours is acceptable for general industrial applications 
+                    but may require more frequent maintenance intervals.</p>
+                </div>
+            `;
+        } else {
+            analysisHTML += `
+                <div class="failure-item info">
+                    <h5><i class="fas fa-check-circle"></i> Good Expected Life</h5>
+                    <p>The adjusted bearing life of ${Lnah.toLocaleString('en-US', {maximumFractionDigits: 0})} hours is excellent for most industrial applications.</p>
+                </div>
+            `;
+        }
+        
+        // Check for speed limitations
+        const dnValue = inputs.n * (estimateBearingBore(inputs.C) || 50); // Rough estimate
+        if (dnValue > 500000) {
+            analysisHTML += `
+                <div class="failure-item warning">
+                    <h5><i class="fas fa-tachometer-alt"></i> High Speed Operation</h5>
+                    <p>The dn value (${dnValue.toLocaleString()}) exceeds typical limits for standard bearings. 
+                    Consider using high-speed bearings with special cages and improved lubrication.</p>
+                </div>
+            `;
+        }
+        
+        failureAnalysisDiv.innerHTML = analysisHTML;
+    }
+    
+    function estimateBearingBore(C) {
+        // Rough estimation of bearing bore based on dynamic load rating
+        // This is a simplified approximation for visualization purposes
+        if (C < 10000) return 20;
+        if (C < 20000) return 30;
+        if (C < 40000) return 40;
+        if (C < 70000) return 50;
+        if (C < 100000) return 60;
+        return 80;
+    }
+    
     function displayMessage(message, type = "error") {
         const messageBox = document.getElementById('custom-message-box');
         messageBox.textContent = message;
@@ -895,6 +1284,12 @@ document.addEventListener('DOMContentLoaded', function() {
         } else messageBox.style.backgroundColor = 'var(--success-color)';
         setTimeout(() => { messageBox.classList.remove('show'); }, 5000);
     }
+    
+    // Export functionality
+    exportReportBtn.addEventListener('click', function() {
+        displayMessage("Export feature would generate a detailed PDF report in a full implementation", "success");
+        // In a real implementation, this would use a library like jsPDF to generate a report
+    });
 });
 
 document.addEventListener('DOMContentLoaded', () => {
