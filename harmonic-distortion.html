@@ -284,6 +284,87 @@
             box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
         }
 
+        /* NEW STEP-BY-STEP STYLES */
+        .steps-container {
+            display: none;
+            margin-top: 30px;
+        }
+        .steps-container.active {
+            display: block;
+        }
+        .step-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            animation: slideIn 0.6s ease-out;
+            transition: all 0.3s;
+            margin-bottom: 25px; /* Spacing between cards */
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        .step-card h4 {
+            color: var(--primary);
+            margin: 0 0 20px 0;
+            font-size: 1.4rem;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+        }
+        .step-card .number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            margin-right: 15px;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .step-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .step-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        .step-content .formula-block {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+        }
+        .step-content .formula-block p {
+            margin-top: 0;
+        }
+        .step-content .formula {
+            background: var(--bg);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin: 12px 0;
+            font-size: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+
         /* Results */
         .results-table {
             width: 100%;
@@ -359,6 +440,38 @@
         .insight-card li {
             margin-bottom: 10px;
         }
+        .stat-highlight {
+            display: inline-block;
+            background: var(--accent);
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 0 4px;
+        }
+        .danger-box {
+            background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(220,38,38,0.05));
+            border-left: 5px solid var(--danger);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .danger-box h4 {
+            color: var(--danger);
+            margin-top: 0;
+        }
+        .success-box {
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05));
+            border-left: 5px solid var(--success);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success-box h4 {
+            color: var(--success);
+            margin-top: 0;
+        }
+
 
         /* Message Box */
         .message-box {
@@ -571,7 +684,7 @@
                     <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
                 </a>
                 <ul class="nav-links">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">Home</a></li>
                     <li><a href="articles">Articles</a></li>
                     <li><a href="indexmech">Mechanical</a></li>
                     <li><a href="indexele">Electrical</a></li>
@@ -692,7 +805,12 @@
                         </div>
                     </div>
                     
-                    <button type="button" id="calculate-harmonic-btn" class="btn" style="margin-top: 25px;">Calculate Harmonic Distortion</button>
+                    <div class="btn-group" style="margin-top: 25px;">
+                        <button type="button" id="calculate-harmonic-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Distortion</button>
+                        <button type="button" id="reset-btn" class="btn accent"><i class="fas fa-sync-alt"></i> Reset</button>
+                        <button type="button" id="pdf-btn" class="btn secondary" style="display: none;"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                    </div>
+                    
                     <div id="loading-spinner" class="loading-spinner"></div>
                 </form>
             </div>
@@ -714,12 +832,9 @@
             </table>
         </div>
 
-        <!-- Detailed calculations section -->
-        <div id="detailed-steps" class="card hidden math-content">
-            <h3><i class="fas fa-calculator"></i> Detailed Calculation Steps</h3>
-            <div id="detailed-calculations-content">
-                <!-- Detailed calculation steps will be dynamically inserted here -->
-            </div>
+        <!-- NEW Detailed calculations section -->
+        <div id="steps-container" class="steps-container math-content">
+            <!-- Step cards will be dynamically inserted here -->
         </div>
 
         <!-- Harmonic Spectrum Chart -->
@@ -728,41 +843,86 @@
             <svg id="harmonic-bar-chart"></svg>
         </div>
 
-        <!-- EDUCATIONAL INSIGHTS SECTION -->
-        <div id="education-section" class="education-section card hidden">
-            <h2><i class="fas fa-lightbulb"></i> Harmonic Mitigation & Standards</h2>
+        <!-- NEW/EXPANDED EDUCATIONAL INSIGHTS SECTION -->
+        <div id="education-section" class="education-section card">
+            <h2><i class="fas fa-lightbulb"></i> Professional Insights: Understanding Power Quality</h2>
 
             <div class="insight-card">
-                <h4><i class="fas fa-tools"></i> Tips for Reducing Harmonic Distortion</h4>
-                <p>High levels of harmonic distortion can lead to increased energy losses, equipment overheating, premature aging of insulation, and interference with sensitive electronic devices. Here are some effective strategies to mitigate harmonics:</p>
+                <h4><i class="fas fa-exclamation-triangle"></i> What Are Harmonics? The "Dirty Power" Problem</h4>
+                <p>Think of your electrical supply as a pure, clean sine wave (the "fundamental" 50 or 60 Hz). This is the "clean power" that all equipment is designed to use. Harmonics are additional, unwanted frequencies that are multiples of this fundamental (e.g., 3rd harmonic = 150 Hz, 5th = 250 Hz, 7th = 350 Hz, etc.).</p>
+                <p>These extra frequencies distort the clean sine wave, creating "dirty power." This distortion is measured by <strong>Total Harmonic Distortion (THD)</strong>. A high THD is like trying to run a performance car on contaminated fuel—it causes inefficiency, stress, and eventual failure.</p>
+                <p><strong>Current Harmonics (THD-I)</strong> are the *cause* of the problem, created by non-linear loads. <strong>Voltage Harmonics (THD-V)</strong> are the *effect* of those harmonic currents flowing through your system's impedance (wires, transformers). High THD-V is what ultimately damages other equipment on the same circuit.</p>
+            </div>
+
+            <div class="insight-card">
+                <h4><i class="fas fa-industry"></i> Where Do Harmonics Come From? (Non-Linear Loads)</h4>
+                <p>Harmonics are not generated by the utility. They are generated *inside* your facility by any equipment that doesn't draw current in a smooth, linear way. These are called <strong>non-linear loads</strong>, and they are everywhere in modern industry:</p>
                 <ul>
-                    <li>
-                        <strong>Passive Harmonic Filters:</strong> These are combinations of inductors (reactors) and capacitors tuned to resonate at specific harmonic frequencies, providing a low-impedance path for harmonic currents, diverting them from the supply.
-                    </li>
-                    <li>
-                        <strong>Active Harmonic Filters (AHF):</strong> These are advanced electronic devices that inject compensating currents into the system to cancel out harmonic currents generated by loads. AHFs are more flexible and can adapt to varying load conditions.
-                    </li>
-                    <li>
-                        <strong>Line Reactors/Chokes:</strong> Installing line reactors (inductors) in series with non-linear loads (like VFDs) helps to increase the impedance, thereby reducing the amount of harmonic current drawn from the supply.
-                    </li>
-                    <li>
-                        <strong>Multi-Pulse Rectifiers (e.g., 12-pulse, 18-pulse):</strong> For large VFDs, using rectifiers with a higher number of pulses significantly reduces characteristic harmonics (like 5th and 7th).
-                    </li>
-                    <li>
-                        <strong>K-Rated Transformers:</strong> These are specially designed to handle harmonic currents without excessive heating, improving reliability and efficiency.
-                    </li>
+                    <li><strong>Variable Frequency Drives (VFDs):</strong> The #1 source. Standard 6-pulse VFDs create large 5th, 7th, 11th, and 13th harmonics.</li>
+                    <li><strong>Rectifiers & DC Power Supplies:</strong> Used in battery chargers, UPS systems, and welding machines.</li>
+                    <li><strong>Electronics with Switch-Mode Power Supplies (SMPS):</strong> Every computer, server, and modern piece of office equipment.</li>
+                    <li><strong>LED & Fluorescent Lighting:</strong> The electronic ballasts and drivers in modern lighting are non-linear loads, primarily creating 3rd harmonics.</li>
                 </ul>
-                <p style="margin-top: 15px; font-style: italic;">The choice of mitigation strategy depends on the magnitude of harmonics, the sensitivity of equipment, and economic considerations. A detailed power quality study is recommended.</p>
+            </div>
+
+            <div class="danger-box">
+                <h4><i class="fas fa-fire"></i> Why Harmonics Are So Damaging</h4>
+                <p>Ignoring harmonics is not an option. The long-term costs of "dirty power" are severe:</p>
+                <ul>
+                    <li><strong>Overheating Neutrals:</strong> "Triplen" harmonics (3rd, 9th, 15th) from single-phase loads add up in the neutral wire. A neutral wire designed for 100A might be forced to carry 150-200A of harmonic current, creating a major fire hazard.</li>
+                    <li><strong>Transformer Failure:</strong> Harmonics cause extra eddy current and hysteresis losses in a transformer's core, leading to massive overheating (known as "K-factor" loading). A transformer running at 70% load can fail prematurely if that load is rich in harmonics.</li>
+                    <li><strong>Nuisance Tripping:</strong> Breakers and fuses are designed to trip on high RMS current. Harmonics increase the RMS current without doing any useful work, leading to breakers tripping even when the "real" load seems fine.</li>
+                    <li><strong>Capacitor Explosions:</strong> This is the most catastrophic failure. Capacitors have low impedance at high frequencies. They act like a "sink" for harmonics, drawing in massive harmonic currents they weren't designed for, causing them to overheat and fail violently. This is why standard PFC capacitors cannot be used in a harmonic environment.</li>
+                    <li><strong>Equipment Malfunction:</strong> Sensitive electronics, PLCs, and control systems can misread the distorted voltage waveform, leading to random reboots, data corruption, and production downtime.</li>
+                </ul>
             </div>
             
             <div class="insight-card">
-                <h4><i class="fas fa-book"></i> Standard References</h4>
-                <p>Harmonic analysis and limits are typically addressed by standards such as:</p>
+                <h4><i class="fas fa-balance-scale"></i> THD vs. TDD: The Most Important Metric You're Not Tracking</h4>
+                <p>This is a critical distinction in IEEE 519. Both are percentages, but they measure different things:</p>
+                <p><strong>Total Harmonic Distortion (THD):</strong><br>
+                $THD_I = \frac{\sqrt{\sum_{h=2}^{\infty} I_h^2}}{I_1}$</p>
+                <p>THD measures the harmonic current *right now* as a percentage of the fundamental current *right now*. This number can be misleading. Imagine a large factory at 3 AM. The only thing running is one VFD at 10% speed. The fundamental current ($I_1$) is tiny, but the harmonic current is still present. This can result in a scary-looking THD of 80%, which isn't a problem because the *total* current is negligible.</p>
+                <p><strong>Total Demand Distortion (TDD):</strong><br>
+                $TDD = \frac{\sqrt{\sum_{h=2}^{\infty} I_h^2}}{I_L}$</p>
+                <p>This is what IEEE 519 actually limits. TDD measures the harmonic current *right now* as a percentage of the <strong>Maximum Demand Load Current ($I_L$)</strong>—the peak current your facility draws over a 15- or 30-minute period. This is a much more stable and meaningful number. It measures your *actual* harmonic pollution against your facility's "size" on the grid. This calculator helps you check this critical TDD value.</p>
+            </div>
+
+            <div class="insight-card">
+                <h4><i class="fas fa-book"></i> A Practical Guide to IEEE 519</h4>
+                <p>The entire purpose of the IEEE 519 standard is to be a "good neighbor" on the electrical grid. It sets limits on how much harmonic "pollution" (current distortion) you can dump onto the grid at the <strong>Point of Common Coupling (PCC)</strong>—the spot where your facility connects to the utility or another customer.</p>
+                <p>The standard has two parts:</p>
+                <ol>
+                    <li><strong>Your Responsibility (Current Harmonics):</strong> You must limit the harmonic *currents* you inject into the grid. The standard sets TDD limits based on your "stiffness."</li>
+                    <li><strong>The Utility's Responsibility (Voltage Harmonics):</strong> The utility must provide you with "clean" power, limiting the *voltage* distortion (THD-V) at your connection point.</li>
+                </ol>
+                <p><strong>The $I_{SC} / I_L$ Ratio:</strong> This is the most important factor in IEEE 519.
                 <ul>
-                    <li><strong>IEEE 519:</strong> Recommended Practices and Requirements for Harmonic Control in Electric Power Systems.</li>
-                    <li><strong>IEC 61000 series:</strong> Electromagnetic Compatibility (EMC), particularly IEC 61000-3-2 and IEC 61000-3-12.</li>
+                    <li><strong>$I_{SC}$ (Short Circuit Current):</strong> A measure of the utility's "stiffness" or power. A "strong" grid has a high $I_{SC}$.</li>
+                    <li><strong>$I_L$ (Max Demand Current):</strong> A measure of your facility's "size" or maximum load.</li>
+                </ul>
+                The ratio $I_{SC} / I_L$ determines your limits. A small load on a very strong grid (high ratio) has very strict TDD limits because it's expected to be "cleaner." A very large load that makes up most of the grid's capacity (low ratio) is given more relaxed limits.</p>
+            </div>
+
+            <div class="insight-card">
+                <h4><i class="fas fa-tools"></i> Tips for Reducing Harmonic Distortion (Mitigation)</h4>
+                <p>If your TDD or THD-V is over the limit, you must install harmonic mitigation equipment. Here are the most common solutions, from simplest to most advanced:</p>
+                <ul>
+                    <li>
+                        <strong>Line Reactors/Chokes:</strong> An inductor (coil) placed in front of a VFD. This is the simplest, cheapest solution. It "chokes" the harmonic currents, often reducing THD-I from ~80% down to ~35-40%. It also protects the VFD from voltage spikes.
+                    </li>
+                    <li>
+                        <strong>Passive Harmonic Filters:</strong> A "filter trap" made of inductors and capacitors that is precisely tuned to "short-circuit" a specific harmonic (e.g., a 5th harmonic filter). They are effective and lower-cost but are tuned for a specific load. If the load changes, they can be less effective.
+                    </li>
+                    <li>
+                        <strong>Multi-Pulse Rectifiers (12-pulse or 18-pulse):</strong> By using special transformers and more rectifiers, these high-end drives naturally cancel out the most damaging harmonics (5th, 7th, 11th, 13th). An 18-pulse drive can have a THD-I of less than 5% all by itself.
+                    </li>
+                    <li>
+                        <strong>Active Harmonic Filters (AHF):</strong> The ultimate solution. An AHF is a high-speed computer that constantly measures the harmonic "noise" on your system. It then injects an exact *opposite* "anti-noise" waveform to perfectly cancel the harmonics, resulting in a clean sine wave. They are the most expensive solution but are incredibly effective and adapt to any load.
+                    </li>
                 </ul>
             </div>
+
         </div>
 
     </main>
@@ -822,12 +982,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Elements from New File ---
+            // --- Elements ---
+            const form = document.getElementById('harmonic-distortion-form');
             const calculateBtn = document.getElementById('calculate-harmonic-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const pdfBtn = document.getElementById('pdf-btn');
+            
             const resultsSection = document.getElementById('results-section');
             const resultsTbody = document.getElementById('results-tbody');
-            const detailedStepsDiv = document.getElementById('detailed-steps');
-            const detailedCalculationsContent = document.getElementById('detailed-calculations-content');
+            const stepsContainer = document.getElementById('steps-container'); // New steps container
             const educationSection = document.getElementById('education-section');
             const chartCard = document.getElementById('chart-card');
             const loadingSpinner = document.getElementById('loading-spinner');
@@ -837,10 +1000,12 @@
             const addCurrentHarmonicBtn = document.getElementById('add-current-harmonic-btn');
             const addVoltageHarmonicBtn = document.getElementById('add-voltage-harmonic-btn');
 
-            // --- Logic from Template ---
             const themeSwitch = document.getElementById('theme-switch');
             const messageBox = document.getElementById('message-box');
+            
+            let lastInputs = null; // For PDF generation
 
+            // --- Theme & Message Box Logic ---
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
                 themeSwitch.checked = true;
@@ -868,9 +1033,8 @@
                 setTimeout(() => messageBox.classList.remove('show'), 4000);
             }
 
-            // --- Logic from New File (Adapted) ---
+            // --- Form Logic ---
 
-            // Function to add a new harmonic input row
             function addHarmonicInputRow(container, type, defaultOrder = '', defaultValue = '') {
                 const newRow = document.createElement('div');
                 newRow.classList.add('harmonic-input-row');
@@ -886,20 +1050,13 @@
                     <button type="button" class="remove-harmonic-btn btn danger" style="padding: 12px; margin-bottom: 0; align-self: center;"><i class="fas fa-trash-alt"></i></button>
                 `;
                 container.appendChild(newRow);
-
-                // Animate the new row
-                setTimeout(() => {
-                    newRow.classList.add('show');
-                }, 10); // Small delay to trigger transition
-
-                // Add event listener for remove button
+                setTimeout(() => newRow.classList.add('show'), 10);
                 newRow.querySelector('.remove-harmonic-btn').addEventListener('click', function() {
                     newRow.classList.remove('show');
                     newRow.addEventListener('transitionend', () => newRow.remove());
                 });
             }
 
-            // Add initial default harmonic rows if not already present (from HTML)
             document.querySelectorAll('.remove-harmonic-btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const row = this.closest('.harmonic-input-row');
@@ -911,221 +1068,237 @@
             addCurrentHarmonicBtn.addEventListener('click', () => addHarmonicInputRow(currentHarmonicsContainer, 'current'));
             addVoltageHarmonicBtn.addEventListener('click', () => addHarmonicInputRow(voltageHarmonicsContainer, 'voltage'));
 
+            // --- Reset Logic ---
+            resetBtn.addEventListener('click', function() {
+                form.reset();
+                // Remove dynamic rows
+                document.querySelectorAll('#current-harmonics-container .harmonic-input-row, #voltage-harmonics-container .harmonic-input-row').forEach(row => {
+                    row.classList.remove('show');
+                    row.addEventListener('transitionend', () => row.remove());
+                });
+                
+                // Hide all output sections
+                resultsSection.classList.add('hidden');
+                stepsContainer.classList.add('hidden');
+                stepsContainer.innerHTML = ''; // Clear steps
+                chartCard.classList.add('hidden');
+                educationSection.classList.remove('hidden'); // Keep education visible
+                pdfBtn.style.display = 'none';
+                
+                lastInputs = null;
+                
+                showMessage('Form reset', 'success');
+            });
+            
+            // --- PDF Generation Logic ---
+            pdfBtn.addEventListener('click', function() {
+                if (!lastInputs) {
+                    showMessage('Please run a calculation first.', 'error');
+                    return;
+                }
+                
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    let y = 15;
+                    const { inputs, results } = lastInputs;
+
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(16);
+                    pdf.text('Harmonic Distortion Report', 105, y, { align: 'center' });
+                    y += 8;
+
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(9);
+                    pdf.text(`Generated by Design Calculators | ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
+                    y += 10;
+                    
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(12);
+                    pdf.text('Input Parameters', 14, y);
+                    y += 2;
+                    
+                    const inputRows = [
+                        ["Fundamental Current (I1)", `${inputs.fundamentalCurrent.toFixed(2)} A`],
+                        ["Fundamental Voltage (V1)", `${inputs.fundamentalVoltage.toFixed(2)} V`],
+                        ["PCC Short Circuit Current (ISC)", `${inputs.pccShortCircuitCurrentKA.toFixed(2)} kA`],
+                        ["Maximum Demand Load (IL)", `${inputs.maxDemandLoadCurrent.toFixed(2)} A`]
+                    ];
+                    
+                    pdf.autoTable({
+                        startY: y,
+                        head: [['Parameter', 'Value']],
+                        body: inputRows,
+                        margin: { left: 14, right: 14 },
+                        theme: 'grid',
+                        headStyles: { fillColor: [30, 58, 138] },
+                    });
+                    y = pdf.autoTable.previous.finalY + 10;
+
+                    // Add Harmonic Inputs tables
+                    if (inputs.currentHarmonics.length > 0) {
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(12);
+                        pdf.text('Input Current Harmonics', 14, y);
+                        y += 2;
+                        pdf.autoTable({
+                            startY: y,
+                            head: [['Order (h)', 'Magnitude (A)']],
+                            body: inputs.currentHarmonics.map(h => [h.order, h.magnitude.toFixed(2)]),
+                            margin: { left: 14, right: 14 },
+                            theme: 'grid',
+                            headStyles: { fillColor: [30, 58, 138] },
+                        });
+                        y = pdf.autoTable.previous.finalY + 10;
+                    }
+
+                    if (inputs.voltageHarmonics.length > 0) {
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.setFontSize(12);
+                        pdf.text('Input Voltage Harmonics', 14, y);
+                        y += 2;
+                        pdf.autoTable({
+                            startY: y,
+                            head: [['Order (h)', 'Magnitude (V)']],
+                            body: inputs.voltageHarmonics.map(h => [h.order, h.magnitude.toFixed(2)]),
+                            margin: { left: 14, right: 14 },
+                            theme: 'grid',
+                            headStyles: { fillColor: [30, 58, 138] },
+                        });
+                        y = pdf.autoTable.previous.finalY + 10;
+                    }
+
+                    // Add Results
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(12);
+                    pdf.text('Calculation Summary', 14, y);
+                    y += 2;
+                    
+                    const resultRows = Array.from(resultsTbody.querySelectorAll('tr')).map(tr => [
+                        tr.cells[0].textContent,
+                        tr.cells[1].textContent
+                    ]);
+                    
+                    pdf.autoTable({
+                        startY: y,
+                        head: [['Parameter', 'Value']],
+                        body: resultRows,
+                        margin: { left: 14, right: 14 },
+                        theme: 'grid',
+                        headStyles: { fillColor: [30, 58, 138] },
+                        didParseCell: function (data) {
+                            if (data.cell.text[0] && data.cell.text[0].includes('%')) {
+                                const isFail = results[data.row.index] && results[data.row.index].isFail;
+                                if(isFail) {
+                                    data.cell.styles.textColor = [220, 38, 38]; // Red
+                                } else {
+                                    data.cell.styles.textColor = [16, 185, 129]; // Green
+                                }
+                                data.cell.styles.fontStyle = 'bold';
+                            }
+                        }
+                    });
+                    y = pdf.autoTable.previous.finalY + 15;
+
+                    // Add footer
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(10);
+                    pdf.text('For more calculators and information, visit http://designcalculators.co.in', 105, y, { align: 'center' });
+                    
+                    pdf.save('Harmonic-Distortion-Report.pdf');
+                    showMessage('PDF downloaded successfully');
+
+                } catch (e) {
+                    showMessage(`Error generating PDF: ${e.message}`, 'error');
+                }
+            });
+
+            // --- Calculation Logic ---
             calculateBtn.addEventListener('click', async function() {
-                // Show loading spinner and hide previous results
                 loadingSpinner.style.display = 'block';
                 resultsSection.classList.add('hidden');
-                detailedStepsDiv.classList.add('hidden');
+                stepsContainer.classList.add('hidden');
                 chartCard.classList.add('hidden');
-                educationSection.classList.add('hidden');
+                pdfBtn.style.display = 'none';
+                stepsContainer.innerHTML = ''; // Clear old steps
+                lastInputs = null; // Clear last inputs
 
                 try {
-                    // Get fundamental values
+                    // 1. Get Inputs
                     const fundamentalCurrent = parseFloat(document.getElementById('fundamental-current').value);
                     const fundamentalVoltage = parseFloat(document.getElementById('fundamental-voltage').value);
                     const pccShortCircuitCurrentKA = parseFloat(document.getElementById('pcc-short-circuit-current').value);
                     const maxDemandLoadCurrent = parseFloat(document.getElementById('max-demand-load-current').value);
 
-                    // Input validation for fundamental values
                     if (isNaN(fundamentalCurrent) || isNaN(fundamentalVoltage) || isNaN(pccShortCircuitCurrentKA) || isNaN(maxDemandLoadCurrent)) {
                         throw new Error("Please enter valid numbers for all main input fields.");
                     }
                     if (fundamentalCurrent <= 0 && fundamentalVoltage <= 0) {
-                        throw new Error("At least one fundamental magnitude (Current or Voltage) must be greater than zero for THD calculation.");
+                        throw new Error("At least one fundamental magnitude (Current or Voltage) must be greater than zero.");
                     }
                     if (pccShortCircuitCurrentKA <= 0 || maxDemandLoadCurrent <= 0) {
-                        throw new Error("PCC Short Circuit Current and Maximum Demand Load Current must be positive values for IEEE 519 compliance check.");
+                        throw new Error("PCC Short Circuit Current and Maximum Demand Load Current must be positive values.");
                     }
 
-                    // Get harmonic current inputs
                     const currentHarmonics = [];
                     let invalidCurrentInput = false;
                     document.querySelectorAll('#current-harmonics-container .harmonic-input-row').forEach(row => {
-                        const orderInput = row.querySelector('.harmonic-order-current');
-                        const magnitudeInput = row.querySelector('.harmonic-magnitude-current');
-                        const order = parseInt(orderInput.value);
-                        const magnitude = parseFloat(magnitudeInput.value);
-
-                        if (isNaN(order) || isNaN(magnitude) || order < 2 || magnitude < 0) {
-                            invalidCurrentInput = true;
-                        }
-                        currentHarmonics.push({ order, magnitude });
+                        const order = parseInt(row.querySelector('.harmonic-order-current').value);
+                        const magnitude = parseFloat(row.querySelector('.harmonic-magnitude-current').value);
+                        if (isNaN(order) || isNaN(magnitude) || order < 2 || magnitude < 0) invalidCurrentInput = true;
+                        if(magnitude > 0) currentHarmonics.push({ order, magnitude });
                     });
-                    if(invalidCurrentInput) throw new Error("Invalid input for current harmonics. Please use valid numbers (order >= 2, magnitude >= 0).");
+                    if(invalidCurrentInput) throw new Error("Invalid input for current harmonics.");
 
-                    // Get harmonic voltage inputs
                     const voltageHarmonics = [];
                     let invalidVoltageInput = false;
                     document.querySelectorAll('#voltage-harmonics-container .harmonic-input-row').forEach(row => {
-                        const orderInput = row.querySelector('.harmonic-order-voltage');
-                        const magnitudeInput = row.querySelector('.harmonic-magnitude-voltage');
-                        const order = parseInt(orderInput.value);
-                        const magnitude = parseFloat(magnitudeInput.value);
-                        
-                        if (isNaN(order) || isNaN(magnitude) || order < 2 || magnitude < 0) {
-                            invalidVoltageInput = true;
-                        }
-                        voltageHarmonics.push({ order, magnitude });
+                        const order = parseInt(row.querySelector('.harmonic-order-voltage').value);
+                        const magnitude = parseFloat(row.querySelector('.harmonic-magnitude-voltage').value);
+                        if (isNaN(order) || isNaN(magnitude) || order < 2 || magnitude < 0) invalidVoltageInput = true;
+                        if(magnitude > 0) voltageHarmonics.push({ order, magnitude });
                     });
-                    if(invalidVoltageInput) throw new Error("Invalid input for voltage harmonics. Please use valid numbers (order >= 2, magnitude >= 0).");
-
-                    // Clear previous results
-                    resultsTbody.innerHTML = ''; 
-                    detailedCalculationsContent.innerHTML = '';
-                    document.getElementById('harmonic-bar-chart').innerHTML = ''; // Clear previous chart
-
-                    let currentCalculations = '';
-                    let voltageCalculations = '';
-                    let thd_current_percent = 0;
-                    let thd_voltage_percent = 0;
-                    let total_rms_current = fundamentalCurrent;
-                    let total_rms_voltage = fundamentalVoltage;
+                    if(invalidVoltageInput) throw new Error("Invalid input for voltage harmonics.");
                     
-                    // --- THD Current Calculation (THD_I) ---
+                    // Store inputs for PDF
+                    lastInputs = {
+                        inputs: {
+                            fundamentalCurrent, fundamentalVoltage, pccShortCircuitCurrentKA, maxDemandLoadCurrent,
+                            currentHarmonics: currentHarmonics.sort((a,b) => a.order - b.order),
+                            voltageHarmonics: voltageHarmonics.sort((a,b) => a.order - b.order)
+                        },
+                        results: [] // Will be populated
+                    };
+
+                    // 2. Calculations
                     const sumOfSquaresOfCurrentHarmonics = currentHarmonics.reduce((sum, h) => sum + Math.pow(h.magnitude, 2), 0);
                     const rmsOfCurrentHarmonics = Math.sqrt(sumOfSquaresOfCurrentHarmonics);
-
-                    if (fundamentalCurrent > 0) {
-                        thd_current_percent = (rmsOfCurrentHarmonics / fundamentalCurrent) * 100;
-                    } else if (rmsOfCurrentHarmonics > 0) {
-                        showMessage("Fundamental current is zero, but harmonic currents are present. THD-I will be undefined.", "warning");
-                        thd_current_percent = Infinity; 
-                    }
-                    total_rms_current = Math.sqrt(Math.pow(fundamentalCurrent, 2) + sumOfSquaresOfCurrentHarmonics);
-
-                    currentCalculations += `
-                        <h4>Current THD Calculation:</h4>
-                        <p><strong>Step 1.1:</strong> Sum of Squares of Harmonic Currents ($\Sigma I_{h}^{2}$)</p>
-                        <p>$\\Sigma I_{h}^{2} = ${currentHarmonics.map(h => `${h.magnitude.toFixed(2)}^2`).join(' + ')} = ${sumOfSquaresOfCurrentHarmonics.toFixed(2)} A^2$</p>
-                        <p><strong>Step 1.2:</strong> RMS Value of Harmonic Currents ($I_{rms,h}$)</p>
-                        <p>$I_{rms,h} = \\sqrt{\\Sigma I_{h}^{2}} = \\sqrt{${sumOfSquaresOfCurrentHarmonics.toFixed(2)}} = ${rmsOfCurrentHarmonics.toFixed(2)} A$</p>
-                        <p><strong>Step 1.3:</strong> Total Harmonic Distortion of Current (THD-I)</p>
-                        <p>$\\text{THD}_{I} = \\left( \\frac{I_{rms,h}}{I_1} \\right) \\cdot 100\\% = \\left( \\frac{${rmsOfCurrentHarmonics.toFixed(2)} A}{${fundamentalCurrent.toFixed(2)} A} \\right) \\cdot 100\\% = ${thd_current_percent.toFixed(2)}\\%$</p>
-                        <p><strong>Step 1.4:</strong> Total RMS Current ($I_{RMS,Total}$)</p>
-                        <p>$I_{RMS,Total} = \\sqrt{I_1^2 + I_{rms,h}^2} = \\sqrt{${fundamentalCurrent.toFixed(2)}^2 + ${rmsOfCurrentHarmonics.toFixed(2)}^2} = ${total_rms_current.toFixed(2)} A$</p>
-                    `;
+                    let thd_current_percent = (fundamentalCurrent > 0) ? (rmsOfCurrentHarmonics / fundamentalCurrent) * 100 : Infinity;
+                    const total_rms_current = Math.sqrt(Math.pow(fundamentalCurrent, 2) + sumOfSquaresOfCurrentHarmonics);
                     
-                    // --- THD Voltage Calculation (THD_V) ---
                     const sumOfSquaresOfVoltageHarmonics = voltageHarmonics.reduce((sum, h) => sum + Math.pow(h.magnitude, 2), 0);
                     const rmsOfVoltageHarmonics = Math.sqrt(sumOfSquaresOfVoltageHarmonics);
-
-                    if (fundamentalVoltage > 0) {
-                        thd_voltage_percent = (rmsOfVoltageHarmonics / fundamentalVoltage) * 100;
-                    } else if (rmsOfVoltageHarmonics > 0) {
-                        showMessage("Fundamental voltage is zero, but harmonic voltages are present. THD-V will be undefined.", "warning");
-                        thd_voltage_percent = Infinity;
-                    }
-                    total_rms_voltage = Math.sqrt(Math.pow(fundamentalVoltage, 2) + sumOfSquaresOfVoltageHarmonics);
-
-                    voltageCalculations += `
-                        <h4 style="margin-top: 20px;">Voltage THD Calculation:</h4>
-                        <p><strong>Step 2.1:</strong> Sum of Squares of Harmonic Voltages ($\Sigma V_{h}^{2}$)</p>
-                        <p>$\\Sigma V_{h}^{2} = ${voltageHarmonics.map(h => `${h.magnitude.toFixed(2)}^2`).join(' + ')} = ${sumOfSquaresOfVoltageHarmonics.toFixed(2)} V^2$</p>
-                        <p><strong>Step 2.2:</strong> RMS Value of Harmonic Voltages ($V_{rms,h}$)</p>
-                        <p>$V_{rms,h} = \\sqrt{\\Sigma V_{h}^{2}} = \\sqrt{${sumOfSquaresOfVoltageHarmonics.toFixed(2)}} = ${rmsOfVoltageHarmonics.toFixed(2)} V$</p>
-                        <p><strong>Step 2.3:</strong> Total Harmonic Distortion of Voltage (THD-V)</p>
-                        <p>$\\text{THD}_{V} = \\left( \\frac{V_{rms,h}}{V_1} \\right) \\cdot 100\\% = \\left( \\frac{${rmsOfVoltageHarmonics.toFixed(2)} V}{${fundamentalVoltage.toFixed(2)} V} \\right) \\cdot 100\\% = ${thd_voltage_percent.toFixed(2)}\\%$</p>
-                        <p><strong>Step 2.4:</strong> Total RMS Voltage ($V_{RMS,Total}$)</p>
-                        <p>$V_{RMS,Total} = \\sqrt{V_1^2 + V_{rms,h}^2} = \\sqrt{${fundamentalVoltage.toFixed(2)}^2 + ${rmsOfVoltageHarmonics.toFixed(2)}^2} = ${total_rms_voltage.toFixed(2)} V$</p>
-                    `;
-
-                    // Display Individual Harmonic Distortion
-                    let ihdCalculations = '<h4 style="margin-top: 20px;">Individual Harmonic Distortion (Current - IHD)</h4>';
-                    if (fundamentalCurrent > 0) {
-                        currentHarmonics.sort((a,b) => a.order - b.order).forEach(h => {
-                            const ihd = (h.magnitude / fundamentalCurrent) * 100;
-                            ihdCalculations += `<p>IHD at Order ${h.order}: $\\text{IHD}_{${h.order}} = \\left( \\frac{${h.magnitude.toFixed(2)} A}{${fundamentalCurrent.toFixed(2)} A} \\right) \\cdot 100\\% = ${ihd.toFixed(2)}\\%$</p>`;
-                        });
-                    } else {
-                        ihdCalculations += `<p>Individual Harmonic Distortion for Current cannot be calculated as fundamental current is zero.</p>`;
-                    }
+                    let thd_voltage_percent = (fundamentalVoltage > 0) ? (rmsOfVoltageHarmonics / fundamentalVoltage) * 100 : Infinity;
+                    const total_rms_voltage = Math.sqrt(Math.pow(fundamentalVoltage, 2) + sumOfSquaresOfVoltageHarmonics);
                     
-                    let vhdCalculations = '<h4 style="margin-top: 20px;">Individual Harmonic Distortion (Voltage - VHD)</h4>';
-                    if (fundamentalVoltage > 0) {
-                        voltageHarmonics.sort((a,b) => a.order - b.order).forEach(h => {
-                            const vhd = (h.magnitude / fundamentalVoltage) * 100;
-                            vhdCalculations += `<p>VHD at Order ${h.order}: $\\text{VHD}_{${h.order}} = \\left( \\frac{${h.magnitude.toFixed(2)} V}{${fundamentalVoltage.toFixed(2)} V} \\right) \\cdot 100\\% = ${vhd.toFixed(2)}\\%$</p>`;
-                        });
-                    } else {
-                        vhdCalculations += `<p>Individual Harmonic Distortion for Voltage cannot be calculated as fundamental voltage is zero.</p>`;
-                    }
-
-                    // --- IEEE 519 Compliance Check ---
                     const isc_il_ratio = (pccShortCircuitCurrentKA * 1000) / maxDemandLoadCurrent;
-                    let voltageLevelCategory = '';
-                    let thdVLmt = 0;
-                    let individualVLmt = 0;
-
-                    if (fundamentalVoltage < 1000) { 
-                        voltageLevelCategory = "Low Voltage (V < 1 kV)";
-                        thdVLmt = 5.0; individualVLmt = 3.0;
-                    } else if (fundamentalVoltage >= 1000 && fundamentalVoltage < 69000) {
-                        voltageLevelCategory = "Medium Voltage (1 kV <= V < 69 kV)";
-                        thdVLmt = 5.0; individualVLmt = 3.0;
-                    } else if (fundamentalVoltage >= 69000 && fundamentalVoltage <= 161000) {
-                        voltageLevelCategory = "High Voltage (69 kV <= V <= 161 kV)";
-                        thdVLmt = 2.5; individualVLmt = 1.5;
-                    } else { 
-                        voltageLevelCategory = "Extra-High Voltage (V > 161 kV)";
-                        thdVLmt = 1.5; individualVLmt = 1.0;
-                    }
+                    
+                    let voltageLevelCategory = '', thdVLmt = 0, individualVLmt = 0;
+                    if (fundamentalVoltage < 1000) { voltageLevelCategory = "Low Voltage (V < 1 kV)"; thdVLmt = 5.0; individualVLmt = 3.0; }
+                    else if (fundamentalVoltage < 69000) { voltageLevelCategory = "Medium Voltage (1 kV <= V < 69 kV)"; thdVLmt = 5.0; individualVLmt = 3.0; }
+                    else if (fundamentalVoltage <= 161000) { voltageLevelCategory = "High Voltage (69 kV <= V <= 161 kV)"; thdVLmt = 2.5; individualVLmt = 1.5; }
+                    else { voltageLevelCategory = "Extra-High Voltage (V > 161 kV)"; thdVLmt = 1.5; individualVLmt = 1.0; }
 
                     let thdILmt = 0, individualILmtOddNonTriple = 0, individualILmtOddTriple = 0, individualILmtEven = 0;
-                    if (isc_il_ratio < 20) {
-                        thdILmt = 20.0; individualILmtOddNonTriple = 20.0; individualILmtOddTriple = 15.0; individualILmtEven = 10.0;
-                    } else if (isc_il_ratio < 50) {
-                        thdILmt = 12.0; individualILmtOddNonTriple = 10.0; individualILmtOddTriple = 7.0; individualILmtEven = 5.0;
-                    } else if (isc_il_ratio < 100) {
-                        thdILmt = 8.0; individualILmtOddNonTriple = 7.0; individualILmtOddTriple = 5.0; individualILmtEven = 4.0;
-                    } else if (isc_il_ratio < 1000) {
-                        thdILmt = 5.0; individualILmtOddNonTriple = 4.0; individualILmtOddTriple = 3.0; individualILmtEven = 2.0;
-                    } else { 
-                        thdILmt = 5.0; individualILmtOddNonTriple = 4.0; individualILmtOddTriple = 3.0; individualILmtEven = 2.0;
-                    }
+                    if (isc_il_ratio < 20) { thdILmt = 20.0; individualILmtOddNonTriple = 20.0; individualILmtOddTriple = 15.0; individualILmtEven = 10.0; }
+                    else if (isc_il_ratio < 50) { thdILmt = 12.0; individualILmtOddNonTriple = 10.0; individualILmtOddTriple = 7.0; individualILmtEven = 5.0; }
+                    else if (isc_il_ratio < 100) { thdILmt = 8.0; individualILmtOddNonTriple = 7.0; individualILmtOddTriple = 5.0; individualILmtEven = 4.0; }
+                    else if (isc_il_ratio < 1000) { thdILmt = 5.0; individualILmtOddNonTriple = 4.0; individualILmtOddTriple = 3.0; individualILmtEven = 2.0; }
+                    else { thdILmt = 5.0; individualILmtOddNonTriple = 4.0; individualILmtOddTriple = 3.0; individualILmtEven = 2.0; }
 
-                    let complianceText = `<h4 style="margin-top: 20px;">IEEE 519 (2014) Compliance Check:</h4>
-                        <p><strong>PCC Short Circuit Current ($I_{SC}$):</strong> ${pccShortCircuitCurrentKA.toFixed(2)} kA</p>
-                        <p><strong>Maximum Demand Load Current ($I_L$):</strong> ${maxDemandLoadCurrent.toFixed(2)} A</p>
-                        <p><strong>$I_{SC}/I_L$ Ratio:</strong> ${isc_il_ratio.toFixed(2)}</p>
-                        
-                        <h5 style="margin-top: 15px;">Voltage Distortion Limits (IEEE 519 Table 1)</h5>
-                        <p><strong>Voltage Level Category:</strong> ${voltageLevelCategory}</p>
-                        <p>Calculated THD-V (<strong>${thd_voltage_percent.toFixed(2)}%</strong>) is ${thd_voltage_percent <= thdVLmt ? '<span class="compliance-pass">within</span>' : '<span class="compliance-fail">exceeding</span>'} the limit (<strong>${thdVLmt.toFixed(1)}%</strong>).</p>
-                    `;
-
-                    let individualVHDComplianceText = '';
-                    if (fundamentalVoltage > 0) {
-                        voltageHarmonics.sort((a,b) => a.order - b.order).forEach(h => {
-                            const vhd = (h.magnitude / fundamentalVoltage) * 100;
-                            const compliance = vhd <= individualVLmt ? '<span class="compliance-pass">within</span>' : '<span class="compliance-fail">exceeding</span>';
-                            individualVHDComplianceText += `<p>VHD at Order ${h.order}: <strong>${vhd.toFixed(2)}%</strong> is ${compliance} the limit (<strong>${individualVLmt.toFixed(1)}%</strong>).</p>`;
-                        });
-                    }
-                    complianceText += individualVHDComplianceText || '<p>No voltage harmonics entered for individual compliance check.</p>';
-
-                    complianceText += `<h5 style="margin-top: 15px;">Current Distortion Limits (IEEE 519 Table 2)</h5>
-                        <p>Based on $I_{SC}/I_L$ ratio of ${isc_il_ratio.toFixed(2)}, TDD Limit (THD-I) is <strong>${thdILmt.toFixed(1)}%</strong>.</p>
-                        <p>Calculated THD-I (<strong>${thd_current_percent.toFixed(2)}%</strong>) is ${thd_current_percent <= thdILmt ? '<span class="compliance-pass">within</span>' : '<span class="compliance-fail">exceeding</span>'} the limit.</p>
-                    `;
-
-                    let individualIHDComplianceText = '';
-                    if (fundamentalCurrent > 0) {
-                        currentHarmonics.sort((a,b) => a.order - b.order).forEach(h => {
-                            const ihd = (h.magnitude / fundamentalCurrent) * 100;
-                            let limit = 0, type = '';
-                            if (h.order % 2 === 0) { limit = individualILmtEven; type = 'Even'; }
-                            else if (h.order % 3 === 0) { limit = individualILmtOddTriple; type = 'Odd (Triple)'; }
-                            else { limit = individualILmtOddNonTriple; type = 'Odd (Non-Triple)'; }
-                            const compliance = ihd <= limit ? '<span class="compliance-pass">within</span>' : '<span class="compliance-fail">exceeding</span>';
-                            individualIHDComplianceText += `<p>IHD at Order ${h.order} (${type}): <strong>${ihd.toFixed(2)}%</strong> is ${compliance} the limit (<strong>${limit.toFixed(1)}%</strong>).</p>`;
-                        });
-                    }
-                    complianceText += individualIHDComplianceText || '<p>No current harmonics entered for individual compliance check.</p>';
-                    
-                    // Add detailed calculation steps to the div
-                    detailedCalculationsContent.innerHTML = currentCalculations + voltageCalculations + ihdCalculations + vhdCalculations + complianceText;
-
-                    // Display Summary results
+                    // 3. Populate Summary Table
+                    resultsTbody.innerHTML = '';
+                    lastInputs.results = []; // Reset PDF results
                     addResultRow("Fundamental Current (I1)", `${fundamentalCurrent.toFixed(2)} A`);
                     addResultRow("Total RMS Current (IRMS)", `${total_rms_current.toFixed(2)} A`);
                     addResultRow("THD - Current (THD-I)", `${thd_current_percent.toFixed(2)} %`, thd_current_percent > thdILmt);
@@ -1134,25 +1307,98 @@
                     addResultRow("THD - Voltage (THD-V)", `${thd_voltage_percent.toFixed(2)} %`, thd_voltage_percent > thdVLmt);
                     addResultRow("ISC/IL Ratio", isc_il_ratio.toFixed(2));
                     addResultRow("THD-V Limit (IEEE 519)", `${thdVLmt.toFixed(1)} %`);
-                    addResultRow("THD-I Limit (IEEE 519)", `${thdILmt.toFixed(1)} %`);
+                    addResultRow("THD-I (TDD) Limit (IEEE 519)", `${thdILmt.toFixed(1)} %`);
+                    
+                    // --- Populate NEW Step-by-Step Cards ---
+                    
+                    // Step 1: Current Analysis
+                    let step1Html = `
+                        <div class="step-card">
+                            <h4><span class="number">1</span>Current Distortion Analysis (THD-I)</h4>
+                            <div class="step-content">
+                                <div>
+                                    <p>First, we calculate the <strong>Total Harmonic Distortion for Current (THD-I)</strong>. This measures the total "dirty" current from harmonics relative to the fundamental current.</p>
+                                    <p>A high THD-I indicates that non-linear loads (like VFDs) are drawing heavily distorted current, which can lead to overheating and inefficiency.</p>
+                                </div>
+                                <div class="formula-block math-content">
+                                    <p><strong>RMS of Harmonics ($I_{rms,h}$):</strong><br>
+                                    $I_{rms,h} = \\sqrt{\\sum I_{h}^{2}}$<br>
+                                    $I_{rms,h} = \\sqrt{${sumOfSquaresOfCurrentHarmonics.toFixed(2)}} = ${rmsOfCurrentHarmonics.toFixed(2)} A$</p>
+                                    <p><strong>THD-I Calculation:</strong><br>
+                                    $\\text{THD}_{I} = (I_{rms,h} / I_1) \\cdot 100\\%$<br>
+                                    $\\text{THD}_{I} = (${rmsOfCurrentHarmonics.toFixed(2)} / ${fundamentalCurrent.toFixed(2)}) \\cdot 100\\% = $ <strong style="font-size: 1.2rem; color: var(${thd_current_percent > thdILmt ? '--danger' : '--success'});">${thd_current_percent.toFixed(2)}%</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Step 2: Voltage Analysis
+                    let step2Html = `
+                        <div class="step-card">
+                            <h4><span class="number">2</span>Voltage Distortion Analysis (THD-V)</h4>
+                            <div class="step-content">
+                                <div>
+                                    <p>Next, we calculate the <strong>Total Harmonic Distortion for Voltage (THD-V)</strong>. This is the *result* of the harmonic currents (from Step 1) flowing through your system's impedance (wires, transformers).</p>
+                                    <p>High THD-V is what damages other sensitive equipment connected to the same power bus. IEEE 519 sets strict limits on THD-V to protect all users on the grid.</p>
+                                </div>
+                                <div class="formula-block math-content">
+                                    <p><strong>RMS of Harmonics ($V_{rms,h}$):</strong><br>
+                                    $V_{rms,h} = \\sqrt{\\sum V_{h}^{2}}$<br>
+                                    $V_{rms,h} = \\sqrt{${sumOfSquaresOfVoltageHarmonics.toFixed(2)}} = ${rmsOfVoltageHarmonics.toFixed(2)} V$</p>
+                                    <p><strong>THD-V Calculation:</strong><br>
+                                    $\\text{THD}_{V} = (V_{rms,h} / V_1) \\cdot 100\\%$<br>
+                                    $\\text{THD}_{V} = (${rmsOfVoltageHarmonics.toFixed(2)} / ${fundamentalVoltage.toFixed(2)}) \\cdot 100\\% = $ <strong style="font-size: 1.2rem; color: var(${thd_voltage_percent > thdVLmt ? '--danger' : '--success'});">${thd_voltage_percent.toFixed(2)}%</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
-                    // Hide loading spinner and show results
+                    // Step 3: IEEE 519 Compliance
+                    let step3Html = `
+                        <div class="step-card">
+                            <h4><span class="number">3</span>IEEE 519 Compliance Check</h4>
+                            <div class="step-content">
+                                <div>
+                                    <p>Finally, we check your system against the <strong>IEEE 519 standard</strong>. The limits you must meet depend on your "stiffness" ratio ($I_{SC} / I_L$).</p>
+                                    <p>This ratio compares the grid's strength ($I_{SC}$) to your maximum load ($I_L$). A low ratio means you are a "large" customer and have slightly looser limits, while a high ratio means you are a "small" customer and must be "cleaner".</p>
+                                </div>
+                                <div class="formula-block math-content">
+                                    <p><strong>Stiffness Ratio ($I_{SC} / I_L$):</strong><br>
+                                    $Ratio = (${pccShortCircuitCurrentKA.toFixed(2)} kA \\cdot 1000) / ${maxDemandLoadCurrent.toFixed(2)} A = $ <strong style="font-size: 1.2rem; color: var(--heading);">${isc_il_ratio.toFixed(2)}</strong></p>
+                                    
+                                    <p style="margin-top: 15px;"><strong>Voltage Compliance (THD-V):</strong><br>
+                                    Your Limit: <strong>${thdVLmt.toFixed(1)}%</strong><br>
+                                    Your Value: <strong class="${thd_voltage_percent <= thdVLmt ? 'compliance-pass' : 'compliance-fail'}">${thd_voltage_percent.toFixed(2)}%</strong></p>
+                                    
+                                    <p style="margin-top: 15px;"><strong>Current Compliance (TDD/THD-I):</strong><br>
+                                    Your Limit: <strong>${thdILmt.toFixed(1)}%</strong><br>
+                                    Your Value: <strong class="${thd_current_percent <= thdILmt ? 'compliance-pass' : 'compliance-fail'}">${thd_current_percent.toFixed(2)}%</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    stepsContainer.innerHTML = step1Html + step2Html + step3Html;
+                    
+                    // 4. Draw Chart
+                    drawHarmonicChart(fundamentalCurrent, currentHarmonics, fundamentalVoltage, voltageHarmonics);
+
+                    // 5. Show sections
                     loadingSpinner.style.display = 'none';
                     resultsSection.classList.remove('hidden');
-                    detailedStepsDiv.classList.remove('hidden');
+                    stepsContainer.classList.add('active'); // Show new steps
                     chartCard.classList.remove('hidden');
                     educationSection.classList.remove('hidden');
-
-                    // Draw the harmonic spectrum chart
-                    drawHarmonicChart(fundamentalCurrent, currentHarmonics, fundamentalVoltage, voltageHarmonics);
+                    pdfBtn.style.display = 'inline-flex';
 
                     setTimeout(() => {
                         resultsSection.scrollIntoView({ behavior: 'smooth' });
                     }, 100); 
 
+                    // 6. Typeset MathJax
                     if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
                         setTimeout(() => {
-                            window.MathJax.typesetPromise([detailedStepsDiv]);
+                            window.MathJax.typesetPromise([stepsContainer]);
                         }, 50); 
                     }
                     
@@ -1163,13 +1409,38 @@
                     loadingSpinner.style.display = 'none';
                 }
             });
+            
+            // Helper function to add a row to the summary result table
+            function addResultRow(parameter, value, isFail = false) {
+                const row = document.createElement('tr');
+                const paramCell = document.createElement('td');
+                paramCell.textContent = parameter;
+                const valueCell = document.createElement('td');
+                valueCell.innerHTML = `<strong>${value}</strong>`;
+                
+                if (parameter.includes('THD-I') || parameter.includes('THD-V')) {
+                    valueCell.classList.add('highlight');
+                    if (isFail) {
+                        valueCell.classList.add('fail');
+                    }
+                    // Store for PDF
+                    lastInputs.results.push({ parameter, value, isFail });
+                } else {
+                    lastInputs.results.push({ parameter, value, isFail: false });
+                }
+                
+                row.appendChild(paramCell);
+                row.appendChild(valueCell);
+                resultsTbody.appendChild(row);
+            }
 
             // Function to draw the harmonic spectrum bar chart
             function drawHarmonicChart(i1, currentHarms, v1, voltageHarms) {
                 d3.select("#harmonic-bar-chart").selectAll("*").remove(); // Clear previous chart
 
                 const margin = { top: 20, right: 30, bottom: 60, left: 60 },
-                    width = Math.min(800, document.getElementById('chart-card').offsetWidth - margin.left - margin.right - 40), // Adjust for padding
+                    containerWidth = document.getElementById('chart-card').offsetWidth,
+                    width = Math.max(300, containerWidth - margin.left - margin.right - 40), // Adjust for padding
                     height = 400 - margin.top - margin.bottom;
 
                 const svg = d3.select("#harmonic-bar-chart")
@@ -1199,11 +1470,11 @@
                 const x = d3.scaleBand()
                     .domain(allOrders)
                     .range([0, width])
-                    .padding(0.2); // Increased padding
+                    .padding(0.2); 
 
                 const maxMagnitude = d3.max(chartData, d => d.magnitude) || 1;
                 const y = d3.scaleLinear()
-                    .domain([0, maxMagnitude * 1.1]) // 10% buffer
+                    .domain([0, maxMagnitude * 1.1]) 
                     .range([height, 0]);
 
                 svg.append("g")
@@ -1220,7 +1491,7 @@
                 svg.append("text")
                     .attr("text-anchor", "middle")
                     .attr("x", width / 2)
-                    .attr("y", height + margin.bottom - 10)
+                    .attr("y", height + margin.bottom - 5)
                     .style("fill", "var(--text)")
                     .text("Harmonic Order");
 
@@ -1267,7 +1538,7 @@
 
                 const legend = svg.append("g")
                     .attr("class", "legend")
-                    .attr("transform", `translate(${width - 150}, -10)`); // Position legend
+                    .attr("transform", `translate(${Math.max(0, width - 150)}, -10)`); 
 
                 legend.append("rect")
                     .attr("x", 0)
@@ -1296,29 +1567,6 @@
                     .style("fill", "var(--text)")
                     .style("font-size", "12px")
                     .text("Voltage Harmonics");
-            }
-
-            // Helper function to add a row to the summary result table
-            function addResultRow(parameter, value, isFail = false) {
-                const row = document.createElement('tr');
-                
-                const paramCell = document.createElement('td');
-                paramCell.textContent = parameter;
-                
-                const valueCell = document.createElement('td');
-                valueCell.innerHTML = `<strong>${value}</strong>`;
-                
-                if (parameter.includes('THD-I') || parameter.includes('THD-V')) {
-                    valueCell.classList.add('highlight');
-                    if (isFail) {
-                        valueCell.classList.add('fail');
-                    }
-                }
-                
-                row.appendChild(paramCell);
-                row.appendChild(valueCell);
-                
-                resultsTbody.appendChild(row);
             }
         });
     </script>
