@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780"
+        crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Lifecycle & LCOS Calculator (Industrial)</title>
+    <meta name="description"
+        content="Industrial Battery Analysis Tool. Predicts SOH, Remaining Useful Life, and Levelized Cost of Storage (LCOS). Models Arrhenius thermal aging, cycle fatigue, and self-discharge for VRLA, Li-ion, and NiCd.">
+    <meta name="keywords"
+        content="battery life calculator, LCOS calculator, battery ROI, arrhenius equation, state of health, Li-ion life, VRLA aging, self discharge, electrical engineering">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&family=Roboto+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js (UMD) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Favicon Links -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* --- CORE THEME (Standardized) --- */
+        :root {
+            --primary: #1E3A8A;
+            --secondary: #2563EB;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #4B5563;
+            --heading: #111827;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+
+            /* Commercial Additions */
+            --input-bg: #F1F5F9;
+            --text-light: #64748b;
+            --font-mono: 'Roboto Mono', monospace;
+        }
+
+        body.dark-mode {
+            --primary: #10B981;
+            --secondary: #34D399;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #CBD5E1;
+            --heading: #F1F5F9;
+            --footer-bg: #020617;
+            --border: #334155;
+            --accent: #F59E0B;
+            --input-bg: #0f172a;
+            --text-light: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: none;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #E0E7FF;
+            opacity: 0.9;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            font-size: 1rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.2);
+            transition: .4s;
+            border-radius: 30px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Content */
+        main {
+            padding: 40px 0;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+
+        .tool-description {
+            padding: 20px 0;
+            background: transparent;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        /* Inputs */
+        .input-section {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 25px 20px 20px 20px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .section-title {
+            position: absolute;
+            top: -12px;
+            left: 16px;
+            background: var(--card);
+            padding: 0 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        body.dark-mode .section-title {
+            background: var(--card);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+            position: relative;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--heading);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--card);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: var(--font-mono);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .info-icon {
+            color: var(--secondary);
+            cursor: help;
+            font-size: 0.9em;
+            opacity: 0.7;
+        }
+
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-container .tooltip-text {
+            visibility: hidden;
+            width: 240px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+            bottom: 135%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-container .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        /* Buttons & Presets */
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+            transition: all 0.3s;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding-top: 15px;
+            gap: 15px;
+        }
+
+        .preset-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .preset-btn:hover {
+            background: var(--bg);
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        /* Results */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .results-table th {
+            background: var(--grad);
+            color: white;
+            font-weight: 700;
+        }
+
+        .results-table tr:nth-child(even) {
+            background-color: var(--bg);
+        }
+
+        .results-table td:first-child {
+            font-weight: 600;
+            color: var(--heading);
+        }
+
+        .results-table .val {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-pass {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-warn {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .status-fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* Education */
+        .education-section {
+            margin-top: 50px;
+        }
+
+        .tech-article {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        @media (max-width: 800px) {
+            .tech-article {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .toc-sticky {
+            position: sticky;
+            top: 20px;
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .toc-sticky h4 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .toc-sticky ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-sticky li {
+            margin-bottom: 8px;
+        }
+
+        .toc-sticky a {
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: color 0.2s;
+            display: block;
+            padding: 4px 0;
+        }
+
+        .toc-sticky a:hover {
+            color: var(--secondary);
+            transform: translateX(5px);
+        }
+
+        .article-content h3 {
+            color: var(--secondary);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            margin-top: 40px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .article-content p {
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            color: var(--text);
+        }
+
+        .highlight-box {
+            background: rgba(37, 99, 235, 0.05);
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .formula {
+            background: var(--bg);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin: 12px 0;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            color: var(--heading);
+        }
+
+        .calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(0, 0, 0, 0.03);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--success);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--heading);
+        }
+
+        /* Message */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 28px;
+            border-radius: 8px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            z-index: 10000;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.4s;
+            display: none;
+        }
+
+        .message-box.show {
+            display: block;
+            opacity: 1;
+            top: 30px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--grad-dark);
+            color: #CBD5E1;
+            padding: 50px 0 20px 0;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-col a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-col a:hover {
+            color: var(--accent);
+        }
+
+        .footer-disclaimer {
+            text-align: center;
+            padding-top: 25px;
+            border-top: 1px solid #334155;
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 0.9rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 0.9rem;
+            color: #94A3B8;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-btn:hover {
+            transform: translateY(-4px);
+        }
+
+        .social-btn.linkedin {
+            background-color: #0A66C2;
+        }
+
+        .social-btn.youtube {
+            background-color: #FF0000;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 25px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-article {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="message-box" class="message-box"></div>
+
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo-container">
+                    <span class="logo-text">Design Calculators</span>
+                    <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
+                </a>
+                <ul class="nav-links">
+                    <li><a href='/'>Home</a></li>
+                    <li><a href="articles">Articles</a></li>
+                    <li><a href="indexmech">Mechanical</a></li>
+                    <li><a href="indexele">Electrical</a></li>
+                    <li><a href="indexinst">Instrumentation</a></li>
+                </ul>
+                <div class="theme-toggle">
+                    <i class="fas fa-sun"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <i class="fas fa-moon"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2><i class="fas fa-battery-half"></i> Battery Lifecycle & Cost Analyzer</h2>
+
+            <div class="tool-description">
+                <p>Comprehensive Battery Asset Management Tool. Simulates <strong>Life Expectancy (Calendar +
+                        Cycle)</strong>, calculates <strong>Levelized Cost of Storage (LCOS)</strong>, and visualizes
+                    the impact of temperature, DoD, and idle time on battery health. Supports VRLA, Li-ion, and NiCd
+                    chemistries.</p>
+            </div>
+
+            <div class="calculator-form">
+
+                <div class="form-group">
+                    <label>Quick Presets:</label>
+                    <div class="preset-container" style="margin-bottom: 0;">
+                        <button type="button" class="preset-btn" onclick="loadPreset('vrla')"><i
+                                class="fas fa-car-battery"></i> VRLA (UPS)</button>
+                        <button type="button" class="preset-btn" onclick="loadPreset('li')"><i
+                                class="fas fa-mobile-alt"></i> Li-Ion (NMC)</button>
+                        <button type="button" class="preset-btn" onclick="loadPreset('lfp')"><i
+                                class="fas fa-battery-full"></i> LiFePO4 (Solar)</button>
+                        <button type="button" class="preset-btn" onclick="loadPreset('nicd')"><i
+                                class="fas fa-plug"></i> NiCd (Ind)</button>
+                    </div>
+                </div>
+
+                <!-- 1. Asset Financials -->
+                <div class="input-section">
+                    <div class="section-title">1. Financial & Capacity Data</div>
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="form-group">
+                            <label>System Voltage (V)</label>
+                            <input type="number" id="sys-volts" value="48" step="12">
+                        </div>
+                        <div class="form-group">
+                            <label>Capacity (Ah)</label>
+                            <input type="number" id="sys-ah" value="100" step="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Total Asset Cost ($) <div class="tooltip-container"><i
+                                        class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Total cost
+                                        of battery bank including installation.</span></div></label>
+                            <input type="number" id="sys-cost" value="1200" step="50">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Technical Specs -->
+                <div class="input-section">
+                    <div class="section-title">2. Technical Specifications</div>
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="form-group">
+                            <label>Chemistry Type</label>
+                            <select id="bat-chem">
+                                <option value="vrla">VRLA (AGM/Gel)</option>
+                                <option value="la">Flooded Lead Acid</option>
+                                <option value="li-nmc">Lithium-Ion (NMC)</option>
+                                <option value="li-lfp">Lithium Iron Phos (LFP)</option>
+                                <option value="nicd">Nickel Cadmium</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rated Float Life (Years) <div class="tooltip-container"><i
+                                        class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Datasheet
+                                        design life at 25°C.</span></div></label>
+                            <input type="number" id="rated-years" value="10" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Rated Cycles (@ 80% DoD)</label>
+                            <input type="number" id="rated-cycles" value="1200" step="100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Operating Conditions -->
+                <div class="input-section">
+                    <div class="section-title">3. Operating Environment</div>
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="form-group">
+                            <label>Avg. Temperature (°C) <div class="tooltip-container"><i
+                                        class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Avg ambient
+                                        temp. Every 10°C rise above 25°C halves life.</span></div></label>
+                            <input type="number" id="env-temp" value="25" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Avg. Depth of Discharge (%)</label>
+                            <input type="number" id="env-dod" value="30" step="5" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Cycles per Day <div class="tooltip-container"><i
+                                        class="fas fa-info-circle info-icon"></i><span class="tooltip-text">
+                                        < 0.1 means Idle/Float usage.</span>
+                                </div></label>
+                            <input type="number" id="env-cycles" value="1" step="0.1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-wrapper">
+                    <button type="button" class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i>
+                        Print Report</button>
+                    <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Run
+                        Analysis</button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="result-container" class="card hidden" style="margin-top: 40px;">
+                <h3><i class="fas fa-poll"></i> Simulation Report</h3>
+
+                <div class="results-grid">
+                    <!-- Left Col: Stats -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Life & Cost Metrics</h4>
+
+                        <div style="background:var(--input-bg); border-radius:8px; padding:15px; margin-bottom:15px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                <span style="font-weight:600;">Predicted Life:</span>
+                                <span id="res-years"
+                                    style="font-weight:800; color:var(--primary); font-size: 1.2rem;">0.0 Years</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                                <span style="font-weight:600;">LCOS (Cost/kWh):</span>
+                                <span id="res-lcos" style="font-weight:800; color:var(--secondary);">0.0 $/kWh</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="font-weight:600;">Self-Discharge:</span>
+                                <span id="res-self" style="font-weight:800; color:var(--text);">0.0% / mo</span>
+                            </div>
+                        </div>
+
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Est. Total Cycles</td>
+                                    <td id="res-total-cycles" class="font-mono">0</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td>Energy Throughput</td>
+                                    <td id="res-energy" class="font-mono">0 MWh</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td>Limiting Factor</td>
+                                    <td id="res-factor" class="font-mono">-</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td>SOH Loss / Year</td>
+                                    <td id="res-degrade" class="font-mono">0.00%</td>
+                                    <td id="status-degrade">-</td>
+                                </tr>
+                                <tr>
+                                    <td>Temp Accel Factor</td>
+                                    <td id="res-accel" class="font-mono">1.00x</td>
+                                    <td id="status-temp">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div id="tip-box" class="highlight-box" style="margin-top: 15px; font-size: 0.9rem;">
+                            <strong>Tip:</strong> Loading...
+                        </div>
+                    </div>
+
+                    <!-- Right Col: Graphs -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;">SOH: Ideal vs. Actual
+                            Scenario</h4>
+                        <div class="chart-container">
+                            <canvas id="lifeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">Aging & Financial
+                    Model Details</h4>
+                <div id="calculation-details"></div>
+            </div>
+        </div>
+
+        <!-- EDUCATIONAL CONTENT -->
+        <div class="education-section card">
+            <div class="card-header" style="margin-bottom:25px;">
+                <h2><i class="fas fa-book-reader"></i> Battery Knowledge Base</h2>
+            </div>
+
+            <div class="tech-article">
+                <div class="toc-sticky">
+                    <h4>Topics</h4>
+                    <ul>
+                        <li><a href="#arrhenius">1. Heat Thief (Arrhenius)</a></li>
+                        <li><a href="#cycles">2. Cycle Tax (DoD)</a></li>
+                        <li><a href="#memory">3. Memory Effect (NiCd)</a></li>
+                        <li><a href="#idle">4. Idle Killer (Sulfation)</a></li>
+                        <li><a href="#lcos">5. LCOS: The True Cost</a></li>
+                    </ul>
+                </div>
+
+                <div class="article-content">
+                    <div id="arrhenius">
+                        <h3>1. The Heat Thief: Arrhenius Law</h3>
+                        <p>Batteries are electrochemical devices. Like all chemical reactions, aging accelerates with
+                            heat. The industry standard rule, derived from the <strong>Arrhenius Equation</strong>,
+                            states that for every <strong>10°C (18°F)</strong> rise in operating temperature above 25°C,
+                            the chemical reaction rate doubles.</p>
+                        <p><strong>Impact:</strong> A VRLA battery rated for 10 years at 25°C will last only 5 years at
+                            35°C, and a mere 2.5 years at 45°C. This calculator models this exponential decay accurately
+                            for different chemistries.</p>
+                    </div>
+
+                    <div id="cycles">
+                        <h3>2. The Cycle Tax: Depth of Discharge (DoD)</h3>
+                        <p>Using a battery consumes it. The deeper you discharge (Depth of Discharge), the more
+                            mechanical stress the internal plates endure. In Lead Acid, this is due to the expansion of
+                            lead sulfate crystals. In Li-ion, it is the expansion of the anode lattice.</p>
+                        <p>This relationship follows a <strong>Power Law (Wöhler Curve)</strong>. Discharging a battery
+                            to 80% DoD is not just twice as damaging as 40% DoD; it is often 3 to 4 times as damaging.
+                            Shallow cycling significantly extends total energy throughput.</p>
+                    </div>
+
+                    <div id="memory">
+                        <h3>3. The Memory Effect (NiCd Specific)</h3>
+                        <p>Nickel-Cadmium batteries have a unique flaw. If they are repeatedly discharged only partially
+                            (e.g., shallow cycles to 80% remaining capacity), the active material crystals grow large
+                            and "stubborn."</p>
+                        <p><strong>Result:</strong> The battery "remembers" this shallow depth. When you later try to
+                            use the full capacity, the voltage drops prematurely at that point, effectively reducing
+                            usable capacity. This calculator detects shallow cycling patterns in NiCd inputs and applies
+                            a penalty.</p>
+                    </div>
+
+                    <div id="idle">
+                        <h3>4. The Silent Killer: Sulfation & SEI Growth</h3>
+                        <p>Batteries die even when doing nothing.</p>
+                        <ul>
+                            <li><strong>Lead Acid (Sulfation):</strong> If left sitting without a full charge, soft lead
+                                sulfate hardens into crystals that permanently coat the plates, reducing capacity.
+                                <em>This tool applies an idle penalty for low cycle rates.</em>
+                            </li>
+                            <li><strong>Li-Ion (SEI Growth):</strong> The Solid Electrolyte Interphase (SEI) layer
+                                thickens over time, consuming lithium ions. High temperature and High State of Charge
+                                (100%) accelerate this.</li>
+                        </ul>
+                    </div>
+
+                    <div id="lcos">
+                        <h3>5. LCOS: The True Cost of Energy</h3>
+                        <p>Buying a cheap battery often costs more in the long run. The <strong>Levelized Cost of
+                                Storage (LCOS)</strong> calculates the cost of every kWh the battery delivers over its
+                            life.</p>
+                        <p>$$ LCOS = \frac{\text{Total Initial Cost}}{\text{Total Lifetime Energy (kWh)}} $$</p>
+                        <p>A standardized metric that allows you to compare a cheap Lead Acid battery (low cycle life)
+                            against an expensive LFP battery (high cycle life).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Design Calculators</h4>
+                    <p>Providing commercial-grade tools for electrical engineering professionals. Validated against
+                        international standards.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                        <li><a href="indexele">Electrical</a></li>
+                        <li><a href="indexmech">Mechanical</a></li>
+                        <li><a href="indexinst">Instrumentation</a></li>
+                        <li><a href="articles">Articles</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="about">About Us</a></li>
+                        <li><a href="contact">Contact</a></li>
+                        <li><a href="faq">FAQ</a></li>
+                        <li><a href="privacy-policy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>More</h4>
+                    <ul>
+                        <li><a href='/articles'>Articles & Whitepapers</a></li>
+                        <li><a href="sitemap.html">Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>All calculations are for preliminary engineering design guidance. Final designs must comply with all
+                    applicable local and international standards. Always verify calculations with a licensed
+                    professional engineer.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span
+                        style="color: var(--secondary); font-weight: bold;">A Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            if (themeSwitch) {
+                themeSwitch.addEventListener('change', function () {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                    updateChartTheme();
+                });
+            }
+            document.getElementById('calculate-btn').addEventListener('click', calculate);
+        });
+
+        function loadPreset(key) {
+            const s = {
+                'vrla': { c: 'vrla', y: 10, cy: 1200, t: 25, d: 30, n: 1, v: 48, ah: 100, cost: 1200 },
+                'la': { c: 'la', y: 15, cy: 1500, t: 25, d: 40, n: 1, v: 48, ah: 200, cost: 1500 },
+                'li': { c: 'li-nmc', y: 12, cy: 2500, t: 25, d: 80, n: 1, v: 48, ah: 100, cost: 2500 },
+                'lfp': { c: 'li-lfp', y: 15, cy: 4000, t: 25, d: 80, n: 1, v: 48, ah: 100, cost: 3000 },
+                'nicd': { c: 'nicd', y: 20, cy: 2000, t: 25, d: 10, n: 5, v: 48, ah: 80, cost: 4000 },
+            };
+            const d = s[key];
+            if (d) {
+                document.getElementById('bat-chem').value = d.c;
+                document.getElementById('rated-years').value = d.y;
+                document.getElementById('rated-cycles').value = d.cy;
+                document.getElementById('env-temp').value = d.t;
+                document.getElementById('env-dod').value = d.d;
+                document.getElementById('env-cycles').value = d.n;
+                document.getElementById('sys-volts').value = d.v;
+                document.getElementById('sys-ah').value = d.ah;
+                document.getElementById('sys-cost').value = d.cost;
+                calculate();
+            }
+        }
+
+        let lifeChart = null;
+
+        function calculate() {
+            // 1. Gather Inputs
+            const Chem = document.getElementById('bat-chem').value;
+            const RatedYears = parseFloat(document.getElementById('rated-years').value);
+            const RatedCycles80 = parseFloat(document.getElementById('rated-cycles').value);
+            const Temp = parseFloat(document.getElementById('env-temp').value);
+            const DoD = parseFloat(document.getElementById('env-dod').value);
+            const CyclesPerDay = parseFloat(document.getElementById('env-cycles').value);
+
+            const V = parseFloat(document.getElementById('sys-volts').value);
+            const Ah = parseFloat(document.getElementById('sys-ah').value);
+            const Cost = parseFloat(document.getElementById('sys-cost').value);
+
+            if ([RatedYears, RatedCycles80, V, Ah, Cost].some(x => x < 0)) return alert("Check inputs.");
+
+            // 2. Arrhenius / Calendar Aging Factor
+            const deltaT = Temp - 25;
+            let accelFactor = Math.pow(2, deltaT / 10);
+            if (accelFactor < 0.2) accelFactor = 0.2;
+            const CalLife = RatedYears / accelFactor;
+
+            // 3. Cycle Aging Calculation (Power Law)
+            let k_p = 1.6;
+            if (Chem === 'vrla') k_p = 1.9;
+            if (Chem === 'la') k_p = 2.1;
+            if (Chem === 'li-nmc') k_p = 1.3;
+            if (Chem === 'li-lfp') k_p = 1.1;
+            if (Chem === 'nicd') k_p = 1.0;
+
+            const RatedDoD = 0.8;
+            const effDoD = Math.max(DoD, 1) / 100;
+            const CyclesAtUserDoD = RatedCycles80 * Math.pow(RatedDoD / effDoD, k_p);
+
+            // 4. Combined Life (Miner's Rule)
+            const Loss_Cal_Daily = 1 / (CalLife * 365);
+            const activeCycles = Math.max(CyclesPerDay, 0.001);
+            const Loss_Cyc_Daily = activeCycles / CyclesAtUserDoD;
+
+            // Self Discharge Rate (Estimation based on chem + temp)
+            // Base rates @ 25C: Li-ion 2%/mo, VRLA 3%/mo, LA 5%/mo, NiCd 10%/mo
+            let baseSelf = 2;
+            if (Chem === 'vrla') baseSelf = 3;
+            if (Chem === 'la') baseSelf = 5;
+            if (Chem === 'nicd') baseSelf = 10;
+            // Arrhenius applies to self-discharge too (roughly)
+            const SelfDischarge = baseSelf * Math.sqrt(accelFactor); // Less sensitive than aging but still increases
+
+            // Idle Penalty Logic
+            let idlePenalty = 0;
+            if (CyclesPerDay < 0.1) {
+                if (Chem === 'la' || Chem === 'vrla') idlePenalty = Loss_Cal_Daily * 1.5;
+                else if (Chem.includes('li')) idlePenalty = Loss_Cal_Daily * 0.2;
+            }
+
+            const Total_Loss_Daily = Loss_Cal_Daily + Loss_Cyc_Daily + idlePenalty;
+            const PredictedDays = 1 / Total_Loss_Daily;
+            let PredictedYears = PredictedDays / 365;
+
+            // 5. NiCd Memory Effect Logic
+            let memoryWarning = "";
+            let effectiveCapacity = 100;
+            if (Chem === 'nicd' && DoD < 25 && CyclesPerDay > 0.5) {
+                memoryWarning = "Memory Effect Risk!";
+                effectiveCapacity = 80;
+            }
+
+            // 6. Limiting Factor
+            const pctCal = (Loss_Cal_Daily / Total_Loss_Daily) * 100;
+            let limitFactor = "Balanced";
+            if (CyclesPerDay < 0.1) limitFactor = "Storage / Idle Decay";
+            else if (pctCal > 80) limitFactor = "Temperature / Age";
+            else if (pctCal < 20) limitFactor = "Cycling / Throughput";
+            else limitFactor = `Mixed (${pctCal.toFixed(0)}% Temp, ${(100 - pctCal).toFixed(0)}% Cycle)`;
+
+            // 7. Financials (LCOS)
+            // Total Energy = Cycles * kWh_per_cycle * avg_soh_factor(0.9)
+            // kWh per cycle = V * Ah * DoD
+            const kWh_per_cycle = (V * Ah * effDoD) / 1000;
+            const Total_Cycles_Life = PredictedDays * activeCycles;
+            const Total_kWh_Life = Total_Cycles_Life * kWh_per_cycle * 0.9; // 0.9 avg SOH factor
+            const LCOS = Cost / Total_kWh_Life;
+
+            // 8. Outputs
+            const safeSetText = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+
+            safeSetText('res-years', PredictedYears.toFixed(2) + " Years");
+            safeSetText('res-factor', limitFactor);
+
+            safeSetText('res-total-cycles', Total_Cycles_Life.toFixed(0));
+            safeSetText('res-energy', (Total_kWh_Life / 1000).toFixed(2) + " MWh");
+
+            const lcosEl = document.getElementById('res-lcos');
+            if (lcosEl) lcosEl.innerText = "$" + LCOS.toFixed(3) + " / kWh";
+
+            safeSetText('res-self', SelfDischarge.toFixed(1) + "% / mo");
+
+            safeSetText('res-accel', accelFactor.toFixed(2) + "x");
+            const statTemp = document.getElementById('status-temp');
+            if (statTemp) {
+                if (accelFactor > 2) { statTemp.innerText = "HIGH"; statTemp.className = "status-badge status-fail"; }
+                else if (accelFactor < 1) { statTemp.innerText = "GOOD"; statTemp.className = "status-badge status-pass"; }
+                else { statTemp.innerText = "NOMINAL"; statTemp.className = "status-badge status-warn"; }
+            }
+
+            // SOH Loss Calculation
+            const lossPerYear = (Total_Loss_Daily * 365 * 100);
+            safeSetText('res-degrade', lossPerYear.toFixed(2) + "% / yr");
+            const statDeg = document.getElementById('status-degrade');
+            if (statDeg) {
+                if (lossPerYear > 15) { statDeg.innerText = "HIGH"; statDeg.className = "status-badge status-fail"; }
+                else if (lossPerYear > 8) { statDeg.innerText = "MED"; statDeg.className = "status-badge status-warn"; }
+                else { statDeg.innerText = "LOW"; statDeg.className = "status-badge status-pass"; }
+            }
+
+            // Tip Logic
+            let tip = "";
+            if (memoryWarning) tip = `<span style="color:var(--danger)">${memoryWarning}</span> Shallow cycling NiCd causes capacity loss. Perform deep cycles.`;
+            else if (CyclesPerDay < 0.1 && (Chem === 'la' || Chem === 'vrla')) tip = "Idle Warning: High Sulfation risk. Keep on float charge.";
+            else if (Temp > 30) tip = "High Temp: Reduce to 25°C. You are halving asset life every 10°C.";
+            else if (DoD > 80 && !Chem.includes('li')) tip = `High DoD: ${Chem.toUpperCase()} life is poor at deep discharge. Consider 50% DoD.`;
+            else tip = "System Optimized. Monitor Self-Discharge rates if stored.";
+            const tipBox = document.getElementById('tip-box');
+            if (tipBox) tipBox.innerHTML = `<strong>Diagnostic:</strong> ${tip}`;
+
+            // 9. Math HTML
+            const math = (t) => `$$${t}$$`;
+            let html = `<div class="calculation-step"><strong>1. Thermal Factor ($F_T$):</strong><br>`;
+            html += `Temp = ${Temp}°C. Arrhenius Factor = $2^{(${Temp}-25)/10} = \\mathbf{${accelFactor.toFixed(2)}x}$ aging rate.<br>`;
+            html += `Calendar Life = $RatedYears / F_T$ = ${RatedYears} / ${accelFactor.toFixed(2)} = ${CalLife.toFixed(2)} years.`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step"><strong>2. Cycle Life ($N_{act}$):</strong><br>`;
+            html += `Power Law Model: $N_{act} = N_{rated} \\times (\\frac{DoD_{rated}}{DoD_{user}})^{k_p}$<br>`;
+            html += `Coefficient $k_p$ for ${Chem.toUpperCase()} $\\approx ${k_p}$.<br>`;
+            html += `Cycles = ${RatedCycles80} $\\times (\\frac{0.8}{${effDoD}})^{${k_p}} = \\mathbf{${CyclesAtUserDoD.toFixed(0)}}$ cycles.`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step"><strong>3. Combined Degradation (Miner's Rule):</strong><br>`;
+            html += `Loss/Day ($L_{total}$) = $L_{cal} + L_{cyc} + L_{idle}$<br>`;
+            html += `$L_{cal} = \\frac{1}{${CalLife.toFixed(1)} \\times 365} = ${(Loss_Cal_Daily * 100).toFixed(5)}\\%$ / day.<br>`;
+            html += `$L_{cyc} = \\frac{${activeCycles.toFixed(1)} \\text{ cyc/day}}{${CyclesAtUserDoD.toFixed(0)}} = ${(Loss_Cyc_Daily * 100).toFixed(5)}\\%$ / day.<br>`;
+            if (idlePenalty > 0) html += `$L_{idle} = ${(idlePenalty * 100).toFixed(5)}\\%$ / day (Penalty Applied).<br>`;
+            html += `Total Loss = ${(Total_Loss_Daily * 100).toFixed(5)}\\% / day. Predicted Life = 1 / Total Loss = <strong>${PredictedYears.toFixed(2)} Years</strong>.`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step"><strong>4. Financial Analysis (LCOS):</strong><br>`;
+            html += `Total Throughput = LifeYears $\\times$ Cycles/Year $\\times$ kWh/Cycle $\\times$ AvgSOH(0.9)<br>`;
+            html += `Throughput = ${PredictedYears.toFixed(2)} $\\times$ ${(activeCycles * 365).toFixed(0)} $\\times$ ${kWh_per_cycle.toFixed(2)} $\\times$ 0.9 = ${Total_kWh_Life.toFixed(0)} kWh.<br>`;
+            html += math(`LCOS = \\frac{\\$${Cost}}{\\text{Total kWh}} = \\mathbf{\\$${LCOS.toFixed(3)} / kWh}`);
+            html += `</div>`;
+
+            if (memoryWarning) {
+                html += `<div class="calculation-step" style="border-left-color:var(--danger)"><strong>5. Memory Effect Penalty:</strong><br>`;
+                html += `Effective Capacity reduced to 80% due to shallow cycling regime in NiCd chemistry.</div>`;
+            }
+
+            const calcDet = document.getElementById('calculation-details');
+            if (calcDet) calcDet.innerHTML = html;
+            if (window.MathJax) window.MathJax.typesetPromise();
+
+            renderChart(PredictedYears, effectiveCapacity, RatedYears);
+
+            const resCont = document.getElementById('result-container');
+            if (resCont) {
+                resCont.classList.remove('hidden');
+                resCont.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function renderChart(years, startCap, idealYears) {
+            const ctx = document.getElementById('lifeChart').getContext('2d');
+            const isDark = document.body.classList.contains('dark-mode');
+            const color = isDark ? '#94a3b8' : '#64748b';
+            const grid = isDark ? '#334155' : '#E2E8F0';
+
+            if (lifeChart) lifeChart.destroy();
+
+            const dataPoints = [];
+            const dataIdeal = [];
+            const labels = [];
+            const totalSteps = 20;
+            const maxYears = Math.max(years, idealYears);
+
+            for (let i = 0; i <= totalSteps; i++) {
+                const t_yr = (maxYears * i / totalSteps);
+                labels.push(t_yr.toFixed(1) + "y");
+
+                // Actual Scenario
+                let soh = startCap;
+                if (t_yr <= years) {
+                    soh = startCap - ((startCap - 80) * (t_yr / years));
+                    if (t_yr > years * 0.9) soh -= 2; // Knee
+                } else soh = null; // Dead
+                dataPoints.push(soh);
+
+                // Ideal Scenario (25C, Low DoD)
+                let idealSoh = 100;
+                if (t_yr <= idealYears) {
+                    idealSoh = 100 - (20 * (t_yr / idealYears));
+                } else idealSoh = null;
+                dataIdeal.push(idealSoh);
+            }
+
+            lifeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Your Scenario (SOH)',
+                        data: dataPoints,
+                        borderColor: '#DC2626',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Ideal Conditions (Reference)',
+                        data: dataIdeal,
+                        borderColor: '#10B981',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Time (Years)', color: color }, grid: { color: grid }, ticks: { color: color } },
+                        y: { title: { display: true, text: 'Health %', color: color }, grid: { color: grid }, ticks: { color: color }, min: 60, max: 100 }
+                    },
+                    plugins: { legend: { labels: { color: isDark ? '#cbd5e1' : '#4b5563' } } }
+                }
+            });
+        }
+
+        function updateChartTheme() {
+            if (lifeChart) calculate();
+        }
+    </script>
+</body>
+
+</html>
