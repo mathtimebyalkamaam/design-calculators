@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATEX/IECEx Zone Classification Helper - Design Calculators - Safety</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Professional IEC 60079-10-1 Hazardous Area Classification Calculator. Quantitative assessment of Zone 0/1/2 using Release Rate, Hypothetical Volume (Vz), and Ventilation velocity calculations.">
+    <meta name="keywords" content="atex calculator, iecex zone classification, iec 60079-10-1, hypothetical volume Vz, hazardous area classification, gas release rate, LEL calculation, electrical safety">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for Formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    
+    <style>
+        :root {
+            --primary: #B91C1C; /* Safety Red */
+            --secondary: #DC2626;
+            --accent: #F59E0B; /* Warning Yellow */
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #4B5563;
+            --heading: #111827;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), #7F1D1D);
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode {
+            --primary: #EF4444;
+            --secondary: #F87171;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #CBD5E1;
+            --heading: #F1F5F9;
+            --footer-bg: #020617;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #FECACA;
+            opacity: 0.9;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.2);
+            transition: .4s;
+            border-radius: 30px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 22px; width: 22px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        
+        /* Main Content & Cards */
+        main { padding: 40px 0; }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--heading);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+        body.dark-mode .form-group input:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
+        
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+            transition: all 0.3s;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4); }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-group .btn { flex: 1; min-width: 150px; }
+        .btn.secondary { background: var(--secondary); box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); }
+        .btn.accent { background: var(--accent); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+
+        /* CALCULATION STEPS DISPLAY */
+        .steps-container { display: none; margin-top: 30px; }
+        .steps-container.active { display: block; }
+        .step-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            animation: slideIn 0.6s ease-out;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .step-card h4 {
+            color: var(--primary);
+            margin: 0 0 20px 0;
+            font-size: 1.4rem;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+        }
+        .step-card .number {
+            display: inline-block;
+            width: 40px; height: 40px;
+            background: var(--primary); color: white;
+            border-radius: 50%;
+            text-align: center; line-height: 40px;
+            font-weight: 700; margin-right: 15px;
+            font-size: 1.3rem; flex-shrink: 0;
+        }
+        .step-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+        .step-content .formula-block {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+        }
+        .step-content .formula-block p { margin-top: 0; }
+        .step-content .formula {
+            background: var(--bg);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin: 12px 0;
+            font-size: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        /* Results */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .results-table th, .results-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .results-table th { background: var(--grad); color: white; font-weight: 700; }
+        .results-table tr:nth-child(even) { background-color: var(--bg); }
+        .results-table td:first-child { font-weight: 600; color: var(--heading); }
+        .results-table .highlight { font-weight: 700; font-size: 1.1rem; color: var(--success); }
+        .results-table .warning-text { color: var(--warning); font-weight: 600; }
+        .results-table .danger-text { color: var(--danger); font-weight: 700; }
+
+        /* Educational Section */
+        .education-section { margin-top: 60px; }
+        .insight-card {
+            background: linear-gradient(135deg, var(--card), rgba(220,38,38,0.03));
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid var(--secondary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .insight-card:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .insight-card h4 {
+            color: var(--secondary);
+            font-size: 1.3rem;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .insight-card h4 i { font-size: 1.5rem; }
+        .insight-card p { margin: 10px 0; line-height: 1.8; }
+        .insight-card ul { padding-left: 20px; margin: 10px 0; }
+        .insight-card li { margin-bottom: 10px; }
+        .stat-highlight {
+            display: inline-block;
+            background: var(--accent);
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 0 4px;
+        }
+        .danger-box {
+            background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(220,38,38,0.05));
+            border-left: 5px solid var(--danger);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .danger-box h4 { color: var(--danger); margin-top: 0; }
+        .success-box {
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05));
+            border-left: 5px solid var(--success);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success-box h4 { color: var(--success); margin-top: 0; }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            top: 20px; left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 28px;
+            border-radius: 8px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            z-index: 10000;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.4s;
+            display: none;
+        }
+        .message-box.show { display: block; opacity: 1; top: 30px; }
+
+        /* Footer */
+        footer {
+            background: var(--grad-dark);
+            color: #CBD5E1;
+            padding: 50px 0 20px 0;
+            margin-top: 60px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        .footer-col { flex: 1; min-width: 200px; }
+        .footer-col h4 { color: white; margin-bottom: 15px; font-weight: 700; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-col a:hover { color: var(--accent); }
+        .social-buttons { display: flex; gap: 12px; margin-top: 15px; }
+        .social-btn {
+            width: 40px; height: 40px;
+            display: flex; justify-content: center; align-items: center;
+            color: white; border-radius: 50%;
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover { transform: translateY(-4px); }
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.youtube { background-color: #FF0000; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .footer-disclaimer {
+            text-align: center;
+            padding-top: 25px;
+            border-top: 1px solid #334155;
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 0.9rem;
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 0.9rem;
+            color: #94A3B8;
+        }
+        
+        /* Responsive & Utility */
+        @media (max-width: 768px) {
+            .container { padding: 0 15px; }
+            .navbar { flex-direction: column; gap: 20px; }
+            .nav-links { flex-direction: column; gap: 12px; text-align: center; }
+            .form-row { grid-template-columns: 1fr; }
+            .card { padding: 20px; }
+            .footer-content { flex-direction: column; gap: 25px; }
+            .btn-group { flex-direction: column; }
+        }
+        .hidden { display: none; }
+        
+        /* Tooltip */
+        .info-icon { color: var(--primary); margin-left: 5px; cursor: help; }
+        .tooltip { position: relative; display: inline-block; }
+        .tooltip .tooltiptext {
+            visibility: hidden; width: 260px;
+            background-color: #333; color: #fff;
+            text-align: center; border-radius: 6px;
+            padding: 8px; position: absolute;
+            z-index: 10; bottom: 125%; left: 50%;
+            margin-left: -130px; opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem; line-height: 1.4;
+        }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <div id="message-box" class="message-box"></div>
+
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a class='logo-container' href='/'>
+                    <span class="logo-text">Design Calculators</span>
+                    <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
+                </a>
+                <ul class="nav-links">
+                    <li><a href='/'>Home</a></li>
+                    <li><a href="articles">Articles</a></li>
+                    <li><a href="indexmech">Mechanical</a></li>
+                    <li><a href="indexele">Electrical</a></li>
+                    <li><a href="indexinst">Instrumentation</a></li>
+                </ul>
+                <div class="theme-toggle">
+                    <i class="fas fa-sun"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <i class="fas fa-moon"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2><i class="fas fa-shield-virus"></i> ATEX / IECEx Zone Classification Helper (IEC 60079-10-1)</h2>
+            
+            <p>This industrial-grade calculator performs a <strong>Quantitative Risk Assessment</strong> for Hazardous Area Classification. It calculates the Mass Release Rate ($W_g$) and Hypothetical Volume ($V_z$) to scientifically determine the Zone (0, 1, 2) or Division extent based on <strong>IEC 60079-10-1:2020</strong> methodology.</p>
+            
+            <div class="calculator-form">
+                <form id="atex-form">
+                    <h3>1. Fluid Properties & Process Data</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="chemical-lib">Gas / Vapor Selection</label>
+                            <select id="chemical-lib">
+                                <option value="methane">Methane (Natural Gas)</option>
+                                <option value="hydrogen">Hydrogen</option>
+                                <option value="propane">Propane</option>
+                                <option value="acetylene">Acetylene</option>
+                                <option value="ethylene">Ethylene</option>
+                                <option value="benzene">Benzene</option>
+                                <option value="methanol">Methanol</option>
+                                <option value="ammonia">Ammonia</option>
+                                <option value="custom">-- Custom --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="mw">Molecular Weight ($M$) [g/mol]</label>
+                            <input type="number" id="mw" step="0.1" value="16.0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lel">Lower Explosive Limit (LEL) [vol %]</label>
+                            <input type="number" id="lel" step="0.1" value="4.4" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cp-cv">Specific Heat Ratio ($k = C_p/C_v$)</label>
+                            <input type="number" id="cp-cv" step="0.01" value="1.31" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="process-pressure">System Pressure ($P$) [bar gauge] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Pressure inside the containment system causing the leak.</span></span></label>
+                            <input type="number" id="process-pressure" step="0.1" value="10.0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="temperature">Temperature ($T$) [°C]</label>
+                            <input type="number" id="temperature" step="1" value="25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ait">Auto-Ignition Temp (AIT) [°C]</label>
+                            <input type="number" id="ait" step="1" value="537">
+                        </div>
+                        <div class="form-group">
+                            <label for="gas-group-input">Gas Group (IEC/NEC)</label>
+                            <select id="gas-group-input">
+                                <option value="IIC">IIC (Hydrogen/Acetylene)</option>
+                                <option value="IIB">IIB (Ethylene)</option>
+                                <option value="IIA">IIA (Propane/Methane)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3>2. Leak Source & Coefficients</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hole-size">Leak Cross-Section ($A$) [mm²] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Typical secondary grades: 0.25 mm² (pump seal), 2.5 mm² (flange failure).</span></span></label>
+                            <input type="number" id="hole-size" step="0.01" value="0.25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="release-grade">Grade of Release <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext"><strong>Secondary:</strong> Normal operation (seals/flanges). <strong>Primary:</strong> Vents/Sampling. <strong>Continuous:</strong> Open surface.</span></span></label>
+                            <select id="release-grade">
+                                <option value="secondary" selected>Secondary (Occasional)</option>
+                                <option value="primary">Primary (Periodic)</option>
+                                <option value="continuous">Continuous</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cd-factor">Discharge Coefficient ($C_d$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Efficiency of the leak orifice. Typical values: 0.6-0.8 for orifices, 0.95 for nozzles. 0.75 is a standard conservative estimate for leaks.</span></span></label>
+                            <input type="number" id="cd-factor" step="0.01" value="0.75" required>
+                        </div>
+                    </div>
+
+                    <h3>3. Ventilation Parameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vent-velocity">Ventilation Velocity ($u_w$) [m/s] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Outdoor: ~0.5-2.0 m/s. Indoor Good: ~0.3 m/s. Indoor Poor: < 0.1 m/s.</span></span></label>
+                            <input type="number" id="vent-velocity" step="0.1" value="0.5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="vent-availability">Ventilation Availability <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Determines the Ventilation Quality Factor ($f$). Good=1, Fair=3, Poor=5.</span></span></label>
+                            <select id="vent-availability">
+                                <option value="good">Good (f=1) - Continuous</option>
+                                <option value="fair" selected>Fair (f=3) - Normal Op</option>
+                                <option value="poor">Poor (f=5) - Unreliable</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="safety-factor-k">Safety Factor ($k$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Factor applied to LEL. Typically 0.25 (25% LEL) or 0.5 (50% LEL) for determining cloud extent. IEC recommends 0.25-0.5.</span></span></label>
+                            <input type="number" id="safety-factor-k" step="0.05" value="0.25" required>
+                        </div>
+                    </div>
+
+                    <div class="btn-group" style="margin-top: 25px;">
+                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate IEC 60079 Assessment</button>
+                        <button type="button" id="reset-btn" class="btn accent"><i class="fas fa-sync-alt"></i> Reset</button>
+                        <button type="button" id="pdf-btn" class="btn secondary" style="display: none;"><i class="fas fa-file-pdf"></i> Download Report</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Steps Container -->
+        <div id="steps-container" class="steps-container math-content"></div>
+
+        <!-- Results Table -->
+        <div id="results-section" class="card hidden" style="margin-top: 40px;">
+            <h3><i class="fas fa-clipboard-check"></i> Classification Summary</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody id="results-tbody"></tbody>
+            </table>
+        </div>
+        
+        <!-- Educational Section -->
+        <div id="education-section" class="education-section card">
+            <h2><i class="fas fa-lightbulb"></i> Professional Insights: Quantitative Assessment (IEC 60079-10-1)</h2>
+
+            <div class="insight-card">
+                <h4><i class="fas fa-cube"></i> Hypothetical Volume ($V_z$) Concept</h4>
+                <p>The core of modern IEC classification is determining the size of the gas cloud. $V_z$ represents the volume where the mean concentration of gas exceeds 25% or 50% of the LEL.</p>
+                <ul>
+                    <li><strong>Negligible Extent ($V_z < 0.1 \text{ m}^3$):</strong> If the calculated cloud is tiny, a Zone 2 area might be declared "Zone 2 NE" (Negligible Extent) or even Safe, provided ventilation is high.</li>
+                    <li><strong>Significant Extent:</strong> If $V_z$ is large, the Zone must extend to cover the hazard.</li>
+                </ul>
+            </div>
+
+            <div class="danger-box">
+                <h4><i class="fas fa-wind"></i> Dilution & Quality Factor ($f$)</h4>
+                <p>The standard defines a Quality Factor $f$ based on ventilation efficiency:</p>
+                <ul>
+                    <li><strong>$f=1$ (Good):</strong> Ventilation is present virtually continuously.</li>
+                    <li><strong>$f=3$ (Fair):</strong> Ventilation is present during normal operation.</li>
+                    <li><strong>$f=5$ (Poor):</strong> Ventilation may be interrupted.</li>
+                </ul>
+                <p>This factor directly multiplies the Hypothetical Volume ($V_z$), meaning poor ventilation increases the hazardous zone size by 5x.</p>
+            </div>
+
+            <div class="success-box">
+                <h4><i class="fas fa-thermometer-three-quarters"></i> Temperature Class Selection</h4>
+                <p>The T-Class is determined purely by the chemical's Auto-Ignition Temperature (AIT). Equipment surface temperature must always be lower than the AIT.</p>
+                <p><strong>T1 (450°C)</strong> > T2 (300°C) > T3 (200°C) > T4 (135°C) > T5 (100°C) > <strong>T6 (85°C)</strong>. (T6 is the safest/coolest equipment rating).</p>
+            </div>
+        </div>
+    </main>
+
+        <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Design Calculators</h4>
+                    <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;">If you find this tool helpful, please consider sharing it with your colleagues!</p>
+                    <div class="social-buttons">
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn linkedin" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer" class="social-btn youtube" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn twitter" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn facebook" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource%20https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn whatsapp" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                        <li><a href="indexele">Electrical</a></li>
+                        <li><a href="indexmech">Mechanical</a></li>
+                        <li><a href="indexinst">Instrumentation</a></li>                        
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="about">About Us</a></li>
+                        <li><a href="contact">Contact</a></li>
+                        <li><a href="faq">FAQ</a></li>
+                        <li><a href="privacy-policy">Privacy Policy</a></li>
+                        <li><a href="terms-of-service">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>More</h4>
+                    <ul>
+                        <li><a href='/articles'>Articles & Whitepapers</a></li>
+                        <li><a href='/sitemap2'>Sitemap</a></li>                        
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>This tool offers general guidance. Results should be reviewed for accuracy and compliance with relevant project standards and regulations before use.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">A Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Expanded Chemical Library (IEC Data) ---
+            const chemicals = {
+                'methane': { mw: 16.0, lel: 4.4, k: 1.31, ait: 537, group: 'IIA' },
+                'hydrogen': { mw: 2.0, lel: 4.0, k: 1.41, ait: 560, group: 'IIC' },
+                'propane': { mw: 44.1, lel: 1.7, k: 1.13, ait: 450, group: 'IIA' },
+                'acetylene': { mw: 26.0, lel: 2.3, k: 1.26, ait: 305, group: 'IIC' },
+                'ethylene': { mw: 28.0, lel: 2.3, k: 1.24, ait: 425, group: 'IIB' },
+                'benzene': { mw: 78.1, lel: 1.2, k: 1.12, ait: 498, group: 'IIA' },
+                'methanol': { mw: 32.0, lel: 6.0, k: 1.20, ait: 464, group: 'IIA' },
+                'ammonia': { mw: 17.0, lel: 15.0, k: 1.31, ait: 651, group: 'IIA' }
+            };
+
+            // --- Elements ---
+            const form = document.getElementById('atex-form');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const pdfBtn = document.getElementById('pdf-btn');
+            const chemSelect = document.getElementById('chemical-lib');
+            const ventSelect = document.getElementById('vent-availability');
+            
+            const stepsContainer = document.getElementById('steps-container');
+            const resultsSection = document.getElementById('results-section');
+            const resultsTbody = document.getElementById('results-tbody');
+            const messageBox = document.getElementById('message-box');
+            const themeSwitch = document.getElementById('theme-switch');
+
+            let lastResult = null;
+
+            // --- Theme Toggle ---
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            themeSwitch.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // --- Auto-Populate Logic ---
+            chemSelect.addEventListener('change', function() {
+                const chem = chemicals[this.value];
+                if (chem) {
+                    document.getElementById('mw').value = chem.mw;
+                    document.getElementById('lel').value = chem.lel;
+                    document.getElementById('cp-cv').value = chem.k;
+                    document.getElementById('ait').value = chem.ait;
+                    document.getElementById('gas-group-input').value = chem.group;
+                }
+            });
+
+            calculateBtn.addEventListener('click', calculateZone);
+            resetBtn.addEventListener('click', resetForm);
+            pdfBtn.addEventListener('click', generatePDF);
+
+            // --- Utility ---
+            function showMessage(msg, type = 'success') {
+                messageBox.textContent = msg;
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = 'var(--danger)';
+                } else if (type === 'warning') {
+                     messageBox.style.backgroundColor = 'var(--warning)';
+                     messageBox.style.color = '#333';
+                } else {
+                    messageBox.style.backgroundColor = 'var(--success)';
+                    messageBox.style.color = 'white';
+                }
+                messageBox.classList.add('show');
+                setTimeout(() => messageBox.classList.remove('show'), 4000);
+            }
+
+            function format(num, decimals = 2) {
+                return parseFloat(num.toFixed(decimals)).toString();
+            }
+
+            function resetForm() {
+                form.reset();
+                chemSelect.dispatchEvent(new Event('change'));
+                stepsContainer.classList.remove('active');
+                stepsContainer.innerHTML = '';
+                resultsSection.classList.add('hidden');
+                pdfBtn.style.display = 'none';
+                lastResult = null;
+                showMessage("Form reset to default values.");
+            }
+
+            function createStepCard(num, title, description, formula) {
+                return `
+                <div class="step-card">
+                    <h4><span class="number">${num}</span>${title}</h4>
+                    <div class="step-content">
+                        <div class="formula-block" style="width:100%">
+                            <p><strong>Description:</strong> ${description}</p>
+                            <div class="formula" style="margin-top:15px;">
+                                ${formula}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // --- CORE LOGIC (Quantitative IEC 60079-10-1) ---
+            function calculateZone() {
+                stepsContainer.innerHTML = '';
+                
+                try {
+                    // Inputs
+                    const MW = parseFloat(document.getElementById('mw').value);
+                    const LEL_vol = parseFloat(document.getElementById('lel').value);
+                    const k = parseFloat(document.getElementById('cp-cv').value);
+                    const P_bar_g = parseFloat(document.getElementById('process-pressure').value);
+                    const T_C = parseFloat(document.getElementById('temperature').value);
+                    const A_mm2 = parseFloat(document.getElementById('hole-size').value);
+                    const Cd = parseFloat(document.getElementById('cd-factor').value);
+                    const u_w = parseFloat(document.getElementById('vent-velocity').value);
+                    const f_qual = ventSelect.value === 'good' ? 1 : (ventSelect.value === 'fair' ? 3 : 5);
+                    const safety_k = parseFloat(document.getElementById('safety-factor-k').value);
+                    const ait = parseFloat(document.getElementById('ait').value);
+                    const grade = document.getElementById('release-grade').value;
+                    const group = document.getElementById('gas-group-input').value;
+
+                    // Constants
+                    const R = 8314; // J/(kmol K)
+                    const P_atm = 101325; // Pa
+                    const T_K = T_C + 273.15;
+                    const P_abs = (P_bar_g * 100000) + P_atm; // Pa
+
+                    let stepsHtml = '';
+
+                    // 1. T-Class
+                    let tClass = "T1";
+                    if (ait > 450) tClass = "T1";
+                    else if (ait > 300) tClass = "T2";
+                    else if (ait > 200) tClass = "T3";
+                    else if (ait > 135) tClass = "T4";
+                    else if (ait > 100) tClass = "T5";
+                    else tClass = "T6";
+
+                    // 2. Critical Pressure Ratio & Density
+                    const P_crit_ratio = Math.pow( (2/(k+1)), (k/(k-1)) );
+                    const P_crit = P_abs * P_crit_ratio; // Wait, formula is P_crit = P_upstream * ratio? No P_crit is downstream limit.
+                    // Correct: Critical Pressure P_c = P_upstream * (2/(k+1))^(k/(k-1))
+                    const P_critical_limit = P_abs * Math.pow( (2/(k+1)), (k/(k-1)) );
+                    
+                    const rho_gas = (P_abs * MW/1000) / (8.314 * T_K); // Density at source P
+                    const rho_amb = (P_atm * MW/1000) / (8.314 * 293.15); // Ambient Density (20C)
+
+                    stepsHtml += createStepCard(1, "Thermodynamic Properties", 
+                        `Calculated per Ideal Gas Law and Isentropic Flow relations.`,
+                        `$$ \\rho_{gas} = \\frac{P \cdot M}{R \cdot T} = \\mathbf{${format(rho_gas, 2)} \\text{ kg/m}^3} $$
+                         $$ P_{crit} = P_{abs} \\left(\\frac{2}{k+1}\\right)^{\\frac{k}{k-1}} = \\mathbf{${format(P_critical_limit/100000, 2)} \\text{ bar(a)}} $$`
+                    );
+
+                    // 3. Mass Release Rate (Wg)
+                    let Wg = 0; // kg/s
+                    let flowType = "";
+                    const A_m2 = A_mm2 * 1e-6; // m2
+
+                    if (P_atm < P_critical_limit) {
+                        flowType = "Choked (Sonic)";
+                        // Choked Flow Formula (IEC 60079-10-1 B.3)
+                        const term = Math.sqrt(k * Math.pow(2/(k+1), (k+1)/(k-1)));
+                        // Wg = Cd * A * P * sqrt( M / (RT) ) * term? 
+                        // Let's use the explicit verifiable formula:
+                        // W = Cd * A * P * sqrt( (M*k)/(R*T) * (2/(k+1))^((k+1)/(k-1)) )
+                        const rootTerm = Math.sqrt( (MW/1000 * k) / (R * T_K) * Math.pow(2/(k+1), (k+1)/(k-1)) );
+                        Wg = Cd * A_m2 * P_abs * rootTerm;
+                    } else {
+                        flowType = "Subsonic";
+                        // Subsonic Formula (Simplified Bernoulli)
+                        // W = Cd * A * sqrt( 2 * rho * (P - P_atm) )
+                        // Using Density at source conditions? No, expansion. 
+                        // IEC Formula B.1/B.2 for subsonic is complex. Using simplified compressible flow approx:
+                        Wg = Cd * A_m2 * Math.sqrt( 2 * rho_gas * (P_abs - P_atm) );
+                    }
+
+                    stepsHtml += createStepCard(2, "Mass Release Rate ($W_g$)", 
+                        `Flow is <strong>${flowType}</strong> because $P_{atm} ${P_atm < P_critical_limit ? '<' : '>'} P_{crit}$. <br>Calculated using $C_d = ${Cd}$ and Hole Area $A = ${A_mm2} \\text{ mm}^2$.`,
+                        `$$ W_g = \\mathbf{${format(Wg * 1000, 4)} \\text{ g/s}} \\quad (${format(Wg * 3600, 3)} \\text{ kg/h}) $$`
+                    );
+
+                    // 4. Volumetric Release & LEL Mass
+                    const Qg = Wg / rho_amb; // m3/s (at ambient P)
+                    const LEL_mass = (LEL_vol / 100) * rho_amb; // kg/m3
+
+                    // 5. Hypothetical Volume (Vz) - IEC 60079-10-1 Eq B.4 (Open Air)
+                    // Vz = (f * Wg) / (rho_amb * k * LEL_vol * u_w) ... effectively
+                    // Vz = (f * Wg) / (LEL_mass * k * u_w)
+                    
+                    const Vz = (f_qual * Wg) / (LEL_mass * safety_k * u_w); 
+
+                    stepsHtml += createStepCard(3, "Hypothetical Volume ($V_z$)", 
+                        `Calculated per IEC 60079-10-1 Eq. B.4 (simplified for open air). <br> Ventilation Quality $f=${f_qual}$, Safety Factor $k=${safety_k}$ (${safety_k*100}% LEL).`,
+                        `$$ \\text{LEL}_{mass} = ${format(LEL_mass*1000, 1)} \\text{ g/m}^3 $$
+                         $$ V_z = \\frac{f \\cdot W_g}{\\text{LEL}_{mass} \\cdot k \\cdot u_w} $$
+                         $$ V_z = \\frac{${f_qual} \\cdot ${format(Wg, 5)}}{${format(LEL_mass, 3)} \\cdot ${safety_k} \\cdot ${u_w}} = \\mathbf{${format(Vz, 3)} \\text{ m}^3} $$`
+                    );
+
+                    // 6. Zone Determination
+                    let zone = "";
+                    let advice = "";
+                    let isNE = false;
+
+                    if (Vz < 0.1) {
+                        isNE = true; // Negligible Extent
+                        advice = "Volume is < 0.1 m³. Considered Negligible Extent (NE).";
+                    } else {
+                        advice = "Significant gas cloud volume detected.";
+                    }
+
+                    if (grade === 'continuous') {
+                        zone = "Zone 0";
+                    } else if (grade === 'primary') {
+                        if (Vz > 0.1 && f_qual < 5) zone = "Zone 1";
+                        else if (isNE) zone = "Zone 2 (Local)"; // Primary NE often becomes Zone 2 localized
+                        else zone = "Zone 0/1 (High Risk)";
+                    } else {
+                        // Secondary
+                        if (isNE && f_qual === 1) zone = "Non-Hazardous (Safe)";
+                        else if (isNE) zone = "Zone 2 NE";
+                        else if (Vz > 0.1 && f_qual === 1) zone = "Zone 2";
+                        else if (f_qual === 5) zone = "Zone 1"; // Poor vent upgrades Secondary
+                        else zone = "Zone 2";
+                    }
+
+                    // Estimate Distance (Radius)
+                    // Vz = 4/3 pi r^3 => r = cbrt(3 Vz / 4pi)
+                    // IEC chart B.1 suggests distances. We use spherical approx for estimation.
+                    const radius = Math.pow( (3 * Vz) / (4 * Math.PI), 0.333 ); 
+
+                    stepsHtml += createStepCard(4, "Final Classification", 
+                        `Based on Release Grade <strong>${grade.toUpperCase()}</strong> and $V_z$ magnitude.`,
+                        `<p><strong>Classification: ${zone}</strong></p>
+                         <p>Est. Hazard Radius (Spherical): ${format(radius, 2)} meters</p>
+                         <p>${advice}</p>`
+                    );
+
+                    // --- Output ---
+                    stepsContainer.innerHTML = stepsHtml;
+                    
+                    resultsTbody.innerHTML = `
+                        <tr><td><strong>Recommended Zone</strong></td><td class="highlight" style="font-size:1.3rem;">${zone}</td></tr>
+                        <tr><td>Hypothetical Vol ($V_z$)</td><td>${format(Vz, 4)} m³</td></tr>
+                        <tr><td>Release Rate ($W_g$)</td><td>${format(Wg*1000, 3)} g/s</td></tr>
+                        <tr><td>Ventilation Quality ($f$)</td><td>${f_qual} (${ventSelect.options[ventSelect.selectedIndex].text.split(' ')[0]})</td></tr>
+                        <tr><td>T-Class / Group</td><td>${tClass} / ${group}</td></tr>
+                    `;
+
+                    lastResult = { zone, Vz, Wg, tClass, group, radius, grade, A_mm2, P_bar_g, f_qual, safety_k };
+
+                    stepsContainer.classList.add('active');
+                    resultsSection.classList.remove('hidden');
+                    pdfBtn.style.display = 'inline-flex';
+                    
+                    setTimeout(() => { 
+                        stepsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+                    }, 100);
+                    
+                    if (window.MathJax) { window.MathJax.typeset(); }
+
+                } catch (e) {
+                    showMessage(e.message, "error");
+                    console.error(e);
+                }
+            }
+
+            // --- PDF Generation ---
+            function generatePDF() {
+                if (!lastResult) return;
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                let y = 15;
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(16);
+                pdf.text('Quantitative IEC 60079-10-1 Assessment', 105, y, { align: 'center' });
+                y += 8;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(9);
+                pdf.text(`Generated by Design Calculators | ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
+                y += 10;
+
+                // Inputs
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(12);
+                pdf.text('Input Parameters', 14, y);
+                y += 2;
+
+                const inputData = [
+                    ['Leak Source', `${lastResult.grade.toUpperCase()} Grade, ${lastResult.A_mm2} mm²`],
+                    ['Pressure', `${lastResult.P_bar_g} bar(g)`],
+                    ['Gas Group', lastResult.group],
+                    ['Ventilation Factor (f)', lastResult.f_qual],
+                    ['Safety Factor (k)', lastResult.safety_k]
+                ];
+
+                pdf.autoTable({
+                    startY: y,
+                    head: [['Parameter', 'Value']],
+                    body: inputData,
+                    margin: { left: 14, right: 14 },
+                    theme: 'grid',
+                    headStyles: { fillColor: [185, 28, 28] },
+                });
+                y = pdf.autoTable.previous.finalY + 10;
+
+                // Results
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Calculation Results', 14, y);
+                y += 2;
+
+                const resData = [
+                    ['Classification', lastResult.zone],
+                    ['Release Rate (Wg)', `${format(lastResult.Wg*1000, 3)} g/s`],
+                    ['Hypothetical Vol (Vz)', `${format(lastResult.Vz, 3)} m³`],
+                    ['Est. Hazard Radius', `${format(lastResult.radius, 2)} m`],
+                    ['Temperature Class', lastResult.tClass]
+                ];
+
+                pdf.autoTable({
+                    startY: y,
+                    head: [['Metric', 'Result']],
+                    body: resData,
+                    margin: { left: 14, right: 14 },
+                    theme: 'grid',
+                    headStyles: { fillColor: [185, 28, 28] },
+                    didParseCell: function (data) {
+                        if (data.row.index === 0) { 
+                            data.cell.styles.textColor = [185, 28, 28];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                });
+                
+                // Footer
+                y = pdf.autoTable.previous.finalY + 15;
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text('Calculation based on IEC 60079-10-1 Quantitative Method.', 105, y, { align: 'center' });
+                pdf.text('Requires verification by competent person.', 105, y + 4, { align: 'center' });
+
+                pdf.save('IEC-Zone-Report.pdf');
+                showMessage('PDF Report downloaded.');
+            }
+        });
+    </script>
+</body>
+</html>
