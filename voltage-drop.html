@@ -322,6 +322,10 @@
                                     <option value="150">150 mm²</option>
                                     <option value="185">185 mm²</option>
                                     <option value="240">240 mm²</option>
+                                    <option value="300">300 mm²</option>
+                                    <option value="400">400 mm²</option>
+                                    <option value="500">500 mm²</option>
+                                    <option value="630">630 mm²</option>
                                 </select>
                             </div>
                         </div>
@@ -547,7 +551,11 @@
             '120': { r_cu: 0.153, r_al: 0.253, x: 0.076, amp: 300 },
             '150': { r_cu: 0.124, r_al: 0.206, x: 0.076, amp: 345 },
             '185': { r_cu: 0.0991, r_al: 0.164, x: 0.076, amp: 395 },
-            '240': { r_cu: 0.0754, r_al: 0.125, x: 0.075, amp: 470 }
+            '240': { r_cu: 0.0754, r_al: 0.125, x: 0.075, amp: 470 },
+            '300': { r_cu: 0.0601, r_al: 0.100, x: 0.075, amp: 550 },
+            '400': { r_cu: 0.0470, r_al: 0.0778, x: 0.075, amp: 650 },
+            '500': { r_cu: 0.0366, r_al: 0.0605, x: 0.074, amp: 760 },
+            '630': { r_cu: 0.0283, r_al: 0.0469, x: 0.073, amp: 880 }
         };
 
         // Temp Coeff
@@ -669,32 +677,36 @@
             lastResult = { sysType, V, I, pf, L, sizeKey, mat, temp, vd_val, vd_pct, v_load, rt, x, k_factor };
 
             // 4. Render Step-by-Step
-            let html = `<h4>Step 1: Impedance Correction</h4>`;
+            let html = `<h4>Step 1: Impedance Calculation & Correction</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Base Resistance ($20^\\circ C$): $R_{20} = ${r20} \\, \\Omega/km$. Base Reactance $X = ${x_base} \\, \\Omega/km$.<br>`;
-            if (raceway === 'steel') html += `Steel Conduit Factor: $X_{adj} = 1.25 \\times X = ${x.toFixed(3)} \\, \\Omega/km$.<br>`;
-            html += `Temp Correction $\\alpha = ${alpha}$. Op Temp $T = ${temp}^\\circ C$.<br>`;
+            html += `Base Resistance @ 20°C: $R_{20} = ${r20} \\, \\Omega/km$. Base Reactance: $X_{base} = ${x_base} \\, \\Omega/km$.<br>`;
+            if (raceway === 'steel') html += `Steel Conduit increases Reactance: $X = X_{base} \\times 1.25 = ${x.toFixed(3)} \\, \\Omega/km$.<br>`;
+            html += `Temperature Correction for ${mat === 'cu' ? 'Copper' : 'Aluminum'} ($\alpha=${alpha}$) at ${temp}°C:<br>`;
             html += `$$ R_{t} = R_{20} [1 + \\alpha (T - 20)] = ${r20} [1 + ${alpha} (${temp}-20)] = \\mathbf{${rt.toFixed(3)} \\, \\Omega/km} $$`;
             html += `</div>`;
 
-            html += `<h4>Step 2: Component Drops</h4>`;
+            html += `<h4>Step 2: Phasor Components (Resistive vs. Reactive)</h4>`;
             html += `<div class="calculation-step">`;
+            html += `Power Factor: $\\cos\\phi = ${pf}$. Sine: $\\sin\\phi = \\sqrt{1 - ${pf}^2} = ${sin_phi.toFixed(3)}$.<br>`;
+            html += `System Factor $K = ${k_factor.toFixed(3)}$ (${sysType === '3ph_3w' ? '3-Phase' : '1-Phase/DC'}).<br>`;
+            
             if (sysType === 'dc') {
-                 html += `DC System ($K=2$). Power Factor ignored.<br>`;
-                 html += `$$ V_d = 2 \\cdot I \\cdot R_t \\cdot L = \\mathbf{${vd_val.toFixed(2)} V} $$`;
+                 html += `DC System: Reactance is ignored ($X=0$).<br>`;
+                 html += `$$ V_{drop} = K \\cdot I \\cdot L \\cdot R_t = 2 \\cdot ${I} \\cdot ${L/1000} \\cdot ${rt.toFixed(3)} = \\mathbf{${vd_val.toFixed(2)} V} $$`;
             } else {
-                 html += `AC System Factor $K = ${k_factor.toFixed(3)}$. $\\cos\\phi = ${pf}$, $\\sin\\phi = ${sin_phi.toFixed(3)}$.<br>`;
-                 html += `Resistive Drop: $V_R = K \\cdot I \\cdot L \\cdot R \\cos\\phi = ${r_drop.toFixed(2)} \\text{ V}$.<br>`;
-                 html += `Reactive Drop: $V_X = K \\cdot I \\cdot L \\cdot X \\sin\\phi = ${x_drop.toFixed(2)} \\text{ V}$.<br>`;
-                 html += `$$ V_{total} = V_R + V_X = \\mathbf{${vd_val.toFixed(2)} V} $$`;
+                 html += `<strong>Resistive Drop Component:</strong><br>`;
+                 html += `$$ V_R = K \\cdot I \\cdot L \\cdot (R_t \\cos\\phi) = ${k_factor.toFixed(3)} \\cdot ${I} \\cdot ${L/1000} \\cdot (${rt.toFixed(3)} \\cdot ${pf}) = ${r_drop.toFixed(2)} \\text{ V} $$<br>`;
+                 html += `<strong>Reactive Drop Component:</strong><br>`;
+                 html += `$$ V_X = K \\cdot I \\cdot L \\cdot (X \\sin\\phi) = ${k_factor.toFixed(3)} \\cdot ${I} \\cdot ${L/1000} \\cdot (${x.toFixed(3)} \\cdot ${sin_phi.toFixed(3)}) = ${x_drop.toFixed(2)} \\text{ V} $$<br>`;
+                 html += `$$ V_{total} \\approx V_R + V_X = \\mathbf{${vd_val.toFixed(2)} V} $$`;
             }
             html += `</div>`;
 
-            html += `<h4>Step 3: Limits & Conclusion</h4>`;
+            html += `<h4>Step 3: Final Analysis & Limits</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Voltage at Load $V_{load} = ${V} - ${vd_val.toFixed(2)} = \\mathbf{${v_load.toFixed(1)} V}$.<br>`;
-            html += `Percent Drop $\\%V_d = \\mathbf{${vd_pct.toFixed(2)}\\%}$. (Limit: 3% Light, 5% Power)<br>`;
-            html += `Max Length for 3%: <strong>${Math.floor(L_max_3)} m</strong>. Max Length for 5%: <strong>${Math.floor(L_max_5)} m</strong>.<br>`;
+            html += `Voltage at Load: $V_{load} = V_{source} - V_{drop} = ${V} - ${vd_val.toFixed(2)} = \\mathbf{${v_load.toFixed(1)} V}$.<br>`;
+            html += `Percent Drop: $\\%V_d = (${vd_val.toFixed(2)} / ${V}) \\times 100 = \\mathbf{${vd_pct.toFixed(2)}\\%}$.<br>`;
+            html += `Max Length for 3% Drop: <strong>${Math.floor(L_max_3)} m</strong>.<br>`;
             html += `${amp_check_msg}`;
             html += `</div>`;
 
@@ -789,8 +801,6 @@
             ctx.stroke();
             
             // Draw IX Drop (90 deg to I)
-            const x3 = x2 + Vx*scale*Math.cos(-angle - Math.PI/2); // Rotate 90
-            // Actually IX leads I by 90. If I lags V, IX is 90 ahead of I.
             // Simplified: Vertical component if I is horizontal.
             // With rotated I:
             const x3_real = x2 + Vx*scale*Math.sin(angle); 
