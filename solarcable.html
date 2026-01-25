@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+    
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar & BESS DC Cable Sizing Calculator - NEC 690 Compliant</title>
+    <meta name="description" content="Industrial Solar & Battery Cable Sizing Calculator. Calculate ampacity for PV Strings (1500V), BESS (High Current), and Feeders. Features NEC 690.8 thermal derating, conduit fill analysis, voltage drop physics, and grounding sizing.">
+    <meta name="keywords" content="solar cable calculator, bess cable sizing, dc wire size, nec 690 calculator, conduit fill derating, grounding conductor sizing, pv wire ampacity, voltage drop calculator, industrial battery cabling, NEC 310.15">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+
+    <!-- JSON-LD Schema: Software Application -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Solar & BESS Cable Sizing Calculator",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A commercial-grade engineering tool for sizing DC cables in Solar PV and Battery Storage applications, accounting for thermal derating, voltage drop, and NEC/IEC standards.",
+      "featureList": "PV String Sizing, BESS High-Current Analysis, Thermal Derating (Rooftop Adder), Conduit Fill Adjustment, Voltage Drop Optimization, NEC 250.122 Grounding",
+      "author": {
+        "@type": "Organization",
+        "name": "Design Calculators"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD Schema: FAQ Page -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "Why is DC cable sizing different from AC?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DC systems operate at constant voltage/current, creating continuous thermal stress on insulation without the zero-crossing relief of AC. Additionally, low-voltage DC systems (like 48V BESS) are extremely sensitive to voltage drop; a 2V drop in a 48V system is a massive 4.1% loss, whereas in a 480V AC system, it is negligible. DC arcs are also harder to extinguish, making correct sizing critical for fire safety."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is the NEC 690.8 1.25x Rule?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "NEC 690.8(B) requires that the circuit design current be 125% of the rated Short Circuit Current (Isc) of the PV modules. This safety factor accounts for the 'Cloud Edge Effect' and conditions where solar irradiance exceeds the standard 1000 W/m², potentially driving current higher than the nameplate rating."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Can I use standard THHN wire for solar panels?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Generally, no. Standard THHN is often not rated for direct sunlight exposure or the extreme temperature fluctuations found on rooftops (90°C+). You must use wire marked 'PV Wire' or 'USE-2' (Underground Service Entrance), which has thicker insulation (XLPE) specifically formulated for UV resistance and wet locations."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How does rooftop temperature affect cable sizing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cables in conduits on rooftops are exposed to direct solar heating and reflected heat from the roof surface. NEC 310.15(B)(3)(c) mandates a 'Temperature Adder' (e.g., +22°C) to the ambient temperature. If the ambient is 40°C, the cable effectively operates at 62°C. This drastically reduces the current-carrying capacity (Ampacity) of the wire."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is Conduit Fill Derating?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When multiple current-carrying conductors are bundled in a single conduit, they heat each other up, preventing heat dissipation. NEC Table 310.15(B)(3)(a) requires derating ampacity to 80% for 4-6 wires, 70% for 7-9 wires, and 50% for 10-20 wires. Ignoring this is a leading cause of cable insulation failure."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Should I use Aluminum or Copper for Solar?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Copper is preferred for PV strings and BESS interconnects due to flexibility and smaller diameter (conduit space). Aluminum is standard for large Feeder cables (over 1/0 AWG) due to significant cost savings. However, Aluminum requires special 'Al/Cu' rated terminals and anti-oxidant compound to prevent connection failures."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is the allowable Voltage Drop for Solar/BESS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "While the NEC recommends a max 3% drop for feeders and 5% total, Solar/BESS designs usually aim for tighter tolerances. For 1500V Utility Solar, <1.5% is common to maximize revenue. For 48V BESS, <1% is critical because voltage drop directly causes the inverter to shut down early on low battery voltage."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How do I size the Equipment Grounding Conductor (EGC)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The EGC is sized based on the rating of the Overcurrent Protection Device (OCPD) upstream (Fuse or Breaker), per NEC Table 250.122, NOT the load current. For example, a circuit with a 200A breaker requires a #6 AWG Copper ground, even if the load is only 100A."
+        }
+      }]
+    }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+    <!-- MathJax for Formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* --- CORE THEME (Blue Industrial) --- */
+        :root {
+            --primary: #1E3A8A; /* Dark Blue */
+            --secondary: #2563EB; /* Bright Blue */
+            --accent: #F59E0B; /* Amber */
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #334155;
+            --heading: #0F172A;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --input-bg: #FFFFFF;
+        }
+
+        body.dark-mode {
+            --primary: #3B82F6;
+            --secondary: #60A5FA;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #E2E8F0;
+            --heading: #F8FAFC;
+            --footer-bg: #020617;
+            --border: #334155;
+            --accent: #FBBF24;
+            --input-bg: #334155;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.5px;
+        }
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #DBEAFE;
+            font-weight: 500;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            opacity: 0.9;
+        }
+        .nav-links a:hover { opacity: 1; transform: translateY(-1px); }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.2);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; width: 20px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success); border-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Main Content */
+        main { padding: 40px 0; }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+        h4 {
+            color: var(--heading);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        /* Forms */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .form-group { margin-bottom: 0; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--heading);
+            font-size: 0.95rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Tool Switcher */
+        .tool-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .tool-btn {
+            background: var(--card);
+            border: 2px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tool-btn:hover { border-color: var(--secondary); transform: translateY(-2px); }
+        .tool-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+        }
+
+        /* Module Containers */
+        .tool-module { display: none; animation: fadeIn 0.4s ease-out; }
+        .tool-module.active { display: block; }
+
+        /* Results Big Display */
+        .result-box {
+            text-align: center;
+            padding: 25px;
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .result-box::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 6px;
+            background: var(--grad);
+        }
+        .main-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+            margin: 10px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .sub-value {
+            font-size: 1.1rem;
+            color: var(--text);
+            opacity: 0.9;
+            font-weight: 500;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Calculation Steps Styling */
+        .calc-steps {
+            text-align: left;
+            margin-top: 25px;
+            background: var(--bg);
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.03);
+        }
+        .calc-steps h4 { margin-top:0; color:var(--primary); font-family: 'Inter', sans-serif; border-bottom: 1px dashed var(--border); padding-bottom: 8px; margin-bottom: 15px;}
+        .calc-steps strong { color: var(--heading); }
+        .step-block { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .step-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .step-title { font-weight: 700; color: var(--secondary); display: block; margin-bottom: 5px; font-family: 'Inter', sans-serif; }
+
+        /* Cable Visualizer */
+        .cable-viz-container {
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            background: radial-gradient(circle, var(--bg), transparent);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .cable-circle {
+            background: #B45309; /* Copper */
+            border-radius: 50%;
+            border: 6px solid #1E293B; /* Insulation */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-family: monospace;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+        .cable-circle::after {
+            content: "Conductor";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.3em;
+            opacity: 0.8;
+        }
+        
+        /* Buttons (Shared) */
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35); }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); box-shadow: none; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: rgba(37, 99, 235, 0.05); }
+
+        /* Message Box */
+        .message-box {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            padding: 16px 24px; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 9999;
+            font-weight: 600; color: white; opacity: 0; transition: all 0.3s; display: none;
+        }
+        .message-box.show { display: block; opacity: 1; top: 30px; }
+
+        /* Educational Section */
+        .education-section { padding: 40px; }
+        .article-content { font-family: 'Inter', sans-serif; color: var(--text); }
+        .article-block { margin-bottom: 40px; }
+        .article-block h3 { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; font-size: 1.4rem; margin-top:0; }
+        .article-block h4 { color: var(--heading); margin-top: 25px; margin-bottom: 15px; font-weight: 700; font-size: 1.1rem; border-bottom: none; }
+        .article-block p { line-height: 1.8; margin-bottom: 15px; text-align: justify; }
+        .article-block ul { padding-left: 20px; margin-bottom: 15px; }
+        .article-block li { margin-bottom: 10px; line-height: 1.6; }
+        .highlight-box { background: rgba(37,99,235,0.05); border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .formula { background: var(--bg); padding: 15px; border-radius: 8px; margin: 20px 0; text-align: center; font-size: 1.1rem; border: 1px solid var(--border); font-family: 'Courier New', monospace; overflow-x: auto; }
+
+        /* FAQ Accordion */
+        .faq-item { border-bottom: 1px solid var(--border); padding: 15px 0; }
+        .faq-question { font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--heading); transition: color 0.2s; }
+        .faq-question:hover { color: var(--primary); }
+        .faq-answer { display: none; margin-top: 10px; color: var(--text); line-height: 1.7; text-align: justify; }
+        .faq-item.active .faq-answer { display: block; animation: fadeIn 0.3s; }
+        .faq-icon { transition: transform 0.3s; }
+        .faq-item.active .faq-icon { transform: rotate(180deg); }
+
+        /* Results Grid */
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        @media(max-width:768px){ .res-grid { grid-template-columns: 1fr; } }
+        .res-item {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .res-label { font-size: 0.85rem; color: var(--text); opacity: 0.8; margin-bottom: 5px; }
+        .res-val { font-size: 1.2rem; font-weight: 700; color: var(--heading); }
+
+        /* Footer */
+        footer { background: var(--grad-dark); color: #94A3B8; padding: 60px 0 30px 0; margin-top: 80px; }
+        .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 40px; }
+        .footer-col { flex: 1; min-width: 200px; }
+        .footer-col h4 { color: white; margin-bottom: 20px; font-weight: 700; font-size: 1.1rem; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col li { margin-bottom: 12px; }
+        .footer-col a { color: #CBD5E1; text-decoration: none; transition: color 0.2s; }
+        .footer-col a:hover { color: var(--accent); }
+        .social-buttons { display: flex; gap: 12px; margin-top: 20px; }
+        
+        /* Restored Social Buttons (Colorful) */
+        .social-btn { 
+            width: 40px; height: 40px; 
+            display: flex; justify-content: center; align-items: center; 
+            color: white; border-radius: 50%; 
+            font-size: 1.1rem; transition: transform 0.3s; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .social-btn:hover { transform: translateY(-4px); }
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.youtube { background-color: #FF0000; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+
+        .footer-disclaimer { text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); max-width: 900px; margin: 0 auto; font-size: 0.85rem; line-height: 1.6; }
+        .footer-bottom { text-align: center; padding-top: 20px; font-size: 0.85rem; }
+        .hidden { display: none; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 20px; }
+            .nav-links { flex-direction: column; width: 100%; text-align: center; }
+            .tool-switcher { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div id="message-box" class="message-box"></div>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo-container">
+                    <span class="logo-text">Design Calculators</span>
+                    <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
+                </a>
+                <ul class="nav-links">
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/articles'>Articles</a></li>
+                    <li><a href='/indexmech'>Mechanical</a></li>
+                    <li><a href='/indexele'>Electrical</a></li>
+                    <li><a href='/indexinst'>Instrumentation</a></li>
+                </ul>
+                <div class="theme-toggle">
+                    <i class="fas fa-sun"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <i class="fas fa-moon"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2><i class="fas fa-solar-panel"></i> Solar & BESS DC Cable Sizing Calculator</h2>
+            <div class="tool-description">
+                <p>Commercial-grade sizing tool for <strong>Photovoltaic (PV)</strong>, <strong>Battery Energy Storage Systems (BESS)</strong>, and <strong>Main DC Feeders</strong>. Compliant with <strong>NEC 690</strong>, <strong>IEC 60364</strong>, and <strong>NEC 250.122</strong> standards. Features advanced thermal derating, conduit fill analysis, and grounding conductor sizing.</p>
+            </div>
+
+            <!-- Tool Switcher -->
+            <div class="tool-switcher">
+                <button class="tool-btn active" onclick="switchTool('string')"><i class="fas fa-grip-lines-vertical"></i> PV String (HV)</button>
+                <button class="tool-btn" onclick="switchTool('bess')"><i class="fas fa-car-battery"></i> BESS / Industrial</button>
+                <button class="tool-btn" onclick="switchTool('feeder')"><i class="fas fa-network-wired"></i> Main Feeder</button>
+                <button class="tool-btn" onclick="switchTool('ground')"><i class="fas fa-ground"></i> Grounding (EGC)</button>
+            </div>
+
+            <!-- Visualizer -->
+            <div class="cable-viz-container">
+                <div id="cable-viz" class="cable-circle" style="width: 10px; height: 10px;"></div>
+                <div style="position: absolute; bottom: 10px; font-size: 0.8rem; opacity: 0.7;">Visual Scale (Approx)</div>
+            </div>
+
+            <!-- MODULE 1: PV STRING (High Voltage) -->
+            <div id="mod-string" class="tool-module active">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>String Voltage ($V_{mp}$) [V]</label>
+                        <input type="number" id="str-volts" value="1000" step="10">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Residential: 600V, Commercial: 1000V, Utility: 1500V</p>
+                    </div>
+                    <div class="form-group">
+                        <label>String Current ($I_{sc} \times 1.25$) [A]</label>
+                        <input type="number" id="str-amps" value="15" step="0.1">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Includes NEC 690.8 1.25x Safety Factor</p>
+                    </div>
+                    <div class="form-group">
+                        <label>One-Way Length [m]</label>
+                        <input type="number" id="str-len" value="80" step="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ambient Temp [°C]</label>
+                        <input type="number" id="str-temp" value="45">
+                    </div>
+                    <div class="form-group">
+                        <label>Conductors in Conduit</label>
+                        <select id="str-fill">
+                            <option value="1">1-3 (No Derating)</option>
+                            <option value="0.8">4-6 (80%)</option>
+                            <option value="0.7">7-9 (70%)</option>
+                            <option value="0.5">10-20 (50%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Rooftop Adder [°C]</label>
+                        <select id="str-roof">
+                            <option value="0">None / Ground Mount</option>
+                            <option value="22">0-13mm Height (+22°C)</option>
+                            <option value="17">13-90mm Height (+17°C)</option>
+                            <option value="14">90-300mm Height (+14°C)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcCable('string')">Calculate String Cable</button>
+                </div>
+            </div>
+
+            <!-- MODULE 2: BESS / INDUSTRIAL (Low Voltage, High Current) -->
+            <div id="mod-bess" class="tool-module">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>System Voltage [V]</label>
+                        <input type="number" id="bess-volts" value="48" step="1">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Common: 48V, 125V, 800V</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Continuous Current [A]</label>
+                        <input type="number" id="bess-amps" value="200" step="10">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Inverter/Charger Rating</p>
+                    </div>
+                    <div class="form-group">
+                        <label>One-Way Length [m]</label>
+                        <input type="number" id="bess-len" value="5" step="0.5">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Allowable Drop [%]</label>
+                        <select id="bess-drop">
+                            <option value="1" selected>1% (Critical/BESS)</option>
+                            <option value="2">2% (Standard)</option>
+                            <option value="3">3% (Max)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Terminal Rating</label>
+                        <select id="bess-term">
+                            <option value="75">75°C (Standard Lugs)</option>
+                            <option value="90">90°C (High Spec)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Conductor Type</label>
+                        <select id="bess-mat">
+                            <option value="cu">Copper (Flexible DLO/RHW)</option>
+                            <option value="al">Aluminum (Feeder)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcCable('bess')">Calculate BESS Cable</button>
+                </div>
+            </div>
+
+            <!-- MODULE 3: FEEDER -->
+            <div id="mod-feeder" class="tool-module">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Feeder Voltage [V]</label>
+                        <input type="number" id="feed-volts" value="800">
+                    </div>
+                    <div class="form-group">
+                        <label>Feeder Current [A]</label>
+                        <input type="number" id="feed-amps" value="400">
+                    </div>
+                    <div class="form-group">
+                        <label>Distance [m]</label>
+                        <input type="number" id="feed-len" value="150">
+                    </div>
+                </div>
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcCable('feeder')">Calculate Feeder Size</button>
+                </div>
+            </div>
+
+            <!-- MODULE 4: GROUNDING -->
+            <div id="mod-ground" class="tool-module">
+                <div class="form-row">
+                    <div class="form-group" style="max-width: 500px; margin: 0 auto;">
+                        <label>Overcurrent Device Rating (OCPD) [A]</label>
+                        <input type="number" id="gnd-amps" value="200">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Rating of the Fuse or Breaker protecting the circuit.</p>
+                    </div>
+                </div>
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcGround()">Calculate Ground Wire (NEC 250.122)</button>
+                </div>
+            </div>
+
+            <!-- RESULTS -->
+            <div class="result-box" id="main-result" style="display:none;">
+                <div class="sub-value">Recommended Minimum Cable Size</div>
+                <div id="res-size" class="main-value">--</div>
+                <div id="res-details" class="sub-value"></div>
+                
+                <div class="res-grid">
+                    <div class="res-item">
+                        <div class="res-label">Voltage Drop</div>
+                        <div class="res-val" id="res-vdrop">--</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Power Loss</div>
+                        <div class="res-val" id="res-ploss">--</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Annual Loss (Est.)</div>
+                        <div class="res-val" id="res-kwh">--</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Derated Ampacity</div>
+                        <div class="res-val" id="res-ampacity">--</div>
+                    </div>
+                </div>
+
+                <div class="calc-steps" id="calc-steps-box"></div>
+            </div>
+            
+            <div class="button-wrapper" style="margin-top:40px;">
+                <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download Engineering Report</button>
+            </div>
+        </div>
+
+        <!-- NEW SEO/LLM OPTIMIZED SECTION: DC Power Distribution Engineering Guide -->
+        <div class="card education-section" style="margin-top: 40px;">
+            <h2><i class="fas fa-book-open"></i> DC Power Distribution Engineering Guide</h2>
+            <div class="article-content">
+                
+                <div class="article-block">
+                    <h3>1. The Criticality of DC Cable Sizing</h3>
+                    <p>As the world transitions to renewable energy, Direct Current (DC) infrastructure is becoming the backbone of the grid. Unlike alternating current, DC systems face unique challenges including continuous thermal stress, non-extinguishing arcs, and extreme voltage drop sensitivity.</p>
+                    <p>This calculator is designed to navigate the complex standards of <strong>NEC 690 (Solar Photovoltaic Systems)</strong>, <strong>NEC 310 (Conductors)</strong>, and <strong>IEC 60364</strong>. Correct sizing prevents fire hazards, equipment failure, and significant revenue loss from $I^2R$ heating.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>2. NEC 690 & Thermal Derating Physics</h3>
+                    <p>A cable rated for 50A at 30°C might only safely handle 25A on a hot rooftop. We apply the <strong>Arrhenius Equation</strong> principle: chemical degradation of insulation accelerates exponentially with temperature.</p>
+                    
+                    <div class="highlight-box">
+                        <h4>Derating Factors</h4>
+                        <ul>
+                            <li><strong>Ambient Temperature ($T_{amb}$):</strong> Baseline heat in the environment.</li>
+                            <li><strong>Rooftop Adder (NEC 310.15):</strong> Cables close to the roof absorb reflected IR radiation. A conduit 10mm off the roof can be 22°C hotter than ambient air.</li>
+                            <li><strong>Conduit Fill:</strong> Bundling multiple current-carrying conductors prevents heat dissipation, requiring significant ampacity reduction (e.g., 50% for 10-20 wires).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="article-block">
+                    <h3>3. BESS Specifics: High Current, Low Voltage</h3>
+                    <p>Battery Energy Storage Systems (BESS) often operate at lower voltages (48V or 125V) but very high currents. In these systems, <strong>Voltage Drop</strong> is the primary killer of efficiency and reliability.</p>
+                    <p>In a 48V system, a 2V drop represents a 4.1% loss. This can cause the inverter to detect a "Low Battery" condition prematurely, effectively reducing the usable capacity of the battery bank. We recommend designing for < 1% drop in BESS links.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>4. Cable Insulation Types</h3>
+                    <ul>
+                        <li><strong>PV Wire:</strong> Double-insulated, thick-walled XLPE. Rated for 90°C wet/dry and direct sunlight. Mandatory for ungrounded arrays.</li>
+                        <li><strong>USE-2:</strong> Underground Service Entrance. Good for ground mounts but has thinner insulation than PV Wire.</li>
+                        <li><strong>DLO (Diesel Locomotive Cable):</strong> Extremely flexible, tinned copper. Often used in BESS racks for tight bends.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>5. Grounding Physics (NEC 250.122)</h3>
+                    <p>The Equipment Grounding Conductor (EGC) is a safety line. It does not carry current during normal operation. Its sole purpose is to carry the massive <strong>Fault Current</strong> back to the source long enough to trip the breaker (OCPD).</p>
+                    <p>Therefore, the EGC is sized based on the rating of the Fuse/Breaker upstream, not the load current. An undersized ground wire acts as a fuse during a fault, melting before the breaker trips, leaving the equipment frame electrified and lethal.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>6. Frequently Asked Questions (FAQ)</h3>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Why is DC cable sizing different from AC? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">DC systems operate at constant voltage/current, creating continuous thermal stress on insulation without the zero-crossing relief of AC. Additionally, low-voltage DC systems (like 48V BESS) are extremely sensitive to voltage drop; a 2V drop in a 48V system is a massive 4.1% loss, whereas in a 480V AC system, it is negligible. DC arcs are also harder to extinguish, making correct sizing critical for fire safety.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What is the NEC 690.8 1.25x Rule? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">NEC 690.8(B) requires that the circuit design current be 125% of the rated Short Circuit Current (Isc) of the PV modules. This safety factor accounts for the "Cloud Edge Effect" and conditions where solar irradiance exceeds the standard 1000 W/m², potentially driving current higher than the nameplate rating.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Can I use standard THHN wire for solar panels? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Generally, no. Standard THHN is often not rated for direct sunlight exposure or the extreme temperature fluctuations found on rooftops (90°C+). You must use wire marked "PV Wire" or "USE-2" (Underground Service Entrance), which has thicker insulation (XLPE) specifically formulated for UV resistance and wet locations.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How does rooftop temperature affect cable sizing? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Cables in conduits on rooftops are exposed to direct solar heating and reflected heat from the roof surface. NEC 310.15(B)(3)(c) mandates a "Temperature Adder" (e.g., +22°C) to the ambient temperature. If the ambient is 40°C, the cable effectively operates at 62°C. This drastically reduces the current-carrying capacity (Ampacity) of the wire.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What is Conduit Fill Derating? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">When multiple current-carrying conductors are bundled in a single conduit, they heat each other up, preventing heat dissipation. NEC Table 310.15(B)(3)(a) requires derating ampacity to 80% for 4-6 wires, 70% for 7-9 wires, and 50% for 10-20 wires. Ignoring this is a leading cause of cable insulation failure.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Should I use Aluminum or Copper for Solar? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Copper is preferred for PV strings and BESS interconnects due to flexibility and smaller diameter (conduit space). Aluminum is standard for large Feeder cables (over 1/0 AWG) due to significant cost savings. However, Aluminum requires special "Al/Cu" rated terminals and anti-oxidant compound to prevent connection failures.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What is the allowable Voltage Drop for Solar/BESS? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">While the NEC recommends a max 3% drop for feeders and 5% total, Solar/BESS designs usually aim for tighter tolerances. For 1500V Utility Solar, <1.5% is common to maximize revenue. For 48V BESS, <1% is critical because voltage drop directly causes the inverter to shut down early on low battery voltage.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How do I size the Equipment Grounding Conductor (EGC)? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">The EGC is sized based on the rating of the Overcurrent Protection Device (OCPD) upstream (Fuse or Breaker), per NEC Table 250.122, NOT the load current. For example, a circuit with a 200A breaker requires a #6 AWG Copper ground, even if the load is only 100A.</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Design Calculators</h4>
+                    <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;">Empowering engineers with precision tools for complex analysis. If you find this tool helpful, please consider sharing it with your colleagues!</p>
+                    <div class="social-buttons">
+                        <a href="#" class="social-btn linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-btn youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-btn twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource:%20https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn whatsapp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                        <li><a href='/indexele'>Electrical</a></li>
+                        <li><a href='/indexmech'>Mechanical</a></li>
+                        <li><a href='/indexinst'>Instrumentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="about">About Us</a></li>
+                        <li><a href="contact">Contact</a></li>
+                        <li><a href="privacy-policy">Privacy Policy</a></li>
+                        <li><a href="terms-of-service">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>Calculations for educational use. Always verify component datasheets.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">A Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global State
+        let lastResult = {};
+
+        // Data: Resistivity (Ohm-mm2/m) at 20C
+        const RHO = { 'cu': 0.01724, 'al': 0.02826 };
+        const ALPHA = { 'cu': 0.00393, 'al': 0.00403 };
+
+        // NEC 250.122 Grounding Table (Amps -> AWG/mm2 Copper)
+        const GROUND_TABLE = [
+            {amps: 15, awg: '14', mm: 2.5},
+            {amps: 20, awg: '12', mm: 4},
+            {amps: 60, awg: '10', mm: 6},
+            {amps: 100, awg: '8', mm: 10},
+            {amps: 200, awg: '6', mm: 16},
+            {amps: 300, awg: '4', mm: 25},
+            {amps: 400, awg: '3', mm: 35}, // 3 AWG approx 27mm, mapped to 35mm
+            {amps: 500, awg: '2', mm: 35},
+            {amps: 600, awg: '1', mm: 50},
+            {amps: 800, awg: '1/0', mm: 50},
+            {amps: 1000, awg: '2/0', mm: 70},
+            {amps: 1200, awg: '3/0', mm: 95},
+            {amps: 1600, awg: '4/0', mm: 120}
+        ];
+
+        // Standard Sizes (mm2) & Approx AWG Map & Ampacity (90C insulation in free air approx)
+        const SIZES = [
+            {mm: 1.5, awg: '16', amp: 20},
+            {mm: 2.5, awg: '14', amp: 30},
+            {mm: 4.0, awg: '12', amp: 40},
+            {mm: 6.0, awg: '10', amp: 55},
+            {mm: 10.0, awg: '8', amp: 80},
+            {mm: 16.0, awg: '6', amp: 105},
+            {mm: 25.0, awg: '4', amp: 140},
+            {mm: 35.0, awg: '2', amp: 170},
+            {mm: 50.0, awg: '1/0', amp: 220},
+            {mm: 70.0, awg: '2/0', amp: 270},
+            {mm: 95.0, awg: '3/0', amp: 310},
+            {mm: 120.0, awg: '4/0', amp: 360},
+            {mm: 150.0, awg: '300 MCM', amp: 420},
+            {mm: 185.0, awg: '350 MCM', amp: 480},
+            {mm: 240.0, awg: '500 MCM', amp: 580},
+            {mm: 300.0, awg: '600 MCM', amp: 650},
+            {mm: 400.0, awg: '750 MCM', amp: 750},
+            {mm: 500.0, awg: '1000 MCM', amp: 900}
+        ];
+
+        // UI Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            if(themeSwitch) {
+                themeSwitch.addEventListener('change', function() {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                });
+            }
+            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+        });
+
+        function switchTool(toolId) {
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            document.querySelectorAll('.tool-module').forEach(m => m.classList.remove('active'));
+            document.getElementById('mod-' + toolId).classList.add('active');
+            document.getElementById('main-result').style.display = 'none';
+        }
+        
+        // FAQ Toggle
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+
+        // --- MATH ENGINE ---
+
+        function calcGround() {
+            const amps = parseFloat(document.getElementById('gnd-amps').value);
+            if(amps <= 0) return;
+
+            let size = GROUND_TABLE[GROUND_TABLE.length-1];
+            for(let s of GROUND_TABLE) {
+                if(s.amps >= amps) { size = s; break; }
+            }
+
+            document.getElementById('main-result').style.display = 'block';
+            document.getElementById('res-size').innerText = `${size.mm} mm² (${size.awg})`;
+            document.getElementById('res-details').innerText = `Based on NEC 250.122 for ${amps}A OCPD`;
+            document.getElementById('res-vdrop').innerText = "N/A";
+            document.getElementById('res-ploss').innerText = "N/A";
+            document.getElementById('res-kwh').innerText = "N/A";
+            document.getElementById('res-ampacity').innerText = "Fault Only";
+            document.getElementById('calc-steps-box').innerHTML = `
+                <h4>Grounding Sizing Calculation (NEC 250.122)</h4>
+                <div class="step-block">
+                    <span class="step-title">Step 1: Overcurrent Protection Assessment</span>
+                    Input Breaker/Fuse Rating: <strong>${amps} Amps</strong><br>
+                    NEC 250.122 dictates EGC size based on the rating of the Overcurrent Protection Device (OCPD) upstream.
+                </div>
+                <div class="step-block">
+                    <span class="step-title">Step 2: Table Lookup</span>
+                    Matched next standard OCPD tier: <strong>${size.amps} A</strong><br>
+                    Selected Copper Conductor Size: <strong>${size.awg} (${size.mm} mm²)</strong>
+                </div>
+                <div class="step-block">
+                    <span class="step-title">Step 3: Verification</span>
+                    Ensure the EGC runs in the same conduit/raceway as the circuit conductors. If parallel runs are used, an EGC of this size must be installed in <em>each</em> raceway.
+                </div>
+            `;
+            
+            lastResult = { size: size, V: 0, I: amps, L: 0, vDrop: 0, pct: 0, loss: 0, mode: 'Grounding' };
+            updateViz(size.mm);
+        }
+
+        function calcCable(mode) {
+            let V, I, L, dropMax, temp, mat = 'cu';
+            let roofAdder = 0, fillFactor = 1.0, termRating = 75;
+
+            if (mode === 'string') {
+                V = parseFloat(document.getElementById('str-volts').value);
+                I = parseFloat(document.getElementById('str-amps').value);
+                L = parseFloat(document.getElementById('str-len').value);
+                dropMax = 2; // Default
+                temp = parseFloat(document.getElementById('str-temp').value);
+                fillFactor = parseFloat(document.getElementById('str-fill').value);
+                roofAdder = parseFloat(document.getElementById('str-roof').value);
+                termRating = 90; // PV connectors usually 90C
+            } else if (mode === 'bess') {
+                V = parseFloat(document.getElementById('bess-volts').value);
+                I = parseFloat(document.getElementById('bess-amps').value);
+                L = parseFloat(document.getElementById('bess-len').value);
+                dropMax = parseFloat(document.getElementById('bess-drop').value);
+                mat = document.getElementById('bess-mat').value;
+                termRating = parseFloat(document.getElementById('bess-term').value);
+                temp = 30; 
+            } else if (mode === 'feeder') {
+                V = parseFloat(document.getElementById('feed-volts').value);
+                I = parseFloat(document.getElementById('feed-amps').value);
+                L = parseFloat(document.getElementById('feed-len').value);
+                dropMax = 2; 
+                temp = 40;
+            }
+
+            if (V <= 0 || I <= 0 || L <= 0) return;
+
+            // 1. Temperature Physics
+            const totalTemp = temp + roofAdder;
+            
+            // NEC Temp Correction Factors
+            let tempFactor = 1.0;
+            if(totalTemp > 30) {
+                if(totalTemp <= 40) tempFactor = 0.91;
+                else if(totalTemp <= 50) tempFactor = 0.82;
+                else if(totalTemp <= 60) tempFactor = 0.71;
+                else if(totalTemp <= 70) tempFactor = 0.58;
+                else if(totalTemp <= 80) tempFactor = 0.41;
+                else tempFactor = 0.20; 
+            }
+
+            // Total Derating
+            const totalDerating = tempFactor * fillFactor;
+
+            // 2. Resistivity Adjustment
+            // Estimate operating temp: Ambient + 10C self heating (conservative for drop calc)
+            const calcTemp = totalTemp + 10;
+            const baseRho = RHO[mat];
+            const alpha = ALPHA[mat];
+            const rho = baseRho * (1 + alpha * (calcTemp - 20));
+
+            // 3. Size by Voltage Drop
+            const vDropAllowed = V * (dropMax / 100);
+            const reqArea_Drop = (2 * L * I * rho) / vDropAllowed;
+
+            // 4. Size by Ampacity (Thermal)
+            const reqAmpacity = I / totalDerating;
+
+            // Find size
+            let selectedSize = null;
+            let finalAmpacity = 0;
+
+            for (let s of SIZES) {
+                let rawAmp = s.amp;
+                if(mat === 'al') rawAmp = rawAmp * 0.78;
+
+                if (s.mm >= reqArea_Drop) {
+                    if (rawAmp * totalDerating >= I) {
+                        let termLimit = rawAmp;
+                        if(termRating === 75) termLimit = rawAmp * 0.85; // Conservative terminal check
+                        
+                        if(termLimit >= I) {
+                            selectedSize = s;
+                            finalAmpacity = rawAmp * totalDerating;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!selectedSize) selectedSize = SIZES[SIZES.length-1];
+
+            // 5. Final Calculations
+            const actualR = (rho * 2 * L) / selectedSize.mm; 
+            const actualDropV = I * actualR;
+            const actualDropPct = (actualDropV / V) * 100;
+            const powerLoss = I * I * actualR;
+            const annualKwh = (powerLoss * 6 * 365) / 1000; 
+
+            // 6. Render
+            document.getElementById('main-result').style.display = 'block';
+            document.getElementById('res-size').innerText = `${selectedSize.mm} mm² (${selectedSize.awg})`;
+            document.getElementById('res-details').innerText = `Derated Capacity: ${finalAmpacity.toFixed(1)} A`;
+            
+            document.getElementById('res-vdrop').innerText = `${actualDropV.toFixed(2)} V (${actualDropPct.toFixed(2)}%)`;
+            document.getElementById('res-ploss').innerText = `${powerLoss.toFixed(1)} W`;
+            document.getElementById('res-kwh').innerText = `${annualKwh.toFixed(1)} kWh/yr`;
+            document.getElementById('res-ampacity').innerText = `${finalAmpacity.toFixed(1)} A`;
+
+            // Detailed Steps HTML
+            let steps = `<h4>Forensic Calculation Breakdown (NEC 690 / IEC 60364)</h4>`;
+            
+            steps += `<div class="step-block">
+                <span class="step-title">Step 1: Environmental & Installation Physics</span>
+                Ambient Temp ($T_{amb}$): <strong>${temp}°C</strong><br>
+                Rooftop Solar Adder (NEC 310.15(B)(3)(c)): <strong>+${roofAdder}°C</strong><br>
+                Effective Environmental Temp: <strong>${totalTemp}°C</strong>
+            </div>`;
+
+            steps += `<div class="step-block">
+                <span class="step-title">Step 2: Derating Factor Analysis</span>
+                Temperature Correction Factor ($K_t$): <strong>${tempFactor}</strong> (from Table 310.15(B)(2)(a))<br>
+                Conduit Fill Factor ($K_f$): <strong>${fillFactor}</strong> (from Table 310.15(B)(3)(a))<br>
+                Total Derating Multiplier: $${tempFactor} \\times ${fillFactor} = \\mathbf{${totalDerating.toFixed(2)}}$
+            </div>`;
+
+            steps += `<div class="step-block">
+                <span class="step-title">Step 3: Thermal Capacity Sizing (Ampacity)</span>
+                Design Current ($I_{design}$): <strong>${I} A</strong><br>
+                Required Cable Base Rating (90°C): $I_{design} / Derating = ${I} / ${totalDerating.toFixed(2)} = \\mathbf{${reqAmpacity.toFixed(1)} A}$<br>
+                <em>The cable must be able to handle this current BEFORE derating is applied.</em>
+            </div>`;
+
+            steps += `<div class="step-block">
+                <span class="step-title">Step 4: Voltage Drop Sizing (Efficiency)</span>
+                Target Drop: <strong>${dropMax}%</strong> (${vDropAllowed.toFixed(2)} V)<br>
+                Op. Resistivity ($\\\\rho_{hot}$): ${baseRho} $\\times$ (1 + ${alpha} $\\times$ (${calcTemp}-20)) = <strong>${rho.toFixed(5)} $\\Omega \\cdot mm^2/m$</strong><br>
+                Required Area ($A_{drop}$): $\\frac{2 \\times ${L}m \\times ${I}A \\times ${rho.toFixed(4)}}{${vDropAllowed.toFixed(2)}V} = \\mathbf{${reqArea_Drop.toFixed(2)} mm^2}$
+            </div>`;
+
+            steps += `<div class="step-block">
+                <span class="step-title">Step 5: Final Selection Logic</span>
+                Selected Standard Size: <strong>${selectedSize.awg} (${selectedSize.mm} mm²)</strong><br>
+                Base Ampacity: <strong>${selectedSize.amp} A</strong> > Required ${reqAmpacity.toFixed(1)} A $\\rightarrow$ <span style="color:var(--success)">Pass (Thermal)</span><br>
+                Cross-Section: <strong>${selectedSize.mm} mm²</strong> > Required ${reqArea_Drop.toFixed(2)} mm² $\\rightarrow$ <span style="color:var(--success)">Pass (Voltage Drop)</span>
+            </div>`;
+            
+            document.getElementById('calc-steps-box').innerHTML = steps;
+            if(window.MathJax) window.MathJax.typesetPromise();
+
+            updateViz(selectedSize.mm);
+            lastResult = {
+                mode, V, I, L, 
+                size: selectedSize, 
+                vDrop: actualDropV, 
+                pct: actualDropPct,
+                loss: powerLoss
+            };
+        }
+
+        function updateViz(mm) {
+            const viz = document.getElementById('cable-viz');
+            const scale = Math.sqrt(mm) * 6; 
+            viz.style.width = Math.min(Math.max(scale, 10), 120) + 'px';
+            viz.style.height = Math.min(Math.max(scale, 10), 120) + 'px';
+            viz.style.fontSize = Math.min(scale/3, 20) + 'px';
+        }
+
+        function generatePDF() {
+            if(!lastResult.size) { alert("Calculate first!"); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(18); doc.setTextColor(30, 58, 138);
+            doc.text("DC Cable Sizing Report", 14, 20);
+            doc.setFontSize(12); doc.setTextColor(0);
+            
+            doc.text(`Application: ${lastResult.mode ? lastResult.mode.toUpperCase() : 'General DC'}`, 14, 40);
+            doc.text(`System Specs: ${lastResult.V}V, ${lastResult.I}A, ${lastResult.L}m`, 14, 50);
+            
+            doc.setDrawColor(30, 58, 138);
+            doc.setLineWidth(0.5);
+            doc.line(14, 55, 196, 55);
+            
+            doc.setFontSize(14);
+            doc.text(`Recommended: ${lastResult.size.mm} mm² (${lastResult.size.awg})`, 14, 65);
+            doc.setFontSize(12);
+            doc.text(`Voltage Drop: ${lastResult.vDrop.toFixed(2)} V (${lastResult.pct.toFixed(2)}%)`, 14, 75);
+            doc.text(`Power Dissipation: ${lastResult.loss.toFixed(1)} W`, 14, 85);
+            
+            const stepsText = document.getElementById('calc-steps-box').innerText;
+            const split = doc.splitTextToSize(stepsText, 180);
+            doc.text(split, 14, 100);
+            
+            doc.save('cable_sizing_report.pdf');
+        }
+    </script>
+</body>
+</html>
