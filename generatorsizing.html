@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+    
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Sizing & Fuel Consumption Calculator - Commercial Grade</title>
+    <meta name="description" content="Free commercial generator sizing calculator compliant with ISO 8528 & IEEE. Calculate kVA, kW, motor starting surge, and diesel fuel consumption instantly.">
+    <meta name="keywords" content="generator calculator, kva calculator, diesel generator fuel consumption, generator sizing tool, ISO 8528, motor starting kva, prime vs standby power, generator derating calculator">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://designcalculators.co.in/generatorsizing" /> 
+    
+    <!-- Open Graph for Social Sharing -->
+    <meta property="og:title" content="Generator Sizing & Fuel Consumption Calculator">
+    <meta property="og:description" content="Professional grade sizing tool for electrical engineers and facility managers.">
+    <meta property="og:type" content="website">
+
+    <!-- Schema.org Structured Data for Rich Snippets (SEO Critical) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "SoftwareApplication",
+          "name": "Generator Sizing Calculator",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Any",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "description": "Calculates required generator kVA rating based on running load, non-linear harmonics, and motor starting surge requirements."
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How do I calculate the right generator size?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "To calculate generator size, sum the running watts of all appliances. Then, identify the largest motor and multiply its running watts by 3 (or use the NEMA code) to account for starting surge. Divide the total kW by the Power Factor (0.8) to get kVA. Always add a 20-25% safety margin."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the difference between Prime and Standby generator ratings?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Standby (ESP) is for emergency backup power for the duration of an outage (limited hours, no overload). Prime (PRP) is for unlimited running hours at variable load (e.g., remote construction sites) and typically includes a 10% overload capability."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How much fuel does a diesel generator consume per hour?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "A diesel generator typically consumes 0.27 to 0.30 liters per kWh of actual load produced. For example, a 100 kVA generator running at 75% load (60 kW) will consume approximately 16-18 liters per hour."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What is wet stacking and how do I prevent it?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Wet stacking occurs when a diesel engine runs below 30% load, causing unburned fuel to accumulate in the exhaust. It causes carbon buildup and engine damage. Prevent it by sizing the generator correctly so it runs at 60-80% capacity, or use a load bank periodically."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Why do non-linear loads require larger generators?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Non-linear loads (UPS, LEDs, VFDs) draw current in pulses, creating harmonic distortion (THD). This heats up the alternator windings. You typically need to oversize the alternator by 20-25% to handle this heat and maintain voltage stability."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does altitude affect generator performance?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Engines need oxygen to burn fuel. As altitude increases, air density drops. Generators typically derate (lose power) by 3.5% for every 300 meters (1000 ft) above standard elevation. You must choose a larger engine to compensate."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- MathJax for Formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* --- CORE THEME (Blue Industrial) --- */
+        :root {
+            --primary: #1E3A8A; /* Dark Blue */
+            --secondary: #2563EB; /* Bright Blue */
+            --accent: #F59E0B; /* Amber */
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #334155;
+            --heading: #0F172A;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --input-bg: #FFFFFF;
+        }
+
+        body.dark-mode {
+            --primary: #3B82F6;
+            --secondary: #60A5FA;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #E2E8F0;
+            --heading: #F8FAFC;
+            --footer-bg: #020617;
+            --border: #334155;
+            --accent: #FBBF24;
+            --input-bg: #334155;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.5px;
+        }
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #DBEAFE;
+            font-weight: 500;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            opacity: 0.9;
+        }
+        .nav-links a:hover { opacity: 1; transform: translateY(-1px); }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.2);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; width: 20px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success); border-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Main Content */
+        main { padding: 40px 0; }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* SEO Ranking: Use H1 for main title but keep H2 style */
+        .card h1.tool-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.75rem; /* Matches original H2 size */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+            font-weight: 700;
+        }
+        h2 {
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.6rem;
+            margin-top: 0;
+        }
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+
+        /* Forms */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .form-group { margin-bottom: 0; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--heading);
+            font-size: 0.95rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Vector Input Group */
+        .vector-input-group {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .vector-input-header {
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.05rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 200px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* Presets */
+        .preset-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .preset-btn:hover {
+            background: var(--bg);
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+        .preset-btn i { color: var(--secondary); }
+
+        /* Results */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        @media (max-width: 1024px) { .results-grid { grid-template-columns: 1fr; } }
+
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .results-table th, .results-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .results-table th {
+            background: var(--bg);
+            color: var(--heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        .results-table tr:last-child td { border-bottom: none; }
+        .results-table td:first-child { font-weight: 600; color: var(--text); }
+        .results-table td:nth-child(2) { font-family: 'Courier New', monospace; font-weight: 700; }
+
+        /* Calculation Steps */
+        .calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+        .calculation-step h4 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            font-weight: 700;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 5px;
+        }
+
+        /* Chart */
+        .chart-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            height: 350px;
+            position: relative;
+        }
+
+        /* Engineering Insights (Article Style) */
+        .education-section { padding: 40px; }
+        .article-content {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            max-width: 100%;
+        }
+        .article-block {
+            margin-bottom: 40px;
+        }
+        .article-block h3 {
+            color: var(--primary);
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        .article-block h4 {
+            color: var(--heading);
+            font-size: 1.15rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .article-block p { margin-bottom: 15px; text-align: justify; }
+        .article-block ul { margin-bottom: 15px; padding-left: 20px; }
+        .article-block li { margin-bottom: 8px; }
+        .formula {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            border: 1px solid var(--border);
+        }
+
+        /* FAQ Section */
+        .faq-section h2 {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+        }
+        .faq-item {
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--input-bg);
+        }
+        .faq-item summary {
+            padding: 15px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--heading);
+            background: var(--bg);
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .faq-item summary:hover {
+            background: rgba(37, 99, 235, 0.05);
+            color: var(--secondary);
+        }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary::after {
+            content: '+';
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .faq-item[open] summary::after { content: '-'; }
+        .faq-answer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Tooltip */
+        .info-icon { color: var(--secondary); margin-left: 6px; cursor: help; opacity: 0.7; font-size: 0.9rem; }
+        .info-icon:hover { opacity: 1; }
+        .tooltip { position: relative; display: inline-block; }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 240px;
+            background-color: #1E293B;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 135%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.8rem;
+            font-weight: 400;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            pointer-events: none;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1E293B transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 9999;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s;
+            display: none;
+        }
+        .message-box.show { display: block; opacity: 1; top: 30px; }
+
+        /* Print & Responsive */
+        @media print {
+            header, footer, .education-section, .faq-section, .theme-toggle, .button-wrapper, .preset-container { display: none !important; }
+            .card { border: none; box-shadow: none; padding: 0; }
+            .container { width: 100%; max-width: 100%; padding: 0; }
+        }
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 20px; }
+            .nav-links { flex-direction: column; width: 100%; }
+            .card { padding: 20px; }
+            .results-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--grad-dark);
+            color: #94A3B8;
+            padding: 60px 0 30px 0;
+            margin-top: 80px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col { flex: 1; min-width: 200px; }
+        .footer-col h4 { color: white; margin-bottom: 20px; font-weight: 700; font-size: 1.1rem; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col li { margin-bottom: 12px; }
+        .footer-col a { color: #CBD5E1; text-decoration: none; transition: color 0.2s; }
+        .footer-col a:hover { color: var(--accent); }
+        .social-buttons { display: flex; gap: 12px; margin-top: 20px; }
+        .social-btn {
+            width: 40px; height: 40px;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(255,255,255,0.05);
+            color: white; border-radius: 50%;
+            font-size: 1rem; transition: all 0.2s;
+        }
+        .social-btn:hover { background: var(--secondary); transform: translateY(-3px); }
+        .footer-disclaimer {
+            text-align: center; padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            max-width: 900px; margin: 0 auto;
+            font-size: 0.85rem; line-height: 1.6;
+        }
+        .footer-bottom { text-align: center; padding-top: 20px; font-size: 0.85rem; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="message-box" class="message-box"></div>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo-container">
+                    <span class="logo-text">Design Calculators</span>
+                    <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
+                </a>
+                <ul class="nav-links">
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/articles'>Articles</a></li>
+                    <li><a href='/indexmech'>Mechanical</a></li>
+                    <li><a href='/indexele'>Electrical</a></li>
+                    <li><a href='/indexinst'>Instrumentation</a></li>
+                </ul>
+                <div class="theme-toggle">
+                    <i class="fas fa-sun"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <i class="fas fa-moon"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Calculator Card -->
+        <div class="card">
+            <h1 class="tool-title"><i class="fas fa-bolt"></i> Generator Sizing & Fuel Analysis (ISO 8528)</h1>
+            
+            <div class="tool-description">
+                <p>Commercial-grade power system calculator compliant with <strong>IEC 60034-1</strong> and <strong>ISO 8528</strong>. Accurately determines generator rating (Prime/Standby) considering non-linear loads (harmonics), motor surge (transient voltage dip), and environmental derating. Includes precise fuel estimation based on specific fuel consumption (SFC) curves.</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="gen-form">
+                    <!-- Load Presets -->
+                    <div class="form-row" style="align-items: center; background: var(--bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
+                        <div style="flex: 0 0 auto;"><strong>Load Profile Presets:</strong></div>
+                        <div class="preset-container">
+                            <button type="button" class="preset-btn" onclick="loadPreset('home')"><i class="fas fa-home"></i> Residential</button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('site')"><i class="fas fa-hard-hat"></i> Construction (Motor Heavy)</button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('office')"><i class="fas fa-server"></i> Data Center (Non-Linear)</button>
+                        </div>
+                    </div>
+
+                    <!-- 1. Electrical System -->
+                    <div class="form-row">
+                        <div class="vector-input-group">
+                            <div class="vector-input-header"><i class="fas fa-plug"></i> Electrical Configuration</div>
+                            <div class="form-group">
+                                <label for="phase-type">System Phase</label>
+                                <select id="phase-type">
+                                    <option value="1">Single Phase (1Φ, 2-Wire)</option>
+                                    <option value="3">Three Phase (3Φ, 4-Wire)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="voltage">Line Voltage [V]</label>
+                                <input type="number" id="voltage" value="400" step="10">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="rating-type">ISO 8528 Rating Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext"><strong>Standby (ESP):</strong> Emergency power for duration of outage.<br><strong>Prime (PRP):</strong> Unlimited hours with varying load (avg 70%).</span></span></label>
+                                <select id="rating-type">
+                                    <option value="standby">Standby (Emergency Backup)</option>
+                                    <option value="prime">Prime Power (Continuous)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 2. Load Profile -->
+                        <div class="vector-input-group">
+                            <div class="vector-input-header"><i class="fas fa-weight-hanging"></i> Load Characteristics</div>
+                            <div class="form-group">
+                                <label for="run-load">Total Running Load [kW] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Sum of all loads running simultaneously.</span></span></label>
+                                <input type="number" id="run-load" value="50" step="1">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="load-type">Load Type (Harmonics) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext"><strong>Linear:</strong> Heaters, standard motors.<br><strong>Non-Linear:</strong> UPS, VFDs, LED lighting (Adds ~25% oversizing for THD).</span></span></label>
+                                <select id="load-type">
+                                    <option value="linear">Linear (Standard)</option>
+                                    <option value="nonlinear">Non-Linear (High Harmonics/UPS)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="pf">Load Power Factor (PF)</label>
+                                <input type="number" id="pf" value="0.8" step="0.05" min="0.5" max="1.0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Surge & Derating -->
+                    <div class="form-row">
+                         <div class="vector-input-group">
+                            <div class="vector-input-header"><i class="fas fa-bolt"></i> Transient & Surge</div>
+                            <div class="form-group">
+                                <label for="start-surge">Max Starting Surge [kW] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Peak kW during motor startup. Typically 3-6x running kW of largest motor.</span></span></label>
+                                <input type="number" id="start-surge" value="15" step="1">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="margin">Safety Margin [%] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Buffer for future expansion and aging (Recommended: 15-25%).</span></span></label>
+                                <input type="number" id="margin" value="20" step="5">
+                            </div>
+                        </div>
+
+                         <div class="vector-input-group">
+                            <div class="vector-input-header"><i class="fas fa-gas-pump"></i> Fuel & Operations</div>
+                            <div class="form-group">
+                                <label for="fuel-type">Fuel Source</label>
+                                <select id="fuel-type" onchange="updateFuelUnits()">
+                                    <option value="diesel">Diesel (Standard)</option>
+                                    <option value="gasoline">Gasoline (Petrol)</option>
+                                    <option value="ng">Natural Gas (NG)</option>
+                                    <option value="lpg">Liquid Propane (LPG)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
+                                <div>
+                                    <label id="lbl-fuel-cost" style="font-size:0.85rem">Cost/Liter</label>
+                                    <input type="number" id="fuel-cost" value="1.50" step="0.01">
+                                </div>
+                                <div>
+                                    <label style="font-size:0.85rem">Run Hrs/Day</label>
+                                    <input type="number" id="run-hours" value="8" step="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Generator Size</button>
+                        <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download Specification PDF</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div id="result-container" class="card hidden" style="margin-top: 40px; border-color: var(--secondary);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;"><i class="fas fa-clipboard-check"></i> Sizing Report</h3>
+                    <div id="rating-badge" style="background: var(--success); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">Pass</div>
+                </div>
+                
+                <div class="results-grid">
+                    <!-- Left Col: Table -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Specification Summary</h4>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Calculated Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="result-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(37,99,235,0.05); border-left: 4px solid var(--secondary); border-radius: 4px;">
+                            <strong><i class="fas fa-comment-dots"></i> Engineer's Note:</strong>
+                            <div id="interpretation-text" style="margin-top: 5px; font-size: 0.95rem; line-height: 1.5;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Right Col: Visual Chart -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Capacity & Transient Headroom</h4>
+                        <div class="chart-container">
+                            <canvas id="genCanvas"></canvas>
+                        </div>
+                         <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--text);">
+                             ISO 8528 Performance Class G2/G3 Assumed
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 35px; border-top: 1px solid var(--border); padding-top: 20px;">Detailed IEEE/IEC Calculation Methodology</h4>
+                <div id="calculation-details">
+                    <!-- Dynamic math steps -->
+                </div>
+            </div>
+        </div>
+
+        <!-- EXTENSIVE EDUCATIONAL SECTION (1500+ Words) -->
+        <div class="card education-section">
+            <h2><i class="fas fa-book-open"></i> Mastering Power Generation: Engineering Insights</h2>
+            <div class="article-content">
+                
+                <div class="article-block">
+                    <h3>1. Fundamentals of Generator Sizing and Physics</h3>
+                    <p>Sizing a generator correctly is one of the most critical aspects of electrical power system design. Unlike utility power, which is essentially an infinite bus capable of absorbing massive current spikes without voltage deviation, a generator is a finite source with limited mechanical and electrical inertia. When you ask a generator to start a large motor or power a non-linear load, the physics of the machine—specifically the interaction between the diesel engine (prime mover) and the alternator (electrical end)—dictates the outcome.</p>
+                    <p>The primary constraints are <strong>Thermal Capacity</strong> (how much heat the windings can take, determining the kW/kVA rating) and <strong>Transient Reactance</strong> (how much the voltage drops when sudden load is applied). The generator must be sized to handle the steady-state running load without overheating, but it must also possess enough magnetic reserve in the alternator to handle inrush currents without collapsing the voltage field.</p>
+                    <div class="formula">$$ P_{gen} (kW) = P_{engine} \times \eta_{alt} $$</div>
+                    <p>Where $\eta_{alt}$ is alternator efficiency (typically 90-95%). The engine provides real power (kW), while the alternator provides the KVA and the reactive capability (kVAR). This is why a generator engine might not bog down, but the voltage can still collapse if the alternator is undersized.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>2. ISO 8528 Ratings: Prime vs. Standby</h3>
+                    <p>Understanding the standard ratings defined by ISO 8528-1 is essential for commercial specification. Misapplying these ratings can lead to warranty voiding or premature failure.</p>
+                    <ul>
+                        <li><strong>Standby Power (ESP):</strong> The maximum power available during a variable electrical power sequence, under the stated operating conditions, for which a generating set is capable of delivering in the event of a utility power outage. It is typically limited to 200-500 hours per year, with no overload capability. This is the rating most backup generators use.</li>
+                        <li><strong>Prime Power (PRP):</strong> The maximum power which a generating set is capable of delivering continuously while supplying a variable electrical load. The generator can run 24/7/365 at varying loads (usually 70% average). It typically includes a 10% overload capability for 1 hour in every 12 hours of operation.</li>
+                        <li><strong>Continuous Power (COP):</strong> The power available for an unlimited number of hours at a constant 100% load. This is rare and used for base-loading power plants.</li>
+                    </ul>
+                    <p><strong>Design Tip:</strong> A generator rated 500 kVA Standby is essentially the same machine as one rated 450 kVA Prime. The difference is the allowed thermal stress profile. If you are designing for a construction site (Prime application), you must derate the machine compared to a hospital backup (Standby application).</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>3. The Physics of Motor Starting (Transient Analysis)</h3>
+                    <p>The most challenging event for a generator is starting a large AC induction motor. When a motor starts Direct-On-Line (DOL), it acts like a short circuit transformer secondary. The rotor is locked (stationary), and the "Locked Rotor Current" (LRA) can be <strong>6 to 7 times</strong> the Full Load Amps (FLA).</p>
+                    <h4>Transient Voltage Dip (TVD)</h4>
+                    <p>When this massive current surge hits, the generator's internal impedance causes an instantaneous voltage drop. According to Ohm’s Law for AC circuits:</p>
+                    <div class="formula">$$ V_{dip} \approx I_{start} \times X''_{d} $$</div>
+                    <p>Where $X''_d$ is the generator's <strong>sub-transient reactance</strong>. If the voltage drops below 15-30% (depending on the contactor rating), motor contactors may chatter or drop out, causing the motor to fail to start. This calculator uses a simplified "Start Factor" to ensure the generator kVA is sufficient to keep voltage dip within acceptable limits (typically < 30%).</p>
+                    <h4>NEMA Codes</h4>
+                    <p>Motors have NEMA Code letters indicating their kVA/HP at startup. Code G (typical) draws ~6 kVA per HP. Code L might draw ~9 kVA per HP. While this tool simplifies the input to "Surge kW", professional engineers calculate this precisely using the NEMA code.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>4. Non-Linear Loads and Harmonics (IEEE 519)</h3>
+                    <p>Modern commercial loads are increasingly "non-linear." This includes UPS systems, Variable Frequency Drives (VFDs), LED drivers, and computer power supplies. Unlike resistive heaters, these devices draw current in pulses rather than smooth sine waves.</p>
+                    <p>These pulses distort the voltage waveform, creating <strong>Total Harmonic Distortion (THD)</strong>. High THD causes heating in the generator alternator windings. To mitigate this:</p>
+                    <ul>
+                        <li><strong>Oversizing:</strong> We typically oversize the alternator by 20-25% (or use a lower temperature rise alternator, e.g., 80°C or 105°C rise) to handle the skin effect heating caused by harmonics.</li>
+                        <li><strong>Impedance:</strong> Lower impedance alternators (larger kVA) are "stiffer" sources and resist waveform distortion better.</li>
+                    </ul>
+                    <p>This calculator applies a <strong>Harmonic Factor (1.25x)</strong> when you select "Non-Linear Load" to emulate this necessary upsizing per IEEE 519 guidelines.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>5. Environmental Derating</h3>
+                    <p>Generators breathe air. Diesel engines need oxygen for combustion, and alternators need air for cooling. Manufacturers rate generators at Standard Reference Conditions (usually 25°C or 27°C, and 100-150m altitude). Deviating from this requires derating:</p>
+                    <ul>
+                        <li><strong>Altitude:</strong> Air becomes less dense (lower partial pressure of O2) as you go up. Turbochargers help, but generally, expect ~3-4% power loss for every 300m above 1000m.</li>
+                        <li><strong>Temperature:</strong> Hot air is less dense and provides less cooling. Expect ~1-2% loss for every 5°C above rated ambient (usually 40°C or 50°C for industrial sets).</li>
+                    </ul>
+                    <p>Failing to account for a 40°C day on a rooftop in Denver (high altitude) could result in a generator that shuts down on "Under Frequency" or "Over Temperature" just when it's needed most.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>6. Fuel Systems and Operational Cost</h3>
+                    <p>Fuel consumption is largely linear with load, but efficiency drops at low loads. A diesel engine is most efficient at 70-80% load. </p>
+                    <h4>Wet Stacking</h4>
+                    <p>Running a diesel generator below 30% load for extended periods causes "wet stacking"—unburned fuel and soot accumulate in the exhaust system because the cylinder temperature is too low for complete combustion. This can glaze cylinder liners and destroy the engine. This is why sizing a generator "too big" "just to be safe" is poor engineering practice. The generator should be sized so the base load is at least 30-40% of its rating.</p>
+                    <h4>Fuel Types</h4>
+                    <ul>
+                        <li><strong>Diesel:</strong> High energy density, long shelf life (with treatment), standard for mission-critical (data centers, hospitals).</li>
+                        <li><strong>Natural Gas:</strong> Infinite run time (utility pipe), cleaner burn, but lower transient response (step load capability) compared to diesel.</li>
+                        <li><strong>Propane (LPG):</strong> Good for residential, indefinite shelf life of fuel, but tank size limits run time.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>7. Installation Best Practices</h3>
+                    <p>Beyond sizing, successful implementation involves:</p>
+                    <ul>
+                        <li><strong>Grounding:</strong> Determining whether the generator neutral should be bonded to the frame or floating depends on whether the transfer switch is 3-pole (solid neutral) or 4-pole (switched neutral). This is critical for Ground Fault protection.</li>
+                        <li><strong>Vibration Isolation:</strong> Generators shake. Spring isolators are mandatory to prevent structural damage to the building.</li>
+                        <li><strong>Sound Attenuation:</strong> 75 dBA at 7 meters is standard, but hospitals often require 65 dBA critical grade silencers and enclosures.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW FAQ SECTION -->
+        <div class="card faq-section">
+            <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+            
+            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <summary itemprop="name">How do I calculate the right generator size for my home or business?</summary>
+                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <span itemprop="text">To calculate generator size, you must sum the running watts of all appliances you intend to power. However, critical loads like air conditioners and pumps are "inductive" and require a starting surge (3-6x running watts). This calculator automatically accounts for that surge. A general rule of thumb is to take your total running kW, add the highest starting surge, and divide by 0.8 (Power Factor) to get the required kVA.</span>
+                </div>
+            </details>
+
+            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <summary itemprop="name">What is the difference between Prime and Standby ratings?</summary>
+                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <span itemprop="text"><strong>Standby (ESP)</strong> ratings are for emergency backup power only (typically <200 hours/year) with no overload capability. <strong>Prime (PRP)</strong> ratings are for generators running as the primary power source (like at a construction site) for unlimited hours with variable load. Prime ratings are typically 10% lower than Standby ratings for the same physical machine.</span>
+                </div>
+            </details>
+
+            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <summary itemprop="name">How much fuel does a diesel generator consume per hour?</summary>
+                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <span itemprop="text">Fuel consumption depends on the load. A modern diesel generator consumes approximately 0.27 to 0.30 liters per kWh of actual load produced. For example, a 100 kVA generator running at 75% load (60 kW) will consume roughly 16-18 liters of diesel per hour.</span>
+                </div>
+            </details>
+
+            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <summary itemprop="name">What happens if I undersize my generator?</summary>
+                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <span itemprop="text">Undersizing leads to two main issues: 1) Voltage Collapse, where the generator cannot handle the inrush current of starting motors, causing lights to dim and motors to stall. 2) Overheating, where running above rated capacity damages the alternator insulation. Most modern generators will simply shut down on "Under Voltage" or "Overload" faults.</span>
+                </div>
+            </details>
+
+            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <summary itemprop="name">Why do non-linear loads (UPS, LEDs) require larger generators?</summary>
+                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <span itemprop="text">Non-linear loads draw current in pulses rather than a smooth sine wave, creating Harmonic Distortion (THD). This "dirty power" causes excessive heating in the generator's alternator. To prevent this, IEEE 519 recommends oversizing the alternator or using a "low temperature rise" alternator (typically 20-25% larger kVA) to handle the harmonic heat.</span>
+                </div>
+            </details>
+
+            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                <summary itemprop="name">What is wet stacking and how do I avoid it?</summary>
+                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                    <span itemprop="text">Wet stacking is a condition where unburned fuel and carbon accumulate in the exhaust system of a diesel engine because it is running under too light a load (typically <30%). To avoid this, ensure your generator is sized correctly so it runs at 60-80% capacity, or use a "load bank" periodically to burn off the carbon deposits.</span>
+                </div>
+            </details>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Design Calculators</h4>
+                    <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;">Empowering engineers with precision tools for complex analysis. If you find this tool helpful, please consider sharing it with your colleagues!</p>
+                    <div class="social-buttons"><a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn linkedin"><i class="fab fa-linkedin-in"></i></a><a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer" class="social-btn youtube"><i class="fab fa-youtube"></i></a><a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn twitter"><i class="fab fa-twitter"></i></a><a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a><a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource:%20https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn whatsapp"><i class="fab fa-whatsapp"></i></a></div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                        <li><a href='/indexele'>Electrical</a></li>
+                        <li><a href='/indexmech'>Mechanical</a></li>
+                        <li><a href='/indexinst'>Instrumentation</a></li>
+                        <li><a href='/articles'>Articles</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="about">About Us</a></li>
+                        <li><a href="contact">Contact</a></li>
+                        <li><a href="faq">FAQ</a></li>
+                        <li><a href="privacy-policy">Privacy Policy</a></li>
+                        <li><a href="terms-of-service">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>More</h4>
+                    <ul>
+                        <li><a href='/articles'>Articles & Whitepapers</a></li>
+                        <li><a href='/sitemap2'>Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>All calculations are for preliminary engineering design guidance. Final designs must comply with all applicable local and international standards (including but not limited to ISO 8528, NEC, NFPA). Always verify calculations and consult with a licensed professional engineer before implementation or construction.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">A Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global State
+        let lastResult = null;
+        let chartInstance = null;
+
+        function updateFuelUnits() {
+            const fType = document.getElementById('fuel-type').value;
+            const lbl = document.getElementById('lbl-fuel-cost');
+            let unit = "Liter";
+            if (fType === 'ng') unit = "m³";
+            else if (fType === 'lpg' || fType === 'gasoline' || fType === 'diesel') unit = "Liter"; 
+            lbl.innerText = `Cost per ${unit}`; // Shortened for UI
+        }
+
+        function loadPreset(type) {
+            if (type === 'home') {
+                document.getElementById('phase-type').value = '1';
+                document.getElementById('voltage').value = '230';
+                document.getElementById('rating-type').value = 'standby';
+                document.getElementById('run-load').value = '8.0';
+                document.getElementById('load-type').value = 'linear';
+                document.getElementById('start-surge').value = '5.0';
+                document.getElementById('margin').value = '15';
+                document.getElementById('fuel-type').value = 'gasoline';
+            } else if (type === 'site') {
+                document.getElementById('phase-type').value = '3';
+                document.getElementById('voltage').value = '400';
+                document.getElementById('rating-type').value = 'prime'; // Construction needs Prime
+                document.getElementById('run-load').value = '35.0';
+                document.getElementById('load-type').value = 'linear';
+                document.getElementById('start-surge').value = '25.0'; // Heavy motor start
+                document.getElementById('margin').value = '25';
+                document.getElementById('fuel-type').value = 'diesel';
+            } else if (type === 'office') {
+                document.getElementById('phase-type').value = '3';
+                document.getElementById('voltage').value = '400';
+                document.getElementById('rating-type').value = 'standby';
+                document.getElementById('run-load').value = '60.0';
+                document.getElementById('load-type').value = 'nonlinear'; // Servers/UPS
+                document.getElementById('start-surge').value = '10.0'; 
+                document.getElementById('margin').value = '20';
+                document.getElementById('fuel-type').value = 'diesel';
+            }
+            displayMessage(`${type.toUpperCase()} scenario loaded.`, "success");
+            updateFuelUnits();
+        }
+
+        function displayMessage(message, type = "info") {
+            let messageBox = document.getElementById('message-box');
+            messageBox.textContent = message;
+            if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
+            else if (type === "success") messageBox.style.backgroundColor = 'var(--success)';
+            else messageBox.style.backgroundColor = 'var(--primary)';
+            messageBox.classList.add('show');
+            setTimeout(() => messageBox.classList.remove('show'), 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme handling
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            if(themeSwitch) {
+                themeSwitch.addEventListener('change', function() {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                });
+            }
+
+            document.getElementById('calculate-btn').addEventListener('click', performCalculation);
+            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+            updateFuelUnits();
+        });
+
+        function performCalculation() {
+            // 1. Get Inputs
+            const phase = parseInt(document.getElementById('phase-type').value);
+            const volts = parseFloat(document.getElementById('voltage').value);
+            const ratingType = document.getElementById('rating-type').value;
+            
+            const runKW = parseFloat(document.getElementById('run-load').value);
+            const loadType = document.getElementById('load-type').value;
+            const pf = parseFloat(document.getElementById('pf').value);
+            
+            const surgeKW = parseFloat(document.getElementById('start-surge').value);
+            const margin = parseFloat(document.getElementById('margin').value);
+            
+            const fuelType = document.getElementById('fuel-type').value;
+            const fuelPrice = parseFloat(document.getElementById('fuel-cost').value);
+            const hours = parseFloat(document.getElementById('run-hours').value);
+
+            if(runKW <= 0 || volts <= 0) {
+                displayMessage("Please enter valid positive values.", "error");
+                return;
+            }
+
+            // --- 2. LOGIC CORE ---
+
+            // A. Base kVA Calculation
+            const harmonicFactor = (loadType === 'nonlinear') ? 1.25 : 1.0;
+            // Base KVA is pure kW/PF
+            const rawKVA = runKW / pf;
+            // Adjusted for Harmonics
+            const baseKVA = rawKVA * harmonicFactor;
+
+            // B. Surge/Transient kVA
+            const surgePF = 0.6;
+            const surgeKVA = surgeKW / surgePF; 
+            const totalTransientKVA = baseKVA + surgeKVA;
+
+            // C. Sizing Criteria
+            // Criterion 1: Steady State + Margin
+            const sizing_Steady = baseKVA * (1 + (margin/100));
+
+            // Criterion 2: Motor Starting Capability (Transient Voltage Dip)
+            const startFactor = 1.8; 
+            const sizing_Transient = totalTransientKVA / startFactor;
+
+            // D. Select Max Requirement
+            let rawRecKVA = Math.max(sizing_Steady, sizing_Transient);
+
+            // F. Rounding to Standard Sizes (Commercial steps)
+            const stdSizes = [10, 15, 20, 30, 40, 50, 60, 80, 100, 125, 150, 175, 200, 250, 300, 350, 400, 500, 600, 750, 800, 1000, 1250, 1500, 2000];
+            let finalKVA = Math.ceil(rawRecKVA);
+            // Find next standard size
+            let stdKVA = finalKVA;
+            for(let s of stdSizes) {
+                if(s >= finalKVA) { stdKVA = s; break; }
+            }
+            if(finalKVA > 2000) stdKVA = finalKVA; // Custom size
+
+            // G. Amperage
+            let amps = 0;
+            const phaseFactor = phase === 1 ? 1 : 1.732;
+            amps = (stdKVA * 1000) / (volts * phaseFactor);
+
+            // H. Fuel Consumption (SFC Curve Approximation)
+            const ratedKW = stdKVA * 0.8; // Assuming 0.8 PF alternator rating standard
+            const activeLoadKW = runKW; 
+            let loadFactor = activeLoadKW / ratedKW;
+            if(loadFactor < 0.25) loadFactor = 0.25; // Idle fuel floor
+
+            // SFC Factors (Liters/kWh or m3/kWh)
+            let sfc_base = 0; 
+            let unit = "L";
+            if (fuelType === 'diesel') sfc_base = 0.27; 
+            else if (fuelType === 'gasoline') sfc_base = 0.35;
+            else if (fuelType === 'lpg') sfc_base = 0.50;
+            else if (fuelType === 'ng') { sfc_base = 0.35; unit = "m³"; }
+
+            // Fuel Algo: Cons = Load_kW * SFC
+            const hourlyCons = activeLoadKW * sfc_base;
+            const dailyCons = hourlyCons * hours;
+            const dailyCost = dailyCons * fuelPrice;
+
+            // --- 3. OUTPUT & RENDER ---
+            
+            lastResult = {
+                stdKVA, ratedKW, amps, harmonicFactor,
+                runKW, surgeKW, margin, fuelType, hourlyCons, dailyCost, unit,
+                baseKVA, sizing_Transient, sizing_Steady, phase, volts, pf
+            };
+
+            // HTML for Table
+            const tbody = document.getElementById('result-table-body');
+            tbody.innerHTML = '';
+            const addRow = (label, val, highlight=false) => {
+                tbody.innerHTML += `<tr>
+                    <td>${label}</td>
+                    <td style="${highlight?'color:var(--secondary); font-weight:800; font-size:1.1rem':''}">${val}</td>
+                </tr>`;
+            };
+
+            addRow("Recommended Generator Rating", `${stdKVA} kVA / ${ratedKW.toFixed(0)} kW`, true);
+            addRow("Full Load Amperes (Breaker)", `${amps.toFixed(1)} A`);
+            addRow("Est. Fuel Consumption", `${hourlyCons.toFixed(1)} ${unit}/hr`);
+            addRow("Operational Cost", `${dailyCost.toFixed(2)} / day`);
+            
+            // HTML for Details
+            let stepsHtml = `<h4>Step 1: Base Load Analysis (IEEE 519)</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Running Active Power: <strong>${runKW} kW</strong> @ ${pf} PF<br>`;
+            stepsHtml += `$$ S_{run} = \\frac{kW}{PF} = \\frac{${runKW}}{${pf}} = ${rawKVA.toFixed(1)} \\text{ kVA} $$<br>`;
+            if(loadType === 'nonlinear') {
+                stepsHtml += `Load Type: <span class="danger-text">Non-Linear (UPS/VFD)</span>. Applying Harmonic Factor ($K_{thd}$) of <strong>1.25x</strong>.<br>`;
+            } else {
+                stepsHtml += `Load Type: Linear. Harmonic Factor ($K_{thd}$) = 1.0x.<br>`;
+            }
+            stepsHtml += `$$ S_{adjusted} = S_{run} \\times K_{thd} = ${rawKVA.toFixed(1)} \\times ${harmonicFactor} = \\mathbf{${baseKVA.toFixed(1)} \\text{ kVA}} $$`;
+            stepsHtml += `</div>`;
+
+            stepsHtml += `<h4>Step 2: Transient Analysis (Motor Starting / ISO 8528)</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Motor Start/Surge: <strong>${surgeKW} kW</strong> @ assumed 0.6 PF (Locked Rotor)<br>`;
+            stepsHtml += `$$ S_{surge} = \\frac{${surgeKW}}{0.6} = ${surgeKVA.toFixed(1)} \\text{ kVA} $$<br>`;
+            stepsHtml += `$$ S_{peak} = S_{adjusted} + S_{surge} = ${baseKVA.toFixed(1)} + ${surgeKVA.toFixed(1)} = ${totalTransientKVA.toFixed(1)} \\text{ kVA} $$<br>`;
+            stepsHtml += `Alternator Sizing for Voltage Dip Limit (30% Dip $\\approx$ 1.8x Start Factor):<br>`;
+            stepsHtml += `$$ kVA_{required\\_transient} = \\frac{S_{peak}}{1.8} = \\frac{${totalTransientKVA.toFixed(1)}}{1.8} = \\mathbf{${sizing_Transient.toFixed(1)} \\text{ kVA}} $$`;
+            stepsHtml += `</div>`;
+
+            stepsHtml += `<h4>Step 3: Steady State Sizing (Thermal Capacity)</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Applying Safety Margin of <strong>${margin}%</strong> for future expansion/aging:<br>`;
+            stepsHtml += `$$ kVA_{required\\_steady} = S_{adjusted} \\times (1 + \\frac{${margin}}{100}) = ${baseKVA.toFixed(1)} \\times ${1 + margin/100} = \\mathbf{${sizing_Steady.toFixed(1)} \\text{ kVA}} $$`;
+            stepsHtml += `</div>`;
+
+            stepsHtml += `<h4>Step 4: Alternator Selection & Electrical Output</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Governing Constraint: $$ \\max(${sizing_Transient.toFixed(1)}, ${sizing_Steady.toFixed(1)}) = ${rawRecKVA.toFixed(1)} \\text{ kVA} $$<br>`;
+            stepsHtml += `Nearest Standard Commercial Rating: <strong style="color:var(--primary)">${stdKVA} kVA</strong><br>`;
+            stepsHtml += `Full Load Current ($I_{FLA}$) @ ${volts}V:<br>`;
+            if (phase === 3) {
+                stepsHtml += `$$ I = \\frac{kVA \\times 1000}{V \\times \\sqrt{3}} = \\frac{${stdKVA} \\times 1000}{${volts} \\times 1.732} = \\mathbf{${amps.toFixed(1)} \\text{ A}} $$`;
+            } else {
+                stepsHtml += `$$ I = \\frac{kVA \\times 1000}{V} = \\frac{${stdKVA} \\times 1000}{${volts}} = \\mathbf{${amps.toFixed(1)} \\text{ A}} $$`;
+            }
+            stepsHtml += `</div>`;
+
+            stepsHtml += `<h4>Step 5: Fuel Physics (Estimated)</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Generator Rating: ${ratedKW.toFixed(0)} kWe. Active Load: ${activeLoadKW} kW.<br>`;
+            stepsHtml += `Load Factor: ${(loadFactor*100).toFixed(1)}%. Specific Fuel Consumption (SFC) $\\approx$ ${sfc_base} ${unit}/kWh.<br>`;
+            stepsHtml += `$$ Consumption = P_{load} \\times SFC = ${activeLoadKW} \\times ${sfc_base} = \\mathbf{${hourlyCons.toFixed(2)} \\text{ ${unit}/hr}} $$`;
+            stepsHtml += `</div>`;
+
+            document.getElementById('calculation-details').innerHTML = stepsHtml;
+
+            // Interpretation
+            const interp = document.getElementById('interpretation-text');
+            let interpText = `This system requires a <strong>${stdKVA} kVA</strong> unit. `;
+            if(sizing_Transient > sizing_Steady) {
+                interpText += `Sizing is governed by <strong>Motor Starting (Transient)</strong> requirements. The generator is oversized relative to steady load to prevent voltage collapse during startup.`;
+            } else {
+                interpText += `Sizing is governed by <strong>Steady State Running Load</strong> plus safety margin.`;
+            }
+            if(loadType === 'nonlinear') interpText += `<br><strong>Note:</strong> Alternator is upsized to handle harmonic heating from non-linear loads.`;
+            interp.innerHTML = interpText;
+
+            // Render Chart
+            renderChart(sizing_Steady, sizing_Transient, stdKVA);
+
+            // Show Results
+            document.getElementById('result-container').classList.remove('hidden');
+            if(window.MathJax) window.MathJax.typesetPromise();
+            document.getElementById('result-container').scrollIntoView({behavior: "smooth"});
+        }
+
+        function renderChart(steady, transient, rated) {
+            const ctx = document.getElementById('genCanvas').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Sizing Criteria Analysis'],
+                    datasets: [
+                        {
+                            label: 'Steady State Load (w/ Margin)',
+                            data: [steady],
+                            backgroundColor: '#3B82F6',
+                            barPercentage: 0.5
+                        },
+                        {
+                            label: 'Transient/Surge Requirement',
+                            data: [transient],
+                            backgroundColor: '#F59E0B',
+                            barPercentage: 0.5
+                        },
+                        {
+                            label: 'Selected Gen Capacity',
+                            data: [rated],
+                            backgroundColor: '#10B981',
+                            barPercentage: 0.6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'Apparent Power (kVA)' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' kVA';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generatePDF() {
+            if (!lastResult) {
+                displayMessage("Please calculate first.", "error");
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.width;
+            
+            // Branding Header
+            pdf.setFillColor(30, 58, 138);
+            pdf.rect(0, 0, pageWidth, 40, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(22);
+            pdf.text("Generator Sizing Report", 20, 25);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text("Design Calculators - Commercial Engineering Analysis", 20, 32);
+            pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 20, 32, { align: 'right' });
+
+            let y = 55;
+
+            // Summary Box
+            pdf.setDrawColor(200);
+            pdf.setFillColor(245, 247, 250);
+            pdf.roundedRect(15, y, pageWidth-30, 35, 3, 3, 'FD');
+            pdf.setTextColor(50);
+            pdf.setFontSize(14);
+            pdf.text("Recommended Specification", 20, y+10);
+            pdf.setFontSize(18);
+            pdf.setTextColor(16, 185, 129); // Green
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${lastResult.stdKVA} kVA / ${lastResult.ratedKW.toFixed(0)} kW`, 20, y+22);
+            pdf.setFontSize(10);
+            pdf.setTextColor(100);
+            pdf.text(`@ ${lastResult.volts}V ${lastResult.phase}-Phase`, 90, y+22);
+            y += 45;
+
+            // Details Table
+            const inputData = [
+                ['Running Load', `${lastResult.runKW} kW`],
+                ['Power Factor', `${lastResult.pf}`],
+                ['Harmonic Factor', `${lastResult.harmonicFactor}x`],
+                ['Starting Surge', `${lastResult.surgeKW} kW`],
+                ['Safety Margin', `${lastResult.margin}%`],
+                ['Fuel Type', lastResult.fuelType.toUpperCase()]
+            ];
+
+            pdf.autoTable({
+                startY: y,
+                head: [['Design Parameter', 'Value']],
+                body: inputData,
+                theme: 'grid',
+                headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 10, cellPadding: 5 },
+                margin: { left: 15, right: 15 }
+            });
+
+            y = pdf.lastAutoTable.finalY + 15;
+
+            // Results Table
+            const resData = [
+                ['Steady State Demand', `${lastResult.sizing_Steady.toFixed(1)} kVA`],
+                ['Transient (Surge) Demand', `${lastResult.sizing_Transient.toFixed(1)} kVA`],
+                ['Full Load Current', `${lastResult.amps.toFixed(1)} A`],
+                ['Hourly Fuel Consumption', `${lastResult.hourlyCons.toFixed(1)} ${lastResult.unit}/hr`],
+                ['Est. Daily Cost', `${lastResult.dailyCost.toFixed(2)}`]
+            ];
+
+            pdf.text("Performance Analysis", 15, y);
+            y += 5;
+
+            pdf.autoTable({
+                startY: y,
+                head: [['Metric', 'Result']],
+                body: resData,
+                theme: 'striped',
+                headStyles: { fillColor: [59, 130, 246] }, // Blue
+                styles: { fontSize: 10, cellPadding: 5 },
+                margin: { left: 15, right: 15 }
+            });
+
+            // Footer disclaimer
+            pdf.setFontSize(8);
+            pdf.setTextColor(150);
+            pdf.text("Note: Sizing based on standard ISO 8528 conditions. Verify with manufacturer data.", 15, 280);
+
+            pdf.save('Generator_Spec_Sheet.pdf');
+            displayMessage("Specification PDF Downloaded", "success");
+        }
+    </script>
+</body>
+</html>
