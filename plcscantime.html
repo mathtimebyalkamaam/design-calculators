@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+    
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLC Scan Time Calculator & IEC 61131-3 Task Analysis</title>
+    <meta name="description" content="Professional PLC Scan Time Estimator. Calculate scan cycle time, interrupt overhead, and network load (EtherNet/IP, PROFINET). Includes IEC 61131-3 task analysis and PID update rate validation.">
+    <meta name="keywords" content="PLC scan time calculator, IEC 61131-3 task configuration, periodic interrupt, watchdog timer, RPI calculator, EtherNet/IP overhead, PROFINET jitter, PID loop update rate, automation engineering tools">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://designcalculators.co.in/plcscantime" />
+
+    <!-- JSON-LD Schema: Software Application -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "PLC Scan Time Estimator",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A commercial-grade engineering tool to estimate PLC/PAC scan cycles, analyzing logic execution, I/O overhead, and the impact of periodic interrupts and network protocols.",
+      "featureList": "Logic Execution Speed, I/O Overhead Calculation, Interrupt Load Analysis, Network Protocol Impact (CIP/Profinet), Watchdog Validation",
+      "author": {
+        "@type": "Organization",
+        "name": "Design Calculators"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD Schema: FAQ Page -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "What is a PLC Watchdog Timer?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Watchdog Timer is a safety mechanism that monitors the PLC scan cycle. If the logic execution takes longer than the configured watchdog limit (e.g., 500ms) due to an infinite loop or hardware fault, the watchdog trips, forcing the CPU into a fault mode and de-energizing outputs to a safe state."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How does RPI affect PLC scan time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Requested Packet Interval (RPI) determines how often I/O modules send data. A faster RPI (e.g., 2ms) increases the network interrupt load on the CPU. The CPU must process packets more frequently, which 'steals' time from the main logic scan, effectively increasing the total scan cycle."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Why is my PLC scan time fluctuating (Jitter)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Scan time jitter is usually caused by asynchronous events: Explicit Messaging (MSG instructions), HMI communication requests, or variable logic paths (e.g., executing a complex FOR loop only when a specific condition is true). High network traffic is a common cause of jitter."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is the ideal scan time for PID loops?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PID loops should be deterministic. They should generally execute in a Periodic Task rather than the Continuous Task. A rule of thumb (based on the Nyquist theorem) is that the PID update rate should be at least 5 to 10 times faster than the process time constant (tau) to ensure stable control."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is the difference between Scan Time and Response Time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Scan Time is the time the CPU takes to execute logic. Response Time (I/O to I/O) is longer: Input Delay + Scan Time + Output Delay. For a 10ms scan, the actual response to a sensor might be 20-30ms depending on when the input turned on relative to the scan cycle."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How does HMI polling affect the PLC?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "HMI communications are usually processed during the 'System Overhead' time slice. Aggressive polling (e.g., requesting 500 tags every 100ms) can saturate this time slice, causing the main scan to extend if the 'Comms Overhead' setting is high, or resulting in sluggish HMI updates if the PLC prioritizes logic."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Do Task Priorities matter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. A higher priority periodic task (e.g., Motion at priority 2) will interrupt a lower priority periodic task (e.g., PID at priority 10). If high-priority tasks run too frequently or take too long, lower priority tasks may experience 'Task Overlap' or starvation, never executing."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Why does Scan Time spike during Online Edits?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When accepting an online edit, the PLC momentarily locks memory to swap the old logic with the new logic. This process involves consistency checks and pointer updates, which often adds a significant one-time spike (e.g., +50ms to +200ms) to the scan cycle, potentially tripping sensitive watchdogs."
+        }
+      }]
+    }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+    <!-- MathJax for Formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* --- CORE THEME (Blue Industrial) --- */
+        :root {
+            --primary: #1E3A8A; /* Dark Blue */
+            --secondary: #2563EB; /* Bright Blue */
+            --accent: #F59E0B; /* Amber */
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #4B5563;
+            --heading: #111827;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode {
+            --primary: #10B981;
+            --secondary: #34D399;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #CBD5E1;
+            --heading: #F1F5F9;
+            --footer-bg: #020617;
+            --border: #334155;
+            --accent: #FBBF24;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #E0E7FF;
+            opacity: 0.9;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+        .switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.2);
+            transition: .4s;
+            border-radius: 30px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px; width: 22px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Main Content */
+        main { padding: 30px 0; }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        h4 {
+            color: var(--heading);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        /* App Layout */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+        }
+        @media (max-width: 1024px) {
+            .app-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Inputs */
+        .input-panel {
+            background: var(--bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 20px;
+        }
+        .form-section { margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--heading);
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--card);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        .compact-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            margin-top: 10px;
+        }
+        .btn-outline:hover { background: var(--secondary); color: white; }
+        
+        .preset-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 12px;
+            background: #E0E7FF;
+            color: var(--primary);
+            margin-right: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+        .preset-badge:hover { background: var(--secondary); color: white; }
+
+        /* Results */
+        .results-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .kpi-card {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .kpi-title { font-size: 0.85rem; color: var(--text); margin-bottom: 5px; font-weight: 600; }
+        .kpi-value { font-size: 1.6rem; font-weight: 800; color: var(--primary); font-family: 'Montserrat', sans-serif; }
+        .kpi-sub { font-size: 0.8rem; color: var(--text); }
+        .kpi-pass { color: var(--success); }
+        .kpi-fail { color: var(--danger); }
+
+        /* Calculation Step */
+        .calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(0,0,0,0.03);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--success);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        body.dark-mode .calculation-step { background-color: rgba(255,255,255,0.05); }
+
+        /* Education */
+        .article-content { font-family: 'Inter', sans-serif; color: var(--text); }
+        .article-block { margin-bottom: 40px; }
+        .article-block h3 { color: var(--primary); border-left: 5px solid var(--accent); padding-left: 15px; margin-bottom: 20px; font-size: 1.4rem; margin-top:0;}
+        .article-block h4 { color: var(--heading); margin-top: 25px; margin-bottom: 15px; font-weight: 700; font-size: 1.1rem; border-bottom:none; }
+        .article-block p { line-height: 1.8; margin-bottom: 15px; text-align: justify; }
+        .article-block ul { padding-left: 20px; margin-bottom: 15px; }
+        .article-block li { margin-bottom: 10px; line-height: 1.6; }
+        .highlight-box { background: rgba(37,99,235,0.05); border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin: 20px 0; }
+        
+        /* FAQ Accordion */
+        .faq-item { border-bottom: 1px solid var(--border); padding: 15px 0; }
+        .faq-question { font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--heading); }
+        .faq-answer { display: none; margin-top: 10px; color: var(--text); line-height: 1.7; }
+        .faq-item.active .faq-answer { display: block; animation: fadeIn 0.3s; }
+        .faq-icon { transition: transform 0.3s; }
+        .faq-item.active .faq-icon { transform: rotate(180deg); }
+
+        /* Tooltip */
+        .info-icon { color: var(--secondary); margin-left: 5px; cursor: help; font-size: 0.9em; }
+        .tooltip { position: relative; display: inline-block; }
+        .tooltip .tooltiptext {
+            visibility: hidden; width: 240px; background-color: #1E293B; color: #fff;
+            text-align: left; border-radius: 6px; padding: 10px; position: absolute;
+            z-index: 100; bottom: 130%; left: 50%; margin-left: -120px; opacity: 0;
+            transition: opacity 0.3s; font-size: 0.8rem; font-weight: 400; line-height: 1.4;
+        }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+        /* Message Box */
+        .message-box {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 24px; border-radius: 6px; box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            z-index: 10000; font-weight: 600; color: white; display: none;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown { from { transform: translate(-50%, -20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+        /* Footer */
+        footer { background: var(--grad-dark); color: #CBD5E1; padding: 50px 0 20px 0; margin-top: 60px; }
+        .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 30px; }
+        .footer-col { flex: 1; min-width: 200px; }
+        .footer-col h4 { color: white; margin-bottom: 15px; font-weight: 700; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col a { color: #CBD5E1; text-decoration: none; transition: color 0.3s; }
+        .footer-col a:hover { color: var(--accent); }
+        .social-buttons { display: flex; gap: 12px; margin-top: 15px; }
+        .social-btn { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; background: rgba(255,255,255,0.05); color: white; border-radius: 50%; font-size: 1.1rem; transition: transform 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .social-btn:hover { transform: translateY(-4px); }
+        .social-btn.linkedin { background-color: #0A66C2; }
+        .social-btn.youtube { background-color: #FF0000; }
+        .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.whatsapp { background-color: #25D366; }
+        .footer-disclaimer { text-align: center; padding-top: 25px; border-top: 1px solid #334155; max-width: 800px; margin: 0 auto; font-size: 0.9rem; }
+        .footer-bottom { text-align: center; padding-top: 20px; font-size: 0.9rem; color: #94A3B8; }
+        .hidden { display: none; }
+
+        /* Chart */
+        .chart-wrapper { height: 300px; width: 100%; position: relative; }
+    </style>
+</head>
+<body>
+    <div id="message-box" class="message-box"></div>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo-container">
+                    <span class="logo-text">Design Calculators</span>
+                    <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
+                </a>
+                <ul class="nav-links">
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/articles'>Articles</a></li>
+                    <li><a href='/indexmech'>Mechanical</a></li>
+                    <li><a href='/indexele'>Electrical</a></li>
+                    <li><a href='/indexinst'>Instrumentation</a></li>
+                </ul>
+                <div class="theme-toggle">
+                    <i class="fas fa-sun"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <i class="fas fa-moon"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2><i class="fas fa-microchip"></i> PLC Scan Time & Throughput Estimator</h2>
+            <div class="tool-description">
+                <p>This industrial-grade estimator calculates the <strong>Scan Cycle Time</strong> for PLCs/PACs. It uniquely models <strong>Periodic Interrupt Loading</strong>, <strong>Network Protocol Overhead</strong> (EtherNet/IP vs Modbus), and <strong>Logic Branching</strong> to provide a realistic "Worst Case" vs "Typical" analysis.</p>
+            </div>
+        </div>
+
+        <div class="app-layout">
+            <!-- LEFT PANEL: INPUTS -->
+            <div class="input-panel">
+                <form id="scan-form">
+                    <!-- Hardware Platform -->
+                    <div class="form-section">
+                        <h4><i class="fas fa-server"></i> Hardware Platform</h4>
+                        <div class="form-group">
+                            <label>CPU Class <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Affects instruction execution speed.</span></span></label>
+                            <select id="cpu-class" onchange="updateCPUSpecs()">
+                                <option value="legacy">Legacy (e.g., PLC-5, SLC 500)</option>
+                                <option value="micro" selected>Micro/Compact (e.g., Micro800, S7-1200)</option>
+                                <option value="standard">Standard PAC (e.g., CompactLogix, S7-1500)</option>
+                                <option value="high_perf">High Performance (e.g., ControlLogix L8, IPC)</option>
+                            </select>
+                        </div>
+                        <div class="compact-row">
+                            <div class="form-group">
+                                <label>Bool Exec (µs/k)</label>
+                                <input type="number" id="bool-speed" value="80" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Math Exec (µs/k)</label>
+                                <input type="number" id="math-speed" value="150" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logic Complexity -->
+                    <div class="form-section">
+                        <h4><i class="fas fa-code"></i> Logic & Execution</h4>
+                        <div class="form-group">
+                            <label>Total Code Size (Instructions)</label>
+                            <input type="number" id="total-instructions" value="2000" step="100">
+                        </div>
+                        <div class="compact-row">
+                            <div class="form-group">
+                                <label>Bool %</label>
+                                <input type="number" id="pct-bool" value="80" onchange="updateMathPct()">
+                            </div>
+                            <div class="form-group">
+                                <label>Active Code % <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Active Branching Factor. 100% = Linear execution. 30% = State machine.</span></span></label>
+                                <input type="number" id="active-code-pct" value="100" min="1" max="100">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top:10px;">
+                            <label>Special Tasks (Motion/PID)</label>
+                            <div class="compact-row">
+                                <input type="number" id="pid-count" value="2" placeholder="PIDs">
+                                <input type="number" id="motion-count" value="0" placeholder="Axes">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Periodic Interrupts -->
+                    <div class="form-section">
+                        <h4><i class="fas fa-clock"></i> Periodic Interrupts (Tasks)</h4>
+                        <div class="form-group">
+                             <label>Interrupt Configuration <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Periodic tasks 'steal' time from the continuous scan.</span></span></label>
+                             <div class="compact-row">
+                                 <div style="flex:1">
+                                     <label style="font-size:0.75rem">Count</label>
+                                     <input type="number" id="int-count" value="0" min="0">
+                                 </div>
+                                 <div style="flex:1">
+                                     <label style="font-size:0.75rem">Interval (ms)</label>
+                                     <input type="number" id="int-interval" value="10" min="1">
+                                 </div>
+                                 <div style="flex:1">
+                                     <label style="font-size:0.75rem">Est. Time (ms)</label>
+                                     <input type="number" id="int-exec-time" value="0.5" step="0.1">
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- I/O & Comms -->
+                    <div class="form-section">
+                        <h4><i class="fas fa-ethernet"></i> Network & I/O</h4>
+                        <div class="compact-row">
+                            <div class="form-group">
+                                <label>Local Pts</label>
+                                <input type="number" id="local-io" value="32" step="8">
+                            </div>
+                            <div class="form-group">
+                                <label>Remote Nodes</label>
+                                <input type="number" id="remote-nodes" value="2" step="1">
+                            </div>
+                        </div>
+                         <div class="form-group">
+                            <label>Network Protocol <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Protocol overhead varies. EtherNet/IP (CIP) is heavier than Profinet.</span></span></label>
+                            <select id="protocol-select">
+                                <option value="eip" selected>EtherNet/IP (CIP)</option>
+                                <option value="profinet">PROFINET RT</option>
+                                <option value="modbus">Modbus TCP</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Comms Load % <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Reserved system time slice for HMI/Msg.</span></span></label>
+                            <select id="comms-load">
+                                <option value="0.10">Low (10%)</option>
+                                <option value="0.20" selected>Medium (20%)</option>
+                                <option value="0.35">High (35%)</option>
+                                <option value="0.50">Sat (50%)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Limits -->
+                    <div class="form-section">
+                        <h4><i class="fas fa-stopwatch"></i> Validation</h4>
+                        <div class="form-group">
+                            <label>Watchdog Target (ms)</label>
+                            <input type="number" id="watchdog" value="100" step="10">
+                        </div>
+                    </div>
+
+                    <div class="preset-container">
+                        <span class="preset-badge" onclick="loadPreset('micro_machine')">Simple Machine</span>
+                        <span class="preset-badge" onclick="loadPreset('process_skid')">Process Skid</span>
+                        <span class="preset-badge" onclick="loadPreset('high_speed')">High-Speed Sortation</span>
+                    </div>
+
+                    <button type="button" onclick="calculate()" class="btn">Calculate Scan Time</button>
+                    <button type="button" onclick="generatePDF()" class="btn btn-outline">Generate Analysis Report</button>
+                </form>
+            </div>
+
+            <!-- RIGHT PANEL: RESULTS -->
+            <div class="results-panel" id="results-area" style="opacity: 0.5; pointer-events: none;">
+                
+                <!-- KPI Cards -->
+                <div class="kpi-row">
+                    <div class="kpi-card">
+                        <div class="kpi-title">Logic Time</div>
+                        <div class="kpi-value" id="res-logic-time">-- ms</div>
+                        <div class="kpi-sub" id="res-logic-pct">Base Execution</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">CPU Load</div>
+                        <div class="kpi-value" id="res-cpu-load">-- %</div>
+                        <div class="kpi-sub" id="res-interrupt-load">Interrupts: --%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-title">Total Scan</div>
+                        <div class="kpi-value" id="res-total-time">-- ms</div>
+                        <div class="kpi-sub" id="res-status">--</div>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis -->
+                <div class="card">
+                    <h4>Cycle Time Breakdown</h4>
+                    <div class="chart-wrapper">
+                        <canvas id="scanChart"></canvas>
+                    </div>
+                    
+                    <h4 style="margin-top:20px;">Industrial Calculation Detail</h4>
+                    <div id="step-by-step-container">
+                        <!-- Dynamic Calculation Text -->
+                    </div>
+                </div>
+
+                <!-- Insights -->
+                <div class="card" style="border-left: 4px solid var(--secondary);">
+                    <h4><i class="fas fa-lightbulb"></i> Engineering Assessment</h4>
+                    <p id="assessment-text" style="font-size: 0.95rem; line-height: 1.6;">
+                        Run a calculation to view the engineering assessment.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW SEO/LLM OPTIMIZED SECTION: Engineering Knowledge Base -->
+        <div class="card education-section" style="margin-top:40px;">
+            <h2><i class="fas fa-book-open"></i> Control Systems Engineering Guide</h2>
+            <div class="article-content">
+                
+                <div class="article-block">
+                    <h3>1. What This Tool Does</h3>
+                    <p>This software models the internal execution cycle of Programmable Logic Controllers (PLCs) and Programmable Automation Controllers (PACs). It moves beyond simple instruction counting by simulating the complex interaction between <strong>Continuous Tasks</strong>, <strong>Periodic Interrupts</strong>, and <strong>Communication Overhead</strong>.</p>
+                    <p>It is designed for System Integrators and Control Engineers to validate CPU selection during the design phase, ensuring the chosen hardware can handle the required logic, motion axes, and network traffic without tripping watchdog timers or causing task overlaps.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>2. The Importance of Scan Time in Industrial Automation</h3>
+                    <p>Unlike general-purpose computing, industrial control relies on <strong>Determinism</strong>. The "Scan Time" is the heartbeat of the automation system. If the scan time is too high or fluctuates wildly (Jitter), the consequences can be severe:</p>
+                    <ul>
+                        <li><strong>Missed Inputs:</strong> Short duration sensor pulses (e.g., product counting sensors) may be missed if the scan time exceeds the pulse duration.</li>
+                        <li><strong>PID Instability:</strong> Control loops rely on a consistent time delta ($dt$) for integration and differentiation. Jitter causes the derivative term to spike, leading to erratic valve/VFD behavior.</li>
+                        <li><strong>Motion Errors:</strong> High-speed packaging machines require precise synchronization. Lag in logic execution results in position errors and product waste.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>3. Deep Dive: IEC 61131-3 Task Models</h3>
+                    <p>Modern PACs (like Rockwell ControlLogix or Siemens S7-1500) utilize a multitasking operating system. Understanding the task priority model is crucial for accurate estimation.</p>
+                    
+                    <div class="highlight-box">
+                        <h4>Task Types Explained</h4>
+                        <ul>
+                            <li><strong>Continuous Task:</strong> The lowest priority task. It runs in the background, utilizing whatever CPU time is left after interrupts and system overhead are processed. Most general logic (safety interlocks, sequencing) resides here.</li>
+                            <li><strong>Periodic Task (Interrupt):</strong> A high-priority task triggered by a timer (e.g., every 10ms). It <em>interrupts</em> the continuous task. Used for PID loops and Motion planning. The calculator's "Interrupt Load" factor models this preemption.</li>
+                            <li><strong>Event Task:</strong> Triggered by a specific hardware event (e.g., Input Registration). These provide the fastest response but are non-deterministic regarding scan impact.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="article-block">
+                    <h3>4. Network Overhead: EtherNet/IP vs. PROFINET</h3>
+                    <p>The choice of fieldbus protocol significantly impacts CPU load. This calculator applies specific overhead factors based on the protocol selected:</p>
+                    <ul>
+                        <li><strong>EtherNet/IP (CIP):</strong> Uses the TCP/IP stack. The CPU must encapsulate/decapsulate CIP packets inside UDP frames. This context switching adds noticeable overhead (~80µs per node) for implicit I/O messaging.</li>
+                        <li><strong>PROFINET RT:</strong> Operates at Layer 2 (Data Link), bypassing the TCP/IP stack for real-time data. This creates significantly less CPU burden (~30µs per node), allowing for faster scan times with high node counts.</li>
+                        <li><strong>Modbus TCP:</strong> While simple, the connection-oriented nature of TCP and the request/response model creates relatively high CPU overhead per transaction (~150µs) compared to cyclic protocols.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>5. The Nyquist Theorem & PID Update Rates</h3>
+                    <p>A common engineering error is placing PID loops in the Continuous Task. This violates the requirements for stable discrete-time control. PID loops should be in a Periodic Task.</p>
+                    <p><strong>The Golden Rule:</strong> The scan rate of the PID task must be at least 5 to 10 times faster than the process time constant ($\tau$). For a temperature loop with a 10-second response time, a 1-second scan is sufficient. For a pressure loop with a 50ms response, a 5ms scan is required.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>6. Frequently Asked Questions (FAQ)</h3>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What is a PLC Watchdog Timer? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">A Watchdog Timer is a safety mechanism that monitors the PLC scan cycle. If the logic execution takes longer than the configured watchdog limit (e.g., 500ms) due to an infinite loop or hardware fault, the watchdog trips, forcing the CPU into a fault mode and de-energizing outputs to a safe state.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How does RPI affect PLC scan time? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Requested Packet Interval (RPI) determines how often I/O modules send data. A faster RPI (e.g., 2ms) increases the network interrupt load on the CPU. The CPU must process packets more frequently, which 'steals' time from the main logic scan, effectively increasing the total scan cycle.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Why is my PLC scan time fluctuating (Jitter)? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Scan time jitter is usually caused by asynchronous events: Explicit Messaging (MSG instructions), HMI communication requests, or variable logic paths (e.g., executing a complex FOR loop only when a specific condition is true). High network traffic is a common cause of jitter.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What is the ideal scan time for PID loops? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">PID loops should be deterministic. They should generally execute in a Periodic Task rather than the Continuous Task. A rule of thumb (based on the Nyquist theorem) is that the PID update rate should be at least 5 to 10 times faster than the process time constant (tau) to ensure stable control.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">What is the difference between Scan Time and Response Time? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Scan Time is the time the CPU takes to execute logic. Response Time (I/O to I/O) is longer: Input Delay + Scan Time + Output Delay. For a 10ms scan, the actual response to a sensor might be 20-30ms depending on when the input turned on relative to the scan cycle.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">How does HMI polling affect the PLC? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">HMI communications are usually processed during the "System Overhead" time slice. Aggressive polling (e.g., requesting 500 tags every 100ms) can saturate this time slice, causing the main scan to extend if the "Comms Overhead" setting is high, or resulting in sluggish HMI updates if the PLC prioritizes logic.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Do Task Priorities matter? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Yes. A higher priority periodic task (e.g., Motion at priority 2) will interrupt a lower priority periodic task (e.g., PID at priority 10). If high-priority tasks run too frequently or take too long, lower priority tasks may experience "Task Overlap" or starvation, never executing.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">Why does Scan Time spike during Online Edits? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">When accepting an online edit, the PLC momentarily locks memory to swap the old logic with the new logic. This process involves consistency checks and pointer updates, which often adds a significant one-time spike (e.g., +50ms to +200ms) to the scan cycle, potentially tripping sensitive watchdogs.</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Design Calculators</h4>
+                    <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;">If you find this tool helpful, please consider sharing it with your colleagues!</p>
+                    <div class="social-buttons">
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn linkedin" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer" class="social-btn youtube" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn twitter" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn facebook" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource%20https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn whatsapp" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                        <li><a href='/indexele'>Electrical</a></li>
+                        <li><a href='/indexmech'>Mechanical</a></li>
+                        <li><a href='/indexinst'>Instrumentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href='/about'>About Us</a></li>
+                        <li><a href='/contact'>Contact</a></li>
+                        <li><a href="faq">FAQ.html</a></li>
+                        <li><a href='/privacy-policy'>Privacy Policy</a></li>
+                        <li><a href='/terms-of-service'>Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>More</h4>
+                    <ul>
+                        <li><a href='/articles'>Articles & Whitepapers</a></li>
+                        <li><a href='/sitemap2'>Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>This tool offers general guidance. Results should be reviewed for accuracy and compliance with relevant project standards and regulations before use.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">A Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- CONSTANTS & DATA ---
+        
+        // CPU Specs: Bool Speed (us/k), Math Speed (us/k), Overhead Factor, PID Cost (us), Motion Cost (us)
+        const CPU_SPECS = {
+            'legacy': { bool: 500, math: 2000, overhead: 1.5, pid: 1500, motion: 5000 }, // Slow, high overhead
+            'micro': { bool: 100, math: 300, overhead: 1.2, pid: 500, motion: 2000 },    // e.g. Micro800
+            'standard': { bool: 10, math: 50, overhead: 1.1, pid: 100, motion: 500 },    // e.g. CompactLogix
+            'high_perf': { bool: 1, math: 5, overhead: 1.05, pid: 20, motion: 100 }      // e.g. L8, IPC
+        };
+
+        const IO_BUS_SPEED = 5; // us per local point approx
+        // Network Overhead per Node (us)
+        const PROTOCOL_OVERHEADS = {
+            'eip': 80,       // EtherNet/IP: Packet heavy, context switch
+            'profinet': 30,  // PROFINET: Optimized L2, very fast
+            'modbus': 150    // ModbusTCP: TCP stack heavy, connection mgt
+        };
+
+        let myChart = null;
+        let lastResult = null;
+
+        // --- UI LOGIC ---
+
+        function updateCPUSpecs() {
+            const type = document.getElementById('cpu-class').value;
+            const specs = CPU_SPECS[type];
+            document.getElementById('bool-speed').value = specs.bool;
+            document.getElementById('math-speed').value = specs.math;
+        }
+
+        function updateMathPct() {
+            let bool = parseFloat(document.getElementById('pct-bool').value);
+            if (bool > 100) bool = 100;
+            if (bool < 0) bool = 0;
+            document.getElementById('pct-bool').value = bool;
+        }
+        
+        // FAQ Toggle
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+
+        function loadPreset(type) {
+            if (type === 'micro_machine') {
+                document.getElementById('cpu-class').value = 'micro';
+                document.getElementById('total-instructions').value = '1500';
+                document.getElementById('active-code-pct').value = '100';
+                document.getElementById('int-count').value = '0';
+                document.getElementById('pid-count').value = '0';
+                document.getElementById('local-io').value = '24';
+                document.getElementById('remote-nodes').value = '0';
+                document.getElementById('comms-load').value = '0.10';
+            } else if (type === 'process_skid') {
+                document.getElementById('cpu-class').value = 'standard';
+                document.getElementById('total-instructions').value = '8000';
+                document.getElementById('active-code-pct').value = '90';
+                document.getElementById('int-count').value = '1'; // 1 periodic task for PID
+                document.getElementById('int-interval').value = '50';
+                document.getElementById('int-exec-time').value = '2.0';
+                document.getElementById('pid-count').value = '8';
+                document.getElementById('local-io').value = '64';
+                document.getElementById('remote-nodes').value = '2';
+                document.getElementById('protocol-select').value = 'eip';
+                document.getElementById('comms-load').value = '0.35';
+            } else if (type === 'high_speed') {
+                document.getElementById('cpu-class').value = 'high_perf';
+                document.getElementById('total-instructions').value = '25000';
+                document.getElementById('active-code-pct').value = '40'; // State machine heavily used
+                document.getElementById('int-count').value = '2'; // Motion tasks
+                document.getElementById('int-interval').value = '4'; // 4ms
+                document.getElementById('int-exec-time').value = '0.5';
+                document.getElementById('pid-count').value = '0';
+                document.getElementById('motion-count').value = '8';
+                document.getElementById('local-io').value = '128';
+                document.getElementById('remote-nodes').value = '12';
+                document.getElementById('protocol-select').value = 'profinet';
+                document.getElementById('comms-load').value = '0.20';
+            }
+            updateCPUSpecs();
+            updateMathPct();
+            showMessage('Scenario Loaded');
+        }
+
+        function showMessage(msg) {
+            const box = document.getElementById('message-box');
+            box.innerText = msg;
+            box.style.background = 'var(--secondary)';
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 3000);
+        }
+
+        // --- CALCULATION ENGINE ---
+
+        function calculate() {
+            // Inputs
+            const cpuType = document.getElementById('cpu-class').value;
+            const specs = CPU_SPECS[cpuType];
+            
+            const boolSpeed = parseFloat(document.getElementById('bool-speed').value); // us per 1k
+            const mathSpeed = parseFloat(document.getElementById('math-speed').value); // us per 1k
+            
+            const totalInstr = parseFloat(document.getElementById('total-instructions').value);
+            const activePct = parseFloat(document.getElementById('active-code-pct').value) / 100;
+            const pctBool = parseFloat(document.getElementById('pct-bool').value) / 100;
+            const pctMath = 1.0 - pctBool;
+            
+            const nPid = parseFloat(document.getElementById('pid-count').value);
+            const nMotion = parseFloat(document.getElementById('motion-count').value);
+            
+            // Interrupts
+            const intCount = parseFloat(document.getElementById('int-count').value);
+            const intInterval = parseFloat(document.getElementById('int-interval').value);
+            const intExecTime = parseFloat(document.getElementById('int-exec-time').value);
+            
+            const nLocalIO = parseFloat(document.getElementById('local-io').value);
+            const nRemote = parseFloat(document.getElementById('remote-nodes').value);
+            const protocol = document.getElementById('protocol-select').value;
+            const protocolOverhead = PROTOCOL_OVERHEADS[protocol];
+
+            const commsLoadPct = parseFloat(document.getElementById('comms-load').value);
+            const watchdog = parseFloat(document.getElementById('watchdog').value); // ms
+
+            // 1. Logic Execution (Base continuous scan)
+            // Effective instructions = Total * Active %
+            const activeInstr = totalInstr * activePct;
+            const kInstr = activeInstr / 1000;
+            const timeBool = kInstr * pctBool * boolSpeed; 
+            const timeMath = kInstr * pctMath * mathSpeed; 
+            
+            // Special Tasks overhead (Executed inside base scan logic)
+            const timePid = nPid * specs.pid; 
+            const timeMotion = nMotion * specs.motion; 
+            
+            const msLogicBase = (timeBool + timeMath + timePid + timeMotion) / 1000;
+
+            // 2. I/O Scan
+            const timeLocalIO = nLocalIO * IO_BUS_SPEED; 
+            const timeRemoteIO = nRemote * protocolOverhead;
+            const msIO = (timeLocalIO + timeRemoteIO) / 1000;
+
+            // 3. System Overhead (Housekeeping)
+            // Fixed factor based on CPU class
+            const msSys = (msLogicBase + msIO) * (specs.overhead - 1);
+
+            // 4. Base Scan (Before Interrupts/Comms)
+            const msBase = msLogicBase + msIO + msSys;
+
+            // 5. Loading Factors
+            // Interrupt Load: (ExecTime * Count) / Interval
+            let loadInterrupt = 0;
+            if (intCount > 0 && intInterval > 0) {
+                loadInterrupt = (intExecTime * intCount) / intInterval; 
+            }
+            
+            // Total CPU Capacity Available for Base Scan = 1.0 - Comms - Interrupts
+            const capacityAvailable = 1.0 - commsLoadPct - loadInterrupt;
+            
+            // Safety Check for Saturation
+            if (capacityAvailable <= 0.05) {
+                alert("CPU Saturation! Interrupts and Comms consume > 95% of CPU time. Logic will not scan.");
+                return;
+            }
+
+            // 6. Total Scan Calculation
+            const msTotal = msBase / capacityAvailable;
+
+            // Derived Comms/Int Time portions for display
+            const msInterruptsInScan = msTotal * loadInterrupt;
+            const msCommsInScan = msTotal * commsLoadPct;
+
+            // Store Results
+            lastResult = {
+                msLogicBase, msIO, msSys, msInterruptsInScan, msCommsInScan, msTotal,
+                loadInterrupt, commsLoadPct, watchdog, cpuType, totalInstr, activePct,
+                intCount, intInterval, intExecTime
+            };
+
+            // Display Results
+            document.getElementById('results-area').style.opacity = '1';
+            document.getElementById('results-area').style.pointerEvents = 'all';
+
+            document.getElementById('res-logic-time').innerText = msLogicBase.toFixed(3) + " ms";
+            document.getElementById('res-logic-pct').innerText = activePct < 1 ? `Using ${activePct*100}% Active Code` : "Worst Case (100%)";
+            
+            const cpuLoad = (commsLoadPct + loadInterrupt + (msBase/watchdog)); // Approximate load relative to target
+            document.getElementById('res-cpu-load').innerText = ((commsLoadPct+loadInterrupt)*100).toFixed(1) + "%";
+            document.getElementById('res-interrupt-load').innerText = `Int Load: ${(loadInterrupt*100).toFixed(1)}%`;
+            
+            document.getElementById('res-total-time').innerText = msTotal.toFixed(3) + " ms";
+            
+            const passed = msTotal < watchdog;
+            const statusEl = document.getElementById('res-status');
+            statusEl.innerText = passed ? "OK" : "OVERLOAD";
+            statusEl.className = "kpi-value " + (passed ? "kpi-pass" : "kpi-fail"); // Corrected style class logic from previous version
+
+            // Step-by-Step HTML
+            let steps = `<h5>Detailed Engineering Breakdown:</h5>`;
+            
+            steps += `<div class="calculation-step">`;
+            steps += `<strong>1. Base Logic Execution (Continuous Task)</strong><br>`;
+            steps += `Active Instructions: ${totalInstr} × ${(activePct*100).toFixed(0)}% = ${activeInstr.toFixed(0)}<br>`;
+            steps += `Execution: ${(timeBool/1000).toFixed(3)} ms (Bool) + ${(timeMath/1000).toFixed(3)} ms (Math)<br>`;
+            steps += `Special Functions: ${((timePid+timeMotion)/1000).toFixed(3)} ms<br>`;
+            steps += `<strong>Logic Base = ${msLogicBase.toFixed(3)} ms</strong>`;
+            steps += `</div>`;
+            
+            steps += `<div class="calculation-step">`;
+            steps += `<strong>2. I/O & System Overhead</strong><br>`;
+            steps += `I/O Update: ${(timeLocalIO/1000).toFixed(3)} ms (Local) + ${(timeRemoteIO/1000).toFixed(3)} ms (Remote)<br>`;
+            steps += `System Housekeeping: ${msSys.toFixed(3)} ms<br>`;
+            steps += `<strong>Unloaded Scan Cycle = ${msBase.toFixed(3)} ms</strong>`;
+            steps += `</div>`;
+            
+            steps += `<div class="calculation-step">`;
+            steps += `<strong>3. CPU Loading Factors</strong><br>`;
+            steps += `Periodic Interrupt Load: (${intExecTime} ms × ${intCount}) / ${intInterval} ms = <strong>${(loadInterrupt*100).toFixed(1)}%</strong><br>`;
+            steps += `Communication Load: <strong>${(commsLoadPct*100).toFixed(0)}%</strong><br>`;
+            steps += `Remaining CPU Capacity: 100% - ${(loadInterrupt*100).toFixed(1)}% - ${(commsLoadPct*100).toFixed(0)}% = <strong>${(capacityAvailable*100).toFixed(1)}%</strong>`;
+            steps += `</div>`;
+
+            steps += `<div class="calculation-step" style="border-left-color: var(--primary);">`;
+            steps += `<strong>4. Final Scan Time (Expansion Formula)</strong><br>`;
+            steps += `$$ T_{scan} = \\frac{T_{base}}{1 - Load_{int} - Load_{comms}} $$<br>`;
+            steps += `$$ T_{scan} = \\frac{${msBase.toFixed(3)}}{${capacityAvailable.toFixed(3)}} $$<br>`;
+            steps += `<strong>Total Estimated Scan = ${msTotal.toFixed(3)} ms</strong>`;
+            steps += `</div>`;
+            
+            document.getElementById('step-by-step-container').innerHTML = steps;
+
+            // Assessment
+            let assessHTML = `<strong>Performance Evaluation:</strong><br>`;
+            if (passed) {
+                assessHTML += `The estimated scan time of <strong>${msTotal.toFixed(2)} ms</strong> is safe. `;
+                if (loadInterrupt > 0.3) {
+                    assessHTML += `<span style="color:var(--warning)"><strong>Warning: High Interrupt Load.</strong></span> Periodic tasks are consuming ${(loadInterrupt*100).toFixed(0)}% of the CPU. This leaves little room for the continuous task. Consider optimizing interrupt code or increasing the interval.`;
+                } else {
+                     assessHTML += `<span style="color:var(--success)">System is balanced.</span>`;
+                }
+            } else {
+                assessHTML += `<span style="color:var(--danger)"><strong>CRITICAL: WATCHDOG VIOLATION.</strong></span> The CPU is overloaded. The "Base Scan" is expanded significantly by the ${(loadInterrupt*100).toFixed(1)}% Interrupt Load. Reduce code size, increase periodic intervals, or upgrade CPU.`;
+            }
+            document.getElementById('assessment-text').innerHTML = assessHTML;
+
+            drawChart();
+            if(window.MathJax) window.MathJax.typesetPromise([document.getElementById('step-by-step-container')]);
+            document.getElementById('results-area').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function drawChart() {
+            const ctx = document.getElementById('scanChart').getContext('2d');
+            if (myChart) myChart.destroy();
+
+            const r = lastResult;
+            
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Logic Base', 'I/O & Sys', 'Interrupts Impact', 'Comms Impact'],
+                    datasets: [{
+                        data: [r.msLogicBase, (r.msIO + r.msSys), r.msInterruptsInScan, r.msCommsInScan],
+                        backgroundColor: [
+                            'rgba(37, 99, 235, 0.7)', 
+                            'rgba(16, 185, 129, 0.7)', 
+                            'rgba(220, 38, 38, 0.7)', // Interrupts (Red)
+                            'rgba(245, 158, 11, 0.7)'  
+                        ],
+                        borderColor: [
+                            'rgba(37, 99, 235, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(220, 38, 38, 1)',
+                            'rgba(245, 158, 11, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        title: { display: true, text: `Total Scan: ${r.msTotal.toFixed(2)} ms` }
+                    }
+                }
+            });
+        }
+
+        function generatePDF() {
+            if (!lastResult) { alert("Calculate first!"); return; }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const r = lastResult;
+            
+            // Header
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, 210, 20, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(16);
+            doc.text("PLC Scan Time Analysis Report", 105, 13, { align: 'center' });
+            
+            // Info
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.text(`Date: ${new Date().toLocaleString()}`, 14, 30);
+            const cpuName = document.getElementById('cpu-class').options[document.getElementById('cpu-class').selectedIndex].text;
+            doc.text(`Hardware Platform: ${cpuName}`, 14, 35);
+            
+            // Results Table
+            doc.autoTable({
+                startY: 45,
+                head: [['Component', 'Time (ms)', 'Load %']],
+                body: [
+                    ['Base Logic', `${r.msLogicBase.toFixed(3)} ms`, `${((r.msLogicBase/r.msTotal)*100).toFixed(1)}%`],
+                    ['I/O & System', `${(r.msIO + r.msSys).toFixed(3)} ms`, `${(((r.msIO+r.msSys)/r.msTotal)*100).toFixed(1)}%`],
+                    ['Interrupt Impact', `${r.msInterruptsInScan.toFixed(3)} ms`, `${(r.loadInterrupt*100).toFixed(1)}%`],
+                    ['Comms Impact', `${r.msCommsInScan.toFixed(3)} ms`, `${(r.commsLoadPct*100).toFixed(1)}%`],
+                    ['TOTAL SCAN', `${r.msTotal.toFixed(3)} ms`, '100%']
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [30, 58, 138] }
+            });
+            
+            // Parameters Table
+            doc.text("Configuration Parameters", 14, doc.lastAutoTable.finalY + 10);
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 15,
+                head: [['Parameter', 'Value']],
+                body: [
+                    ['Active Code Ratio', `${(r.activePct*100).toFixed(0)}%`],
+                    ['Interrupt Tasks', `${r.intCount} @ ${r.intInterval}ms`],
+                    ['Comms Load Factor', `${(r.commsLoadPct*100).toFixed(0)}%`],
+                    ['Watchdog Limit', `${r.watchdog} ms`]
+                ],
+                theme: 'striped'
+            });
+
+            // Footer
+            const ySig = 250;
+            doc.line(14, ySig, 80, ySig);
+            doc.text("Control Engineer Signature", 14, ySig + 5);
+            
+            doc.save("PLC_Scan_Analysis.pdf");
+        }
+        
+        // Initialize Theme & Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            if(themeSwitch) {
+                themeSwitch.addEventListener('change', function() {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                });
+            }
+            // Trigger initial calculation/UI update
+            updateCPUSpecs();
+        });
+    </script>
+</body>
+</html>
