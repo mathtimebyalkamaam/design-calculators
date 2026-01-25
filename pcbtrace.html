@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+    
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCB Trace Width Calculator - IPC-2221 Standard</title>
+    <meta name="description" content="Professional PCB Trace Width Calculator (IPC-2221). Calculate Trace Width, Resistance, Voltage Drop, and Power Loss. Features Internal/External layer analysis, copper weight selection, and thermal rise modeling.">
+    <meta name="keywords" content="pcb calculator, trace width, ipc-2221, ipc-2152, copper weight, voltage drop calculator, pcb design, current capacity, internal layer, external layer">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://designcalculators.co.in/pcbtrace" />
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js Datalabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+    <!-- MathJax for Formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* --- CORE THEME (Blue Industrial) --- */
+        :root {
+            --primary: #1E3A8A; /* Dark Blue */
+            --secondary: #2563EB; /* Bright Blue */
+            --accent: #F59E0B; /* Amber */
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #334155;
+            --heading: #0F172A;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --input-bg: #FFFFFF;
+        }
+
+        body.dark-mode {
+            --primary: #3B82F6;
+            --secondary: #60A5FA;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #E2E8F0;
+            --heading: #F8FAFC;
+            --footer-bg: #020617;
+            --border: #334155;
+            --accent: #FBBF24;
+            --input-bg: #334155;
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.5px;
+        }
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #DBEAFE;
+            font-weight: 500;
+        }
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            opacity: 0.9;
+        }
+        .nav-links a:hover { opacity: 1; transform: translateY(-1px); }
+        
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.2);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; width: 20px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success); border-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Main Content */
+        main { padding: 40px 0; }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+
+        /* Forms */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .form-group { margin-bottom: 0; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--heading);
+            font-size: 0.95rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Vector Input Group */
+        .vector-input-group {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .vector-input-header {
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.05rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 200px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        /* Presets */
+        .preset-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .preset-btn:hover {
+            background: var(--bg);
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+        .preset-btn i { color: var(--secondary); }
+
+        /* Results */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        @media (max-width: 1024px) { .results-grid { grid-template-columns: 1fr; } }
+
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .results-table th, .results-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .results-table th {
+            background: var(--bg);
+            color: var(--heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        .results-table tr:last-child td { border-bottom: none; }
+        .results-table td:first-child { font-weight: 600; color: var(--text); }
+        .results-table td:nth-child(2) { font-family: 'Courier New', monospace; font-weight: 700; }
+
+        /* Calculation Steps */
+        .calculation-step {
+            font-family: 'Courier New', monospace;
+            background-color: var(--bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+        .calculation-step h4 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            font-weight: 700;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 5px;
+        }
+
+        /* Chart */
+        .chart-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            height: 350px;
+            position: relative;
+        }
+
+        /* Engineering Insights (Article Style) */
+        .education-section { padding: 40px; }
+        .article-content {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            max-width: 100%;
+        }
+        .article-block {
+            margin-bottom: 40px;
+        }
+        .article-block h3 {
+            color: var(--primary);
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        .article-block h4 {
+            color: var(--heading);
+            font-size: 1.15rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .article-block p { margin-bottom: 15px; text-align: justify; }
+        .article-block ul { margin-bottom: 15px; padding-left: 20px; }
+        .article-block li { margin-bottom: 8px; }
+        .formula {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            border: 1px solid var(--border);
+        }
+
+        /* Tooltip */
+        .info-icon { color: var(--secondary); margin-left: 6px; cursor: help; opacity: 0.7; font-size: 0.9rem; }
+        .info-icon:hover { opacity: 1; }
+        .tooltip { position: relative; display: inline-block; }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 240px;
+            background-color: #1E293B;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 135%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.8rem;
+            font-weight: 400;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            pointer-events: none;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1E293B transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 9999;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s;
+            display: none;
+        }
+        .message-box.show { display: block; opacity: 1; top: 30px; }
+
+        /* Print & Responsive */
+        @media print {
+            header, footer, .education-section, .theme-toggle, .button-wrapper, .preset-container { display: none !important; }
+            .card { border: none; shadow: none; padding: 0; }
+            .container { width: 100%; max-width: 100%; padding: 0; }
+        }
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 20px; }
+            .nav-links { flex-direction: column; width: 100%; }
+            .card { padding: 20px; }
+            .results-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--grad-dark);
+            color: #94A3B8;
+            padding: 60px 0 30px 0;
+            margin-top: 80px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .footer-col { flex: 1; min-width: 200px; }
+        .footer-col h4 { color: white; margin-bottom: 20px; font-weight: 700; font-size: 1.1rem; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col li { margin-bottom: 12px; }
+        .footer-col a { color: #CBD5E1; text-decoration: none; transition: color 0.2s; }
+        .footer-col a:hover { color: var(--accent); }
+        .social-buttons { display: flex; gap: 12px; margin-top: 20px; }
+        .social-btn {
+            width: 40px; height: 40px;
+            display: flex; justify-content: center; align-items: center;
+            background: rgba(255,255,255,0.05);
+            color: white; border-radius: 50%;
+            font-size: 1rem; transition: all 0.2s;
+        }
+        .social-btn:hover { background: var(--secondary); transform: translateY(-3px); }
+        .footer-disclaimer {
+            text-align: center; padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            max-width: 900px; margin: 0 auto;
+            font-size: 0.85rem; line-height: 1.6;
+        }
+        .footer-bottom { text-align: center; padding-top: 20px; font-size: 0.85rem; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="message-box" class="message-box"></div>
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo-container">
+                    <span class="logo-text">Design Calculators</span>
+                    <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
+                </a>
+                <ul class="nav-links">
+                    <li><a href='/'>Home</a></li>
+                    <li><a href='/articles'>Articles</a></li>
+                    <li><a href='/indexmech'>Mechanical</a></li>
+                    <li><a href='/indexele'>Electrical</a></li>
+                    <li><a href='/indexinst'>Instrumentation</a></li>
+                </ul>
+                <div class="theme-toggle">
+                    <i class="fas fa-sun"></i>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="slider"></span>
+                    </label>
+                    <i class="fas fa-moon"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Calculator Card -->
+        <div class="card">
+            <h2><i class="fas fa-microchip"></i> PCB Trace Width Calculator (IPC-2221)</h2>
+            
+            <div class="tool-description">
+                <p>Commercial-grade PCB design tool compliant with <strong>IPC-2221</strong> (Generic Standard on Printed Board Design). Determines the required trace width based on current capacity and permissible temperature rise. Also calculates <strong>Voltage Drop</strong>, <strong>Resistance</strong>, and <strong>Power Loss</strong> for power distribution networks (PDN).</p>
+            </div>
+
+            <div class="calculator-form">
+                <form id="pcb-form">
+                    <!-- Load Presets -->
+                    <div class="form-row" style="align-items: center; background: var(--bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border);">
+                        <div style="flex: 0 0 auto;"><strong>Quick Presets:</strong></div>
+                        <div class="preset-container">
+                            <button type="button" class="preset-btn" onclick="loadPreset('signal')"><i class="fas fa-wave-square"></i> Data Signal</button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('power')"><i class="fas fa-bolt"></i> Power Rail (2A)</button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('high-current')"><i class="fas fa-industry"></i> High Current (10A)</button>
+                        </div>
+                    </div>
+
+                    <!-- 1. Design Parameters -->
+                    <div class="form-row">
+                        <div class="vector-input-group">
+                            <div class="vector-input-header"><i class="fas fa-ruler-combined"></i> Physical Parameters</div>
+                            <div class="form-group">
+                                <label for="current">Current [Amps] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum continuous DC or RMS AC current.</span></span></label>
+                                <input type="number" id="current" value="1.0" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="thickness">Copper Weight [oz/ft²] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Standard: 1oz (1.37 mils / 35µm). High Power: 2oz+.</span></span></label>
+                                <select id="thickness">
+                                    <option value="0.5">0.5 oz (18µm)</option>
+                                    <option value="1" selected>1.0 oz (35µm)</option>
+                                    <option value="2">2.0 oz (70µm)</option>
+                                    <option value="3">3.0 oz (105µm)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="layer-type">Layer Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext"><strong>External:</strong> Better cooling (Air).<br><strong>Internal:</strong> Worse cooling (FR4 insulation), requires wider traces.</span></span></label>
+                                <select id="layer-type">
+                                    <option value="external">External (Top/Bottom)</option>
+                                    <option value="internal">Internal (Buried)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 2. Thermal & Electrical -->
+                        <div class="vector-input-group">
+                            <div class="vector-input-header"><i class="fas fa-thermometer-half"></i> Thermal & Length</div>
+                            <div class="form-group">
+                                <label for="temp-rise">Permissible Temp Rise [°C] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Standard: 10°C. Max recommended: 20-40°C depending on board material (Tg).</span></span></label>
+                                <input type="number" id="temp-rise" value="10" step="1">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="ambient-temp">Ambient Temp [°C]</label>
+                                <input type="number" id="ambient-temp" value="25" step="1">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="trace-length">Trace Length [mm] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Used for resistance and voltage drop calculations.</span></span></label>
+                                <input type="number" id="trace-length" value="100" step="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Trace Width</button>
+                        <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download Design PDF</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Section -->
+            <div id="result-container" class="card hidden" style="margin-top: 40px; border-color: var(--secondary);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0;"><i class="fas fa-clipboard-check"></i> Design Report</h3>
+                    <div id="status-badge" style="background: var(--success); color: white; padding: 5px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">Calculated</div>
+                </div>
+                
+                <div class="results-grid">
+                    <!-- Left Col: Table -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Required Trace Geometry</h4>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Calculated Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="result-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(37,99,235,0.05); border-left: 4px solid var(--secondary); border-radius: 4px;">
+                            <strong><i class="fas fa-comment-dots"></i> Interpretation:</strong>
+                            <div id="interpretation-text" style="margin-top: 5px; font-size: 0.95rem; line-height: 1.5;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Right Col: Visual Chart -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Standard Width Comparison</h4>
+                        <div class="chart-container">
+                            <canvas id="pcbCanvas"></canvas>
+                        </div>
+                         <div style="text-align: center; margin-top: 10px; font-size: 0.8rem; color: var(--text);">
+                             Compares Calculated Min Width vs Standard Manufacturing Capabilities.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expanded Capabilities: Reverse Engineering & Vias -->
+                <div class="results-grid" style="margin-top: 40px;">
+                    <!-- Left Col: Reverse Lookup -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-table"></i> Max Current for Standard Widths</h4>
+                        <p id="reverse-note" style="font-size:0.85rem; color:var(--text); margin-bottom:10px;">Based on your inputs:</p>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Width (mils)</th>
+                                    <th>Max Current (A)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reverse-table-body">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Right Col: Via Calculator -->
+                    <div>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-circle"></i> Via Stitching Helper</h4>
+                        <div class="vector-input-group" style="padding: 15px;">
+                            <div class="form-group">
+                                <label style="font-size:0.9rem;">Via Drill Size (mm)</label>
+                                <select id="via-size" onchange="calculateVias()" style="padding:8px;">
+                                    <option value="0.2">0.2 mm (8 mil)</option>
+                                    <option value="0.3" selected>0.3 mm (12 mil)</option>
+                                    <option value="0.4">0.4 mm (16 mil)</option>
+                                    <option value="0.5">0.5 mm (20 mil)</option>
+                                </select>
+                            </div>
+                            <div id="via-result" style="margin-top: 15px; font-size: 0.95rem; line-height: 1.6;">
+                                <!-- Dynamic Via Results -->
+                                Select drill size to see requirements.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Engineering Tools -->
+                <h3 style="margin-top: 40px; border-bottom: 1px solid var(--border); padding-bottom:10px;">Advanced Engineering Checks</h3>
+                <div class="results-grid">
+                    <!-- Fusing Current -->
+                    <div class="vector-input-group" style="background:var(--card);">
+                        <h4 style="margin-top:0; color:var(--danger); margin-bottom:10px;"><i class="fas fa-fire"></i> Fusing Current (Safety)</h4>
+                        <p style="font-size:0.85rem; color:var(--text); margin-bottom:10px;">Estimated current to <strong>melt</strong> the calculated trace in specified time (Onderdonk's Eq).</p>
+                        <div id="fusing-result" style="font-family:'Courier New', monospace; font-size:0.9rem; line-height:1.6;">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+
+                    <!-- Impedance Estimator -->
+                    <div class="vector-input-group" style="background:var(--card);">
+                        <h4 style="margin-top:0; color:var(--secondary); margin-bottom:10px;"><i class="fas fa-wave-square"></i> Impedance Estimate (IPC-2141)</h4>
+                        <p style="font-size:0.85rem; color:var(--text); margin-bottom:10px;">Surface Microstrip Model (Standard FR-4, Er=4.5, H=1.6mm)</p>
+                        <div id="impedance-result" style="font-family:'Courier New', monospace; font-size:0.9rem; line-height:1.6;">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+                </div>
+
+
+                <h4 style="margin-top: 35px; border-top: 1px solid var(--border); padding-top: 20px;">Forensic Step-by-Step Calculation (IPC-2221)</h4>
+                <div id="calculation-details">
+                    <!-- Dynamic math steps -->
+                </div>
+            </div>
+        </div>
+
+        <!-- EXTENSIVE EDUCATIONAL SECTION (1500+ Words) -->
+        <div class="card education-section">
+            <h2><i class="fas fa-book-open"></i> Mastering PCB Design: Engineering Insights</h2>
+            <div class="article-content">
+                
+                <div class="article-block">
+                    <h3>1. Physics of Current in PCB Traces (Joule Heating)</h3>
+                    <p>When current flows through a PCB trace, it encounters resistance. This resistance generates heat according to Joule's First Law ($P = I^2R$). Unlike a wire suspended in air, a PCB trace is a flat conductor adhered to an insulating substrate (usually FR-4) and covered with a solder mask. The heat generated must dissipate through the substrate and into the surrounding air.</p>
+                    <p>The core challenge in PCB design is <strong>Thermal Management</strong>. If a trace is too narrow, the resistance increases, generating excessive heat. This heat can cause:</p>
+                    <ul>
+                        <li><strong>Delamination:</strong> The copper foil peeling away from the FR-4 board.</li>
+                        <li><strong>Via Failure:</strong> Thermal expansion mismatches cracking the plating in vias.</li>
+                        <li><strong>Substrate Damage:</strong> Exceeding the Glass Transition Temperature ($T_g$) of the FR-4, causing it to lose mechanical strength.</li>
+                    </ul>
+                    <p>Therefore, IPC standards define the required cross-sectional area of copper to limit the temperature rise to a safe value (usually 10°C to 20°C above ambient).</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>2. IPC Standards: IPC-2221 vs. IPC-2152</h3>
+                    <p>The electronics industry relies on standards published by the Association Connecting Electronics Industries (IPC). Two key standards govern trace width calculations:</p>
+                    <h4>IPC-2221 (Generic Standard on Printed Board Design)</h4>
+                    <p>Published in 1998, this is the most widely used standard for general purpose calculators (including this one). It uses a simple curve-fitting formula derived from data charts dating back to the 1950s. It assumes a single trace in isolation.
+                    <br><strong>Formula:</strong> $I = K \cdot \Delta T^{0.44} \cdot A^{0.725}$
+                    <br>While "conservative" for internal layers, it is considered the baseline for safety in most commercial applications.</p>
+                    <h4>IPC-2152 (Standard for Determining Current-Carrying Capacity)</h4>
+                    <p>Published in 2009, this is a physics-based standard that accounts for thermal conductivity of the board, presence of planes, and adjacent traces. It is far more complex but allows for optimized (often narrower) traces in dense designs. However, for general safety and quick checking, IPC-2221 remains the go-to reference for simple calculations.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>3. Copper Weight: The Third Dimension</h3>
+                    <p>Trace width is 2D, but current flows through a 3D volume. The thickness of the copper foil is defined by "Weight" in ounces per square foot ($oz/ft^2$).</p>
+                    <ul>
+                        <li><strong>0.5 oz (17.5 µm):</strong> Common for high-density, fine-pitch digital signals.</li>
+                        <li><strong>1.0 oz (35 µm):</strong> The standard thickness for most PCBs. 1oz corresponds to approx 1.37 mils.</li>
+                        <li><strong>2.0 oz (70 µm):</strong> Used for power supply boards and high-current motor drivers. Doubling thickness halves the required width for the same current/temp rise.</li>
+                    </ul>
+                    <p><strong>Design Tip:</strong> When calculating for 1oz copper, remember that the finished thickness on outer layers is often slightly higher due to plating (approx 1.5 - 2.0 mils), but calculations should use the base foil thickness for safety.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>4. Internal vs. External Layers</h3>
+                    <p>The location of the trace significantly impacts its current carrying capacity.</p>
+                    <ul>
+                        <li><strong>External Layers (Top/Bottom):</strong> These traces are exposed to air (convection) and radiate heat efficiently. They can carry more current for a given width. The IPC-2221 constant $K$ is 0.048.</li>
+                        <li><strong>Internal Layers:</strong> These traces are "buried" inside the FR-4 material. FR-4 is a poor thermal conductor (thermal conductivity ~0.25 W/mK). Heat gets trapped, leading to a higher temperature rise for the same current. Consequently, internal traces must be nearly <strong>2x wider</strong> than external traces to carry the same current. The IPC-2221 constant $K$ is 0.024.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>5. Voltage Drop and Power Integrity</h3>
+                    <p>While thermal limits determine the <em>minimum</em> width to prevent burning, <strong>Voltage Drop</strong> often dictates the design for power rails. </p>
+                    <p>Copper has a resistivity ($\rho$) of roughly $1.7 \times 10^{-6} \Omega \cdot cm$. As the trace heats up, this resistivity increases by approx 0.39% per °C. For a 3.3V logic rail carrying 2A, a long, thin trace might drop 0.2V. This drops the voltage at the IC to 3.1V, potentially causing logic errors or resets.</p>
+                    <div class="formula">$$ R = \frac{\rho \cdot L}{A} \times (1 + \alpha \cdot (T_{op} - 25)) $$</div>
+                    <p><strong>Best Practice:</strong> For power rails, calculate the width based on thermal limits first, then check the voltage drop over the trace length. If the drop exceeds 1-2% of the rail voltage, widen the trace or increase copper thickness.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>6. Manufacturing Constraints</h3>
+                    <p>Just because you calculate a 3.42 mil trace doesn't mean you should use it. PCB fabricators have limits:</p>
+                    <ul>
+                        <li><strong>Standard Tech:</strong> 6 mil (0.15mm) trace/space. Cheap and reliable.</li>
+                        <li><strong>Advanced Tech:</strong> 4 mil or 3 mil. More expensive, lower yield.</li>
+                        <li><strong>Power Traces:</strong> Generally, power traces should not be narrower than 10-15 mils for mechanical robustness, even if the current is low.</li>
+                    </ul>
+                    <p>Always round up your calculated width to the next standard design rule or convenient integer (e.g., if calc is 11.2 mils, use 12 or 15 mils).</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>7. High Frequency Considerations</h3>
+                    <p>This calculator handles DC/Low-Frequency resistance. For High-Speed signals (USB, PCIe, DDR), the <strong>Impedance</strong> ($Z_0$) becomes the governing factor. Trace width must be calculated to match the dielectric stackup for 50$\Omega$ or 100$\Omega$ impedance. In those cases, the width is fixed by physics, and you must check if that width can handle the DC current (usually fine for signals, but relevant for Power-over-Data lines).</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Design Calculators</h4>
+                    <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 15px;">Empowering engineers with precision tools for complex analysis. If you find this tool helpful, please consider sharing it with your colleagues!</p>
+                    <div class="social-buttons"><a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn linkedin"><i class="fab fa-linkedin-in"></i></a><a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer" class="social-btn youtube"><i class="fab fa-youtube"></i></a><a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn twitter"><i class="fab fa-twitter"></i></a><a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn facebook"><i class="fab fa-facebook-f"></i></a><a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource:%20https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn whatsapp"><i class="fab fa-whatsapp"></i></a></div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href='/'>Home</a></li>
+                        <li><a href='/indexele'>Electrical</a></li>
+                        <li><a href='/indexmech'>Mechanical</a></li>
+                        <li><a href='/indexinst'>Instrumentation</a></li>
+                        <li><a href='/articles'>Articles</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="about">About Us</a></li>
+                        <li><a href="contact">Contact</a></li>
+                        <li><a href="faq">FAQ</a></li>
+                        <li><a href="privacy-policy">Privacy Policy</a></li>
+                        <li><a href="terms-of-service">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>More</h4>
+                    <ul>
+                        <li><a href='/articles'>Articles & Whitepapers</a></li>
+                        <li><a href='/sitemap2'>Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>All calculations are for preliminary engineering design guidance. Final designs must comply with all applicable local and international standards (including but not limited to IPC-2221, IPC-2152). Always verify calculations and consult with a licensed professional engineer before implementation or construction.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">A Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global State
+        let lastResult = null;
+        let chartInstance = null;
+        // Register plugin
+        Chart.register(ChartDataLabels);
+
+        function loadPreset(type) {
+            if (type === 'signal') {
+                document.getElementById('current').value = '0.1';
+                document.getElementById('thickness').value = '1';
+                document.getElementById('layer-type').value = 'external';
+                document.getElementById('temp-rise').value = '10';
+            } else if (type === 'power') {
+                document.getElementById('current').value = '2.0';
+                document.getElementById('thickness').value = '1';
+                document.getElementById('layer-type').value = 'external';
+                document.getElementById('temp-rise').value = '10';
+            } else if (type === 'high-current') {
+                document.getElementById('current').value = '10.0';
+                document.getElementById('thickness').value = '2'; // 2oz for high current
+                document.getElementById('layer-type').value = 'external';
+                document.getElementById('temp-rise').value = '20'; // Allow more heat
+            }
+            displayMessage(`${type.toUpperCase()} preset loaded.`, "success");
+        }
+
+        function displayMessage(message, type = "info") {
+            let messageBox = document.getElementById('message-box');
+            messageBox.textContent = message;
+            if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
+            else if (type === "success") messageBox.style.backgroundColor = 'var(--success)';
+            else messageBox.style.backgroundColor = 'var(--primary)';
+            messageBox.classList.add('show');
+            setTimeout(() => messageBox.classList.remove('show'), 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme handling
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            if(themeSwitch) {
+                themeSwitch.addEventListener('change', function() {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                });
+            }
+
+            document.getElementById('calculate-btn').addEventListener('click', performCalculation);
+            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+        });
+
+        function calculateVias() {
+            if(!lastResult) return;
+            const drillMM = parseFloat(document.getElementById('via-size').value);
+            // Approximation: Via capacity is circumference * plating thickness.
+            // IPC-2221 approx: Current is proportional to area.
+            // Effective area of via barrel = Pi * d * plating_thickness
+            // Plating thickness usually 1 mil (0.0254mm) for Class 2.
+            const platingMM = 0.0254; 
+            const viaAreaMM2 = Math.PI * drillMM * platingMM;
+            const viaAreaMils2 = viaAreaMM2 / 0.00064516;
+            
+            // Current capacity of via using IPC formula for calculated temp rise
+            const K = 0.024; // Internal constant
+            const tempRise = lastResult.tempRise;
+            // I = K * dT^0.44 * A^0.725
+            const viaCurrent = K * Math.pow(tempRise, 0.44) * Math.pow(viaAreaMils2, 0.725);
+            
+            const numVias = Math.ceil(lastResult.I / viaCurrent);
+            
+            const div = document.getElementById('via-result');
+            div.innerHTML = `
+                Per Via Capacity: <strong>${viaCurrent.toFixed(2)} A</strong><br>
+                Total Current: <strong>${lastResult.I} A</strong><br>
+                <div style="margin-top:5px; color:var(--success); font-weight:700;">
+                    Requires ${numVias} via${numVias > 1 ? 's' : ''} of size ${drillMM}mm
+                </div>
+            `;
+        }
+
+        function calculateMaxCurrent(widthMils, thickOz, layerType, tempRise) {
+            const thickMils = thickOz * 1.37;
+            const areaMils2 = widthMils * thickMils;
+            const K = (layerType === 'internal') ? 0.024 : 0.048;
+            return K * Math.pow(tempRise, 0.44) * Math.pow(areaMils2, 0.725);
+        }
+
+        function calculateFusing(areaMils2) {
+            // Onderdonk's Equation
+            // I = Area_CM * sqrt( log( (dT / (234.5 + Ta)) + 1 ) / (33 * t) )
+            // Area in Circular Mils = Area_sq_mils * 1.273
+            const areaCM = areaMils2 * 1.273;
+            const Ta = 25; 
+            const Tmelt = 1083; // Melting point of copper
+            const dT = Tmelt - Ta; 
+            
+            const term1 = Math.log( (dT / (234.5 + Ta)) + 1 );
+            
+            // For 1 second
+            const t1 = 1;
+            const I_1s = areaCM * Math.sqrt( term1 / (33 * t1) );
+            
+            // For 100ms
+            const t2 = 0.1;
+            const I_100ms = areaCM * Math.sqrt( term1 / (33 * t2) );
+
+            return { I_1s, I_100ms };
+        }
+
+        function calculateImpedance(widthMM, thickMM) {
+            // IPC-2141 Surface Microstrip
+            // Z0 = 87/sqrt(Er+1.41) * ln( 5.98H / (0.8W + T) )
+            // Assume Standard FR4: Er=4.5, H=1.6mm (63mil)
+            const Er = 4.5;
+            const H_mm = 1.6;
+            
+            const term1 = 87 / Math.sqrt(Er + 1.41);
+            const term2 = Math.log( (5.98 * H_mm) / (0.8 * widthMM + thickMM) );
+            return term1 * term2;
+        }
+
+        function performCalculation() {
+            // 1. Get Inputs
+            const I = parseFloat(document.getElementById('current').value);
+            const thickOz = parseFloat(document.getElementById('thickness').value);
+            const layerType = document.getElementById('layer-type').value;
+            const tempRise = parseFloat(document.getElementById('temp-rise').value);
+            const ambient = parseFloat(document.getElementById('ambient-temp').value);
+            const lengthMM = parseFloat(document.getElementById('trace-length').value);
+
+            if(I <= 0 || tempRise <= 0) {
+                displayMessage("Please enter valid positive values.", "error");
+                return;
+            }
+
+            // --- 2. LOGIC CORE (IPC-2221) ---
+            
+            // Constants
+            const K = (layerType === 'internal') ? 0.024 : 0.048;
+            const b = 0.44;
+            const c = 0.725;
+
+            // Step A: Calculate Required Area (mils^2)
+            // Formula: I = K * dT^b * A^c  =>  A = (I / (K * dT^b))^(1/c)
+            const dT_factor = Math.pow(tempRise, b);
+            const denominator = K * dT_factor;
+            const base_fraction = I / denominator;
+            const areaMils2 = Math.pow(base_fraction, (1/c));
+
+            // Step B: Calculate Width (mils)
+            // 1 oz copper = 1.37 mils thickness (approx 35um)
+            const thickMils = thickOz * 1.37;
+            const widthMils = areaMils2 / thickMils;
+
+            // Conversions
+            const widthMM = widthMils * 0.0254;
+            const areaMM2 = areaMils2 * 0.00064516; // 1 mil^2 = 6.4516e-4 mm^2
+
+            // Step C: Resistance Calculation
+            const tempOp = ambient + tempRise;
+            const rho20 = 1.724e-5; // Ohm.mm^2/mm (Standard annealed copper approx)
+            
+            const alpha = 0.00393;
+            // Adjusted resistivity
+            const rho_op = rho20 * (1 + alpha * (tempOp - 20)); 
+            
+            // Resistance (Ohms) = rho_op * length_mm / area_mm2
+            let resistance = (rho_op * lengthMM) / areaMM2;
+
+            // Step D: Voltage Drop & Power
+            const vDrop = I * resistance;
+            const pLoss = I * vDrop;
+
+            // Step E: Fusing & Impedance
+            const fusing = calculateFusing(areaMils2);
+            const imp = calculateImpedance(widthMM, thickMils * 0.0254);
+
+            // --- 3. OUTPUT & RENDER ---
+            
+            lastResult = {
+                I, thickOz, layerType, tempRise, ambient, lengthMM,
+                widthMils, widthMM, areaMils2, resistance, vDrop, pLoss, tempOp
+            };
+
+            // Update Note Text
+            document.getElementById('reverse-note').innerText = `Based on your ${tempRise}°C Temp Rise & ${thickOz}oz Copper settings:`;
+
+            // HTML for Table
+            const tbody = document.getElementById('result-table-body');
+            tbody.innerHTML = '';
+            const addRow = (label, val, highlight=false) => {
+                tbody.innerHTML += `<tr>
+                    <td>${label}</td>
+                    <td style="${highlight?'color:var(--secondary); font-weight:800; font-size:1.1rem':''}">${val}</td>
+                </tr>`;
+            };
+
+            addRow("Min Trace Width", `${widthMils.toFixed(2)} mils / ${widthMM.toFixed(3)} mm`, true);
+            addRow("Trace Resistance", `${resistance.toFixed(4)} Ω`);
+            addRow("Voltage Drop", `${vDrop.toFixed(4)} V`);
+            addRow("Power Loss", `${pLoss.toFixed(3)} W`);
+            addRow("Operating Temp", `${tempOp.toFixed(1)} °C`);
+
+            // Populate Reverse Table
+            const revBody = document.getElementById('reverse-table-body');
+            revBody.innerHTML = '';
+            const stdWidths = [6, 10, 20, 50, 100];
+            stdWidths.forEach(w => {
+                const maxI = calculateMaxCurrent(w, thickOz, layerType, tempRise);
+                revBody.innerHTML += `<tr><td>${w} mils</td><td>${maxI.toFixed(2)} A</td></tr>`;
+            });
+            
+            // Trigger Via Calc
+            calculateVias();
+
+            // Populate Advanced Results
+            document.getElementById('fusing-result').innerHTML = `
+                Current to melt in 1.0s: <strong style="color:var(--danger)">${fusing.I_1s.toFixed(1)} A</strong><br>
+                Current to melt in 0.1s: <strong style="color:var(--danger)">${fusing.I_100ms.toFixed(1)} A</strong>
+            `;
+            document.getElementById('impedance-result').innerHTML = `
+                Est. Impedance ($Z_0$): <strong>${imp.toFixed(1)} $\\Omega$</strong><br>
+                <span style="font-size:0.8rem; color:#666;">(Valid for microstrip on standard 1.6mm FR4)</span>
+            `;
+
+            // HTML for Details
+            let stepsHtml = `<h4>Step 1: Required Cross-Sectional Area (IPC-2221)</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Inputs: Current $I = ${I}$ A, Temp Rise $\\Delta T = ${tempRise}$ °C.<br>`;
+            stepsHtml += `Constant $K = ${K}$, Exponents $b=0.44, c=0.725$.<br>`;
+            stepsHtml += `Temp Factor: $\\Delta T^{0.44} = ${Math.pow(tempRise, 0.44).toFixed(3)}$. Denom: $K \\cdot \\Delta T^{0.44} = ${denominator.toFixed(4)}$.<br>`;
+            stepsHtml += `$$ A = (\\frac{I}{K \\cdot \\Delta T^{b}})^{1/c} = (\\frac{${I}}{${denominator.toFixed(4)}})^{1.379} = \\mathbf{${areaMils2.toFixed(1)} \\text{ mils}^2} $$`;
+            stepsHtml += `</div>`;
+
+            stepsHtml += `<h4>Step 2: Trace Width Geometry</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Copper Weight: ${thickOz} oz $\\approx$ ${thickMils.toFixed(2)} mils thickness.<br>`;
+            stepsHtml += `$$ Width = \\frac{Area}{Thickness} = \\frac{${areaMils2.toFixed(1)}}{${thickMils.toFixed(2)}} = \\mathbf{${widthMils.toFixed(2)} \\text{ mils}} $$`;
+            stepsHtml += `(Metric: ${widthMM.toFixed(3)} mm)`;
+            stepsHtml += `</div>`;
+
+            stepsHtml += `<h4>Step 3: Electrical Physics (Resistance & Drop)</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `Total Trace Length: ${lengthMM} mm. Base Resistivity $\\rho_{20} = 1.724 \\times 10^{-5} \\Omega \\cdot mm$.<br>`;
+            stepsHtml += `Adjusted Resistivity for ${tempOp.toFixed(1)}°C:<br>`;
+            stepsHtml += `$$ \\rho_{hot} = \\rho_{20} (1 + 0.00393 \\times (${tempOp.toFixed(1)} - 20)) = ${rho_op.toExponential(4)} \\Omega \\cdot mm $$<br>`;
+            stepsHtml += `$$ R = \\rho_{hot} \\times \\frac{L}{A_{mm2}} = ${rho_op.toExponential(4)} \\times \\frac{${lengthMM}}{${areaMM2.toFixed(4)}} = \\mathbf{${resistance.toFixed(4)} \\Omega} $$<br>`;
+            stepsHtml += `$$ V_{drop} = I \\cdot R = ${I} \\cdot ${resistance.toFixed(4)} = \\mathbf{${vDrop.toFixed(3)} \\text{ V}} $$`;
+            stepsHtml += `</div>`;
+
+            stepsHtml += `<h4>Step 4: Safety & High Speed Analysis</h4>`;
+            stepsHtml += `<div class="calculation-step">`;
+            stepsHtml += `<strong>Fusing (Onderdonk):</strong> Melting current for 1 sec pulse calculated using melting point of copper (1083°C).<br>`;
+            stepsHtml += `<strong>Impedance (IPC-2141):</strong> $Z_0 = \\frac{87}{\\sqrt{Er+1.41}} \\ln(\\frac{5.98H}{0.8W+T})$ using Er=4.5, H=1.6mm.<br>`;
+            stepsHtml += `Estimated $Z_0 = ${imp.toFixed(1)} \\Omega$.`;
+            stepsHtml += `</div>`;
+
+            document.getElementById('calculation-details').innerHTML = stepsHtml;
+
+            // Interpretation
+            const interp = document.getElementById('interpretation-text');
+            let interpText = `For <strong>${I}A</strong> current with <strong>${tempRise}°C</strong> rise, use a minimum width of <strong>${widthMils.toFixed(1)} mils</strong>. `;
+            if(widthMils < 6) interpText += `<br><span class="danger-text">Warning: Result < 6 mils. Ensure fab house capability.</span>`;
+            if(vDrop > 0.1) interpText += `<br><span class="danger-text">Caution: Voltage drop > 100mV. Check rail tolerance.</span>`;
+            interp.innerHTML = interpText;
+
+            // Render Chart
+            renderChart(widthMils);
+
+            // Show Results
+            document.getElementById('result-container').classList.remove('hidden');
+            if(window.MathJax) window.MathJax.typesetPromise();
+            document.getElementById('result-container').scrollIntoView({behavior: "smooth"});
+        }
+
+        function renderChart(calculatedWidth) {
+            const ctx = document.getElementById('pcbCanvas').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Calculated', 'Std Signal (6mil)', 'Std Power (20mil)'],
+                    datasets: [
+                        {
+                            label: 'Trace Width (mils)',
+                            data: [calculatedWidth, 6, 20],
+                            backgroundColor: ['#10B981', '#64748B', '#3B82F6'],
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'Width (mils)' }
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#333',
+                            font: { weight: 'bold' },
+                            formatter: Math.round
+                        },
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function generatePDF() {
+            if (!lastResult) {
+                displayMessage("Please calculate first.", "error");
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.width;
+            
+            // Branding Header
+            pdf.setFillColor(30, 58, 138);
+            pdf.rect(0, 0, pageWidth, 40, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(22);
+            pdf.text("PCB Design Report", 20, 25);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text("Design Calculators - IPC-2221 Analysis", 20, 32);
+            pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 20, 32, { align: 'right' });
+
+            let y = 55;
+
+            // Summary Box
+            pdf.setDrawColor(200);
+            pdf.setFillColor(245, 247, 250);
+            pdf.roundedRect(15, y, pageWidth-30, 35, 3, 3, 'FD');
+            pdf.setTextColor(50);
+            pdf.setFontSize(14);
+            pdf.text("Recommended Trace Geometry", 20, y+10);
+            pdf.setFontSize(18);
+            pdf.setTextColor(16, 185, 129); // Green
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`${lastResult.widthMils.toFixed(2)} mils  /  ${lastResult.widthMM.toFixed(3)} mm`, 20, y+22);
+            pdf.setFontSize(10);
+            pdf.setTextColor(100);
+            pdf.text(`@ ${lastResult.thickOz}oz Copper`, 120, y+22);
+            y += 45;
+
+            // Details Table
+            const inputData = [
+                ['Design Current', `${lastResult.I} A`],
+                ['Permissible Temp Rise', `${lastResult.tempRise} °C`],
+                ['Ambient Temp', `${lastResult.ambient} °C`],
+                ['Layer Type', lastResult.layerType.toUpperCase()],
+                ['Trace Length', `${lastResult.lengthMM} mm`]
+            ];
+
+            pdf.autoTable({
+                startY: y,
+                head: [['Input Parameter', 'Value']],
+                body: inputData,
+                theme: 'grid',
+                headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 10, cellPadding: 5 },
+                margin: { left: 15, right: 15 }
+            });
+
+            y = pdf.lastAutoTable.finalY + 15;
+
+            // Results Table
+            const resData = [
+                ['Minimum Trace Width', `${lastResult.widthMils.toFixed(2)} mils`],
+                ['Cross-Sectional Area', `${lastResult.areaMils2.toFixed(1)} mils²`],
+                ['Resistance', `${lastResult.resistance.toFixed(4)} Ω`],
+                ['Voltage Drop', `${lastResult.vDrop.toFixed(4)} V`],
+                ['Power Dissipation', `${lastResult.pLoss.toFixed(3)} W`]
+            ];
+
+            pdf.text("Electrical Analysis", 15, y);
+            y += 5;
+
+            pdf.autoTable({
+                startY: y,
+                head: [['Metric', 'Result']],
+                body: resData,
+                theme: 'striped',
+                headStyles: { fillColor: [59, 130, 246] }, // Blue
+                styles: { fontSize: 10, cellPadding: 5 },
+                margin: { left: 15, right: 15 }
+            });
+
+            // Footer disclaimer
+            pdf.setFontSize(8);
+            pdf.setTextColor(150);
+            pdf.text("Note: Calculations based on IPC-2221 generic standard. High speed designs require impedance control.", 15, 280);
+
+            pdf.save('PCB_Trace_Report.pdf');
+            displayMessage("Design PDF Downloaded", "success");
+        }
+    </script>
+</body>
+</html>
