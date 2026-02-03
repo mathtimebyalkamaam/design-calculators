@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780"
+        crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Triangle Calculator - kW, kVA, kVAR & PF Correction</title>
+    <meta name="description"
+        content="Commercial-grade Power Triangle Calculator. Calculate Real Power (kW), Reactive Power (kVAR), Apparent Power (kVA), and Power Factor (PF). Includes Capacitor Bank Sizing for PF Correction and interactive vector visualization.">
+    <meta name="keywords"
+        content="power triangle calculator, power factor correction calculator, kw to kva, kvar calculation, capacitor bank sizing, electrical engineering tools, pf calculator, lag lead power factor, reactive power formula">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://designcalculators.co.in/powertriangle" />
+
+    <!-- JSON-LD Schema: Software Application -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Power Triangle & PF Calculator",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A professional engineering tool for analyzing AC power relationships. Solves the Power Triangle geometry and sizes capacitor banks for Power Factor Correction.",
+      "featureList": "kW/kVA/kVAR Conversion, Power Factor Correction, Capacitor Sizing, Vector Visualization, Harmonics Analysis",
+      "author": {
+        "@type": "Organization",
+        "name": "Design Calculators"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD Schema: FAQ Page -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is the difference between kW and kVA?", "acceptedAnswer": { "@type": "Answer", "text": "kW (Kilowatts) is Real Power, the power that actually does useful work (heat, light, motion). kVA (Kilovolt-Amperes) is Apparent Power, the total vector sum of Real Power and Reactive Power (kVAR). kVA is always equal to or greater than kW." } },
+        { "@type": "Question", "name": "Why do I need to correct Power Factor?", "acceptedAnswer": { "@type": "Answer", "text": "Low power factor draws higher current for the same amount of useful work, leading to higher line losses, voltage drops, and utility penalties (kVA demand charges). Correcting PF reduces your electricity bill and frees up system capacity." } },
+        { "@type": "Question", "name": "What is kVAR?", "acceptedAnswer": { "@type": "Answer", "text": "kVAR (Kilovolt-Amperes Reactive) represents Reactive Power. It is the power required to magnetize motors and transformers. It bounces back and forth between the source and load, doing no 'real' work but occupying wire capacity." } },
+        { "@type": "Question", "name": "How does a Capacitor Bank improve PF?", "acceptedAnswer": { "@type": "Answer", "text": "Inductive loads (motors) consume reactive power (lagging current). Capacitors supply reactive power (leading current). By placing capacitors near the load, they supply the kVAR locally, reducing the kVAR drawn from the utility grid." } },
+        { "@type": "Question", "name": "Can Power Factor be negative?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, in four-quadrant metering. A negative power factor usually indicates power is being exported (like from Solar PV) or the load is extremely capacitive (leading), though mathematically it is often treated as the direction of power flow." } },
+        { "@type": "Question", "name": "What is the formula for Power Factor?", "acceptedAnswer": { "@type": "Answer", "text": "Power Factor (PF) = Real Power (kW) / Apparent Power (kVA). It is also the cosine of the phase angle (θ) between voltage and current waveforms." } },
+        { "@type": "Question", "name": "What causes low Power Factor?", "acceptedAnswer": { "@type": "Answer", "text": "The main culprits are inductive loads such as induction motors, transformers, welding machines, arc furnaces, and fluorescent lighting ballasts. Lightly loaded motors have a significantly worse power factor than fully loaded ones." } },
+        { "@type": "Question", "name": "What is a 'Penalty' Power Factor?", "acceptedAnswer": { "@type": "Answer", "text": "Most utilities charge a penalty if your facility's PF drops below a certain threshold, commonly 0.85 or 0.90 or 0.95. This is because they must size their infrastructure to carry your 'wasted' reactive current." } },
+        { "@type": "Question", "name": "How do I calculate required Capacitor kVAR?", "acceptedAnswer": { "@type": "Answer", "text": "kVAR Required = P(kW) × [tan(acos(PF_old)) - tan(acos(PF_new))]. This tool performs this calculation automatically in the 'Correction' module." } },
+        { "@type": "Question", "name": "Does this tool work for Single and Three Phase?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Power Triangle relationships (S² = P² + Q²) hold true for both. However, when calculating current (Amps) from kVA, you must apply the √3 factor for 3-phase systems." } }
+      ]
+    }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Chart.js (Used for optional charts if needed, primarily using Canvas API for Triangle) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+    <!-- MathJax for Formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* --- CORE THEME (Blue Industrial) --- */
+        :root {
+            --primary: #1E3A8A;
+            /* Dark Blue */
+            --secondary: #2563EB;
+            /* Bright Blue */
+            --accent: #F59E0B;
+            /* Amber */
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #334155;
+            --heading: #0F172A;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --input-bg: #FFFFFF;
+        }
+
+        body.dark-mode {
+            --primary: #3B82F6;
+            --secondary: #60A5FA;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #E2E8F0;
+            --heading: #F8FAFC;
+            --footer-bg: #020617;
+            --border: #334155;
+            --accent: #FBBF24;
+            --input-bg: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #DBEAFE;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            opacity: 0.9;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Main Content */
+        main {
+            padding: 40px 0;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+
+        h4 {
+            color: var(--heading);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        /* Forms */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--heading);
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Tool Switcher */
+        .tool-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            background: var(--card);
+            border: 2px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .tool-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+        }
+
+        /* Module Containers */
+        .tool-module {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tool-module.active {
+            display: block;
+        }
+
+        /* Results Big Display */
+        .result-box {
+            text-align: center;
+            padding: 25px;
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .result-box::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--grad);
+        }
+
+        .main-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+            margin: 10px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .sub-value {
+            font-size: 1.1rem;
+            color: var(--text);
+            opacity: 0.9;
+            font-weight: 500;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Calculation Steps Styling */
+        .calc-steps {
+            text-align: left;
+            margin-top: 25px;
+            background: var(--bg);
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .calc-steps h4 {
+            margin-top: 0;
+            color: var(--primary);
+            font-family: 'Inter', sans-serif;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .calc-steps strong {
+            color: var(--heading);
+        }
+
+        .step-block {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-title {
+            font-weight: 700;
+            color: var(--secondary);
+            display: block;
+            margin-bottom: 5px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Visualizer */
+        .viz-container {
+            height: 350px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        canvas {
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        /* Buttons (Shared) */
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .message-box.show {
+            display: block;
+            opacity: 1;
+            top: 30px;
+        }
+
+        /* Educational Section */
+        .education-section {
+            padding: 40px;
+        }
+
+        .article-content {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+        }
+
+        .article-block {
+            margin-bottom: 40px;
+        }
+
+        .article-block h3 {
+            color: var(--primary);
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        .article-block h4 {
+            color: var(--heading);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-bottom: none;
+        }
+
+        .article-block p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .article-block ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .article-block li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .formula {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            border: 1px solid var(--border);
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        /* FAQ Accordion */
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--heading);
+            transition: color 0.2s;
+        }
+
+        .faq-question:hover {
+            color: var(--primary);
+        }
+
+        .faq-answer {
+            display: none;
+            margin-top: 10px;
+            color: var(--text);
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Results Grid */
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media(max-width:768px) {
+            .res-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .res-item {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .res-label {
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .res-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--heading);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--grad-dark);
+            color: #94A3B8;
+            padding: 60px 0 30px 0;
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-col li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col a:hover {
+            color: var(--accent);
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Social Buttons Styling */
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-btn:hover {
+            transform: translateY(-4px);
+        }
+
+        .social-btn.linkedin {
+            background-color: #0A66C2;
+        }
+
+        .social-btn.youtube {
+            background-color: #FF0000;
+        }
+
+        .social-btn.twitter {
+            background-color: #1DA1F2;
+        }
+
+        .social-btn.facebook {
+            background-color: #1877F2;
+        }
+
+        .social-btn.whatsapp {
+            background-color: #25D366;
+        }
+
+        .footer-disclaimer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 0.85rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+            }
+
+            .tool-switcher {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <style>
+        /* Core Header Styles */
+        .header {
+            background: var(--gradient-primary, linear-gradient(135deg, #1E3A8A, #2563EB));
+            color: white;
+            padding: 10px 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+            overflow: visible !important;
+        }
+
+        .header .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+
+        .header .logo-container {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .logo {
+            height: 48px !important;
+            width: auto;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .logo-text-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.1;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 !important;
+            line-height: 1.2;
+            max-width: 250px;
+            white-space: normal;
+        }
+
+        .header .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .header .nav-links li {
+            margin: 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        .header .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            opacity: 0.9;
+        }
+
+        .header .nav-links a:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        .header .theme-toggle {
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1000;
+        }
+
+        /* Mega Menu Styles */
+        .nav-links .dropbtn {
+            cursor: pointer;
+            padding: 10px 0;
+            display: inline-block;
+        }
+
+        .nav-links .dropbtn i {
+            font-size: 0.8em;
+            margin-left: 4px;
+            opacity: 0.7;
+            transition: transform 0.3s;
+        }
+
+        .nav-links .nav-item:hover .dropbtn i {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: var(--card-bg, #ffffff);
+            width: 600px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            border-radius: 12px;
+            padding: 20px;
+            top: 100%;
+            margin-top: 5px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease-in-out;
+            border-top: 4px solid var(--secondary-color, #2563EB);
+        }
+
+        .nav-links .nav-item:hover .dropdown-content {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .dropdown-content .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .dropdown-content .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dropdown-content a {
+            color: var(--text-color, #4B5563) !important;
+            padding: 6px 8px;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem !important;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+            font-weight: 400 !important;
+            line-height: 1.4;
+        }
+
+        .dropdown-content a:hover {
+            background-color: var(--hover-color, #F1F5F9);
+            color: var(--primary-color, #1E3A8A) !important;
+            transform: translateX(4px);
+        }
+
+        .mega-menu-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color, #E2E8F0);
+            text-align: center;
+        }
+
+        .mega-menu-footer .view-all-btn {
+            display: inline-block;
+            color: var(--primary-color, #1E3A8A) !important;
+            font-weight: 700 !important;
+            font-size: 0.95rem !important;
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode .dropdown-content {
+            background-color: var(--card-bg, #1E293B);
+            border-color: var(--secondary-color, #34D399);
+        }
+
+        body.dark-mode .dropdown-content a {
+            color: var(--text-color, #CBD5E1) !important;
+        }
+
+        body.dark-mode .dropdown-content a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--primary-color, #10B981) !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .header .nav-menu {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                background: var(--gradient-dark, #0F172A);
+                flex-direction: column;
+                padding: 100px 30px 30px;
+                gap: 24px;
+                transition: left 0.4s ease-in-out;
+                box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
+                z-index: 999;
+                align-items: flex-start;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 12px 16px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.05);
+                display: block;
+            }
+
+            .dropdown-content {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                transform: none;
+                display: none !important;
+                padding: 0 0 0 15px;
+                background: transparent;
+                border: none;
+            }
+
+            .nav-links .nav-item:hover .dropdown-content {
+                display: block !important;
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .dropdown-content .row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .nav-links .nav-item {
+                display: block;
+                width: 100%;
+            }
+
+            .nav-links .dropbtn {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .header .logo-text {
+                font-size: 1.1rem;
+            }
+
+            .header .logo {
+                height: 40px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <div id="message-box" class="message-box"></div>
+
+    <header class="header">
+        <div class="header-bg-animation"></div>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo-container">
+                    <img src="logo.png" alt="Design Calculators Logo" class="logo">
+                    <span class="logo-text">Design Calculators</span>
+                </a>
+
+                <div class="nav-menu">
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <ul class="nav-links">
+                        <li><a href="/index.html">Home</a></li>
+                        
+    <li class="dropdown">
+        <a href="/indexele.html" class="dropdown-toggle">Electrical <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/arcflash.html">Arc Flash Calculator</a><a href="/breaker-sizing.html">Breaker Sizing</a><a href="/cable-thermal-rating.html">Cable Ampacity</a><a href="/comm-cable-loss.html">Comm Cable Loss</a><a href="/earth-conductor-size.html">Earth Conductor Size</a><a href="/generatorsizing.html">Generator Sizing</a><a href="/harmonicsanalyser.html">Harmonics Analyser</a><a href="/insulationresistance.html">Insulation Resistance</a><a href="/logicgate.html">Logic Gates Simulator</a><a href="/motor-starting.html">Motor Starting Current</a><a href="/pcbtrace.html">PCB Trace Width</a><a href="/protection-device.html">Protection Device</a><a href="/resistor.html">Resistor Color Code</a><a href="/solarcable.html">Solar Cable Sizing</a><a href="/systemxrcalculator.html">System X/R Ratio</a><a href="/transmissionline.html">Transmission Line</a><a href="/vfd-selection.html">VFD Selection Tool</a></div><div><a href="/batterylife.html">Battery Life Estimator</a><a href="/busbarampacity.html">Busbar Ampacity</a><a href="/cablepulling.html">Cable Pulling Tension</a><a href="/conduit-fill.html">Conduit Fill Calculator</a><a href="/earthingfaultsimulator.html">Earthing Fault Simulator</a><a href="/grounding.html">Grounding System Design</a><a href="/hvac-sizing.html">HVAC Sizing Calculator</a><a href="/lcresonancecalculator.html">LC Resonance Calculator</a><a href="/maintenance-guide.html">Maintenance Guide</a><a href="/nemaipconvertor.html">NEMA to IP Converter</a><a href="/power-factor.html">Power Factor Correction</a><a href="/relay-coordination.html">Relay Coordination</a><a href="/short-circuit.html">Short Circuit Current</a><a href="/solarpvarray.html">Solar PV Array</a><a href="/transformer-calculator.html">Transformer Calculator</a><a href="/unit-converter.html">Unit Converter</a><a href="/voltage-drop.html">Voltage Drop Calculator</a></div><div><a href="/battery-sizing.html">Battery Sizing (AH)</a><a href="/busbarshortcircuit.html">Busbar Short Circuit</a><a href="/cable-sizing.html">Cable Sizing Calculator</a><a href="/ctsaturation.html">CT Saturation</a><a href="/equipment-relay.html">Equipment Relay Setting</a><a href="/harmonic-distortion.html">Harmonic Distortion</a><a href="/industriallighting.html">Industrial Lighting</a><a href="/lighting-calulator.html">Lighting Calculator</a><a href="/motor-efficiency.html">Motor Efficiency</a><a href="/neutral-earth-fault-current.html">Neutral Earth Fault</a><a href="/powertriangletool.html">Power Triangle</a><a href="/electricalresidentialload.html">Residential Load Calc</a><a href="/skindepth.html">Skin Depth Calculator</a><a href="/symmetricalcomponents.html">Symmetrical Components</a><a href="/transformerinrush.html">Transformer Inrush</a><a href="/ups-sizing.html">UPS Sizing</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexele.html" class="view-all-link">View All Electrical Tools â†’</a>
+            </div>
+        </div>
+    </li>
+                        
+    <li class="dropdown">
+        <a href="/indexinst.html" class="dropdown-toggle">Instrumentation <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/adc-resolution.html">ADC Resolution</a><a href="/capillarylengthtemperatureerror.html">Capillary Error</a><a href="/cv-kv-valve.html">Cv/Kv Valve Sizing</a><a href="/dp-level.html">DP Level Measurement</a><a href="/hydrostatic-level.html">Hydrostatic Level</a><a href="/instrument-range.html">Instrument Range</a><a href="/loop-impedance.html">Loop Impedance</a><a href="/orifice-plate.html">Orifice Plate Beta</a><a href="/pid-tuning.html">PID Tuning</a><a href="/profibus.html">Profibus Calculator</a><a href="/tempsensorresponse.html">Response Time (Tau)</a><a href="/rtd-lead-comp.html">RTD Lead Wire Comp.</a><a href="/sealfluidzeroshift.html">Seal Fluid Shift</a><a href="/snr-calculator.html">SNR Calculator</a><a href="/thermocoupleextensioncable.html">TC Extension Cable</a><a href="/thermowellwakefreq.html">Thermowell Frequency</a><a href="/pressuretransmitteroverrange.html">Tx Overrange</a><a href="/valvecavitationcalculator.html">Valve Cavitation</a><a href="/vibrationtransmitter.html">Vibration Tx</a><a href="/zoneclassificationhelper.html">Zone Classification</a></div><div><a href="/baud-rate.html">Baud Rate Calculator</a><a href="/gascompressibility.html">Compressibility (Z)</a><a href="/dbcalculator.html">dB Gain/Loss Calc</a><a href="/flowprofiledistortioncalculator.html">Flow Distortion</a><a href="/impulselinefreezing.html">Impulse Freezing</a><a href="/intrinsic-safety.html">Intrinsic Safety Loop</a><a href="/measurement.html">Measurement Uncertainty</a><a href="/ph-temp-comp.html">pH Temp Compensation</a><a href="/plcscantime.html">PLC Scan Time</a><a href="/pressurereliefvalve.html">PRV Sizing (API 520)</a><a href="/reynoldsnumbercal.html">Reynolds Number</a><a href="/rtdselfheating.html">RTD Self-Heating</a><a href="/signal-scaling.html">Signal Scaling</a><a href="/staticheadcal.html">Static Head</a><a href="/temperaturesensorlag.html">Temp Sensor Lag</a><a href="/thermowell-wake.html">Thermowell Wake</a><a href="/ultrasoniclevel.html">Ultrasonic Level</a><a href="/valve-cv.html">Valve Cv Viewer</a><a href="/wetlegdensitycompensation.html">Wet Leg Compensation</a></div><div><a href="/capacitance-level.html">Capacitance Level</a><a href="/controlvalvenoise.html">Control Valve Noise</a><a href="/dp-flow-conversion.html">DP Flow Conversion</a><a href="/hartdevices.html">HART Devices</a><a href="/impulse-pressure-drop.html">Impulse Pressure Drop</a><a href="/junctionbox.html">Junction Box Sizing</a><a href="/orifice-flow.html">Orifice Flow Calculator</a><a href="/pid-symbol-library.html">PID Symbol Library</a><a href="/power-supply-load.html">Power Supply Load</a><a href="/prvsizing.html">Relief Orifice Area</a><a href="/rtdexcitationcurrentselection.html">RTD Excitation</a><a href="/rtd-tc-conversion.html">RTD/TC Conversion</a><a href="/sil.html">SIL Calculator</a><a href="/steamflow.html">Steam Flow</a><a href="/thermocouplecjccalculator.html">Thermocouple CJC</a><a href="/turndown.html">Turndown Ratio</a><a href="/controlvalveauthority.html">Valve Authority</a><a href="/controlvalveleakage.html">Valve Leakage Class</a><a href="/wirelesshart.html">WirelessHART Range</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexinst.html" class="view-all-link">View All Instrumentation Tools â†’</a>
+            </div>
+        </div>
+    </li>
+                        
+    <li class="dropdown">
+        <a href="/indexmech.html" class="dropdown-toggle">Mechanical <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/aircompressorfad.html">Air Compressor FAD</a><a href="/asme-vessel.html">ASME Vessel Design</a><a href="/belt-pulley.html">Belt & Pulley</a><a href="/bolt-torque.html">Bolt Torque</a><a href="/controlvalveactuator.html">Control Valve Actuator</a><a href="/frictionfactortool.html">Darcy Friction Factor</a><a href="/fatigue.html">Fatigue Analysis</a><a href="/fuel-combustion.html">Fuel Combustion</a><a href="/gas.html">Gas Properties</a><a href="/heat-exchanger.html">Heat Exchanger</a><a href="/hydroliccylinder.html">Hydraulic Cylinder</a><a href="/material-compatibility.html">Material Compatibility</a><a href="/nozzle-reinforcement.html">Nozzle Reinforcement</a><a href="/openchannelflow.html">Open Channel Flow</a><a href="/pipescheduletool.html">Pipe Schedule & Stress</a><a href="/pump-head.html">Pump Head</a><a href="/shaft-power-torque.html">Shaft Power & Torque</a><a href="/steam-table.html">Steam Table</a><a href="/vibrationanalysis.html">Vibration Analysis</a></div><div><a href="/air-flow-duct.html">Air Flow Duct Sizing</a><a href="/beam-deflection.html">Beam Deflection</a><a href="/bernoulli-equation.html">Bernoulli Equation</a><a href="/chiller-capacity.html">Chiller Capacity</a><a href="/cooling-tower-sizing.html">Cooling Tower Sizing</a><a href="/darcy-weisbach.html">Darcy-Weisbach</a><a href="/finned-tube-heat-transfer.html">Finned Tube Heat</a><a href="/furnace-heat-duty.html">Furnace Heat Duty</a><a href="/gear-design.html">Gear Design</a><a href="/heat-loss-pipes.html">Heat Loss Pipes</a><a href="/jacketed-vessel-heat-transfer.html">Jacketed Vessel</a><a href="/metalweight.html">Metal Weight Calculator</a><a href="/nptbspthreadcalculator.html">NPT/BSP Threads</a><a href="/overall-heat-transfer.html">Overall Heat Transfer</a><a href="/pipe-stress-flexibility.html">Pipe Stress</a><a href="/pump-power.html">Pump Power</a><a href="/specific-heat-enthalpy.html">Specific Heat</a><a href="/storage-tank-volume.html">Storage Tank Volume</a><a href="/weldingstress.html">Welding Stress</a></div><div><a href="/allowable-stress-safety-factor.html">Allowable Stress</a><a href="/bearinglife.html">Bearing Life Calculator</a><a href="/boiler-efficiency.html">Boiler Efficiency</a><a href="/compressor-power.html">Compressor Power</a><a href="/corrosion-rate.html">Corrosion Rate</a><a href="/fan-laws.html">Fan Laws</a><a href="/foundation.html">Foundation Design</a><a href="/gas-laws.html">Gas Laws</a><a href="/hardness.html">Hardness Converter</a><a href="/conduction-convection-radiation.html">Heat Transfer Modes</a><a href="/machining.html">Machining Calculator</a><a href="/momentofinertia.html">Moment of Inertia</a><a href="/oring.html">O-Ring Sizing</a><a href="/pipe-flow.html">Pipe Flow Calculator</a><a href="/psychrometric.html">Psychrometric Calc</a><a href="/reynolds-number.html">Reynolds Number</a><a href="/spring.html">Spring Design</a><a href="/thermal-expansion.html">Thermal Expansion</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexmech.html" class="view-all-link">View All Mechanical Tools â†’</a>
+            </div>
+        </div>
+    </li>
+                        <li><a href="/index.html#articles">Articles</a></li>
+                        <li><a href="/sitemap2.html">Site Map</a></li>
+                    </ul>
+
+                    <div class="theme-toggle">
+                        <i class="fas fa-sun icon"></i>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-switch">
+                            <span class="slider"></span>
+                        </label>
+                        <i class="fas fa-moon icon"></i>
+                    </div>
+                </div>
+            </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2><i class="fas fa-chart-area"></i> Power Triangle Calculator (kW, kVA, kVAR)</h2>
+            <div class="tool-description">
+                <p>Commercial-grade tool for analyzing AC power relationships. Calculate missing variables in the
+                    <strong>Power Triangle</strong> and size <strong>Capacitor Banks</strong> for Power Factor
+                    Correction. Features step-by-step vector math and interactive diagrams.
+                </p>
+            </div>
+
+            <!-- Tool Switcher -->
+            <div class="tool-switcher">
+                <button class="tool-btn active" onclick="switchTool('triangle')"><i class="fas fa-shapes"></i> Triangle
+                    Solver</button>
+                <button class="tool-btn" onclick="switchTool('correction')"><i class="fas fa-bolt"></i> PF
+                    Correction</button>
+            </div>
+
+            <!-- Visualizer -->
+            <div class="viz-container">
+                <canvas id="triangleCanvas"></canvas>
+            </div>
+
+            <!-- MODULE 1: POWER TRIANGLE SOLVER -->
+            <div id="mod-triangle" class="tool-module active">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Input Mode</label>
+                        <select id="tri-mode" onchange="updateInputs()">
+                            <option value="p-pf">Real Power (kW) & Power Factor (PF)</option>
+                            <option value="p-q">Real Power (kW) & Reactive (kVAR)</option>
+                            <option value="s-pf">Apparent Power (kVA) & PF</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group" id="grp-p">
+                        <label>Real Power [kW]</label>
+                        <input type="number" id="inp-p" value="100" step="1">
+                    </div>
+                    <div class="form-group hidden" id="grp-s">
+                        <label>Apparent Power [kVA]</label>
+                        <input type="number" id="inp-s" value="125" step="1">
+                    </div>
+                    <div class="form-group hidden" id="grp-q">
+                        <label>Reactive Power [kVAR]</label>
+                        <input type="number" id="inp-q" value="75" step="1">
+                    </div>
+                    <div class="form-group" id="grp-pf">
+                        <label>Power Factor [0-1]</label>
+                        <input type="number" id="inp-pf" value="0.8" step="0.01" max="1" min="0">
+                    </div>
+                </div>
+
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcTriangle()">Calculate Triangle</button>
+                </div>
+            </div>
+
+            <!-- MODULE 2: PF CORRECTION -->
+            <div id="mod-correction" class="tool-module">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Current Real Power [kW]</label>
+                        <input type="number" id="cor-kw" value="500" step="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Current Power Factor (Lagging)</label>
+                        <input type="number" id="cor-pf-old" value="0.75" step="0.01" max="0.99">
+                    </div>
+                    <div class="form-group">
+                        <label>Target Power Factor</label>
+                        <input type="number" id="cor-pf-new" value="0.95" step="0.01" max="1.0">
+                    </div>
+                </div>
+
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcCorrection()">Size Capacitor Bank</button>
+                </div>
+            </div>
+
+            <!-- RESULTS -->
+            <div class="result-box" id="main-result" style="display:none;">
+                <div class="sub-value" id="res-subtitle">Calculated Results</div>
+                <div id="res-main" class="main-value">--</div>
+
+                <div class="res-grid">
+                    <div class="res-item">
+                        <div class="res-label">Real Power (P)</div>
+                        <div class="res-val" id="res-p">-- kW</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Reactive Power (Q)</div>
+                        <div class="res-val" id="res-q">-- kVAR</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Apparent Power (S)</div>
+                        <div class="res-val" id="res-s">-- kVA</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Power Factor (PF)</div>
+                        <div class="res-val" id="res-pf">--</div>
+                    </div>
+                </div>
+
+                <div class="calc-steps" id="calc-steps-box"></div>
+            </div>
+
+            <div class="button-wrapper" style="margin-top:40px;">
+                <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download
+                    Engineering Report</button>
+            </div>
+        </div>
+
+        <!-- EDUCATIONAL SECTION -->
+        <div class="card education-section" style="margin-top: 40px;">
+            <h2><i class="fas fa-book-open"></i> Engineering Guide: Power Triangle & Factor Correction</h2>
+            <div class="article-content">
+
+                <div class="article-block">
+                    <h3>1. The Physics of AC Power</h3>
+                    <p>In Alternating Current (AC) circuits, power is not as simple as $Volts \times Amps$. Because
+                        voltage and current waveforms can shift out of phase (due to inductance or capacitance), we deal
+                        with three distinct types of power:</p>
+                    <ul>
+                        <li><strong>Real Power (P) - kW:</strong> The power that performs actual work (turns the motor
+                            shaft, lights the bulb, heats the element). It is the horizontal component of the triangle.
+                        </li>
+                        <li><strong>Reactive Power (Q) - kVAR:</strong> The power that oscillates back and forth between
+                            source and load to sustain magnetic fields in motors and transformers. It does no useful
+                            work but occupies current capacity. It is the vertical component.</li>
+                        <li><strong>Apparent Power (S) - kVA:</strong> The vector sum of P and Q. This is what the
+                            utility generates and transmits. Cables and transformers are sized based on kVA (heat
+                            limit), not kW.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>2. The Power Triangle Geometry</h3>
+                    <p>The relationship follows the Pythagorean theorem:</p>
+                    <div class="formula">
+                        $$ S = \sqrt{P^2 + Q^2} $$
+                        $$ P = S \times \cos(\theta) $$
+                        $$ Q = S \times \sin(\theta) $$
+                    </div>
+                    <p>The <strong>Power Factor (PF)</strong> is simply the ratio of Real Power to Apparent Power
+                        ($P/S$), which equals the cosine of the phase angle ($\theta$). A PF of 1.0 means 100%
+                        efficiency (Current in phase with Voltage). A PF of 0.8 means only 80% of the supplied kVA is
+                        doing real work.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>3. Power Factor Correction</h3>
+                    <p>Industrial loads (motors) are inductive, causing current to "lag" voltage. This draws significant
+                        kVAR. To fix this, we add <strong>Capacitors</strong> which draw leading current (capacitive
+                        kVAR). This cancels out the inductive kVAR locally.</p>
+                    <p><strong>Benefits of Correction:</strong></p>
+                    <ul>
+                        <li>Eliminates utility penalties (often charged if PF < 0.95).</li>
+                        <li>Releases system capacity (transformers can carry more kW).</li>
+                        <li>Reduces voltage drop and $I^2R$ losses in cables.</li>
+                    </ul>
+                    <p>The formula to size the capacitor bank ($Q_c$) required to improve PF from $\theta_{old}$ to
+                        $\theta_{new}$ is:</p>
+                    <div class="formula">
+                        $$ Q_c = P [ \tan(\arccos(PF_{old})) - \tan(\arccos(PF_{new})) ] $$
+                    </div>
+                </div>
+
+                <div class="article-block">
+                    <h3>4. Frequently Asked Questions (FAQ)</h3>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">1. What is the difference between kW and
+                            kVA? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">kW (Kilowatts) is Real Power, the power that actually does useful work
+                            (heat, light, motion). kVA (Kilovolt-Amperes) is Apparent Power, the total vector sum of
+                            Real Power and Reactive Power (kVAR). kVA is always equal to or greater than kW.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">2. Why do I need to correct Power Factor? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Low power factor draws higher current for the same amount of useful
+                            work, leading to higher line losses, voltage drops, and utility penalties (kVA demand
+                            charges). Correcting PF reduces your electricity bill and frees up system capacity.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">3. What is kVAR? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">kVAR (Kilovolt-Amperes Reactive) represents Reactive Power. It is the
+                            power required to magnetize motors and transformers. It bounces back and forth between the
+                            source and load, doing no 'real' work but occupying wire capacity.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">4. How does a Capacitor Bank improve PF? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Inductive loads (motors) consume reactive power (lagging current).
+                            Capacitors supply reactive power (leading current). By placing capacitors near the load,
+                            they supply the kVAR locally, reducing the kVAR drawn from the utility grid.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">5. Can Power Factor be negative? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Yes, in four-quadrant metering. A negative power factor usually
+                            indicates power is being exported (like from Solar PV) or the load is extremely capacitive
+                            (leading), though mathematically it is often treated as the direction of power flow.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">6. What is the formula for Power Factor? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Power Factor (PF) = Real Power (kW) / Apparent Power (kVA). It is also
+                            the cosine of the phase angle (θ) between voltage and current waveforms.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">7. What causes low Power Factor? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">The main culprits are inductive loads such as induction motors,
+                            transformers, welding machines, arc furnaces, and fluorescent lighting ballasts. Lightly
+                            loaded motors have a significantly worse power factor than fully loaded ones.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">8. What is a "Penalty" Power Factor? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Most utilities charge a penalty if your facility's PF drops below a
+                            certain threshold, commonly 0.85 or 0.90 or 0.95. This is because they must size their
+                            infrastructure to carry your 'wasted' reactive current.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">9. How do I calculate required Capacitor
+                            kVAR? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">kVAR Required = P(kW) × [tan(acos(PF_old)) - tan(acos(PF_new))]. This
+                            tool performs this calculation automatically in the "Correction" module.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">10. Does this tool work for Single and Three
+                            Phase? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Yes. Power Triangle relationships (S² = P² + Q²) hold true for both.
+                            However, when calculating current (Amps) from kVA, you must apply the √3 factor for 3-phase
+                            systems.</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+        <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <a href="/" class="footer-logo">
+                        <img src="logo.png" alt="Design Calculators Logo" loading="lazy" decoding="async">
+                        <span class="footer-logo-text">Design Calculators</span>
+                    </a>
+                    <p class="footer-description">A comprehensive engineering calculator hub based on IEC, IEEE, and
+                        global standards.</p>
+                    <div class="social-buttons">
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in"
+                            target="_blank" rel="noopener noreferrer" class="social-btn linkedin"
+                            aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer"
+                            class="social-btn youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in&text=Check%20out%20this%20amazing%20engineering%20calculator%20hub!"
+                            target="_blank" rel="noopener noreferrer" class="social-btn twitter" aria-label="Twitter"><i
+                                class="fab fa-twitter"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in"
+                            target="_blank" rel="noopener noreferrer" class="social-btn facebook"
+                            aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource:%20https://designcalculators.co.in"
+                            target="_blank" rel="noopener noreferrer" class="social-btn whatsapp"
+                            aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-col">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href='/indexele.html'>Electrical Tools</a></li>
+                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
+                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
+                            <li><a href='/about.html'>About Us</a></li>
+                            <li><a href='/faq.html'>FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Learn More</h4>
+                        <ul>
+                            <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
+                                    rel="noopener noreferrer">YouTube Channel</a></li>
+                            <li><a href='/contact.html'>Contact Us</a></li>
+                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
+                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
+                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Our Network</h4>
+                        <ul>
+                            <li style="margin-bottom: 12px;">
+                                <a href="https://reliabilitytools.co.in/" target="_blank" rel="noopener"
+                                   style="font-weight: 600; display: block; margin-bottom: 2px;">Reliability Tools</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Reliability
+                                    & maintenance engineering calculators.</span>
+                            </li>
+                            <li style="margin-bottom: 12px;">
+                                <a href="https://electrosafe.homes/" target="_blank" rel="noopener"
+                                   style="font-weight: 600; display: block; margin-bottom: 2px;">ElectroSafe</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Dedicated
+                                    to home electrical safety & protection.</span>
+                            </li>
+                            <li>
+                                <a href="https://knowyourname.co.in/" target="_blank" rel="noopener"
+                                   style="font-weight: 600; display: block; margin-bottom: 2px;">KnowYourName</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Scientific
+                                    name analysis: Phonetics, Ergonomics & Acoustics.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>All calculations are for preliminary engineering design guidance. Final designs must comply with all applicable local and international standards (including but not limited to ASHRAE 90.1, ARI 550/590). Always verify calculations and consult with a licensed professional engineer before implementation or construction.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">Anil Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global State
+        let lastResult = {};
+        let canvas = document.getElementById('triangleCanvas');
+        let ctx = canvas.getContext('2d');
+
+        // UI Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            if (themeSwitch) {
+                themeSwitch.addEventListener('change', function () {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                });
+            }
+            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+            updateInputs(); // Init input visibility
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+        });
+
+        function resizeCanvas() {
+            const container = document.querySelector('.viz-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            if (lastResult.p) drawTriangle(lastResult.p, lastResult.q, lastResult.s, lastResult.mode === 'correction');
+        }
+
+        function switchTool(toolId) {
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.tool-module').forEach(m => m.classList.remove('active'));
+            document.getElementById('mod-' + toolId).classList.add('active');
+            document.getElementById('main-result').style.display = 'none';
+            // Reset visualizer
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+
+        function updateInputs() {
+            const mode = document.getElementById('tri-mode').value;
+            // Hide all first
+            document.getElementById('grp-p').classList.add('hidden');
+            document.getElementById('grp-s').classList.add('hidden');
+            document.getElementById('grp-q').classList.add('hidden');
+            document.getElementById('grp-pf').classList.add('hidden');
+
+            if (mode === 'p-pf') {
+                document.getElementById('grp-p').classList.remove('hidden');
+                document.getElementById('grp-pf').classList.remove('hidden');
+            } else if (mode === 'p-q') {
+                document.getElementById('grp-p').classList.remove('hidden');
+                document.getElementById('grp-q').classList.remove('hidden');
+            } else if (mode === 's-pf') {
+                document.getElementById('grp-s').classList.remove('hidden');
+                document.getElementById('grp-pf').classList.remove('hidden');
+            }
+        }
+
+        // --- MATH ENGINE ---
+
+        function drawTriangle(p, q, s, isCorrection = false, q_new = 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = 60;
+
+            // Scaling factors
+            const maxVal = Math.max(p, q, q_new);
+            // We want P to fit horizontally, Q to fit vertically
+            // But we need aspect ratio roughly maintained or at least visible
+            // Normalize P and Q to canvas size
+            const scaleX = (w - 2 * padding) / (p * 1.2);
+            const scaleY = (h - 2 * padding) / (Math.max(q, q_new) * 1.2);
+            const scale = Math.min(scaleX, scaleY);
+
+            const originX = padding;
+            const originY = h - padding; // Canvas Y is inverted (0 at top)
+
+            const px = originX + (p * scale);
+            const py = originY; // P lies on X axis
+            const qy = originY - (q * scale); // Q goes UP
+
+            // Set styles
+            ctx.lineWidth = 2;
+            ctx.font = "14px Inter";
+
+            // Draw Real Power (P) - Blue
+            ctx.beginPath();
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(px, py);
+            ctx.strokeStyle = '#2563EB'; // Blue
+            ctx.stroke();
+            ctx.fillStyle = '#2563EB';
+            ctx.fillText(`P = ${p.toFixed(1)} kW`, (originX + px) / 2, originY + 20);
+
+            // Draw Reactive Power (Q) - Red
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(px, qy);
+            ctx.strokeStyle = '#DC2626'; // Red
+            ctx.stroke();
+            ctx.fillStyle = '#DC2626';
+            ctx.fillText(`Q = ${q.toFixed(1)} kVAR`, px + 10, (py + qy) / 2);
+
+            // Draw Apparent Power (S) - Green
+            ctx.beginPath();
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(px, qy);
+            ctx.strokeStyle = '#10B981'; // Green
+            ctx.stroke();
+
+            // Label S (on hypotenuse, roughly)
+            ctx.save();
+            ctx.translate((originX + px) / 2, (originY + qy) / 2);
+            const angle = Math.atan2(q, p);
+            ctx.rotate(-angle);
+            ctx.fillStyle = '#10B981';
+            ctx.fillText(`S = ${s.toFixed(1)} kVA`, -40, -10);
+            ctx.restore();
+
+            // Angle Theta
+            ctx.beginPath();
+            ctx.arc(originX, originY, 40, 0, -angle, true);
+            ctx.strokeStyle = '#64748B';
+            ctx.stroke();
+            ctx.fillStyle = '#64748B';
+            ctx.fillText(`θ = ${(angle * 180 / Math.PI).toFixed(1)}°`, originX + 50, originY - 10);
+
+            // Correction Visualization (Draw New Triangle)
+            if (isCorrection && q_new < q) {
+                const qy_new = originY - (q_new * scale);
+
+                // Draw Q_cap (Difference)
+                ctx.beginPath();
+                ctx.moveTo(px, qy);
+                ctx.lineTo(px, qy_new);
+                ctx.strokeStyle = '#F59E0B'; // Amber
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#F59E0B';
+                ctx.fillText(`Q_cap`, px + 10, (qy + qy_new) / 2);
+
+                // Draw New S line
+                ctx.beginPath();
+                ctx.moveTo(originX, originY);
+                ctx.lineTo(px, qy_new);
+                ctx.strokeStyle = '#10B981';
+                ctx.setLineDash([2, 2]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        function calcTriangle() {
+            const mode = document.getElementById('tri-mode').value;
+            let P, Q, S, PF, Theta;
+            let steps = `<h4>Calculation Breakdown</h4>`;
+
+            if (mode === 'p-pf') {
+                P = parseFloat(document.getElementById('inp-p').value);
+                PF = parseFloat(document.getElementById('inp-pf').value);
+                if (P <= 0 || PF <= 0 || PF > 1) return alert("Invalid inputs");
+
+                S = P / PF;
+                Theta = Math.acos(PF);
+                Q = S * Math.sin(Theta);
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 1: Calculate Apparent Power (S)</span>
+                    $$ S = \\frac{P}{PF} = \\frac{${P}}{${PF}} = \\mathbf{${S.toFixed(2)} \\text{ kVA}} $$
+                </div>`;
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 2: Calculate Phase Angle (θ)</span>
+                    $$ \\theta = \\arccos(${PF}) = \\mathbf{${(Theta * 180 / Math.PI).toFixed(2)}^{\\circ}} $$
+                </div>`;
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 3: Calculate Reactive Power (Q)</span>
+                    $$ Q = S \\times \\sin(\\theta) = ${S.toFixed(2)} \\times \\sin(${(Theta * 180 / Math.PI).toFixed(2)}^{\\circ}) = \\mathbf{${Q.toFixed(2)} \\text{ kVAR}} $$
+                </div>`;
+
+            } else if (mode === 'p-q') {
+                P = parseFloat(document.getElementById('inp-p').value);
+                Q = parseFloat(document.getElementById('inp-q').value);
+                if (P <= 0) return alert("Invalid inputs");
+
+                S = Math.sqrt(P * P + Q * Q);
+                PF = P / S;
+                Theta = Math.acos(PF);
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 1: Calculate Apparent Power (S)</span>
+                    $$ S = \\sqrt{P^2 + Q^2} = \\sqrt{${P}^2 + ${Q}^2} = \\mathbf{${S.toFixed(2)} \\text{ kVA}} $$
+                </div>`;
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 2: Calculate Power Factor (PF)</span>
+                    $$ PF = \\frac{P}{S} = \\frac{${P}}{${S.toFixed(2)}} = \\mathbf{${PF.toFixed(3)}} $$
+                </div>`;
+
+            } else if (mode === 's-pf') {
+                S = parseFloat(document.getElementById('inp-s').value);
+                PF = parseFloat(document.getElementById('inp-pf').value);
+                if (S <= 0 || PF <= 0 || PF > 1) return alert("Invalid inputs");
+
+                P = S * PF;
+                Theta = Math.acos(PF);
+                Q = S * Math.sin(Theta);
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 1: Calculate Real Power (P)</span>
+                    $$ P = S \\times PF = ${S} \\times ${PF} = \\mathbf{${P.toFixed(2)} \\text{ kW}} $$
+                </div>`;
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 2: Calculate Reactive Power (Q)</span>
+                    $$ Q = S \\times \\sin(\\arccos(PF)) = \\mathbf{${Q.toFixed(2)} \\text{ kVAR}} $$
+                </div>`;
+            }
+
+            displayResults(P, Q, S, PF, steps, 'Triangle Solution');
+            drawTriangle(P, Q, S);
+
+            // Store for resize
+            lastResult = { p: P, q: Q, s: S, pf: PF, steps: steps, mode: 'triangle' };
+        }
+
+        function calcCorrection() {
+            const P = parseFloat(document.getElementById('cor-kw').value);
+            const PF_old = parseFloat(document.getElementById('cor-pf-old').value);
+            const PF_new = parseFloat(document.getElementById('cor-pf-new').value);
+
+            if (P <= 0 || PF_old >= PF_new || PF_new > 1.0) return alert("Ensure Target PF is greater than Current PF and less than or equal to 1.0");
+
+            const Theta_old = Math.acos(PF_old);
+            const Theta_new = Math.acos(PF_new);
+
+            const Q_old = P * Math.tan(Theta_old);
+            const Q_new = P * Math.tan(Theta_new);
+
+            const Q_cap = Q_old - Q_new;
+
+            const S_old = P / PF_old;
+            const S_new = P / PF_new;
+            const kVA_released = S_old - S_new;
+
+            let steps = `<h4>Power Factor Correction Analysis</h4>`;
+            steps += `<div class="step-block">
+                <span class="step-title">Step 1: Calculate Existing Reactive Power</span>
+                $$ Q_{old} = P \\times \\tan(\\arccos(${PF_old})) = ${P} \\times ${Math.tan(Theta_old).toFixed(3)} = \\mathbf{${Q_old.toFixed(1)} \\text{ kVAR}} $$
+            </div>`;
+            steps += `<div class="step-block">
+                <span class="step-title">Step 2: Calculate Target Reactive Power</span>
+                $$ Q_{new} = P \\times \\tan(\\arccos(${PF_new})) = ${P} \\times ${Math.tan(Theta_new).toFixed(3)} = \\mathbf{${Q_new.toFixed(1)} \\text{ kVAR}} $$
+            </div>`;
+            steps += `<div class="step-block">
+                <span class="step-title">Step 3: Capacitor Bank Sizing</span>
+                $$ Q_{cap} = Q_{old} - Q_{new} = ${Q_old.toFixed(1)} - ${Q_new.toFixed(1)} = \\mathbf{${Q_cap.toFixed(1)} \\text{ kVAR}} $$
+            </div>`;
+            steps += `<div class="step-block">
+                <span class="step-title">Step 4: System Capacity Released</span>
+                Original kVA: ${S_old.toFixed(1)} kVA <br>
+                New kVA: ${S_new.toFixed(1)} kVA <br>
+                <span style="color:var(--success)">Capacity Freed Up: <strong>${kVA_released.toFixed(1)} kVA</strong></span>
+            </div>`;
+
+            // Display results focusing on the capacitor sizing
+            document.getElementById('main-result').style.display = 'block';
+            document.getElementById('res-subtitle').innerText = "Required Capacitor Bank";
+            document.getElementById('res-main').innerText = `${Q_cap.toFixed(1)} kVAR`;
+
+            document.getElementById('res-p').innerText = `${P} kW`;
+            document.getElementById('res-q').innerText = `${Q_old.toFixed(1)} -> ${Q_new.toFixed(1)}`;
+            document.getElementById('res-s').innerText = `${S_old.toFixed(1)} -> ${S_new.toFixed(1)}`;
+            document.getElementById('res-pf').innerText = `${PF_old} -> ${PF_new}`;
+
+            document.getElementById('calc-steps-box').innerHTML = steps;
+            if (window.MathJax) window.MathJax.typesetPromise();
+
+            drawTriangle(P, Q_old, S_old, true, Q_new);
+            lastResult = { p: P, q: Q_old, s: S_old, pf: PF_old, steps: steps, mode: 'correction' };
+        }
+
+        function displayResults(P, Q, S, PF, steps, title) {
+            document.getElementById('main-result').style.display = 'block';
+            document.getElementById('res-subtitle').innerText = title;
+            document.getElementById('res-main').innerText = `${S.toFixed(2)} kVA`; // Main result for Triangle solver is usually S
+
+            document.getElementById('res-p').innerText = `${P.toFixed(2)} kW`;
+            document.getElementById('res-q').innerText = `${Q.toFixed(2)} kVAR`;
+            document.getElementById('res-s').innerText = `${S.toFixed(2)} kVA`;
+            document.getElementById('res-pf').innerText = `${PF.toFixed(3)}`;
+
+            document.getElementById('calc-steps-box').innerHTML = steps;
+            if (window.MathJax) window.MathJax.typesetPromise();
+        }
+
+        function generatePDF() {
+            if (!lastResult.p) { alert("Calculate first!"); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18); doc.setTextColor(30, 58, 138);
+            doc.text("Power Triangle Engineering Report", 14, 20);
+
+            doc.setFontSize(12); doc.setTextColor(0);
+            doc.text(`Analysis Type: ${lastResult.mode === 'correction' ? 'PF Correction' : 'Triangle Solver'}`, 14, 40);
+
+            doc.setDrawColor(30, 58, 138);
+            doc.setLineWidth(0.5);
+            doc.line(14, 45, 196, 45);
+
+            doc.setFontSize(14);
+            if (lastResult.mode === 'correction') {
+                const Q_cap = (lastResult.q - (lastResult.p * Math.tan(Math.acos(parseFloat(document.getElementById('cor-pf-new').value))))).toFixed(1);
+                doc.text(`Recommended Capacitor Bank: ${Q_cap} kVAR`, 14, 55);
+            } else {
+                doc.text(`Apparent Power (S): ${lastResult.s.toFixed(2)} kVA`, 14, 55);
+            }
+
+            doc.setFontSize(12);
+            doc.text(`Real Power: ${lastResult.p.toFixed(2)} kW`, 14, 65);
+            doc.text(`Reactive Power: ${lastResult.q.toFixed(2)} kVAR`, 14, 75);
+            doc.text(`Power Factor: ${lastResult.pf}`, 14, 85);
+
+            // Add canvas image
+            const imgData = canvas.toDataURL("image/png");
+            doc.addImage(imgData, 'PNG', 15, 95, 100, 60);
+
+            // Add Steps text (simplified)
+            const stepsText = document.getElementById('calc-steps-box').innerText;
+            const split = doc.splitTextToSize(stepsText, 180);
+            doc.text(split, 14, 165);
+
+            doc.save('Power_Analysis_Report.pdf');
+        }
+    </script>
+    <script src="/main.js"></script>
+</body>
+
+</html>

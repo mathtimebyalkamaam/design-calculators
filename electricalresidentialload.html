@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- AdSense & Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780"
+        crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+
+    <!-- SEO Meta Tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Electrical Load Calculator - Residential & Commercial (NEC/IEC)</title>
+    <meta name="description"
+        content="Comprehensive Electrical Load Calculator for US (NEC 220) and International (IEC) standards. Calculate Service Entrance size for Homes, Offices, and Industrial plants. Features 120V/240V/230V/400V support, appliance demand factors, and detailed engineering reports.">
+    <meta name="keywords"
+        content="electrical load calculator, NEC 220 calculation, residential load calc, commercial service sizing, IEC 60364 load estimation, panel schedule calculator, demand factors, electrical engineering tools, 3-phase power calculator">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://designcalculators.co.in/loadcalc" />
+
+    <!-- JSON-LD Schema: Software Application -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Global Electrical Load Calculator",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A professional-grade engineering tool for calculating electrical service loads. Supports global voltage standards (110V-415V), NEC 220 demand factors, and IEC diversity factors.",
+      "featureList": "Residential Standard Method, Commercial Lighting Densities, Kitchen Equipment Demand, HVAC Sizing, Continuous Load Factors, Global Voltage Support",
+      "author": {
+        "@type": "Organization",
+        "name": "Design Calculators"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD Schema: FAQ Page -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is the difference between Connected Load and Demand Load?", "acceptedAnswer": { "@type": "Answer", "text": "Connected Load is the mathematical sum of all electrical equipment installed. Demand Load applies 'diversity factors' because not all equipment runs simultaneously. Service equipment is sized based on Demand Load to save costs while maintaining safety." } },
+        { "@type": "Question", "name": "Can I use this for 230V (Europe/Asia) homes?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Select 'Single Phase (1Φ)' and '230V' or '220V'. The calculator adjusts the formula (Amps = Watts / Voltage) automatically." } },
+        { "@type": "Question", "name": "What is the NEC 3 VA/sq ft rule?", "acceptedAnswer": { "@type": "Answer", "text": "NEC 220.12 requires a minimum general lighting load of 3 VA per square foot for dwelling units. This covers general lights and convenience receptacles." } },
+        { "@type": "Question", "name": "How does 3-Phase calculation differ?", "acceptedAnswer": { "@type": "Answer", "text": "3-Phase power delivers more energy with smaller wires. The formula divides power by (Voltage × √3). A 10kW load pulls fewer amps on 3-phase 400V than on single-phase 230V." } },
+        { "@type": "Question", "name": "What is a Continuous Load?", "acceptedAnswer": { "@type": "Answer", "text": "A load running for 3 hours or more (e.g., office lighting). NEC requires circuits to be sized at 125% of the continuous load to prevent breaker overheating." } },
+        { "@type": "Question", "name": "How is the Kitchen load calculated?", "acceptedAnswer": { "@type": "Answer", "text": "Residential kitchens require two 1500VA small appliance circuits. Commercial kitchens use demand factors (NEC 220.56) based on the number of equipment units (e.g., 65% for 6+ units)." } },
+        { "@type": "Question", "name": "Does this tool handle EV Chargers?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. EV Chargers are considered continuous loads. You should add them to the appliance list and ensure the service size accounts for 125% of the charger's rating." } },
+        { "@type": "Question", "name": "What is Non-Coincident Load?", "acceptedAnswer": { "@type": "Answer", "text": "Loads that don't run together (like Heating and Cooling). The code allows you to ignore the smaller of the two when sizing the service." } },
+        { "@type": "Question", "name": "How do I size a subpanel?", "acceptedAnswer": { "@type": "Answer", "text": "Use this tool to calculate the total demand load for the specific area served by the subpanel. The resulting amperage determines the feeder breaker size." } },
+        { "@type": "Question", "name": "Is this compliant with IEC 60364?", "acceptedAnswer": { "@type": "Answer", "text": "While heavily based on NEC structure, the core physics (Watts/Volts=Amps) and diversity principles apply globally. Users can adjust inputs to match local regulations." } }
+      ]
+    }
+    </script>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+
+    <!-- MathJax for Formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <style>
+        /* --- CORE THEME (Blue Industrial) --- */
+        :root {
+            --primary: #1E3A8A;
+            /* Dark Blue */
+            --secondary: #2563EB;
+            /* Bright Blue */
+            --accent: #F59E0B;
+            /* Amber */
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #334155;
+            --heading: #0F172A;
+            --footer-bg: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --input-bg: #FFFFFF;
+        }
+
+        body.dark-mode {
+            --primary: #3B82F6;
+            --secondary: #60A5FA;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #E2E8F0;
+            --heading: #F8FAFC;
+            --footer-bg: #020617;
+            --border: #334155;
+            --accent: #FBBF24;
+            --input-bg: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header & Nav */
+        header {
+            background: var(--grad);
+            color: white;
+            padding: 24px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.75rem;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.8rem;
+            margin: 4px 0 0 0;
+            color: #DBEAFE;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            opacity: 0.9;
+        }
+
+        .nav-links a:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Main Content */
+        main {
+            padding: 40px 0;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4rem;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+
+        h4 {
+            color: var(--heading);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        /* Forms */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--heading);
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Tool Switcher */
+        .tool-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            background: var(--card);
+            border: 2px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .tool-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+        }
+
+        /* Module Containers */
+        .tool-module {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tool-module.active {
+            display: block;
+        }
+
+        /* Results Big Display */
+        .result-box {
+            text-align: center;
+            padding: 25px;
+            background: var(--card);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .result-box::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--grad);
+        }
+
+        .main-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+            margin: 10px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .sub-value {
+            font-size: 1.1rem;
+            color: var(--text);
+            opacity: 0.9;
+            font-weight: 500;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Calculation Steps Styling */
+        .calc-steps {
+            text-align: left;
+            margin-top: 25px;
+            background: var(--bg);
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .calc-steps h4 {
+            margin-top: 0;
+            color: var(--primary);
+            font-family: 'Inter', sans-serif;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .calc-steps strong {
+            color: var(--heading);
+        }
+
+        .step-block {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .step-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step-title {
+            font-weight: 700;
+            color: var(--secondary);
+            display: block;
+            margin-bottom: 5px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Visualizer */
+        .viz-container {
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+        }
+
+        canvas {
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        /* Appliance Adder */
+        .appliance-adder {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .appliance-list-container {
+            margin-top: 15px;
+        }
+
+        .app-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .app-item-row:last-child {
+            border-bottom: none;
+        }
+
+        .app-item-row span {
+            flex: 1;
+        }
+
+        .remove-app-btn {
+            color: var(--danger);
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* Buttons (Shared) */
+        .btn {
+            background: var(--grad);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 9999;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .message-box.show {
+            display: block;
+            opacity: 1;
+            top: 30px;
+        }
+
+        /* Educational Section */
+        .education-section {
+            padding: 40px;
+        }
+
+        .article-content {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+        }
+
+        .article-block {
+            margin-bottom: 40px;
+        }
+
+        .article-block h3 {
+            color: var(--primary);
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        .article-block h4 {
+            color: var(--heading);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-bottom: none;
+        }
+
+        .article-block p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .article-block ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .article-block li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .formula {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.1rem;
+            border: 1px solid var(--border);
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        /* FAQ Accordion */
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+        }
+
+        .faq-question {
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--heading);
+            transition: color 0.2s;
+        }
+
+        .faq-question:hover {
+            color: var(--primary);
+        }
+
+        .faq-answer {
+            display: none;
+            margin-top: 10px;
+            color: var(--text);
+            line-height: 1.7;
+            text-align: justify;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Results Grid */
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media(max-width:768px) {
+            .res-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .res-item {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .res-label {
+            font-size: 0.85rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .res-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--heading);
+        }
+
+        /* Footer - Restored to original robust styling */
+        footer {
+            background: var(--grad-dark);
+            color: #94A3B8;
+            padding: 60px 0 30px 0;
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .footer-col h4 {
+            color: white;
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-col li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col a:hover {
+            color: var(--accent);
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Social Buttons Styling */
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .social-btn:hover {
+            transform: translateY(-4px);
+        }
+
+        .social-btn.linkedin {
+            background-color: #0A66C2;
+        }
+
+        .social-btn.youtube {
+            background-color: #FF0000;
+        }
+
+        .social-btn.twitter {
+            background-color: #1DA1F2;
+        }
+
+        .social-btn.facebook {
+            background-color: #1877F2;
+        }
+
+        .social-btn.whatsapp {
+            background-color: #25D366;
+        }
+
+        .footer-disclaimer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 0.85rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+            }
+
+            .tool-switcher {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <style>
+        /* Core Header Styles */
+        .header {
+            background: var(--gradient-primary, linear-gradient(135deg, #1E3A8A, #2563EB));
+            color: white;
+            padding: 10px 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+            overflow: visible !important;
+        }
+
+        .header .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+
+        .header .logo-container {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .logo {
+            height: 48px !important;
+            width: auto;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .logo-text-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.1;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 !important;
+            line-height: 1.2;
+            max-width: 250px;
+            white-space: normal;
+        }
+
+        .header .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        .header .nav-links li {
+            margin: 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        .header .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            opacity: 0.9;
+        }
+
+        .header .nav-links a:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        .header .theme-toggle {
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1000;
+        }
+
+        /* Mega Menu Styles */
+        .nav-links .dropbtn {
+            cursor: pointer;
+            padding: 10px 0;
+            display: inline-block;
+        }
+
+        .nav-links .dropbtn i {
+            font-size: 0.8em;
+            margin-left: 4px;
+            opacity: 0.7;
+            transition: transform 0.3s;
+        }
+
+        .nav-links .nav-item:hover .dropbtn i {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: var(--card-bg, #ffffff);
+            width: 600px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            z-index: 2000;
+            border-radius: 12px;
+            padding: 20px;
+            top: 100%;
+            margin-top: 5px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease-in-out;
+            border-top: 4px solid var(--secondary-color, #2563EB);
+        }
+
+        .nav-links .nav-item:hover .dropdown-content {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .dropdown-content .row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .dropdown-content .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dropdown-content a {
+            color: var(--text-color, #4B5563) !important;
+            padding: 6px 8px;
+            text-decoration: none;
+            display: block;
+            font-size: 0.9rem !important;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+            font-weight: 400 !important;
+            line-height: 1.4;
+        }
+
+        .dropdown-content a:hover {
+            background-color: var(--hover-color, #F1F5F9);
+            color: var(--primary-color, #1E3A8A) !important;
+            transform: translateX(4px);
+        }
+
+        .mega-menu-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color, #E2E8F0);
+            text-align: center;
+        }
+
+        .mega-menu-footer .view-all-btn {
+            display: inline-block;
+            color: var(--primary-color, #1E3A8A) !important;
+            font-weight: 700 !important;
+            font-size: 0.95rem !important;
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode .dropdown-content {
+            background-color: var(--card-bg, #1E293B);
+            border-color: var(--secondary-color, #34D399);
+        }
+
+        body.dark-mode .dropdown-content a {
+            color: var(--text-color, #CBD5E1) !important;
+        }
+
+        body.dark-mode .dropdown-content a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--primary-color, #10B981) !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .header .nav-menu {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                background: var(--gradient-dark, #0F172A);
+                flex-direction: column;
+                padding: 100px 30px 30px;
+                gap: 24px;
+                transition: left 0.4s ease-in-out;
+                box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
+                z-index: 999;
+                align-items: flex-start;
+            }
+
+            .nav-links.active {
+                left: 0;
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 12px 16px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.05);
+                display: block;
+            }
+
+            .dropdown-content {
+                position: static;
+                width: 100%;
+                box-shadow: none;
+                transform: none;
+                display: none !important;
+                padding: 0 0 0 15px;
+                background: transparent;
+                border: none;
+            }
+
+            .nav-links .nav-item:hover .dropdown-content {
+                display: block !important;
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .dropdown-content .row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .nav-links .nav-item {
+                display: block;
+                width: 100%;
+            }
+
+            .nav-links .dropbtn {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .header .logo-text {
+                font-size: 1.1rem;
+            }
+
+            .header .logo {
+                height: 40px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <div id="message-box" class="message-box"></div>
+
+    <header class="header">
+        <div class="header-bg-animation"></div>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo-container">
+                    <img src="logo.png" alt="Design Calculators Logo" class="logo">
+                    <span class="logo-text">Design Calculators</span>
+                </a>
+
+                <div class="nav-menu">
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <ul class="nav-links">
+                        <li><a href="/index.html">Home</a></li>
+                        
+    <li class="dropdown">
+        <a href="/indexele.html" class="dropdown-toggle">Electrical <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/arcflash.html">Arc Flash Calculator</a><a href="/breaker-sizing.html">Breaker Sizing</a><a href="/cable-thermal-rating.html">Cable Ampacity</a><a href="/comm-cable-loss.html">Comm Cable Loss</a><a href="/earth-conductor-size.html">Earth Conductor Size</a><a href="/generatorsizing.html">Generator Sizing</a><a href="/harmonicsanalyser.html">Harmonics Analyser</a><a href="/insulationresistance.html">Insulation Resistance</a><a href="/logicgate.html">Logic Gates Simulator</a><a href="/motor-starting.html">Motor Starting Current</a><a href="/pcbtrace.html">PCB Trace Width</a><a href="/protection-device.html">Protection Device</a><a href="/resistor.html">Resistor Color Code</a><a href="/solarcable.html">Solar Cable Sizing</a><a href="/systemxrcalculator.html">System X/R Ratio</a><a href="/transmissionline.html">Transmission Line</a><a href="/vfd-selection.html">VFD Selection Tool</a></div><div><a href="/batterylife.html">Battery Life Estimator</a><a href="/busbarampacity.html">Busbar Ampacity</a><a href="/cablepulling.html">Cable Pulling Tension</a><a href="/conduit-fill.html">Conduit Fill Calculator</a><a href="/earthingfaultsimulator.html">Earthing Fault Simulator</a><a href="/grounding.html">Grounding System Design</a><a href="/hvac-sizing.html">HVAC Sizing Calculator</a><a href="/lcresonancecalculator.html">LC Resonance Calculator</a><a href="/maintenance-guide.html">Maintenance Guide</a><a href="/nemaipconvertor.html">NEMA to IP Converter</a><a href="/power-factor.html">Power Factor Correction</a><a href="/relay-coordination.html">Relay Coordination</a><a href="/short-circuit.html">Short Circuit Current</a><a href="/solarpvarray.html">Solar PV Array</a><a href="/transformer-calculator.html">Transformer Calculator</a><a href="/unit-converter.html">Unit Converter</a><a href="/voltage-drop.html">Voltage Drop Calculator</a></div><div><a href="/battery-sizing.html">Battery Sizing (AH)</a><a href="/busbarshortcircuit.html">Busbar Short Circuit</a><a href="/cable-sizing.html">Cable Sizing Calculator</a><a href="/ctsaturation.html">CT Saturation</a><a href="/equipment-relay.html">Equipment Relay Setting</a><a href="/harmonic-distortion.html">Harmonic Distortion</a><a href="/industriallighting.html">Industrial Lighting</a><a href="/lighting-calulator.html">Lighting Calculator</a><a href="/motor-efficiency.html">Motor Efficiency</a><a href="/neutral-earth-fault-current.html">Neutral Earth Fault</a><a href="/powertriangletool.html">Power Triangle</a><a href="/electricalresidentialload.html">Residential Load Calc</a><a href="/skindepth.html">Skin Depth Calculator</a><a href="/symmetricalcomponents.html">Symmetrical Components</a><a href="/transformerinrush.html">Transformer Inrush</a><a href="/ups-sizing.html">UPS Sizing</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexele.html" class="view-all-link">View All Electrical Tools â†’</a>
+            </div>
+        </div>
+    </li>
+                        
+    <li class="dropdown">
+        <a href="/indexinst.html" class="dropdown-toggle">Instrumentation <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/adc-resolution.html">ADC Resolution</a><a href="/capillarylengthtemperatureerror.html">Capillary Error</a><a href="/cv-kv-valve.html">Cv/Kv Valve Sizing</a><a href="/dp-level.html">DP Level Measurement</a><a href="/hydrostatic-level.html">Hydrostatic Level</a><a href="/instrument-range.html">Instrument Range</a><a href="/loop-impedance.html">Loop Impedance</a><a href="/orifice-plate.html">Orifice Plate Beta</a><a href="/pid-tuning.html">PID Tuning</a><a href="/profibus.html">Profibus Calculator</a><a href="/tempsensorresponse.html">Response Time (Tau)</a><a href="/rtd-lead-comp.html">RTD Lead Wire Comp.</a><a href="/sealfluidzeroshift.html">Seal Fluid Shift</a><a href="/snr-calculator.html">SNR Calculator</a><a href="/thermocoupleextensioncable.html">TC Extension Cable</a><a href="/thermowellwakefreq.html">Thermowell Frequency</a><a href="/pressuretransmitteroverrange.html">Tx Overrange</a><a href="/valvecavitationcalculator.html">Valve Cavitation</a><a href="/vibrationtransmitter.html">Vibration Tx</a><a href="/zoneclassificationhelper.html">Zone Classification</a></div><div><a href="/baud-rate.html">Baud Rate Calculator</a><a href="/gascompressibility.html">Compressibility (Z)</a><a href="/dbcalculator.html">dB Gain/Loss Calc</a><a href="/flowprofiledistortioncalculator.html">Flow Distortion</a><a href="/impulselinefreezing.html">Impulse Freezing</a><a href="/intrinsic-safety.html">Intrinsic Safety Loop</a><a href="/measurement.html">Measurement Uncertainty</a><a href="/ph-temp-comp.html">pH Temp Compensation</a><a href="/plcscantime.html">PLC Scan Time</a><a href="/pressurereliefvalve.html">PRV Sizing (API 520)</a><a href="/reynoldsnumbercal.html">Reynolds Number</a><a href="/rtdselfheating.html">RTD Self-Heating</a><a href="/signal-scaling.html">Signal Scaling</a><a href="/staticheadcal.html">Static Head</a><a href="/temperaturesensorlag.html">Temp Sensor Lag</a><a href="/thermowell-wake.html">Thermowell Wake</a><a href="/ultrasoniclevel.html">Ultrasonic Level</a><a href="/valve-cv.html">Valve Cv Viewer</a><a href="/wetlegdensitycompensation.html">Wet Leg Compensation</a></div><div><a href="/capacitance-level.html">Capacitance Level</a><a href="/controlvalvenoise.html">Control Valve Noise</a><a href="/dp-flow-conversion.html">DP Flow Conversion</a><a href="/hartdevices.html">HART Devices</a><a href="/impulse-pressure-drop.html">Impulse Pressure Drop</a><a href="/junctionbox.html">Junction Box Sizing</a><a href="/orifice-flow.html">Orifice Flow Calculator</a><a href="/pid-symbol-library.html">PID Symbol Library</a><a href="/power-supply-load.html">Power Supply Load</a><a href="/prvsizing.html">Relief Orifice Area</a><a href="/rtdexcitationcurrentselection.html">RTD Excitation</a><a href="/rtd-tc-conversion.html">RTD/TC Conversion</a><a href="/sil.html">SIL Calculator</a><a href="/steamflow.html">Steam Flow</a><a href="/thermocouplecjccalculator.html">Thermocouple CJC</a><a href="/turndown.html">Turndown Ratio</a><a href="/controlvalveauthority.html">Valve Authority</a><a href="/controlvalveleakage.html">Valve Leakage Class</a><a href="/wirelesshart.html">WirelessHART Range</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexinst.html" class="view-all-link">View All Instrumentation Tools â†’</a>
+            </div>
+        </div>
+    </li>
+                        
+    <li class="dropdown">
+        <a href="/indexmech.html" class="dropdown-toggle">Mechanical <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/aircompressorfad.html">Air Compressor FAD</a><a href="/asme-vessel.html">ASME Vessel Design</a><a href="/belt-pulley.html">Belt & Pulley</a><a href="/bolt-torque.html">Bolt Torque</a><a href="/controlvalveactuator.html">Control Valve Actuator</a><a href="/frictionfactortool.html">Darcy Friction Factor</a><a href="/fatigue.html">Fatigue Analysis</a><a href="/fuel-combustion.html">Fuel Combustion</a><a href="/gas.html">Gas Properties</a><a href="/heat-exchanger.html">Heat Exchanger</a><a href="/hydroliccylinder.html">Hydraulic Cylinder</a><a href="/material-compatibility.html">Material Compatibility</a><a href="/nozzle-reinforcement.html">Nozzle Reinforcement</a><a href="/openchannelflow.html">Open Channel Flow</a><a href="/pipescheduletool.html">Pipe Schedule & Stress</a><a href="/pump-head.html">Pump Head</a><a href="/shaft-power-torque.html">Shaft Power & Torque</a><a href="/steam-table.html">Steam Table</a><a href="/vibrationanalysis.html">Vibration Analysis</a></div><div><a href="/air-flow-duct.html">Air Flow Duct Sizing</a><a href="/beam-deflection.html">Beam Deflection</a><a href="/bernoulli-equation.html">Bernoulli Equation</a><a href="/chiller-capacity.html">Chiller Capacity</a><a href="/cooling-tower-sizing.html">Cooling Tower Sizing</a><a href="/darcy-weisbach.html">Darcy-Weisbach</a><a href="/finned-tube-heat-transfer.html">Finned Tube Heat</a><a href="/furnace-heat-duty.html">Furnace Heat Duty</a><a href="/gear-design.html">Gear Design</a><a href="/heat-loss-pipes.html">Heat Loss Pipes</a><a href="/jacketed-vessel-heat-transfer.html">Jacketed Vessel</a><a href="/metalweight.html">Metal Weight Calculator</a><a href="/nptbspthreadcalculator.html">NPT/BSP Threads</a><a href="/overall-heat-transfer.html">Overall Heat Transfer</a><a href="/pipe-stress-flexibility.html">Pipe Stress</a><a href="/pump-power.html">Pump Power</a><a href="/specific-heat-enthalpy.html">Specific Heat</a><a href="/storage-tank-volume.html">Storage Tank Volume</a><a href="/weldingstress.html">Welding Stress</a></div><div><a href="/allowable-stress-safety-factor.html">Allowable Stress</a><a href="/bearinglife.html">Bearing Life Calculator</a><a href="/boiler-efficiency.html">Boiler Efficiency</a><a href="/compressor-power.html">Compressor Power</a><a href="/corrosion-rate.html">Corrosion Rate</a><a href="/fan-laws.html">Fan Laws</a><a href="/foundation.html">Foundation Design</a><a href="/gas-laws.html">Gas Laws</a><a href="/hardness.html">Hardness Converter</a><a href="/conduction-convection-radiation.html">Heat Transfer Modes</a><a href="/machining.html">Machining Calculator</a><a href="/momentofinertia.html">Moment of Inertia</a><a href="/oring.html">O-Ring Sizing</a><a href="/pipe-flow.html">Pipe Flow Calculator</a><a href="/psychrometric.html">Psychrometric Calc</a><a href="/reynolds-number.html">Reynolds Number</a><a href="/spring.html">Spring Design</a><a href="/thermal-expansion.html">Thermal Expansion</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexmech.html" class="view-all-link">View All Mechanical Tools â†’</a>
+            </div>
+        </div>
+    </li>
+                        <li><a href="/index.html#articles">Articles</a></li>
+                        <li><a href="/sitemap2.html">Site Map</a></li>
+                    </ul>
+
+                    <div class="theme-toggle">
+                        <i class="fas fa-sun icon"></i>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-switch">
+                            <span class="slider"></span>
+                        </label>
+                        <i class="fas fa-moon icon"></i>
+                    </div>
+                </div>
+            </nav>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h2><i class="fas fa-bolt"></i> Global Electrical Load Calculator</h2>
+            <div class="tool-description">
+                <p>Commercial-grade sizing for <strong>Residential (Homes)</strong> and <strong>Commercial
+                        (Offices)</strong> worldwide. Support for <strong>US (NEC)</strong>, <strong>European</strong>,
+                    and <strong>Asian</strong> voltage standards (120V - 415V). Use the appliance library to quickly
+                    estimate your total load.</p>
+            </div>
+
+            <!-- Tool Switcher -->
+            <div class="tool-switcher">
+                <button class="tool-btn active" onclick="switchTool('residential')"><i class="fas fa-home"></i>
+                    Residential (Home)</button>
+                <button class="tool-btn" onclick="switchTool('commercial')"><i class="fas fa-building"></i> Commercial
+                    (Office)</button>
+            </div>
+
+            <!-- Visualizer -->
+            <div class="viz-container">
+                <canvas id="loadChart"></canvas>
+            </div>
+
+            <!-- MODULE 1: RESIDENTIAL (Dwelling Unit) -->
+            <div id="mod-residential" class="tool-module active">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Living Area [sq ft]</label>
+                        <input type="number" id="res-area" value="2500" step="50">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Habitable space (Base Lighting
+                            Load)</p>
+                    </div>
+                    <div class="form-group">
+                        <label>System Type (Phase)</label>
+                        <select id="res-phase">
+                            <option value="1">Single Phase (1Φ)</option>
+                            <option value="3">Three Phase (3Φ)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>System Voltage</label>
+                        <select id="res-voltage">
+                            <optgroup label="Single Phase (Standard)">
+                                <option value="240">120/240V (US/CA)</option>
+                                <option value="120">120V (US/CA)</option>
+                                <option value="230" selected>230V (EU/UK/IN/AU)</option>
+                                <option value="220">220V (China/Asia)</option>
+                                <option value="110">110V (Japan/Taiwan)</option>
+                            </optgroup>
+                            <optgroup label="Three Phase (Industrial/Large)">
+                                <option value="208">208Y/120V (US Com)</option>
+                                <option value="400">400V (EU/Asia)</option>
+                                <option value="415">415V (UK/AU)</option>
+                                <option value="380">380V (Legacy)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <h4>Base Loads (NEC 220.52)</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Small Appliance Circuits</label>
+                        <input type="number" id="res-sac" value="2" min="2" step="1">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Kitchen/Dining (1500VA each)
+                        </p>
+                    </div>
+                    <div class="form-group">
+                        <label>Laundry Circuits</label>
+                        <input type="number" id="res-laundry" value="1" min="1" step="1">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Washing Area (1500VA each)</p>
+                    </div>
+                </div>
+
+                <h4>Interactive Appliance List</h4>
+                <div class="appliance-adder">
+                    <div class="form-row" style="margin-bottom: 10px;">
+                        <div class="form-group" style="flex:2;">
+                            <label>Select Appliance</label>
+                            <select id="app-selector">
+                                <option value="12000">Electric Range/Oven (12 kW)</option>
+                                <option value="4500">Water Heater (4.5 kW)</option>
+                                <option value="4000">Clothes Dryer (4 kW)</option>
+                                <option value="7000">EV Charger - Level 2 (7 kW)</option>
+                                <option value="3500">Central AC / Heat Pump (3.5 kW)</option>
+                                <option value="1500">AC Split Unit - 1.5 Ton (1.5 kW)</option>
+                                <option value="1500">Portable Heater (1.5 kW)</option>
+                                <option value="1200">Dishwasher (1.2 kW)</option>
+                                <option value="1200">Microwave (1.2 kW)</option>
+                                <option value="1000">Coffee Maker (1 kW)</option>
+                                <option value="500">Washing Machine (0.5 kW)</option>
+                                <option value="300">Desktop PC / Gaming (0.3 kW)</option>
+                                <option value="200">Refrigerator (0.2 kW)</option>
+                                <option value="100">LED TV 55" (0.1 kW)</option>
+                                <option value="60">Ceiling Fan (0.06 kW)</option>
+                                <option value="0">-- Custom --</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Watts</label>
+                            <input type="number" id="app-watts" value="12000">
+                        </div>
+                        <div class="form-group" style="flex:0; display:flex; align-items:flex-end;">
+                            <button type="button" class="btn btn-small" onclick="addAppliance()"><i
+                                    class="fas fa-plus"></i> Add</button>
+                        </div>
+                    </div>
+                    <div id="appliance-list-container" class="appliance-list-container">
+                        <!-- Added items appear here -->
+                    </div>
+                    <div style="text-align:right; margin-top:10px; font-weight:bold; color:var(--primary);">
+                        Total Appliance Load: <span id="total-app-watts">0</span> Watts
+                    </div>
+                </div>
+
+                <h4>Non-Coincident Loads (Compare Heat vs AC)</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>AC / Cooling Load [Watts]</label>
+                        <input type="number" id="res-ac" value="0" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label>Electric Heating Load [Watts]</label>
+                        <input type="number" id="res-heat" value="0" step="100">
+                    </div>
+                </div>
+
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcLoad('residential')">Calculate Residential
+                        Service</button>
+                </div>
+            </div>
+
+            <!-- MODULE 2: COMMERCIAL (General Lighting) -->
+            <div id="mod-commercial" class="tool-module">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Occupancy Type</label>
+                        <select id="com-type">
+                            <option value="3.5">Bank/Office (High Density)</option>
+                            <option value="3.0">Store/School</option>
+                            <option value="2.0">Restaurant</option>
+                            <option value="1.0">Warehouse</option>
+                            <option value="0.5">Garage/Storage</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Floor Area [sq ft]</label>
+                        <input type="number" id="com-area" value="5000" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label>System Type</label>
+                        <select id="com-phase">
+                            <option value="3" selected>Three Phase (3Φ)</option>
+                            <option value="1">Single Phase (1Φ)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>System Voltage</label>
+                        <select id="com-voltage">
+                            <option value="208">208Y/120V (US)</option>
+                            <option value="480">480Y/277V (US)</option>
+                            <option value="400">400V (EU/Asia)</option>
+                            <option value="415">415V (UK/AU)</option>
+                            <option value="240">240V (1Φ)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h4>Commercial Loads</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Receptacles (Total kVA)</label>
+                        <input type="number" id="com-recept" value="15" step="1">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Computers, Printers, Desk
+                            equipment</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Continuous Loads [Amps]</label>
+                        <input type="number" id="com-cont" value="40" step="1">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Signage, Exterior Lighting
+                            (125%)</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Non-Continuous Loads [Amps]</label>
+                        <input type="number" id="com-noncont" value="20" step="1">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Motors, HVAC (100%)</p>
+                    </div>
+                </div>
+
+                <div class="button-wrapper">
+                    <button type="button" class="btn" onclick="calcLoad('commercial')">Calculate Commercial
+                        Load</button>
+                </div>
+            </div>
+
+            <!-- RESULTS -->
+            <div class="result-box" id="main-result" style="display:none;">
+                <div class="sub-value">Total Demand Load & Recommended Service</div>
+                <div id="res-amps" class="main-value">--</div>
+                <div id="res-details" class="sub-value"></div>
+
+                <div class="res-grid">
+                    <div class="res-item">
+                        <div class="res-label">Total Connected Load</div>
+                        <div class="res-val" id="res-connected">--</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Total Demand kVA</div>
+                        <div class="res-val" id="res-demand">--</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Min Service Rating</div>
+                        <div class="res-val" id="res-panel">--</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-label">Lighting & Receptacle</div>
+                        <div class="res-val" id="res-lighting">--</div>
+                    </div>
+                </div>
+
+                <div class="calc-steps" id="calc-steps-box"></div>
+            </div>
+
+            <div class="button-wrapper" style="margin-top:40px;">
+                <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download
+                    Engineering Report</button>
+            </div>
+        </div>
+
+        <!-- EDUCATIONAL SECTION (Greatly Expanded) -->
+        <div class="card education-section" style="margin-top: 40px;">
+            <h2><i class="fas fa-book-open"></i> Engineering Guide: Electrical Load Calculation</h2>
+            <div class="article-content">
+
+                <div class="article-block">
+                    <h3>1. Fundamentals of Load Calculation</h3>
+                    <p>Load calculation is the critical first step in electrical design. It determines the size of the
+                        service entrance conductors, the main breaker panel, and the transformer required to supply
+                        power to a building. The primary goal is to balance safety (preventing overloads and fires) with
+                        economic efficiency (avoiding vastly oversized equipment).</p>
+                    <p>There are two types of loads to consider:</p>
+                    <ul>
+                        <li><strong>Connected Load:</strong> The simple arithmetic sum of the nameplate ratings of every
+                            single electrical device in the building. If you turned on every light, plugged in every
+                            appliance, and ran every motor simultaneously, this would be the connected load. Sizing a
+                            service for this value is usually unnecessary and prohibitively expensive.</li>
+                        <li><strong>Demand Load:</strong> The statistically adjusted load that accounts for "diversity."
+                            It is highly improbable that the oven, dryer, AC, water heater, toaster, and every light
+                            bulb will be active at the exact same moment. Codes like the NEC and IEC provide "Demand
+                            Factors" to reduce the connected load to a realistic peak value.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>2. Global Voltage Standards & Phase Systems</h3>
+                    <p>Understanding your local voltage system is crucial for accurate amperage calculation ($Amps =
+                        Watts / Volts$).</p>
+                    <div class="highlight-box">
+                        <h4>North America (Split-Phase & Wye)</h4>
+                        <ul>
+                            <li><strong>Residential (120/240V):</strong> Homes receive two 120V "legs" and a neutral.
+                                Large appliances (dryers, ranges, AC) connect across both legs for 240V, while lights
+                                and outlets use one leg for 120V.</li>
+                            <li><strong>Commercial (208Y/120V):</strong> A 3-phase system common in offices. It provides
+                                208V for motors and 120V for outlets. Note that 208V is lower than residential 240V,
+                                meaning heaters will produce 25% less heat unless rated for 208V.</li>
+                            <li><strong>Industrial (480Y/277V):</strong> Used for heavy machinery and commercial
+                                lighting. Lighting often runs on 277V.</li>
+                        </ul>
+                        <h4>Europe, Asia, Australia (IEC Standards)</h4>
+                        <ul>
+                            <li><strong>Residential (230V):</strong> Most homes receive a single phase of 230V (Line to
+                                Neutral). Unlike the US split-phase, all appliances run on this single voltage.</li>
+                            <li><strong>Commercial/Industrial (400V/415V):</strong> A 3-phase system providing 400V
+                                (Line-to-Line) and 230V (Line-to-Neutral). This allows powerful motors to run
+                                efficiently while supplying standard office power.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="article-block">
+                    <h3>3. NEC Article 220: The "Standard Method"</h3>
+                    <p>The National Electrical Code (NEC) Article 220 outlines the prescriptive method for calculation
+                        used in the US. Key sections include:</p>
+                    <ul>
+                        <li><strong>220.12 (General Lighting):</strong> Assigns a VA/sq ft value based on occupancy
+                            (e.g., 3 VA for homes, 3.5 VA for offices). This covers all general lights and convenience
+                            outlets.</li>
+                        <li><strong>220.52 (Small Appliance & Laundry):</strong> Specific to homes. Requires 1500 VA
+                            circuits for kitchens and laundry areas to handle high-draw devices like toasters and irons.
+                        </li>
+                        <li><strong>220.53 (Appliance Derating):</strong> If a home has 4 or more fixed appliances
+                            (disposal, water heater, etc.), you can apply a 75% demand factor, recognizing they likely
+                            won't all cycle on at once.</li>
+                        <li><strong>220.55 (Electric Ranges):</strong> Electric cooking allows for massive diversity. A
+                            12kW range is calculated at only 8kW because elements cycle on and off to maintain
+                            temperature.</li>
+                        <li><strong>220.60 (Non-Coincident Loads):</strong> Sizing for the "worst case" scenario between
+                            heating and cooling. You don't need capacity for both simultaneously.</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>4. Commercial Considerations</h3>
+                    <p>Commercial calculations differ significantly from residential ones due to the nature of the
+                        loads.</p>
+                    <h4>Continuous Loads (NEC 215.2)</h4>
+                    <p>A continuous load is defined as a load expected to run for 3 hours or more (e.g., store lighting,
+                        server room cooling). The service conductors and overcurrent protection must be sized at
+                        <strong>125%</strong> of the continuous load rating. This extra 25% buffer prevents the breaker
+                        from tripping thermally under long-duration load.
+                    </p>
+                    <h4>Kitchen Equipment (NEC 220.56)</h4>
+                    <p>Commercial kitchens are energy-intensive. However, fryers, ovens, and warmers are
+                        thermostatically controlled. The code allows aggressive demand factors:</p>
+                    <ul>
+                        <li>3 Units: 90%</li>
+                        <li>4 Units: 80%</li>
+                        <li>5 Units: 70%</li>
+                        <li>6+ Units: 65%</li>
+                    </ul>
+                </div>
+
+                <div class="article-block">
+                    <h3>5. Three-Phase Math Explained</h3>
+                    <p>For 3-phase systems, calculation errors are common if the $\sqrt{3}$ factor is ignored. The
+                        relationship between Total Power (kVA) and Line Current (Amps) is:</p>
+                    <div class="formula">
+                        $$ I = \frac{kVA \times 1000}{V_{L-L} \times 1.732} $$
+                    </div>
+                    <p>For example, a 50 kVA load at 208V 3-phase draws 139 Amps. The same 50 kVA load at 240V 1-phase
+                        would draw 208 Amps. This efficiency is why 3-phase is standard for commercial buildings.</p>
+                </div>
+
+                <div class="article-block">
+                    <h3>6. Frequently Asked Questions (FAQ)</h3>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">1. What is the difference between Amps,
+                            Watts, and Volts? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Think of electricity like water in a pipe. <strong>Volts (V)</strong> is
+                            the pressure pushing the water. <strong>Amps (A)</strong> is the volume of water flowing
+                            (current). <strong>Watts (W)</strong> is the total power or work being done. The
+                            relationship is $Watts = Volts \times Amps$. Service panels are sized in Amps, but loads are
+                            often rated in Watts.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">2. Why do we use Demand Factors instead of
+                            total load? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">It is economically wasteful to size a service for a scenario that will
+                            likely never happen (everything ON at once). Demand factors are based on decades of
+                            statistical data showing peak usage patterns. Using them allows for smaller wires, smaller
+                            transformers, and lower installation costs without compromising safety.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">3. What is the "3 VA per square foot" rule
+                            (NEC 220.12)? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">For dwelling units, the NEC mandates a baseline load calculation of 3
+                            Volt-Amperes (roughly Watts) for every square foot of habitable space. This calculation
+                            covers general illumination and general-use receptacle outlets, ensuring enough capacity for
+                            lamps, TVs, vacuums, etc., without listing every single bulb.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">4. How do I calculate load for a 3-Phase
+                            commercial building? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">First, sum all loads in kVA (kilovolt-amperes). Then, convert the total
+                            kVA to Amps using the 3-phase formula: $Amps = (kVA \times 1000) / (Voltage \times 1.732)$.
+                            Simply dividing by Voltage (like in single-phase) will give an incorrect, oversized result.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">5. Does a 100 Amp panel mean I can use 100
+                            Amps continuously? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Generally, no. Standard breakers are rated for 80% continuous loading. A
+                            100A service can handle momentary peaks of 100A, but should not exceed 80A for periods
+                            longer than 3 hours. "100% rated" equipment exists but is specialized and more expensive.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">6. How does the calculator handle Air
+                            Conditioning vs. Heating? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Per NEC 220.60, non-coincident loads (loads that cannot run
+                            simultaneously) do not need to be added together. The calculator compares your input for AC
+                            and Heating and automatically adds only the larger of the two to the total service demand.
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">7. What is the difference between Single
+                            Phase and Three Phase? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Single-phase power (common in homes) has two power wires (L1, L2) and a
+                            neutral, creating a pulsating power wave. Three-phase power (common in commercial) has three
+                            power wires (L1, L2, L3) offset by 120 degrees, creating constant, smooth power ideal for
+                            efficient motor operation and heavy loads.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">8. How do I size the Neutral Conductor? <i
+                                class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">The neutral carries the unbalanced load. In a 240V system, if L1 has 50A
+                            and L2 has 40A, the neutral carries 10A. NEC 220.61 allows demand factors for the neutral
+                            (e.g., 70% for ranges) and excludes 240V-only loads (like AC units) since they don't use the
+                            neutral.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">9. Can I use this for a subpanel or just the
+                            main service? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Yes, this tool can calculate the load for a subpanel. Treat the area
+                            served by the subpanel (e.g., "Second Floor" or "Garage") as the total area and input only
+                            the specific appliances fed by that panel to determine the required feeder size.</div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">10. Why is the Kitchen load calculated
+                            differently? <i class="fas fa-chevron-down faq-icon"></i></div>
+                        <div class="faq-answer">Kitchens have high power density due to heating elements. In homes, the
+                            NEC mandates fixed 1500VA small appliance circuits. In commercial kitchens, NEC 220.56
+                            provides aggressive demand factors because chefs rarely have every fryer, oven, and mixer
+                            running at 100% power simultaneously.</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+        <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <a href="/" class="footer-logo">
+                        <img src="logo.png" alt="Design Calculators Logo" loading="lazy" decoding="async">
+                        <span class="footer-logo-text">Design Calculators</span>
+                    </a>
+                    <p class="footer-description">A comprehensive engineering calculator hub based on IEC, IEEE, and
+                        global standards.</p>
+                    <div class="social-buttons">
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in"
+                            target="_blank" rel="noopener noreferrer" class="social-btn linkedin"
+                            aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer"
+                            class="social-btn youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in&text=Check%20out%20this%20amazing%20engineering%20calculator%20hub!"
+                            target="_blank" rel="noopener noreferrer" class="social-btn twitter" aria-label="Twitter"><i
+                                class="fab fa-twitter"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in"
+                            target="_blank" rel="noopener noreferrer" class="social-btn facebook"
+                            aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource:%20https://designcalculators.co.in"
+                            target="_blank" rel="noopener noreferrer" class="social-btn whatsapp"
+                            aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-col">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href='/indexele.html'>Electrical Tools</a></li>
+                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
+                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
+                            <li><a href='/about.html'>About Us</a></li>
+                            <li><a href='/faq.html'>FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Learn More</h4>
+                        <ul>
+                            <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
+                                    rel="noopener noreferrer">YouTube Channel</a></li>
+                            <li><a href='/contact.html'>Contact Us</a></li>
+                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
+                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
+                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Our Network</h4>
+                        <ul>
+                            <li style="margin-bottom: 12px;">
+                                <a href="https://reliabilitytools.co.in/" target="_blank" rel="noopener"
+                                   style="font-weight: 600; display: block; margin-bottom: 2px;">Reliability Tools</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Reliability
+                                    & maintenance engineering calculators.</span>
+                            </li>
+                            <li style="margin-bottom: 12px;">
+                                <a href="https://electrosafe.homes/" target="_blank" rel="noopener"
+                                   style="font-weight: 600; display: block; margin-bottom: 2px;">ElectroSafe</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Dedicated
+                                    to home electrical safety & protection.</span>
+                            </li>
+                            <li>
+                                <a href="https://knowyourname.co.in/" target="_blank" rel="noopener"
+                                   style="font-weight: 600; display: block; margin-bottom: 2px;">KnowYourName</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Scientific
+                                    name analysis: Phonetics, Ergonomics & Acoustics.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>All calculations are for preliminary engineering design guidance. Final designs must comply with all applicable local and international standards (including but not limited to ASHRAE 90.1, ARI 550/590). Always verify calculations and consult with a licensed professional engineer before implementation or construction.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">Anil Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global State
+        let lastResult = {};
+        let myChart = null;
+        let applianceList = [];
+
+        // UI Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeSwitch.checked = true;
+            }
+            if (themeSwitch) {
+                themeSwitch.addEventListener('change', function () {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                });
+            }
+            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+
+            // Appliance selector listener
+            const appSelector = document.getElementById('app-selector');
+            appSelector.addEventListener('change', function () {
+                if (this.value !== "0") {
+                    document.getElementById('app-watts').value = this.value;
+                } else {
+                    document.getElementById('app-watts').value = "";
+                    document.getElementById('app-watts').focus();
+                }
+            });
+
+            initChart();
+        });
+
+        function switchTool(toolId) {
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelectorAll('.tool-module').forEach(m => m.classList.remove('active'));
+            document.getElementById('mod-' + toolId).classList.add('active');
+            document.getElementById('main-result').style.display = 'none';
+        }
+
+        // FAQ Toggle
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+
+        // Appliance List Logic
+        function addAppliance() {
+            const selector = document.getElementById('app-selector');
+            const wattsInput = document.getElementById('app-watts');
+            const watts = parseFloat(wattsInput.value);
+
+            let name = selector.options[selector.selectedIndex].text;
+            if (selector.value === "0") name = "Custom Device";
+            // Clean up name (remove wattage part if exists for display)
+            if (name.includes("(")) name = name.split("(")[0].trim();
+
+            if (isNaN(watts) || watts <= 0) return;
+
+            applianceList.push({ name, watts });
+            renderApplianceList();
+        }
+
+        function removeAppliance(index) {
+            applianceList.splice(index, 1);
+            renderApplianceList();
+        }
+
+        function renderApplianceList() {
+            const container = document.getElementById('appliance-list-container');
+            container.innerHTML = '';
+            let total = 0;
+
+            applianceList.forEach((item, index) => {
+                total += item.watts;
+                const div = document.createElement('div');
+                div.className = 'app-item-row';
+                div.innerHTML = `
+                    <span>${item.name}</span>
+                    <span style="text-align:right; font-weight:bold;">${item.watts} W</span>
+                    <i class="fas fa-trash remove-app-btn" onclick="removeAppliance(${index})"></i>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('total-app-watts').innerText = total;
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('loadChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Lighting/Gen', 'Appliances', 'HVAC/Motors'],
+                    datasets: [{
+                        label: 'Demand Load (kVA)',
+                        data: [0, 0, 0],
+                        backgroundColor: ['#2563EB', '#F59E0B', '#10B981'],
+                        borderColor: ['#1E3A8A', '#B45309', '#065F46'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Load Distribution Breakdown (kVA)' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Load (kVA)' } }
+                    }
+                }
+            });
+        }
+
+        function updateChart(gen, app, hvac) {
+            myChart.data.datasets[0].data = [gen, app, hvac];
+            myChart.update();
+        }
+
+        function calcLoad(mode) {
+            let steps = `<h4>Calculation Breakdown</h4>`;
+            let totalDemandVA = 0;
+            let totalConnectedVA = 0;
+            let amps = 0;
+            let voltage = 0;
+            let phaseFactor = 1.0;
+            let lightingVA = 0, appVA = 0, hvacVA = 0;
+
+            if (mode === 'residential') {
+                const area = parseFloat(document.getElementById('res-area').value);
+                const voltageSelect = parseInt(document.getElementById('res-voltage').value);
+                const phaseSelect = parseInt(document.getElementById('res-phase').value);
+                voltage = voltageSelect;
+                phaseFactor = (phaseSelect === 3) ? 1.732 : 1.0;
+
+                // 1. General Lighting & Receptacle (NEC 220.12)
+                const baseLightingVA = area * 3; // 3 VA/sq ft
+                const sacCount = parseFloat(document.getElementById('res-sac').value);
+                const laundryCount = parseFloat(document.getElementById('res-laundry').value);
+                const smallAppVA = (sacCount * 1500) + (laundryCount * 1500);
+
+                const grossGeneralVA = baseLightingVA + smallAppVA;
+
+                // Demand Factors
+                let netGeneralVA = 0;
+                if (grossGeneralVA <= 3000) {
+                    netGeneralVA = grossGeneralVA;
+                } else {
+                    netGeneralVA = 3000 + ((grossGeneralVA - 3000) * 0.35);
+                }
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 1: General Lighting & Base Circuits</span>
+                    Area Load: ${area} sq ft × 3 VA = ${baseLightingVA} VA<br>
+                    Base Circuits: (${sacCount} + ${laundryCount}) × 1500 VA = ${smallAppVA} VA<br>
+                    Total General: ${grossGeneralVA} VA<br>
+                    <strong>Demand Load: ${netGeneralVA.toFixed(0)} VA</strong> (First 3kVA @ 100%, Rest @ 35%)
+                </div>`;
+                lightingVA = netGeneralVA / 1000;
+
+                // 2. Fixed Appliances (From List)
+                let totalAppListWatts = 0;
+                applianceList.forEach(app => totalAppListWatts += app.watts);
+
+                // Demand Factor for fixed appliances (simplified NEC 220.53: >3 items = 75%)
+                let fixedDemandVA = totalAppListWatts;
+                let fixedNote = "(100% Demand)";
+                if (applianceList.length >= 4) {
+                    fixedDemandVA = totalAppListWatts * 0.75;
+                    fixedNote = "(75% Demand applied for >3 appliances)";
+                }
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 2: Appliances & Equipment</span>
+                    Connected Load: ${totalAppListWatts} Watts<br>
+                    Items Count: ${applianceList.length}<br>
+                    <strong>Demand Load: ${fixedDemandVA.toFixed(0)} VA</strong> ${fixedNote}
+                </div>`;
+                appVA = fixedDemandVA / 1000;
+
+                // 3. HVAC
+                const acWatts = parseFloat(document.getElementById('res-ac').value);
+                const heatWatts = parseFloat(document.getElementById('res-heat').value);
+
+                let hvacFinalVA = Math.max(acWatts, heatWatts);
+                let hvacWinner = (acWatts > heatWatts) ? "Cooling" : "Heating";
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 3: HVAC (Largest Load)</span>
+                    Cooling: ${acWatts} W | Heating: ${heatWatts} W<br>
+                    <strong>Selected: ${hvacFinalVA.toFixed(0)} VA (${hvacWinner})</strong>
+                </div>`;
+                hvacVA = hvacFinalVA / 1000;
+
+                totalDemandVA = netGeneralVA + fixedDemandVA + hvacFinalVA;
+                totalConnectedVA = grossGeneralVA + totalAppListWatts + acWatts + heatWatts; // Approximated connected
+                amps = totalDemandVA / (voltage * phaseFactor);
+
+            } else {
+                // COMMERCIAL
+                const area = parseFloat(document.getElementById('com-area').value);
+                const density = parseFloat(document.getElementById('com-type').value);
+                const volts = parseInt(document.getElementById('com-voltage').value);
+                const phaseSelect = parseInt(document.getElementById('com-phase').value);
+                voltage = volts;
+                phaseFactor = (phaseSelect === 3) ? 1.732 : 1.0;
+
+                // 1. Lighting (Continuous 125%)
+                const lightingLoadRaw = area * density;
+                const lightingLoadDemand = lightingLoadRaw * 1.25;
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 1: Lighting & Continuous</span>
+                    General Lighting: ${lightingLoadRaw} VA × 1.25 = <strong>${lightingLoadDemand.toFixed(0)} VA</strong>
+                </div>`;
+                lightingVA = lightingLoadDemand / 1000;
+
+                // 2. Receptacles
+                const receptKVA = parseFloat(document.getElementById('com-recept').value) * 1000;
+                let receptDemand = 0;
+                if (receptKVA <= 10000) receptDemand = receptKVA;
+                else receptDemand = 10000 + ((receptKVA - 10000) * 0.5);
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 2: Receptacles</span>
+                    Connected: ${receptKVA} VA<br>
+                    <strong>Demand: ${receptDemand.toFixed(0)} VA</strong> (First 10kVA @ 100%)
+                </div>`;
+                appVA = receptDemand / 1000;
+
+                // 3. Loads
+                const contAmps = parseFloat(document.getElementById('com-cont').value);
+                const nonContAmps = parseFloat(document.getElementById('com-noncont').value);
+
+                const contVA = contAmps * voltage * phaseFactor * 1.25;
+                const nonContVA = nonContAmps * voltage * phaseFactor;
+
+                steps += `<div class="step-block">
+                    <span class="step-title">Step 3: Specific Loads</span>
+                    Continuous (${contAmps}A): ${contVA.toFixed(0)} VA<br>
+                    Non-Continuous (${nonContAmps}A): ${nonContVA.toFixed(0)} VA
+                </div>`;
+                hvacVA = (contVA + nonContVA) / 1000;
+
+                totalDemandVA = lightingLoadDemand + receptDemand + contVA + nonContVA;
+                totalConnectedVA = lightingLoadRaw + receptKVA + (contAmps * voltage * phaseFactor) + (nonContAmps * voltage * phaseFactor);
+                amps = totalDemandVA / (voltage * phaseFactor);
+            }
+
+            // Panel Sizing (Global standards vary, typical steps)
+            const standardBreakers = [40, 60, 63, 80, 100, 125, 150, 160, 200, 225, 250, 300, 320, 400, 500, 600, 630, 800, 1000];
+            let panelSize = standardBreakers[standardBreakers.length - 1];
+            for (let b of standardBreakers) {
+                if (b >= amps) { panelSize = b; break; }
+            }
+
+            // Update UI
+            document.getElementById('main-result').style.display = 'block';
+            document.getElementById('res-amps').innerText = `${amps.toFixed(1)} Amps`;
+            document.getElementById('res-details').innerText = `@ ${voltage}V (${phaseFactor > 1 ? '3-Phase' : '1-Phase'})`;
+
+            document.getElementById('res-connected').innerText = `${(totalConnectedVA / 1000).toFixed(1)} kVA`;
+            document.getElementById('res-demand').innerText = `${(totalDemandVA / 1000).toFixed(1)} kVA`;
+            document.getElementById('res-panel').innerText = `${panelSize} A`;
+            document.getElementById('res-lighting').innerText = `${(lightingVA).toFixed(1)} kVA`;
+
+            steps += `<div class="step-block">
+                <span class="step-title">Step 4: Final Service Sizing</span>
+                Total Demand: <strong>${(totalDemandVA / 1000).toFixed(2)} kVA</strong><br>
+                Phase Factor: ${phaseFactor.toFixed(3)}<br>
+                Calculated Amps: ${totalDemandVA.toFixed(0)} / (${voltage} × ${phaseFactor.toFixed(3)}) = <strong>${amps.toFixed(1)} A</strong><br>
+                <span style="color:var(--success)">Recommended Service: ${panelSize} A</span>
+            </div>`;
+
+            document.getElementById('calc-steps-box').innerHTML = steps;
+            if (window.MathJax) window.MathJax.typesetPromise();
+
+            // Update Global State
+            lastResult = {
+                mode: mode,
+                voltage: voltage,
+                amps: amps,
+                kva: totalDemandVA / 1000,
+                panel: panelSize,
+                steps: document.getElementById('calc-steps-box').innerText
+            };
+
+            updateChart(lightingVA, appVA, hvacVA);
+        }
+
+        function generatePDF() {
+            if (!lastResult.amps) { alert("Calculate first!"); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18); doc.setTextColor(30, 58, 138);
+            doc.text("Electrical Load Calculation Report", 14, 20);
+
+            doc.setFontSize(12); doc.setTextColor(0);
+            doc.text(`Project Type: ${lastResult.mode.toUpperCase()}`, 14, 40);
+            doc.text(`System Voltage: ${lastResult.voltage}V`, 14, 50);
+
+            doc.setDrawColor(30, 58, 138);
+            doc.setLineWidth(0.5);
+            doc.line(14, 55, 196, 55);
+
+            doc.setFontSize(14);
+            doc.text(`Recommended Service: ${lastResult.panel} Amps`, 14, 65);
+            doc.setFontSize(12);
+            doc.text(`Calculated Demand Load: ${lastResult.amps.toFixed(1)} A`, 14, 75);
+            doc.text(`Total kVA: ${lastResult.kva.toFixed(2)} kVA`, 14, 85);
+
+            const stepsText = lastResult.steps;
+            const split = doc.splitTextToSize(stepsText, 180);
+            doc.text(split, 14, 100);
+
+            doc.save('Load_Calc_Report.pdf');
+        }
+    </script>
+    <script src="/main.js"></script>
+</body>
+
+</html>

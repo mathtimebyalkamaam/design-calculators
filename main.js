@@ -76,9 +76,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Close mobile menu when a link is clicked
+        // Close mobile menu when a link is clicked (Modified for Dropdowns)
         navLinkItems.forEach(link => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', (e) => {
+                // If it's a dropdown toggle and we are on mobile, toggle the dropdown instad of closing menu
+                if (link.classList.contains('dropdown-toggle') && window.innerWidth <= 768) {
+                    e.preventDefault();
+                    link.parentElement.classList.toggle('active');
+                    return; 
+                }
+
+                // Normal link behavior
                 navLinks.classList.remove('active');
                 const icon = mobileMenuToggle.querySelector('i');
                 if (icon) {
@@ -142,18 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (searchInput && searchResultsContainer) {
         // Collect all tool data from the visible topical silos
-        const allTools = Array.from(document.querySelectorAll('.silo-card')).map(link => {
-            let category = 'electrical';
-            if (link.classList.contains('instrumentation')) category = 'instrumentation';
-            else if (link.classList.contains('mechanical')) category = 'mechanical';
-
-            return {
-                name: link.querySelector('span').textContent.trim(),
-                href: link.getAttribute('href'),
-                category: category,
-                icon: link.querySelector('i').className
-            };
-        });
+        // Collect all tool data from static DB (generated from sitemap)
+        const allTools = window.TOOLS_DB || [];
 
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase().trim();
