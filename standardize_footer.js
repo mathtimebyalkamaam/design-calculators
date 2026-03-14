@@ -80,10 +80,10 @@ const masterFooter = `    <footer>
                 </div>
             </div>
             <div class="footer-disclaimer">
-                <p>All calculations are for preliminary engineering design guidance. Final designs must comply with all applicable local and international standards (including but not limited to ASHRAE 90.1, ARI 550/590). Always verify calculations and consult with a licensed professional engineer before implementation or construction.</p>
+                <p>All tools are for guidance only and should not replace professional engineering judgment. Results must be verified by a qualified professional against project requirements and local codes.</p>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">Anil Sharma</span>. All rights reserved.</p>
+                <p>&copy; 2026 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">Anil Sharma</span>. All rights reserved.</p>
             </div>
         </div>
     </footer>`;
