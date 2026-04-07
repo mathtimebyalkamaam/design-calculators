@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -37,6 +37,9 @@
     </script>
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <!-- PDF Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -782,6 +785,7 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <!-- MAIN CONTENT - Refactored -->
@@ -940,7 +944,7 @@
                                 <option value="1.0">No safety factor</option>
                                 <option value="1.1">10% safety margin</option>
                                 <option value="1.2" selected>20% safety margin</option>
-                                <option value="1.25">25% safety margin</locati>
+                                <option value="1.25">25% safety margin</option>
                             </select>
                         </div>
                         <!-- FIX: Added the missing "standard" form group -->
@@ -994,70 +998,176 @@
             </div>
         </div>
         
-        <!-- NEW CONTENT BLOCK for AdSense -->
-        <div class="container">
-            <div class="content-block" id="battery-guide-content" style="display: none;">
-                <h2 class="math-content">Comprehensive Guide to Industrial Battery Sizing (IEEE 485)</h2>
-                <p>Sizing a stationary battery bank for an industrial or critical power application (like a UPS or DC switchgear) is a complex task. A simple calculation based on average load will almost always result in an undersized battery that fails during a real emergency. This calculator uses the <strong>load profile method</strong>, which is the industry-best-practice described in <strong>IEEE 485</strong> (Recommended Practice for Sizing Large Lead-Acid Batteries for Stationary Applications).</p>
-                <p>This method correctly accounts for the fact that different loads run at different times, and that batteries deliver less total energy if you discharge them very quickly. Here is a breakdown of the key principles this calculator uses.</p>
-    
-                <h3>1. The Load Profile: The Most Critical Component</h3>
-                <p>An industrial backup scenario is rarely a single, constant load. It's a sequence of events. For example, in a power outage:</p>
-                <ol>
-                    <li><strong>Period 1 (e.g., first 5 minutes):</strong> An initial high load occurs. Inverters, motors, and emergency systems all draw a large inrush current.</li>
-                    <li><strong>Period 2 (e.g., next 2 hours):</strong> The system stabilizes. Only the "normal" critical loads (like control systems, servers, and essential lighting) remain on.</li>
-                    <li><strong>Period 3 (e.g., last 5 minutes):</strong> A final high load occurs as operators perform a safe shutdown, re-close breakers, or start emergency equipment.</li>
-                </ol>
-                <p>This calculator breaks your requirement into these three distinct periods. The calculation for this (as per IEEE 485) is complex, as it determines the total capacity needed by calculating the capacity for *each period* and adding the *additional* capacity required for the *change* in load between periods. This is far more accurate than just averaging the load.</p>
-    
-                <h3>2. Battery Capacity (Ah) vs. Load (W)</h3>
-                <p>A battery's capacity is rated in <strong>Amp-hours (Ah)</strong> at a specific voltage (V). A 100Ah, 12V battery can theoretically supply 100 Amps for 1 hour at 12V. This is a measure of *energy* ($Energy = V \times I \times T$).</p>
-                <p>Your loads, however, are rated in <strong>Watts (W)</strong> or <strong>Volt-Amps (VA)</strong>, which are measures of *power*. To size the battery, we must first convert your total load (in Watts) into the total energy (in Amp-hours) needed for the entire backup time. This calculator does this by:</p>
-                <ol>
-                    <li>Converting all your loads (VA, Amps, HP) into a common unit: <strong>Watts (W)</strong>.</li>
-                    <li>Calculating the Amps required from the battery: $Amps_{DC} = \text{Load (W)} / (\text{System Voltage (V)} \times \text{System Efficiency})$.</li>
-                    <li>Calculating the Amp-hours (Ah) for each period of your load profile: $Ah = \text{Amps}_{DC} \times \text{Duration (hours)}$.</li>
-                    <li>Summing these Ah periods (using the IEEE 485 methodology) to get the total Ah required.</li>
-                </ol>
-    
-                <h3>3. The Correction & Derating Factors (Why 100Ah is Not 100Ah)</h3>
-                <p>A 100Ah battery will almost never provide 100Ah of usable capacity in a real-world industrial application. The "nameplate" rating must be heavily corrected. This calculator applies four critical derating factors.</p>
-    
-                <h4>a. Depth of Discharge (DOD) Factor</h4>
-                <p>You should *never* discharge a battery to 100%. This permanently damages it. To ensure a long service life, you only use a fraction of its total capacity. This is the Depth of Discharge.</p>
-                <ul>
-                    <li><strong>VRLA/Lead-Acid:** A <strong>50% DOD</strong> is common for standby applications to achieve a 5-10 year life. This means to get 100Ah of *usable* capacity, you must buy a 200Ah battery ($100Ah / 0.50 = 200Ah$).</li>
-                    <li><strong>Lithium-ion:</strong> Can safely handle a much deeper discharge, often <strong>90% DOD</strong>. To get 100Ah usable, you only need to buy a ~111Ah battery ($100Ah / 0.90 = 111Ah$).</li>
-                </ul>
-    
-                <h4>b. Temperature Correction Factor</h4>
-                <p>Batteries are chemical devices, and their performance plummets in the cold. The standard 100% capacity rating is almost always specified at a perfect <strong>25Â°C (77Â°F)</strong>. If your battery room drops to 10Â°C (50Â°F), a lead-acid battery might only provide <strong>85%</strong> of its rated capacity. The calculator corrects for this by *increasing* the required Ah to compensate for the cold.</p>
-    
-                <h4>c. Aging Factor</h4>
-                <p>A battery at the *end* of its service life (e.g., 8-10 years old) will not have 100% of its original capacity. Industry standards (like IEEE) consider a battery "end of life" when it can only hold <strong>80%</strong> of its original rating. Therefore, to ensure your battery can *still* provide 100Ah of power on its very last day of service, you must oversize it from day one. An aging factor of <strong>1.25</strong> (i.e., oversizing by 25%) is standard practice ($100Ah / 0.80 = 125Ah$).</p>
-    
-                <h4>d. Safety / Design Margin Factor</h4>
-                <p>This is a final "engineer's factor" (typically 10-20%) added to account for unknown variables: load calculations weren't perfect, a new piece of equipment was added, etc. It provides a final buffer for reliability.</p>
-    
-                <div class="formula-block math-content">
-                    $$\text{Final Ah} = \frac{Ah_{basic} \times \text{Aging Factor} \times \text{Safety Factor}}{\text{DOD Factor} \times \text{Temperature Factor}}$$
+        <!-- NEW: Initial Theory Section (Visible Before Calculation) -->
+            <div id="initial-theory-section" style="margin-top: 40px; animation: fadeInUp 0.8s ease;">
+                
+                <!-- 1. The What -->
+                <div style="background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--secondary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                    <h4 style="color: var(--secondary-color); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-battery-full"></i> The 'What' (Battery Anatomy & Configuration)</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <p style="margin: 10px 0; line-height: 1.8;">Industrial battery banks are composed of individual 12V, 6V, 2V or 1.2V blocks wired together. A single battery rarely meets the demanding voltage or capacity required by critical facilities, so they must be arranged in <strong>Series</strong> or <strong>Parallel</strong> configurations.</p>
+                            <p style="margin: 10px 0; line-height: 1.8;"><strong>Series Connection:</strong> Increases total Voltage (V) while Amp-Hour (Ah) capacity remains the same. <em>(E.g., Four 12V blocks in series = 48V string)</em></p>
+                            <p style="margin: 10px 0; line-height: 1.8;"><strong>Parallel Connection:</strong> Increases total Amp-Hour (Ah) capacity while Voltage remains the same. <em>(E.g., Two 48V strings in parallel = double the backup time)</em></p>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; text-align: center;">
+                            <!-- SVG Battery Configuration -->
+                            <svg viewBox="0 0 300 180" style="max-width: 280px; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.10));">
+                                <!-- Series string -->
+                                <g transform="translate(10, 20)">
+                                    <text x="0" y="10" font-family="sans-serif" font-size="12" font-weight="bold" fill="var(--text-color)">Series (+ Voltage)</text>
+                                    <rect x="0" y="25" width="50" height="40" rx="4" fill="url(#blueGrad)" stroke="var(--primary-color)" stroke-width="2"/>
+                                    <rect x="65" y="25" width="50" height="40" rx="4" fill="url(#blueGrad)" stroke="var(--primary-color)" stroke-width="2"/>
+                                    <rect x="130" y="25" width="50" height="40" rx="4" fill="url(#blueGrad)" stroke="var(--primary-color)" stroke-width="2"/>
+                                    <line x1="50" y1="45" x2="65" y2="45" stroke="var(--accent-color)" stroke-width="3"/>
+                                    <line x1="115" y1="45" x2="130" y2="45" stroke="var(--accent-color)" stroke-width="3"/>
+                                    <text x="25" y="50" font-family="sans-serif" font-size="10" fill="white" font-weight="bold" text-anchor="middle">12V</text>
+                                    <text x="90" y="50" font-family="sans-serif" font-size="10" fill="white" font-weight="bold" text-anchor="middle">12V</text>
+                                    <text x="155" y="50" font-family="sans-serif" font-size="10" fill="white" font-weight="bold" text-anchor="middle">12V</text>
+                                    <text x="200" y="50" font-family="sans-serif" font-size="14" fill="var(--secondary-color)" font-weight="bold">= 36V</text>
+                                </g>
+                                <!-- Parallel string -->
+                                <g transform="translate(10, 100)">
+                                    <text x="0" y="10" font-family="sans-serif" font-size="12" font-weight="bold" fill="var(--text-color)">Parallel (+ Capacity)</text>
+                                    <!-- Battery 1 -->
+                                    <rect x="30" y="25" width="50" height="40" rx="4" fill="url(#blueGrad)" stroke="var(--primary-color)" stroke-width="2"/>
+                                    <!-- Battery 2 -->
+                                    <rect x="100" y="25" width="50" height="40" rx="4" fill="url(#blueGrad)" stroke="var(--primary-color)" stroke-width="2"/>
+                                    <!-- Top Wire -->
+                                    <polyline points="55,25 55,20 125,20 125,25" stroke="var(--accent-color)" stroke-width="3" fill="none"/>
+                                    <!-- Bottom Wire -->
+                                    <polyline points="55,65 55,70 125,70 125,65" stroke="#10B981" stroke-width="3" fill="none"/>
+                                    <text x="55" y="50" font-family="sans-serif" font-size="10" fill="white" font-weight="bold" text-anchor="middle">100Ah</text>
+                                    <text x="125" y="50" font-family="sans-serif" font-size="10" fill="white" font-weight="bold" text-anchor="middle">100Ah</text>
+                                    <text x="200" y="50" font-family="sans-serif" font-size="14" fill="var(--secondary-color)" font-weight="bold">= 200Ah</text>
+                                </g>
+                                <defs>
+                                    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="var(--secondary-color)" />
+                                        <stop offset="100%" stop-color="var(--primary-color)" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
-    
-                <h3>4. Final Configuration: Series vs. Parallel</h3>
-                <p>Once the final required capacity (Ah) is known, the calculator determines the physical battery bank configuration.</p>
-                <ul>
-                    <li><strong>Series Units:** Batteries connected in series *increase voltage* while *Ah stays the same*. The number of units in series is determined by your system voltage.
-                        <br><strong>Calculation:</strong> $N_{series} = \text{System Voltage} / \text{Battery Unit Voltage}$
-                        <br><em>Example: A 48V system using 12V batteries requires $48V / 12V = 4$ batteries in series.</em>
-                    </li>
-                    <li><strong>Parallel Strings:** Batteries connected in parallel *increase Ah* while *voltage stays the same*. You add parallel strings until you meet your final Ah requirement.
-                        <br><strong>Calculation:</strong> $N_{parallel} = \text{Final Required Ah} / \text{Selected Unit Ah Capacity}$
-                        <br><em>Example: If you need 800Ah and are using 200Ah batteries, you need $800Ah / 200Ah = 4$ strings in parallel.</em>
-                    </li>
-                </ul>
-                <p><strong>Total Batteries = (Units in Series) Ã— (Strings in Parallel)</strong>. In the example above, you would need $4 \times 4 = 16$ total 12V/200Ah batteries.</p>
+                
+                <!-- 2. The Why -->
+                <div style="background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--secondary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                    <h4 style="color: var(--secondary-color); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-chart-area"></i> The 'Why' (The Load Profile)</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <p style="margin: 10px 0; line-height: 1.8;">Why can't we just multiply average watts by backup time? Because an industrial backup scenario is rarely a single, constant load. Using a simple average will almost certainly result in an undersized battery that collapses when you need it most.</p>
+                            <p style="margin: 10px 0; line-height: 1.8;">Under <strong>IEEE 485</strong>, we design for the worst-case scenario using a "Duty Cycle" consisting of 1) <strong>Initial High Load</strong> (inrush currents as pumps/motors kick in), 2) <strong>Normal Load</strong> (continuous runtime), and 3) <strong>Final High Load</strong> (emergency shutdown equipment).</p>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <!-- Chart.js Canvas -->
+                            <canvas id="loadProfileChart" height="220" width="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3. The How -->
+                <div style="background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--secondary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                    <h4 style="color: var(--secondary-color); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-thermometer-half"></i> The 'How' (Capacity Derating Math)</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <p style="margin: 10px 0; line-height: 1.8;">Your calculated requirement must then be heavily padded by <strong>Derating Factors</strong>. Batteries degrade over time (Aging), are highly sensitive to cold (Temperature), and cannot be fully drained without permanent physical damage (Depth of Discharge - DoD).</p>
+                            <div class="math-content" style="text-align:center; font-weight:bold; font-size: 1.05rem; padding: 15px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin: 15px 0;">
+                                $$Final Ah = \frac{Ah_{basic} \times \text{Aging} \times \text{Safety}}{\text{DoD} \times \text{Temp Factor}}$$
+                            </div>
+                            <p style="margin: 10px 0; line-height: 1.8; font-size:0.9rem; color:var(--text-color);">Example: If a facility drops to 10Â°C, standard Lead-Acid batteries lose nearly 15% of their chemical potential. You must oversize the cells to survive the winter!</p>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; text-align: center;">
+                            <svg viewBox="0 0 200 200" style="max-width: 180px; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.10));">
+                                <!-- Thermometer Base -->
+                                <rect x="85" y="10" width="30" height="130" rx="15" fill="#E2E8F0" stroke="var(--primary-color)" stroke-width="3"/>
+                                <circle cx="100" cy="150" r="30" fill="#E2E8F0" stroke="var(--primary-color)" stroke-width="3"/>
+                                <!-- Red Fluid -->
+                                <circle cx="100" cy="150" r="20" fill="#EF4444" />
+                                <rect x="92" y="80" width="16" height="70" fill="#EF4444" />
+                                <!-- Marks -->
+                                <line x1="115" y1="40" x2="130" y2="40" stroke="var(--text-color)" stroke-width="2"/>
+                                <text x="135" y="45" font-size="14" font-weight="bold" fill="var(--text-color)">25Â°C</text>
+                                <text x="135" y="60" font-size="10" font-weight="bold" fill="var(--success-color)">100% Ah</text>
+                                
+                                <line x1="115" y1="90" x2="130" y2="90" stroke="var(--text-color)" stroke-width="2"/>
+                                <text x="135" y="95" font-size="14" font-weight="bold" fill="var(--text-color)">10Â°C</text>
+                                <text x="135" y="110" font-size="10" font-weight="bold" fill="var(--accent-color)">85% Ah</text>
+                                
+                                <line x1="115" y1="120" x2="130" y2="120" stroke="var(--text-color)" stroke-width="2"/>
+                                <text x="135" y="125" font-size="14" font-weight="bold" fill="var(--text-color)">-10Â°C</text>
+                                <text x="135" y="140" font-size="10" font-weight="bold" fill="#EF4444">75% Ah</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 4. The Which (Chemistries) -->
+                <div style="background: linear-gradient(135deg, var(--card-bg), rgba(16, 185, 129, 0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid #10B981; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                    <h4 style="color: #10B981; font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-flask"></i> The 'Which' (Industrial Chemistries)</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                        <div style="flex: 1.5; min-width: 300px;">
+                            <p style="margin: 10px 0; line-height: 1.8;"><strong>VRLA (Valve-Regulated Lead-Acid):</strong> The workhorse of Data Centers and standard UPS systems. Cost-effective and minimal maintenance, but very sensitive to heat with a moderate lifespan (3-10 years).</p>
+                            <p style="margin: 10px 0; line-height: 1.8;"><strong>Ni-Cd (Nickel-Cadmium):</strong> The rugged choice for Oil & Gas, utility switchgear, and extreme environments. They tolerate freezing colds and searing heat, boasting a 20+ year lifespan, but have a high upfront cost.</p>
+                            <p style="margin: 10px 0; line-height: 1.8;"><strong>Li-ion (Lithium-Ion):</strong> The modern choice for telecom and space-constrained areas. Incredible energy density and cycle life, but requires complex BMS (Battery Management Systems) and strict thermal control.</p>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; background: var(--bg-color); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); display:flex; justify-content:center;">
+                            <!-- Radar Chart Canvas -->
+                            <div style="width: 100%; max-width: 300px;">
+                                <canvas id="chemistryRadarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. The Rules (Standards) -->
+                <div style="background: linear-gradient(135deg, var(--card-bg), rgba(245, 158, 11, 0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid #F59E0B; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                    <h4 style="color: #F59E0B; font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-balance-scale"></i> The 'Rules' (Design Standards)</h4>
+                    <p style="margin: 10px 0 20px 0; line-height: 1.8;">Different battery technologies respond differently to power demands and aging. Therefore, international engineering bodies have created specific sizing and maintenance standards based on the exact chemistry employed.</p>
+                    
+                    <div style="display: flex; justify-content: center; width: 100%; overflow-x: auto;">
+                        <svg viewBox="0 0 600 220" style="width: 100%; max-width: 600px; min-width: 450px; font-family: 'Inter', sans-serif;">
+                            <defs>
+                                <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+                                    <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.1"/>
+                                </filter>
+                            </defs>
+                            
+                            <!-- Master Standard -->
+                            <rect x="200" y="10" width="200" height="40" rx="8" fill="var(--primary-color)" filter="url(#shadow)"/>
+                            <text x="300" y="35" fill="white" font-weight="bold" font-size="14" text-anchor="middle">IEEE 485 (Sizing Method)</text>
+                            
+                            <!-- Branch Lines -->
+                            <polyline points="300,50 300,70" stroke="var(--border-color)" stroke-width="2" fill="none"/>
+                            <polyline points="100,70 500,70" stroke="var(--border-color)" stroke-width="2" fill="none"/>
+                            <line x1="100" y1="70" x2="100" y2="90" stroke="var(--border-color)" stroke-width="2"/>
+                            <line x1="300" y1="70" x2="300" y2="90" stroke="var(--border-color)" stroke-width="2"/>
+                            <line x1="500" y1="70" x2="500" y2="90" stroke="var(--border-color)" stroke-width="2"/>
+
+                            <!-- Specific Standards -->
+                            <rect x="25" y="90" width="150" height="40" rx="4" fill="#3B82F6" filter="url(#shadow)"/>
+                            <text x="100" y="115" fill="white" font-weight="bold" font-size="13" text-anchor="middle">IEEE 450</text>
+                            <text x="100" y="150" fill="var(--text-color)" font-size="12" text-anchor="middle">Vented Lead-Acid</text>
+                            <text x="100" y="165" fill="var(--text-color)" font-size="10" text-anchor="middle">(Flooded)</text>
+
+                            <rect x="225" y="90" width="150" height="40" rx="4" fill="#10B981" filter="url(#shadow)"/>
+                            <text x="300" y="115" fill="white" font-weight="bold" font-size="13" text-anchor="middle">IEEE 1188</text>
+                            <text x="300" y="150" fill="var(--text-color)" font-size="12" text-anchor="middle">Valve-Regulated</text>
+                            <text x="300" y="165" fill="var(--text-color)" font-size="10" text-anchor="middle">Lead-Acid (VRLA)</text>
+
+                            <rect x="425" y="90" width="150" height="40" rx="4" fill="#F59E0B" filter="url(#shadow)"/>
+                            <text x="500" y="115" fill="white" font-weight="bold" font-size="13" text-anchor="middle">IEEE 1106</text>
+                            <text x="500" y="150" fill="var(--text-color)" font-size="12" text-anchor="middle">Nickel-Cadmium</text>
+                            <text x="500" y="165" fill="var(--text-color)" font-size="10" text-anchor="middle">(Ni-Cd)</text>
+                            
+                            <!-- Global standard at bottom -->
+                            <rect x="150" y="190" width="300" height="24" rx="4" fill="var(--bg-color)" stroke="var(--border-color)" stroke-width="1"/>
+                            <text x="300" y="206" fill="var(--text-color)" font-size="11" text-anchor="middle">IEC 60896: Global Stationary Lead-Acid Standard</text>
+                        </svg>
+                    </div>
+                </div>
             </div>
-        </div>
     </main>
 
     <!-- NEW FOOTER -->
@@ -1204,7 +1314,7 @@
             const resultTableBody = document.getElementById('result-table-body');
             const standardReferenceDiv = document.getElementById('standard-reference');
             const calculationDetailsDiv = document.getElementById('calculation-details');
-            const batteryGuideContent = document.getElementById('battery-guide-content');
+            const theorySection = document.getElementById('initial-theory-section');
 
             const initialHighLoadUnitSelect = document.getElementById('initial-high-load-unit');
             const normalLoadPowerUnitSelect = document.getElementById('normal-load-power-unit');
@@ -1306,7 +1416,7 @@
             // --- Clear/Reset Functions ---
             function clearResults() {
                 resultContainer.classList.remove('show');
-                batteryGuideContent.classList.remove('show'); // Hide content block
+                theorySection.style.display = 'block'; // Show theory block
                 
                 // Clear content immediately
                 resultTableBody.innerHTML = '';
@@ -1336,106 +1446,57 @@
                 displayMessage("Generating PDF... Please wait.", "info");
 
                 try {
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-                    let currentY = 0;
-                    
-                    const addHeaderFooter = (page, pageCount) => {
-                        pdf.setPage(page);
+                    // Temporarily adjust styling for better PDF rendering
+                    const originalBoxShadow = resultContainer.style.boxShadow;
+                    const originalTransform = resultContainer.style.transform;
+                    resultContainer.style.boxShadow = 'none';
+                    resultContainer.style.transform = 'none';
+
+                    html2canvas(resultContainer, {
+                        scale: 2, // Higher resolution
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    }).then(canvas => {
+                        // Restore original styling
+                        resultContainer.style.boxShadow = originalBoxShadow;
+                        resultContainer.style.transform = originalTransform;
+
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = pdf.internal.pageSize.getHeight();
+                        const imgWidth = pdfWidth - 20; // 10mm margin on each side
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                        
+                        let position = 10; // Top margin
+
+                        // Add Header
                         pdf.setFont("helvetica", "bold");
                         pdf.setFontSize(16);
-                        pdf.setTextColor(30, 58, 138); // var(--primary-color)
-                        pdf.text("https://designcalculators.co.in", pdfWidth / 2, 15, { align: 'center' });
+                        pdf.setTextColor(30, 58, 138); // Primary color
+                        pdf.text("Design Calculators - Industrial Battery Sizing Report", pdfWidth / 2, position, { align: 'center' });
+                        position += 6;
+
+                        pdf.setFont("helvetica", "normal");
+                        pdf.setFontSize(10);
+                        pdf.setTextColor(100, 100, 100);
+                        pdf.text(`Generated on: ${new Date().toLocaleString()}`, pdfWidth / 2, position, { align: 'center' });
+                        position += 10;
+
+                        // Add Image
+                        pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
                         
+                        // Add Footer
                         pdf.setFontSize(8);
                         pdf.setTextColor(150, 150, 150);
-                        pdf.text(`Page ${page} of ${pageCount}`, pdfWidth / 2, pdfHeight - 15, { align: 'center' });
                         pdf.text("https://designcalculators.co.in", pdfWidth / 2, pdfHeight - 10, { align: 'center' });
-                    };
 
-                    // --- PDF Content ---
-                    currentY = 25; // Start after header
-                    pdf.setFont("helvetica", "bold");
-                    pdf.setFontSize(18);
-                    pdf.setTextColor(30, 58, 138);
-                    pdf.text("Industrial Battery Sizing Report", pdfWidth / 2, currentY, { align: 'center' });
-                    currentY += 10;
-                    
-                    pdf.setFont("helvetica", "normal");
-                    pdf.setFontSize(10);
-                    pdf.setTextColor(100, 100, 100);
-                    pdf.text(`Generated on: ${new Date().toLocaleString()}`, pdfWidth / 2, currentY, { align: 'center' });
-                    currentY += 15;
-
-                    // --- 1. Input Parameters ---
-                    pdf.setFont("helvetica", "bold");
-                    pdf.setFontSize(14);
-                    pdf.setTextColor(30, 58, 138);
-                    pdf.text("Input Parameters", 10, currentY);
-                    currentY += 8;
-                    
-                    pdf.setFont("helvetica", "normal");
-                    pdf.setFontSize(10);
-                    pdf.setTextColor(0, 0, 0);
-                    
-                    let systemVoltage = document.getElementById('system-voltage').value;
-                    if (systemVoltage === 'custom') systemVoltage = document.getElementById('custom-voltage').value;
-                    const backupTime = document.getElementById('backup-time').value;
-                    const batteryType = document.getElementById('battery-type').value;
-                    let dod = document.getElementById('depth-of-discharge').value;
-                    if (dod === 'custom') dod = document.getElementById('custom-dod').value;
-                    
-                    const inputs = [
-                        ["System Voltage", `${systemVoltage} V`],
-                        ["Total Backup Time", `${backupTime} hours`],
-                        ["Battery Type", batteryType],
-                        ["Depth of Discharge", `${dod} %`],
-                        ["Operating Temperature", `${document.getElementById('temperature').value} Â°C`],
-                        ["System Efficiency", `${document.getElementById('efficiency').value} %`],
-                        ["Aging Factor", document.getElementById('aging-factor').value],
-                        ["Safety Factor", document.getElementById('safety-factor').value]
-                    ];
-                    
-                    if (pdf.autoTable) {
-                        pdf.autoTable({
-                            body: inputs,
-                            startY: currentY,
-                            theme: 'grid',
-                            headStyles: { fillColor: false, textColor: 0, fontStyle: 'bold' },
-                            columnStyles: { 0: { fontStyle: 'bold' } },
-                            didDrawPage: (data) => addHeaderFooter(data.pageNumber, pdf.internal.getNumberOfPages()),
-                        });
-                        currentY = pdf.autoTable.previous.finalY + 10;
-                    }
-
-                    // --- 2. Final Sizing Results ---
-                    const resultTable = document.getElementById('result-table-body').closest('table');
-                    if (resultTable && pdf.autoTable) {
-                        if (currentY + 20 > pdfHeight - 20) { // Check for page break
-                            pdf.addPage();
-                            currentY = 25;
-                        }
-                        pdf.setFont("helvetica", "bold");
-                        pdf.setFontSize(14);
-                        pdf.setTextColor(30, 58, 138);
-                        pdf.text("Final Sizing Results", 10, currentY);
-                        currentY += 8;
-                        pdf.autoTable({
-                            html: resultTable,
-                            startY: currentY,
-                            theme: 'grid',
-                            headStyles: { fillColor: [30, 58, 138] },
-                            didDrawPage: (data) => addHeaderFooter(data.pageNumber, pdf.internal.getNumberOfPages()),
-                        });
-                        currentY = pdf.autoTable.previous.finalY + 10;
-                    }
-                    
-                    // Add first page header/footer
-                    addHeaderFooter(1, pdf.internal.getNumberOfPages());
-                    
-                    pdf.save('Battery-Sizing-Report.pdf');
+                        pdf.save('Battery-Sizing-Report.pdf');
+                        displayMessage("PDF generated successfully!", "success");
+                    });
                 } catch (e) {
                     displayMessage("Error generating PDF. See console for details.", "error");
                     console.error("PDF Generation Error: ", e);
@@ -1668,9 +1729,9 @@
                         standardReferenceDiv.innerHTML = `Calculation based on <strong>${standard.toUpperCase()}</strong> load profiling. This determines the thermal withstand. Always consult local codes for minimum mechanical/corrosion sizing. Final design must be verified by a qualified engineer.`;
                         
                         resultContainer.style.display = 'block';
+                        theorySection.style.display = 'none'; // Hide theory on calculate
                         setTimeout(() => {
                             resultContainer.classList.add('show');
-                            batteryGuideContent.classList.add('show');
                         }, 10);
                         resultContainer.scrollIntoView({ behavior: 'smooth' });
 
@@ -1716,6 +1777,106 @@
             toggleCustomVoltageInput();
             updateDodOptionsAndVisibility();
             togglePowerFactorInput();
+            
+            // --- Initialize Chart.js ---
+            const ctx = document.getElementById('loadProfileChart');
+            if(ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Inrush (0-5m)', 'Normal (2h)', 'Shutdown (5m)'],
+                        datasets: [{
+                            label: 'Load (Watts)',
+                            data: [1000, 500, 700],
+                            backgroundColor: [
+                                '#EF4444',
+                                '#10B981',
+                                '#F59E0B'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Watts (W)' }
+                            }
+                        },
+                        plugins: {
+                        }
+                    }
+                });
+            }
+
+            const radarCtx = document.getElementById('chemistryRadarChart');
+            if (radarCtx) {
+                new Chart(radarCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['Lifespan', 'Upfront Cost', 'Energy Density', 'Temp Tolerance', 'Low Maintenance'],
+                        datasets: [
+                            {
+                                label: 'VRLA',
+                                data: [40, 90, 40, 30, 80],
+                                fill: true,
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                pointBackgroundColor: 'rgba(59, 130, 246, 1)'
+                            },
+                            {
+                                label: 'Ni-Cd',
+                                data: [90, 20, 60, 100, 30], // Requires watering
+                                fill: true,
+                                backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                                borderColor: 'rgba(245, 158, 11, 1)',
+                                pointBackgroundColor: 'rgba(245, 158, 11, 1)'
+                            },
+                            {
+                                label: 'Li-ion',
+                                data: [80, 30, 100, 60, 95], // BMS handles it
+                                fill: true,
+                                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                pointBackgroundColor: 'rgba(16, 185, 129, 1)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        elements: {
+                            line: { borderWidth: 2 }
+                        },
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100,
+                                ticks: { display: false }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    boxWidth: 8,
+                                    font: { size: 11, family: "'Inter', sans-serif" }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
 
         });
     </script>

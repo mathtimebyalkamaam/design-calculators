@@ -43,6 +43,8 @@
     </script>
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" ="/apple-touch-icon.png">
@@ -454,6 +456,27 @@
 
         .clear-results-btn:hover {
             background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .download-pdf-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-top: 15px;
+            margin-left: 15px;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+
+        .download-pdf-btn:hover {
+            background-color: var(--secondary);
             transform: translateY(-2px);
             box-shadow: var(--shadow-lg);
         }
@@ -1103,8 +1126,9 @@
                 </ul>
             </div>
 
-            <div style="display: flex; justify-content: center; margin-top: 20px;">
+            <div style="display: flex; justify-content: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
                 <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                <button type="button" id="download-pdf-btn" class="download-pdf-btn"><i class="fas fa-file-pdf"></i> Download PDF (A4)</button>
             </div>
             
             <div class="standard-reference" id="standard-reference">
@@ -1637,11 +1661,48 @@
             }
 
             // --- Event Listeners ---
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+
             calculationModeSelect.addEventListener('change', updateInputSectionVisibility);
             inputTypeSelect.addEventListener('change', updateInputSectionVisibility);
             calculateBtn.addEventListener('click', calculateResolution);
             resetFormBtn.addEventListener('click', resetForm);
             clearResultsBtn.addEventListener('click', clearResults);
+
+            if (downloadPdfBtn) {
+                downloadPdfBtn.addEventListener('click', async function() {
+                    if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                        displayMessage("PDF libraries are loading, please try again.", "warning");
+                        return;
+                    }
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'mm', 'a4');
+                    try {
+                        const originalContent = downloadPdfBtn.innerHTML;
+                        downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                        
+                        // Force a proper background for PDF
+                        const oldBg = resultContainer.style.backgroundColor;
+                        const isDarkMode = document.body.classList.contains('dark-mode');
+                        resultContainer.style.backgroundColor = isDarkMode ? '#1E293B' : '#FFFFFF';
+                        
+                        const canvas = await html2canvas(resultContainer, { scale: 2, useCORS: true });
+                        resultContainer.style.backgroundColor = oldBg; // Restore background
+                        
+                        const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                        const pdfWidth = 210 - 20; // A4 width in mm minus 20 margin
+                        const imgProps = doc.getImageProperties(imgData);
+                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                        
+                        doc.addImage(imgData, 'JPEG', 10, 10, pdfWidth, pdfHeight);
+                        doc.save('ADC_Resolution_Results.pdf');
+                    } catch (e) {
+                        displayMessage("Failed to generate PDF.", "error");
+                    } finally {
+                        downloadPdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF (A4)';
+                    }
+                });
+            }
 
             // --- Initial Setup ---
             updateInputSectionVisibility();

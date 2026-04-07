@@ -30,6 +30,10 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- jsPDF & AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <!-- MathJax -->
     <script>
         window.MathJax = {
@@ -419,7 +423,7 @@
                     </div>
 
                     <div class="button-wrapper">
-                        <button type="button" class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+                        <button type="button" class="btn btn-outline" onclick="location.reload()" style="width: auto;"><i class="fas fa-undo"></i> Reset</button>
                         <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Parameters</button>
                     </div>
                 </form>
@@ -502,76 +506,208 @@
 
                 <h4 style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">Step-by-Step Derivation</h4>
                 <div id="calculation-details"></div>
+
+                <!-- PDF & Print Actions -->
+                <div class="result-actions" style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <button id="btn-export-pdf" class="btn" style="background: var(--danger); width: auto;"><i class="fas fa-file-pdf"></i> Export PDF Report</button>
+                    <button onclick="window.print()" class="btn" style="background: var(--warning); color: var(--heading); width: auto;"><i class="fas fa-print"></i> Print Results</button>
+                </div>
             </div>
         </div>
 
         <!-- EDUCATIONAL CONTENT -->
-        <div class="education-section card">
-            <div class="card-header" style="margin-bottom:25px;">
-                <h2><i class="fas fa-book-reader"></i> Technical Deep Dive: Transmission Line Modeling</h2>
+        <div id="education-section" class="education-section">
+            <h2 style="font-family: 'Montserrat', sans-serif; color: var(--primary); font-size: 2rem; margin-bottom: 30px; text-align: center;">Technical Deep Dive: Transmission Line Modeling</h2>
+
+            <!-- 1. THE WHAT -->
+            <div class="card" style="box-shadow: 0 8px 16px rgba(37,99,235,0.05); border-left: 5px solid var(--primary);">
+                <h3 style="color: var(--primary); margin-top: 0;"><i class="fas fa-info-circle"></i> The 'What' - What Is Line Modeling?</h3>
+                <p>Electrical power transmission is the bulk movement of electrical energy from generating sites to electrical substations. To design and operate these grids reliably, engineers use <strong>transmission line models</strong> to predict how voltage and current will behave across hundreds of kilometers of aerial conductors.</p>
+                <p>Every transmission line possesses four fundamental distributed electrical parameters:</p>
+                
+                <div style="background: var(--bg); padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                    <svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#1E3A8A"/>
+                            </marker>
+                            <linearGradient id="wireGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#475569" />
+                                <stop offset="50%" stop-color="#94A3B8" />
+                                <stop offset="100%" stop-color="#475569" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Top Wire (Line) -->
+                        <line x1="50" y1="50" x2="350" y2="50" stroke="url(#wireGrad)" stroke-width="4"/>
+                        <!-- Bottom Wire (Ground/Neutral) -->
+                        <line x1="50" y1="150" x2="350" y2="150" stroke="#cbd5e1" stroke-dasharray="8,4" stroke-width="4"/>
+                        
+                        <!-- Series R & L -->
+                        <rect x="120" y="40" width="40" height="20" fill="#f8fafc" stroke="#dc2626" stroke-width="2"/>
+                        <path d="M 200 50 Q 210 30 220 50 T 240 50 T 260 50" fill="none" stroke="#2563eb" stroke-width="2"/>
+                        <text x="130" y="30" font-family="sans-serif" font-size="14" font-weight="bold" fill="#dc2626">R</text>
+                        <text x="225" y="30" font-family="sans-serif" font-size="14" font-weight="bold" fill="#2563eb">L</text>
+                        
+                        <!-- Shunt G & C -->
+                        <rect x="180" y="80" width="15" height="40" fill="#f8fafc" stroke="#d97706" stroke-width="2"/>
+                        <line x1="240" y1="90" x2="260" y2="90" stroke="#10b981" stroke-width="3"/>
+                        <line x1="240" y1="110" x2="260" y2="110" stroke="#10b981" stroke-width="3"/>
+                        <line x1="250" y1="50" x2="250" y2="90" stroke="#94a3b8" stroke-width="2"/>
+                        <line x1="250" y1="110" x2="250" y2="150" stroke="#94a3b8" stroke-width="2"/>
+                        <line x1="187.5" y1="50" x2="187.5" y2="80" stroke="#94a3b8" stroke-width="2"/>
+                        <line x1="187.5" y1="120" x2="187.5" y2="150" stroke="#94a3b8" stroke-width="2"/>
+                        
+                        <text x="160" y="105" font-family="sans-serif" font-size="14" font-weight="bold" fill="#d97706">G</text>
+                        <text x="270" y="105" font-family="sans-serif" font-size="14" font-weight="bold" fill="#10b981">C</text>
+                        
+                        <!-- Ports -->
+                        <text x="10" y="55" font-family="sans-serif" font-size="14" font-weight="bold">Vs</text>
+                        <text x="365" y="55" font-family="sans-serif" font-size="14" font-weight="bold">Vr</text>
+                    </svg>
+                    <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 10px;">Distributed Parameter Model of a Transmission Line Section</p>
+                </div>
+                
+                <p>The behavior of these parameters over distance $x$ and time $t$ is governed by the <strong>Telegrapher's Equations</strong>:</p>
+                <div style="background: var(--input-bg); padding: 15px; border-radius: 6px; overflow-x: auto; font-family: var(--font-mono); font-size: 1.1rem; color: var(--heading);">
+                    $$ \frac{\partial V}{\partial x} = - (R + j\omega L) I $$<br>
+                    $$ \frac{\partial I}{\partial x} = - (G + j\omega C) V $$
+                </div>
             </div>
-            
-            <div class="tech-article">
-                <!-- TOC -->
-                <div class="toc-sticky">
-                    <h4>Table of Contents</h4>
-                    <ul>
-                        <li><a href="#classification">1. Line Classification</a></li>
-                        <li><a href="#abcd">2. The ABCD Matrix</a></li>
-                        <li><a href="#ferranti">3. The Ferranti Effect</a></li>
-                        <li><a href="#sil">4. Surge Impedance Loading (SIL)</a></li>
-                        <li><a href="#standards">5. Applicable Standards</a></li>
-                    </ul>
+
+            <!-- 2. THE WHY -->
+            <div class="card" style="box-shadow: 0 8px 16px rgba(220,38,38,0.05); border-left: 5px solid var(--danger);">
+                <h3 style="color: var(--danger); margin-top: 0;"><i class="fas fa-exclamation-triangle"></i> The 'Why' - Why Does Line Design Matter?</h3>
+                <p>Operating a grid without accurate transmission modeling leads to catastrophic voltage collapses, massive power losses, and equipment damage. A 1% reduction in losses on a 400kV line carrying 1000 MW saves ~$8.5 million annually.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; margin-top: 25px;">
+                    <div>
+                        <ul style="line-height: 1.8;">
+                            <li><strong>Voltage Regulation:</strong> Keeping Receiving End voltage ($V_r$) within ±5% of nominal ensures equipment operates safely.</li>
+                            <li><strong>Thermal Limits:</strong> Accurately calculating $I^2R$ heating to prevent conductor sag from exceeding strict clearance limits.</li>
+                            <li><strong>Ferranti Effect:</strong> On long lightly loaded lines, distributed capacitance injects charging current, causing $V_r$ to exceed $V_s$. Unmitigated, this destroys insulation.</li>
+                            <li><strong>System Stability:</strong> Determining the line's loadability limit and Surge Impedance Loading (SIL) to prevent out-of-step conditions between generators.</li>
+                        </ul>
+                    </div>
+                    <div style="background: var(--bg); padding: 20px; border-radius: 12px;">
+                        <canvas id="transmissionLossChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. THE WHERE -->
+            <div class="card" style="box-shadow: 0 8px 16px rgba(16,185,129,0.05); border-left: 5px solid var(--success);">
+                <h3 style="color: var(--success); margin-top: 0;"><i class="fas fa-globe"></i> The 'Where' - Where Are Models Applied?</h3>
+                <p>Different models are deployed depending on the specific application layer of the electrical grid.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-top: 3px solid #2563EB;">
+                        <h4 style="margin: 0 0 10px 0; color: #2563EB;">UHV Transmission</h4>
+                        <p style="font-size: 0.9rem; margin: 0;">765kV+ AC lines over 500km require full rigorous distributed parameter modeling and extreme reactive compensation analysis.</p>
+                    </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-top: 3px solid #10B981;">
+                        <h4 style="margin: 0 0 10px 0; color: #10B981;">Renewable Evacuation</h4>
+                        <p style="font-size: 0.9rem; margin: 0;">Medium lines (150km) linking remote wind/solar parks to the main grid, emphasizing voltage volatility studies.</p>
+                    </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-top: 3px solid #F59E0B;">
+                        <h4 style="margin: 0 0 10px 0; color: #F59E0B;">Distribution Networks</h4>
+                        <p style="font-size: 0.9rem; margin: 0;">Short 33kV loops using simplified series impedance models, ignoring capacitance completely for speed.</p>
+                    </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-top: 3px solid #8B5CF6;">
+                        <h4 style="margin: 0 0 10px 0; color: #8B5CF6;">Submarine Cables</h4>
+                        <p style="font-size: 0.9rem; margin: 0;">High capacitance cross-sea HVAC cables require long-line equivalents even at shorter physical distances.</p>
+                    </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-top: 3px solid #DC2626;">
+                        <h4 style="margin: 0 0 10px 0; color: #DC2626;">HVDC Links</h4>
+                        <p style="font-size: 0.9rem; margin: 0;">Modeling of massive bipolar lines using highly modified equations, ignoring reactance for steady state.</p>
+                    </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-top: 3px solid #475569;">
+                        <h4 style="margin: 0 0 10px 0; color: #475569;">Grid Interconnection</h4>
+                        <p style="font-size: 0.9rem; margin: 0;">Synchronous connections between neighboring national grids modeling power transfer limits over long ties.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. THE HOW -->
+            <div class="card" style="box-shadow: 0 8px 16px rgba(245,158,11,0.05); border-left: 5px solid var(--accent);">
+                <h3 style="color: var(--accent); margin-top: 0;"><i class="fas fa-cogs"></i> The 'How' - Network Equations</h3>
+                <p>Engineers abstract transmission lines as two-port networks defined by <strong>ABCD parameters</strong>. This allows easy cascading of transformers, lines, and substations via matrix multiplication.</p>
+                
+                <div style="background: var(--input-bg); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="margin-top: 0; color: var(--heading);">General Two-Port Equation</h4>
+                    $$ \begin{bmatrix} V_s \\ I_s \end{bmatrix} = \begin{bmatrix} A & B \\ C & D \end{bmatrix} \begin{bmatrix} V_r \\ I_r \end{bmatrix} $$
+                    <p style="font-size: 0.9rem; margin: 10px 0 0 0;">Where $V_s, I_s$ are Sending End phase values, and $V_r, I_r$ are Receiving End phase values.</p>
                 </div>
 
-                <!-- Content -->
-                <div class="article-content">
-                    <div id="classification">
-                        <h3>1. Line Classification: Does Capacitance Matter?</h3>
-                        <p>Transmission lines are distributed networks of Resistance ($R$), Inductance ($L$), Capacitance ($C$), and Conductance ($G$). However, for analysis, we lump them based on length:</p>
-                        <ul>
-                            <li><strong>Short (< 80km):</strong> Capacitance is ignored ($C=0$). The line is modeled as a simple series impedance ($Z$). This simplifies calculations but ignores the charging current. Suitable for low voltage or short runs.</li>
-                            <li><strong>Medium (80-250km):</strong> Capacitance is significant enough to affect voltage drop. We "lump" the total capacitance either at the center (Nominal T) or split it at the ends (Nominal $\pi$). The $\pi$ model is generally preferred for load flow studies.</li>
-                            <li><strong>Long (> 250km):</strong> Lumping fails because the wave nature of voltage and current becomes dominant. We must use <strong>Distributed Parameters</strong> and hyperbolic functions ($\sinh, \cosh$) to model the propagation accurately. Using a simple $\pi$ model for a 400km line leads to significant errors in voltage regulation.</li>
+                <p>For a <strong>Rigorous Long Line Model</strong> (>250km), we must use the propagation constant ($\gamma$) and characteristic impedance ($Z_c$):</p>
+                <div style="background: var(--input-bg); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    $$ \gamma = \sqrt{zy} = \alpha + j\beta \quad \text{and} \quad Z_c = \sqrt{\frac{z}{y}} $$
+                    $$ A = D = \cosh(\gamma L) $$
+                    $$ B = Z_c \sinh(\gamma L) $$
+                    $$ C = \frac{1}{Z_c} \sinh(\gamma L) $$
+                </div>
+
+                <p><strong>Surge Impedance Loading (SIL)</strong> is the power delivered when load impedance equals $Z_c$, resulting in an perfectly flat voltage profile across the line:</p>
+                <div style="background: var(--input-bg); padding: 20px; border-radius: 8px; margin: 15px 0;">
+                    $$ SIL = \frac{V_{LL}^2}{|Z_c|} \quad \text{(MW)} $$
+                </div>
+            </div>
+
+            <!-- 5. THE WHEN -->
+            <div class="card" style="box-shadow: 0 8px 16px rgba(139,92,246,0.05); border-left: 5px solid #8B5CF6;">
+                <h3 style="color: #8B5CF6; margin-top: 0;"><i class="fas fa-code-branch"></i> The 'When' - Which Model To Choose?</h3>
+                <p>Selecting the incorrect model directly leads to erroneous dispatch decisions or failed protection settings.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; margin-top: 25px;">
+                    <div>
+                        <canvas id="transmissionSelectionChart" height="280"></canvas>
+                    </div>
+                    <div>
+                        <ul style="line-height: 1.8;">
+                            <li><strong>Short Line ($<80$ km):</strong> Ignore shunt capacitance ($C=0$). $A=1$, $B=Z$, $C=0$, $D=1$. Useful only for low voltage distribution.</li>
+                            <li><strong>Medium Line ($80-250$ km):</strong> Use the Nominal Pi ($\pi$) or Nominal T model. Lumps half the total capacitance at each end ($\pi$) or all in the middle (T). Moderate accuracy.</li>
+                            <li><strong>Long Line ($>250$ km):</strong> Mandatory rigorous distributed parameter modeling. Hyperbolic functions account for the fact that voltage varies continuously over every millimeter.</li>
                         </ul>
                     </div>
+                </div>
+            </div>
 
-                    <div id="abcd">
-                        <h3>2. The ABCD Matrix</h3>
-                        <p>Any passive, linear, bilateral 2-port network can be mathematically represented by the ABCD matrix equation:
-                        $$ \begin{bmatrix} V_s \\ I_s \end{bmatrix} = \begin{bmatrix} A & B \\ C & D \end{bmatrix} \begin{bmatrix} V_r \\ I_r \end{bmatrix} $$
-                        This powerful tool allows engineers to cascade multiple line sections or transformers by simply multiplying their matrices.</p>
-                        <ul>
-                            <li><strong>A:</strong> Voltage Gain (Reverse). Dimensionless. $A=1$ for short lines. Represents the Ferranti effect on long lines ($|A|<1$).</li>
-                            <li><strong>B:</strong> Transfer Impedance ($\Omega$). Determines the maximum power transfer capability and short-circuit current.</li>
-                            <li><strong>C:</strong> Transfer Admittance (S). Determines the no-load charging current.</li>
-                            <li><strong>D:</strong> Current Gain. $D=A$ for symmetrical lines.</li>
-                        </ul>
+            <!-- 6. THE WHO -->
+            <div class="card" style="box-shadow: 0 8px 16px rgba(236,72,153,0.05); border-left: 5px solid #EC4899;">
+                <h3 style="color: #EC4899; margin-top: 0;"><i class="fas fa-users"></i> The 'Who' - Pioneers of Power Transmission</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                        <strong style="color: var(--heading); display: block; margin-bottom: 5px;"><i class="fas fa-user-tie"></i> Oliver Heaviside</strong>
+                        <span style="font-size: 0.9rem;">Formulated the Telegrapher's Equations in 1885, applying Maxwell's theories directly to transmission lines. Coined terms like impedance, conductance, and admittance.</span>
                     </div>
-
-                    <div id="ferranti">
-                        <h3>3. The Ferranti Effect: Voltage Rise</h3>
-                        <div class="highlight-box">
-                            <h4><i class="fas fa-exclamation-triangle"></i> Dangerous Overvoltage</h4>
-                            <p>On long, lightly loaded or no-load lines, the Receiving End Voltage ($V_r$) can be <strong>higher</strong> than the Sending End Voltage ($V_s$). This counter-intuitive phenomenon occurs because the line's capacitive charging current flows through the line inductance, creating a voltage boost.</p>
-                            <p>The rise is approximately: $V_r \approx \frac{V_s}{A}$. For a 400km 400kV line, $A \approx 0.9$, meaning $V_r$ could be 10% higher (~440kV) than $V_s$. This can trip overvoltage relays or damage insulation if shunt reactors are not used.</p>
-                        </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                        <strong style="color: var(--heading); display: block; margin-bottom: 5px;"><i class="fas fa-user-cog"></i> Arthur E. Kennelly</strong>
+                        <span style="font-size: 0.9rem;">Pioneered the application of complex numbers mathematically to AC circuits. He formalized the $\pi$ and T equivalent circuits for medium lines.</span>
                     </div>
-
-                    <div id="sil">
-                        <h3>4. Surge Impedance Loading (SIL)</h3>
-                        <p>SIL is the power loading ($MW = kV_{LL}^2 / Z_c$) at which the reactive power generated by the line capacitance exactly cancels the reactive power consumed by the line inductance.
-                        <br><strong>At SIL:</strong> The voltage profile is flat along the line.
-                        <br><strong>Below SIL:</strong> The line acts like a capacitor (generates VARs), raising voltage.
-                        <br><strong>Above SIL:</strong> The line acts like an inductor (consumes VARs), dropping voltage.</p>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                        <strong style="color: var(--heading); display: block; margin-bottom: 5px;"><i class="fas fa-user-graduate"></i> Charles P. Steinmetz</strong>
+                        <span style="font-size: 0.9rem;">Transformed AC power systems from chaotic empiricism into robust engineering. His complex phasor math made large-scale transmission grid design possible.</span>
                     </div>
+                </div>
+            </div>
 
-                    <div id="standards">
-                        <h3>5. Applicable Standards</h3>
-                        <ul>
-                            <li><strong>IEEE 1124:</strong> Guide for Analysis of Transmission Line Transients. Covers distributed parameter modeling.</li>
-                            <li><strong>IEC 60071:</strong> Insulation Coordination. Relevant for determining maximum overvoltages (Ferranti effect) allowed on the system.</li>
-                        </ul>
+            <!-- 7. THE RULES -->
+            <div class="card" style="box-shadow: 0 8px 16px rgba(71,85,105,0.05); border-left: 5px solid #475569;">
+                <h3 style="color: #475569; margin-top: 0;"><i class="fas fa-gavel"></i> The 'Rules' - Governing IEEE & IEC Standards</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <div style="padding: 10px; border-bottom: 1px solid var(--border);">
+                        <strong style="color: var(--heading);">IEEE 1124</strong>
+                        <span style="display: block; font-size: 0.9rem;">Guide for Analysis of Transmission Line Transients. Establishes protocols for distributed parameter modeling.</span>
+                    </div>
+                    <div style="padding: 10px; border-bottom: 1px solid var(--border);">
+                        <strong style="color: var(--heading);">IEEE 738</strong>
+                        <span style="display: block; font-size: 0.9rem;">Standard for Calculating Current-Temperature of Bare Overhead Conductors (Sag/Thermal analysis).</span>
+                    </div>
+                    <div style="padding: 10px; border-bottom: 1px solid var(--border);">
+                        <strong style="color: var(--heading);">IEC 60071</strong>
+                        <span style="display: block; font-size: 0.9rem;">Insulation Coordination. Defines maximum allowable Ferranti overvoltages and switching surges.</span>
+                    </div>
+                    <div style="padding: 10px; border-bottom: 1px solid var(--border);">
+                        <strong style="color: var(--heading);">IEEE C2 (NESC)</strong>
+                        <span style="display: block; font-size: 0.9rem;">National Electrical Safety Code. Dictates mechanical clearances and loadings based on line voltage conditions.</span>
                     </div>
                 </div>
             </div>
@@ -976,6 +1112,8 @@
 
             const resBox = document.getElementById('result-container');
             resBox.classList.remove('hidden');
+            const eduSection = document.getElementById('education-section');
+            if(eduSection) eduSection.style.display = 'none';
             resBox.scrollIntoView({ behavior: 'smooth' });
         });
 
@@ -1092,6 +1230,111 @@
                 }
              });
         }
+
+        function initTransmissionCharts() {
+            // Chart 1: Transmission Loss Distribution
+            const ctxLoss = document.getElementById('transmissionLossChart');
+            if(ctxLoss) {
+                new Chart(ctxLoss.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['I²R Heating', 'Corona Discharge', 'Dielectric Losses', 'Leakage/Other'],
+                        datasets: [{
+                            data: [75, 15, 7, 3],
+                            backgroundColor: ['#2563EB', '#10B981', '#F59E0B', '#64748B']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            title: { display: true, text: 'Typical EHV AC Line Loss Distribution' }
+                        }
+                    }
+                });
+            }
+
+            // Chart 2: Model Accuracy Comparison
+            const ctxAcc = document.getElementById('transmissionSelectionChart');
+            if(ctxAcc) {
+                 new Chart(ctxAcc.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['< 80km', '80-150km', '150-250km', '250-400km', '> 400km'],
+                        datasets: [
+                            {
+                                label: 'Short Model',
+                                data: [98, 80, 50, 20, 5],
+                                borderColor: '#F59E0B', backgroundColor: 'rgba(245, 158, 11, 0.2)'
+                            },
+                            {
+                                label: 'Nominal Pi/T',
+                                data: [100, 95, 90, 70, 40],
+                                borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.2)'
+                            },
+                            {
+                                label: 'Rigorous Long',
+                                data: [100, 100, 100, 100, 100],
+                                borderColor: '#2563EB', backgroundColor: 'rgba(37, 99, 235, 0.2)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { r: { min: 0, max: 100, ticks: { display: false } } }
+                    }
+                });
+            }
+        }
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.setTextColor(30, 58, 138);
+            doc.text("Transmission Line Analysis Report", 40, 50);
+
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 40, 65);
+            doc.text(`Model: ${document.getElementById('res-model').textContent.toUpperCase()}`, 40, 80);
+
+            doc.autoTable({
+                startY: 100,
+                head: [['Parameter', 'Value']],
+                body: [
+                    ['Length (km)', document.getElementById('len').value],
+                    ['Sending End Voltage (Vs)', document.getElementById('res-vs').textContent + ' kV'],
+                    ['Voltage Regulation', document.getElementById('res-reg').textContent + ' %'],
+                    ['Transmission Efficiency', document.getElementById('res-eff').textContent + ' %'],
+                    ['Total Line Loss', document.getElementById('res-loss').textContent + ' MW'],
+                    ['Surge Impedance Loading (SIL)', document.getElementById('res-sil').textContent + ' MW'],
+                    ['Ferranti Rise (No Load)', document.getElementById('res-ferr').textContent + ' kV']
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235] },
+                margin: { left: 40, right: 40 }
+            });
+
+            const finalY = doc.lastAutoTable.finalY || 100;
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(9);
+            doc.setTextColor(150);
+            doc.text("Disclaimer: Results are for educational and guidance purposes only.", pageWidth / 2, finalY + 40, { align: 'center' });
+
+            doc.save("Transmission_Line_Report.pdf");
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+             initTransmissionCharts();
+             if(document.getElementById('btn-export-pdf')) {
+                 document.getElementById('btn-export-pdf').addEventListener('click', generatePDF);
+             }
+        });
     </script>
 </body>
 </html>

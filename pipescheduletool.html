@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -78,6 +78,7 @@
     <!-- PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1234,6 +1235,7 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
@@ -1378,9 +1380,102 @@
                 <div class="calc-steps" id="calc-steps-box"></div>
             </div>
 
-            <div class="button-wrapper" style="margin-top:40px;">
-                <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download
-                    Datasheet</button>
+            <div class="button-wrapper" style="margin-top:40px; display:flex; gap:15px; justify-content:center;">
+                <button type="button" class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);" onclick="resetForm()"><i class="fas fa-trash-alt"></i> Reset Parameters</button>
+                <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download Datasheet</button>
+            </div>
+        </div>
+
+        <!-- NEW ADVANCED EDUCATIONAL CONTENT -->
+        <div id="initial-theory-section" style="margin-top: 40px; animation: fadeInUp 0.8s ease;">
+
+            <!-- 1. The What -->
+            <div style="background: linear-gradient(135deg, var(--card), rgba(30,58,138,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;">
+                <h4 style="color: var(--secondary); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-ruler"></i> The 'What' (Nominal vs Actual)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1.5; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;">Pipes are defined by two dimensionless identifiers: <strong>NPS (Nominal Pipe Size)</strong> and <strong>Schedule</strong>. Unlike tubing, a 2-inch NPS pipe does <em>not</em> have a 2-inch outside diameter! For NPS 1/8 to 12, the OD is strictly fixed larger than the nominal size to ensure structural threading viability.</p>
+                        <p style="margin: 10px 0; line-height: 1.8;">As the "Schedule" \( (SCH) \) increases, the steel wall grows thicker toward the <strong>inside</strong> of the pipe. Therefore, for any given NPS, the OD remains absolutely locked, but the Internal Area \( (A_i) \) physically shrinks as the pressure capacity climbs.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. The Why -->
+            <div style="background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--danger); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;">
+                <h4 style="color: var(--danger); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-weight-hanging"></i> The 'Why' (Structural Stress Properties)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;">Pipes don't just hold pressure—they act as massive hollow beams spanning hundreds of feet, supporting tons of fluid, heavy valves, seismic shockwaves, and thermal layout expansion forces.</p>
+                        <ul style="margin: 10px 0; padding-left: 20px; line-height: 1.6; color: var(--text); font-size: 0.95rem;">
+                            <li><strong>Moment of Inertia \( (I) \):</strong> Dictates the pipe's resistance to sagging or bending deflection between supports.</li>
+                            <li><strong>Section Modulus \( (Z) \):</strong> Directly controls the maximum bending stress the pipe can violently endure before yielding \( (\sigma = M/Z) \).</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
+                        <canvas id="weightChart" height="220" width="400"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. The How -->
+            <div style="background: linear-gradient(135deg, var(--card), rgba(16,185,129,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--success); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;">
+                <h4 style="color: var(--success); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-superscript"></i> The 'How' (Pressure Containment Math)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;">To rigorously determine if a pipe will fatally burst, we use <strong>Barlow's Formula</strong> structurally modified by ASME B31.3. Heavy industry strictly forbids using theoretical "Nominal" wall thicknesses.</p>
+                        <div class="math-content" style="text-align:center; font-weight:bold; font-size: 1.05rem; padding: 15px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; margin: 15px 0;">
+                            \[ P = \frac{2 \cdot S \cdot E \cdot W_{effective}}{OD} \]
+                        </div>
+                        <p style="margin: 10px 0; line-height: 1.8;">Where \( W_{effective} \) equals the nominal wall thickness directly <em>minus</em> the permitted 12.5% manufacturing Mill Tolerance, absolutely <em>minus</em> the sacrificial Corrosion Allowance (CA)!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. The Which -->
+            <div style="background: linear-gradient(135deg, var(--card), rgba(245,158,11,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;">
+                <h4 style="color: var(--accent); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-layer-group"></i> The 'Which' (Schedule Sizing Decisions)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1.5; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;">Selecting between <strong>Schedule 40</strong> (Standard) and <strong>Schedule 80</strong> (Extra Strong) depends mechanically entirely on your exact failure mode mapping.</p>
+                        <p style="margin: 10px 0; line-height: 1.8;">Schedule 80 contains far more steel wall depth per foot. You select it not just for high-pressure fluid retention, but primarily for highly corrosive outputs, erosive slurry lines, or massive runs requiring exceptionally long structural support webbing without sagging.</p>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; text-align: center;">
+                        <svg viewBox="0 0 300 200" style="max-width: 280px; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.10));">
+                            <!-- Sch 40 Pipe -->
+                            <rect x="20" y="20" width="260" height="60" fill="none" stroke="#64748B" stroke-width="4"/>
+                            <text x="150" y="15" font-family="sans-serif" font-size="12" font-weight="bold" fill="var(--text)" text-anchor="middle">Schedule 40</text>
+                            
+                            <!-- Sch 80 Pipe -->
+                            <rect x="20" y="120" width="260" height="60" fill="none" stroke="#64748B" stroke-width="12"/>
+                            <text x="150" y="115" font-family="sans-serif" font-size="12" font-weight="bold" fill="var(--text)" text-anchor="middle">Schedule 80 (Thicker Wall, Less Area)</text>
+
+                            <!-- internal flow -->
+                            <line x1="40" y1="50" x2="260" y2="50" stroke="#3B82F6" stroke-width="6" stroke-dasharray="8"/>
+                            <line x1="40" y1="150" x2="260" y2="150" stroke="#3B82F6" stroke-width="6" stroke-dasharray="8"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. The Rules -->
+            <div style="background: linear-gradient(135deg, var(--card), rgba(139,92,246,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid #8B5CF6; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;">
+                <h4 style="color: #8B5CF6; font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-book"></i> The 'Rules' (Design Code Standards)</h4>
+                <p style="margin: 10px 0 20px 0; line-height: 1.8;">Piping cannot be manufactured arbitrarily. It strictly adheres to international steel forging and dimensioning metrics designed to prevent catastrophic metallurgical failure.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; text-align: left;">
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                        <h5 style="margin: 0 0 8px 0; color: var(--primary);">ASME B36.10</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text);">The definitive standard for welded and seamless wrought steel pipe. Locks in exact dimensions, weights, and nominal OD/ID schedules globally.</p>
+                    </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                        <h5 style="margin: 0 0 8px 0; color: #3B82F6;">ASME B31.3</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text);">The Process Piping Code. Defines the rigorous mathematical pressure containment allowances necessary to operate heavy petrochemical refineries.</p>
+                    </div>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-left: 4px solid #10B981;">
+                        <h5 style="margin: 0 0 8px 0; color: #10B981;">ASTM A53 / A106</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text);">Categorizes the physical tensile and yield strengths of the carbon steel itself based on its thermal carbon/manganese lattice composition.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1415,14 +1510,14 @@
                     <p>Beyond internal pressure, pipes must support their own weight, fluid weight, insulation, and
                         wind/seismic loads. This requires structural beam analysis.</p>
                     <ul>
-                        <li><strong>Moment of Inertia ($I$):</strong> Determines the pipe's resistance to bending
-                            deflection. Higher $I$ means less sag between supports. Formula: $I = \frac{\pi (OD^4 -
-                            ID^4)}{64}$.</li>
-                        <li><strong>Section Modulus ($Z$):</strong> Used to calculate the maximum bending stress
-                            ($\sigma = M/Z$). Critical for determining if a pipe will yield under a heavy load. Formula:
-                            $Z = \frac{2I}{OD}$.</li>
-                        <li><strong>Radius of Gyration ($r$):</strong> Used in column buckling analysis. Important for
-                            vertical pipe runs or risers. Formula: $r = \sqrt{I/A}$.</li>
+                        <li><strong>Moment of Inertia \( (I) \):</strong> Determines the pipe's resistance to bending
+                            deflection. Higher \( I \) means less sag between supports. Formula: \( I = \frac{\pi (OD^4 -
+                            ID^4)}{64} \).</li>
+                        <li><strong>Section Modulus \( (Z) \):</strong> Used to calculate the maximum bending stress
+                            \( (\sigma = M/Z) \). Critical for determining if a pipe will yield under a heavy load. Formula:
+                            \( Z = \frac{2I}{OD} \).</li>
+                        <li><strong>Radius of Gyration \( (r) \):</strong> Used in column buckling analysis. Important for
+                            vertical pipe runs or risers. Formula: \( r = \sqrt{I/A} \).</li>
                     </ul>
                 </div>
 
@@ -1658,9 +1753,59 @@
             });
 
             initPipeSelect();
+            initWeightChart();
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
         });
+
+        function initWeightChart() {
+            const ctxC = document.getElementById('weightChart');
+            if(!ctxC) return;
+            new Chart(ctxC, {
+                type: 'bar',
+                data: {
+                    labels: ['Sch 40', 'Sch 80', 'Sch 160'],
+                    datasets: [{
+                        label: 'Moment of Inertia (I)',
+                        data: [72.5, 105.7, 168.2], // Example NPS 8
+                        backgroundColor: '#3B82F6',
+                        borderRadius: 4
+                    }, {
+                        label: 'Weight [lb/ft]',
+                        data: [28.5, 43.3, 74.6], // Example NPS 8
+                        backgroundColor: '#F59E0B',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top', labels: { color: '#64748B' } } },
+                    scales: {
+                        y: { ticks: { color: '#64748B' }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                        x: { ticks: { color: '#64748B' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('main-result').style.display = 'none';
+            document.getElementById('structural-results').style.display = 'none';
+            
+            const theory = document.getElementById('initial-theory-section');
+            if(theory) theory.style.display = 'block';
+            
+            // Reset to defaults
+            document.getElementById('nps-select').value = "2";
+            updateSchSelect();
+            document.getElementById('mat-select').value = "35000";
+            document.getElementById('mat-yield').value = "35000";
+            document.getElementById('safety-factor').value = "1.0";
+            
+            lastResult = {};
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
         function switchTool(toolId) {
             document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
@@ -1789,6 +1934,8 @@
             // Results
             document.getElementById('main-result').style.display = 'block';
             document.getElementById('structural-results').style.display = 'block';
+            const theory = document.getElementById('initial-theory-section');
+            if(theory) theory.style.display = 'none';
             document.getElementById('res-subtitle').innerText = `Specifications: NPS ${nps} Sch ${sch}`;
             document.getElementById('res-main').innerText = `${nps}" Nominal`;
 
@@ -1891,55 +2038,31 @@
             lastResult.safeP = safePressure;
         }
 
-        function generatePDF() {
+        async function generatePDF() {
             if (!lastResult.od) { alert("Calculate first!"); return; }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const btn = document.getElementById('pdf-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            btn.disabled = true;
 
-            doc.setFontSize(18); doc.setTextColor(30, 58, 138);
-            doc.text("Industrial Pipe Engineering Report", 14, 20);
+            try {
+                const element = document.getElementById('main-result');
+                const canvasData = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+                const imgData = canvasData.toDataURL('image/png');
 
-            doc.setFontSize(12); doc.setTextColor(0);
-            doc.text(`Specification: NPS ${lastResult.nps} Schedule ${lastResult.sch}`, 14, 40);
-            doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 50);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+                const pdfHeight = (canvasData.height * pdfWidth) / canvasData.width;
 
-            doc.setDrawColor(30, 58, 138);
-            doc.setLineWidth(0.5);
-            doc.line(14, 55, 196, 55);
-
-            doc.setFontSize(14);
-            doc.text(`Physical Dimensions:`, 14, 65);
-            doc.setFontSize(12);
-            doc.text(`OD: ${lastResult.od}"`, 20, 75);
-            doc.text(`ID: ${lastResult.id.toFixed(3)}"`, 20, 85);
-            doc.text(`Wall: ${lastResult.wall}"`, 20, 95);
-            doc.text(`Weight: ${lastResult.weight.toFixed(2)} lb/ft`, 20, 105);
-
-            if (lastResult.I) {
-                doc.setFontSize(14);
-                doc.text(`Structural Properties:`, 14, 120);
-                doc.setFontSize(12);
-                doc.text(`Inertia (I): ${lastResult.I.toFixed(2)} in4`, 20, 130);
-                doc.text(`Section Modulus (Z): ${lastResult.Z.toFixed(2)} in3`, 20, 140);
+                pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, pdfHeight);
+                pdf.save('Pipe_Analysis_Report.pdf');
+            } catch (err) {
+                console.error("PDF generation failed:", err);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-
-            if (lastResult.safeP) {
-                doc.setFontSize(14);
-                doc.text(`Pressure Analysis:`, 14, 155);
-                doc.setFontSize(12);
-                doc.text(`Safe Pressure: ${lastResult.safeP.toFixed(0)} psi`, 20, 165);
-            }
-
-            // Add canvas image
-            const imgData = canvas.toDataURL("image/png");
-            doc.addImage(imgData, 'PNG', 120, 60, 60, 60);
-
-            // Add Steps text (simplified)
-            // const stepsText = document.getElementById('calc-steps-box').innerText;
-            // const split = doc.splitTextToSize(stepsText, 180);
-            // doc.text(split, 14, 180);
-
-            doc.save('Pipe_Analysis_Report.pdf');
         }
     </script>
     <script src="/main.js"></script>

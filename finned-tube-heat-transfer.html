@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,6 +29,11 @@
 
     <!-- MathJax script -->
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Data Viz & PDF export libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Retained original MathJax configuration -->
     <script>
@@ -732,6 +737,7 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
@@ -815,6 +821,12 @@
                         <button type="button" id="calculate-finned-heat-transfer-btn" class="calculate-btn">
                             <i class="fas fa-calculator"></i> Calculate Heat Transfer
                         </button>
+                        <button type="button" id="reset-calculations-btn" class="reset-btn">
+                            <i class="fas fa-undo"></i> Reset Configuration
+                        </button>
+                        <button type="button" id="download-pdf-btn" class="download-btn">
+                            <i class="fas fa-file-pdf"></i> Download Report
+                        </button>
                     </div>
                 </form>
             </div>
@@ -835,52 +847,220 @@
             </div>
         </div>
         
-        <!-- NEW 800+ WORD INFORMATIVE SECTION -->
-        <div class="tool-container" style="margin-top: 40px;">
-            <h2><i class="fas fa-book-open"></i> Professional Guide to Finned Tube Heat Transfer</h2>
-
-            <h3 style="color: var(--primary-color); margin-top: 25px;">The Purpose of Fins: Surface Area Enhancement</h3>
-            <p>In the field of thermal engineering, the primary goal of a heat exchanger is to transfer heat from one medium to another. The fundamental equation governing convective heat transfer is Newton's Law of Cooling:</p>
-            <p class="formula">\[ Q = h \cdot A \cdot \Delta T \]</p>
-            <p>Where \(Q\) is the heat transfer rate, \(h\) is the convection heat transfer coefficient, \(A\) is the surface area, and \(\Delta T\) is the temperature difference. To increase the heat transfer rate \(Q\), one can increase the coefficient \(h\) (e.t., by increasing fluid velocity), increase the temperature difference \(\Delta T\), or increase the surface area \(A\).</p>
-            <p>Fins are a direct solution for increasing \(A\). They are used in applications where one side of the heat exchanger has a significantly lower heat transfer coefficient \(h\) than the other. A classic example is an air-cooled heat exchanger (like a car radiator or a computer CPU cooler), where heat is transferred from a liquid (high \(h\)) to air (very low \(h\)). Without fins, the "thermal bottleneck" would be on the air side. By adding fins, the surface area on the air side is dramatically increased, compensating for the low \(h\) and allowing for a much higher overall heat transfer rate.</p>
-
-            <h3 style="color: var(--primary-color); margin-top: 25px;">Key Concepts in Finned Tube Analysis</h3>
-            <p>Simply adding area is not the full story. A fin is not perfectly efficient, as it is heated (or cooled) at its base, and this heat must conduct through the fin material to the tip. This creates a temperature gradient along the fin.</p>
+        <!-- NEW: Initial Theory Section (Visible Before Calculation) -->
+        <div id="initial-theory-section" style="margin-top: 40px; animation: fadeInUp 0.8s ease;">
             
-            <h4>1. Fin Efficiency (\(\eta_f\))</h4>
-            <p>Fin efficiency is the most critical parameter. It compares the *actual* heat transferred by the fin to the *ideal* heat transfer that would occur *if the entire fin were at the base temperature*. A fin made of a material with poor thermal conductivity (like steel) or a very long fin will have a lower efficiency than a short, thick fin made of copper.</p>
-            <p class="formula">\[ \eta_f = \frac{Q_{\text{fin, actual}}}{Q_{\text{fin, ideal}}} = \frac{Q_{\text{fin, actual}}}{h \cdot A_f \cdot (T_b - T_{\infty})} \]</p>
-            <p>For a standard annular (circular) fin on a tube, the calculation is complex. A common and robust approximation, used by this calculator, is to model the fin as a rectangular fin with a corrected length (\(L_c\)). The efficiency is then given by:</p>
-            <p class="formula">\[ \eta_f \approx \frac{\tanh(m L_c)}{m L_c} \]</p>
-            <p>Where \(L_c = H_f + t_f/2\) and the "fin parameter" \(m\) is:</p>
-            <p class="formula">\[ m = \sqrt{\frac{h \cdot P}{k \cdot A_c}} = \sqrt{\frac{h \cdot (2t_f)}{k \cdot t_f^2}} = \sqrt{\frac{2h}{k \cdot t_f}} \]</p>
+            <!-- 1. The What -->
+            <div style="background: linear-gradient(135deg, var(--card-bg), rgba(30,58,138,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--secondary-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                <h4 style="color: var(--secondary-color); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-fire"></i> The 'What' (Surface Area Enhancement)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1.5; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;">The fundamental equation governing convective heat transfer is Newton's Law of Cooling. To extract more heat from a pipe, you can either blow harder (increase coefficient <span style="font-family:serif;font-style:italic;">h</span>), or physically increase the metal surface area touching the air (<span style="font-family:serif;font-style:italic;">A</span>).</p>
+                        <p style="margin: 10px 0; line-height: 1.8;">In industrial gas coolers, radiators, and fired heaters, adding rigid fins around a bare tube geometrically expands the surface contact area, compensating for the poor heat-stripping properties of air. A single 1m finned tube can have the cooling power of 10m of bare pipe!</p>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; text-align: center;">
+                        <!-- SVG Displaying Finned vs Bare Tube -->
+                        <svg viewBox="0 0 300 200" style="max-width: 280px; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.10));">
+                            <!-- Bare Tube -->
+                            <g transform="translate(10, 20)">
+                                <text x="0" y="10" font-family="sans-serif" font-size="12" font-weight="bold" fill="var(--text-color)">Bare Tube: Low Area</text>
+                                <circle cx="50" cy="60" r="30" fill="#CBD5E1" stroke="#94A3B8" stroke-width="3"/>
+                                <circle cx="50" cy="60" r="20" fill="#EF4444" />
+                                <!-- Heat vectors small -->
+                                <line x1="50" y1="20" x2="50" y2="5" stroke="#EF4444" stroke-width="2" marker-end="url(#arrow)"/>
+                                <line x1="90" y1="60" x2="105" y2="60" stroke="#EF4444" stroke-width="2" marker-end="url(#arrow)"/>
+                            </g>
+                            <!-- Finned Tube -->
+                            <g transform="translate(150, 20)">
+                                <text x="0" y="10" font-family="sans-serif" font-size="12" font-weight="bold" fill="var(--secondary-color)">Finned Tube: High Area</text>
+                                <!-- Fins back -->
+                                <circle cx="50" cy="60" r="50" fill="none" stroke="#60A5FA" stroke-width="4" stroke-dasharray="10, 5"/>
+                                <!-- Cross section bare tube base -->
+                                <circle cx="50" cy="60" r="30" fill="#93C5FD" stroke="#3B82F6" stroke-width="3"/>
+                                <circle cx="50" cy="60" r="20" fill="#EF4444" />
+                                <!-- Geometric Fins -->
+                                <rect x="47" y="5" width="6" height="30" fill="#3B82F6" />
+                                <rect x="47" y="85" width="6" height="30" fill="#3B82F6" />
+                                <rect x="5" y="57" width="30" height="6" fill="#3B82F6" />
+                                <rect x="85" y="57" width="30" height="6" fill="#3B82F6" />
+                                <!-- Heat vectors big -->
+                                <line x1="50" y1="0" x2="50" y2="-15" stroke="#EF4444" stroke-width="3" marker-end="url(#arrow)"/>
+                                <line x1="120" y1="60" x2="135" y2="60" stroke="#EF4444" stroke-width="3" marker-end="url(#arrow)"/>
+                                <line x1="-20" y1="60" x2="-35" y2="60" stroke="#EF4444" stroke-width="3" marker-end="url(#arrow)"/>
+                            </g>
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#EF4444" />
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+            </div>
             
-            <h4>2. Fin Effectiveness (\(\epsilon_f\))</h4>
-            <p>Not to be confused with efficiency, effectiveness compares the heat transferred *with* the fin to the heat that would have been transferred from the *base area* if the fin wasn't there. An effectiveness of 1 means the fin does nothing. High effectiveness (e.g., > 10) is desired. It is defined as:</p>
-            <p class="formula">\[ \epsilon_f = \frac{Q_{\text{fin, actual}}}{Q_{\text{base, no fin}}} = \frac{\eta_f \cdot h \cdot A_f}{h \cdot A_b} = \frac{\eta_f A_f}{A_b} \]</p>
+            <!-- 2. The Why -->
+            <div style="background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--success-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                <h4 style="color: var(--success-color); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-chart-line"></i> The 'Why' (Fin Efficiency Fall-off)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;">Why not just make fins infinitely tall to get infinite cooling? Because of thermal resistance. The base of the fin is hot, but as heat physically travels outward linearly to the tip, it loses energy to the air.</p>
+                        <p style="margin: 10px 0; line-height: 1.8;">This creates a <strong>temperature gradient</strong>. A long, thin, poorly conductive fin (like Steel) will have a freezing tip that does zero cooling! Fin Efficiency (<span style="font-family:serif;font-style:italic;">&eta;<sub>f</sub></span>) calculates exactly how much usable energy is actively being pushed out compared to a mathematically perfect fin.</p>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <canvas id="finEfficiencyChart" height="220" width="400"></canvas>
+                    </div>
+                </div>
+            </div>
             
-            <h4>3. Overall Surface Efficiency (\(\eta_o\))</h4>
-            <p>This is the most important value for practical calculation. It represents the weighted average efficiency of the entire finned surface, including the fins and the exposed "prime" tube surface between the fins. The heat transfer from the total surface is then:</p>
-            <p class="formula">\[ Q = h \cdot A_{\text{total}} \cdot \eta_o \cdot (T_b - T_{\infty}) \]</p>
-            <p>Where \(A_{\text{total}} = A_{\text{fins}} + A_{\text{unfinned}}\). The overall efficiency is calculated as:</p>
-            <p class="formula">\[ \eta_o = \frac{A_{\text{unfinned}} + \eta_f \cdot A_{\text{fins}}}{A_{\text{total}}} = 1 - \frac{A_{\text{fins}}}{A_{\text{total}}}(1 - \eta_f) \]</p>
-            <p>This calculator uses this \(\eta_o\) value to determine the total convective heat transfer.</p>
+            <!-- 3. The How -->
+            <div style="background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--accent-color); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                <h4 style="color: var(--accent-color); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-superscript"></i> The 'How' (Overall Surface Efficiency)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;">Industrial arrays use <strong>Overall Surface Efficiency (&eta;<sub>o</sub>)</strong> to calculate actual transfer. This equation blends the 100% efficient "prime" metal of the bare tube that isn't covered by a fin, with the fractional efficiency of the massive fin surface area.</p>
+                        <div class="math-content" style="text-align:center; font-weight:bold; font-size: 1.05rem; padding: 15px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin: 15px 0;">
+                            \[ \eta_o = \frac{A_{\text{prime}} + (\eta_f \cdot A_{\text{fins}})}{A_{\text{total}}} \]
+                        </div>
+                        <p style="margin: 10px 0; line-height: 1.8; font-size:0.9rem; color:var(--text-color);">The Total Heat Transfer (<span style="font-family:serif;font-style:italic;">Q<sub>total</sub></span>) is then simply calculated by multiplying this derated overall efficiency coefficient against the raw contact surface area!</p>
+                    </div>
+                </div>
+            </div>
 
-            <h3 style="color: var(--primary-color); margin-top: 25px;">Industrial Applications and Design Considerations</h3>
-            <ul>
-                <li><strong>Air-Cooled Heat Exchangers (ACHEs):</strong> The most common application. Used extensively in oil refineries, chemical plants, and power generation to cool process fluids using ambient air, especially where water is scarce.</li>
-                <li><strong>Economizers and Fired Heaters:</strong> Finned tubes are placed in the exhaust gas path of boilers and furnaces to recover waste heat and preheat the incoming combustion air or boiler feedwater, dramatically increasing overall plant efficiency.</li>
-                <li><strong>Radiators and HVAC:</strong> From car radiators to the "A-coils" in a home air conditioner, finned tubes are used to transfer heat between a refrigerant or coolant and the air.</li>
-            </ul>
-            <h4>Key Industrial Considerations:</h4>
-            <ul>
-                <li><strong>Material Selection:</strong> Fin conductivity (\(k\)) is critical. Aluminum (\(k \approx 200-240\) W/mK) is common for air-side applications due to its low cost, light weight, and high conductivity. Copper (\(k \approx 390\) W/mK) is better but more expensive. For high-temperature or corrosive environments, stainless steel (\(k \approx 16\) W/mK) may be required, but its low conductivity results in poor fin efficiency.</li>
-                <li><strong>Fin Geometry:</strong> Fin height, thickness, and spacing are a trade-off. Taller fins add more area but have lower efficiency. Thinner fins save material but also have lower efficiency. Tighter spacing (more fins/m) increases area but also increases the air-side pressure drop, requiring more fan power.</li>
-                <li><strong>Bonding Resistance:</strong> In many designs, the fin is not integral to the tube (e.t., "L-footed" or "embedded" fins). A small gap or layer of oxide between the fin base and the tube can create a significant thermal resistance, which is *not* accounted for in this simplified calculator but is a major factor in industrial design.</li>
-                <li><strong>Fouling:</strong> The air side of finned tubes is prone to fouling from dust, pollen, and industrial particulates. This fouling blocks airflow and adds an insulating layer, severely degrading performance over time.</li>
-                <li><strong>Radiation:</strong> As this calculator includes, at high base temperatures (e.g., in a furnace economizer), thermal radiation becomes a significant mode of heat transfer and cannot be ignored. The total heat transfer is the sum of both convection and radiation.</li>
-            </ul>
+            <!-- 4. The Where -->
+            <div style="background: linear-gradient(135deg, var(--card-bg), rgba(139,92,246,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid #8B5CF6; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                <h4 style="color: #8B5CF6; font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-industry"></i> The 'Where' (Industrial Applications)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1.5; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;"><strong>Air-Cooled Heat Exchangers (ACHEs):</strong> You'll find massive banks of finned tubes at oil refineries and power plants pointing at the sky. They utilize forced ambient air to cool process fluids, acting as giant, heavy-duty radiators.</p>
+                        <p style="margin: 10px 0; line-height: 1.8;"><strong>Economizers & Fired Heaters:</strong> Highly specialized finned tubes sit directly in the extreme heat of furnace exhaust stacks. They recover waste kinetic heat and use it to preemptively warm boiler feedwater, boosting plant efficiency.</p>
+                        <p style="margin: 10px 0; line-height: 1.8;"><strong>HVAC & Refrigeration:</strong> The very same logic applies to the "A-coils" inside a residential heat pump or a home air-conditioner. Finned copper tubes strip heat out of freon and exhaust it into the atmosphere!</p>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; text-align: center;">
+                        <svg viewBox="0 0 300 220" style="max-width: 280px; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.10));">
+                            <!-- ACHE Graphic -->
+                            <rect x="50" y="80" width="200" height="100" rx="4" fill="#E2E8F0" stroke="#94A3B8" stroke-width="4"/>
+                            <rect x="70" y="30" width="160" height="50" fill="#94A3B8"/>
+                            <text x="150" y="115" font-family="sans-serif" font-size="14" font-weight="bold" fill="var(--primary-color)" text-anchor="middle">Air-Cooled Array</text>
+                            <text x="150" y="135" font-family="sans-serif" font-size="10" fill="var(--text-color)" text-anchor="middle">(Finned Tube Bundle)</text>
+                            
+                            <!-- Fans -->
+                            <circle cx="100" cy="55" r="15" fill="#CBD5E1" stroke="#334155" stroke-width="2"/>
+                            <path d="M90 45 L110 65 M110 45 L90 65" stroke="#334155" stroke-width="3"/>
+                            
+                            <circle cx="200" cy="55" r="15" fill="#CBD5E1" stroke="#334155" stroke-width="2"/>
+                            <path d="M190 45 L210 65 M210 45 L190 65" stroke="#334155" stroke-width="3"/>
+
+                            <!-- Airflow Vectors -->
+                            <line x1="80" y1="200" x2="80" y2="150" stroke="#3B82F6" stroke-width="3" stroke-dasharray="4" marker-end="url(#blue-arrow)"/>
+                            <line x1="150" y1="200" x2="150" y2="150" stroke="#3B82F6" stroke-width="3" stroke-dasharray="4" marker-end="url(#blue-arrow)"/>
+                            <line x1="220" y1="200" x2="220" y2="150" stroke="#3B82F6" stroke-width="3" stroke-dasharray="4" marker-end="url(#blue-arrow)"/>
+                            <text x="150" y="215" font-family="sans-serif" font-size="11" font-weight="bold" fill="#3B82F6" text-anchor="middle">Cool Ambient Airflow</text>
+
+                            <!-- Hot Exhaust -->
+                            <line x1="100" y1="15" x2="100" y2="-5" stroke="#EF4444" stroke-width="3" marker-end="url(#red-arrow)"/>
+                            <line x1="200" y1="15" x2="200" y2="-5" stroke="#EF4444" stroke-width="3" marker-end="url(#red-arrow)"/>
+
+                            <defs>
+                                <marker id="blue-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#3B82F6" />
+                                </marker>
+                                <marker id="red-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#EF4444" />
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. The When -->
+            <div style="background: linear-gradient(135deg, var(--card-bg), rgba(236,72,153,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid #EC4899; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                <h4 style="color: #EC4899; font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-layer-group"></i> The 'When' (Materials & Fouling)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                    <div style="flex: 1.5; min-width: 300px;">
+                        <p style="margin: 10px 0; line-height: 1.8;"><strong>When to use what metal?</strong> Fin conductivity (\(k\)) is mission critical. <strong>Aluminum</strong> is incredibly common because it's cheap, lightweight, and very highly conductive (~205 W/mK), making it the king of low-temp air coolers. <strong>Copper</strong> is even better (~385 W/mK) but very expensive.</p>
+                        <p style="margin: 10px 0; line-height: 1.8;"><strong>When corrosion hits:</strong> In acidic or exhaust environments, engineers are forced to pivot to <strong>Stainless Steel</strong>. It survives the acid, but its conductivity is atrocious (~16 W/mK), meaning fin arrays must be drastically upsized to compensate.</p>
+                        <p style="margin: 10px 0; line-height: 1.8;"><strong>Fouling:</strong> The dirtier the air, the lower the fin count. Jamming 400 fins/m makes a great theoretical cooler, but the second dust clogs the microscopic fin gaps, insulating the metal, the entire array fatally crashes. That's why industrial arrays often feature "low density" fins!</p>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <canvas id="materialChart" height="220" width="400"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. The Rules -->
+            <div style="background: linear-gradient(135deg, var(--card-bg), rgba(245, 158, 11, 0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid #F59E0B; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s;" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.05)';">
+                <h4 style="color: #F59E0B; font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-balance-scale"></i> The 'Rules' (Design Standards)</h4>
+                <p style="margin: 10px 0 20px 0; line-height: 1.8;">Because fin geometry heavily impacts massive industrial projects, strict international manufacturing codes control exactly how these tubes are fabricated, mapped to the specific working fluid application.</p>
+                
+                <div style="display: flex; justify-content: center; width: 100%; overflow-x: auto; margin-bottom: 25px;">
+                    <svg viewBox="0 0 600 220" style="width: 100%; max-width: 600px; min-width: 450px; font-family: 'Inter', sans-serif;">
+                        <defs>
+                            <filter id="shadow-rules" x="-5%" y="-5%" width="110%" height="110%">
+                                <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.1"/>
+                            </filter>
+                        </defs>
+                        
+                        <!-- Base Code -->
+                        <rect x="200" y="10" width="200" height="40" rx="8" fill="var(--primary-color)" filter="url(#shadow-rules)"/>
+                        <text x="300" y="35" fill="white" font-weight="bold" font-size="14" text-anchor="middle">ASME Section VIII</text>
+                        
+                        <!-- Branch Lines -->
+                        <polyline points="300,50 300,70" stroke="var(--border-color)" stroke-width="2" fill="none"/>
+                        <polyline points="100,70 500,70" stroke="var(--border-color)" stroke-width="2" fill="none"/>
+                        <line x1="100" y1="70" x2="100" y2="90" stroke="var(--border-color)" stroke-width="2"/>
+                        <line x1="300" y1="70" x2="300" y2="90" stroke="var(--border-color)" stroke-width="2"/>
+                        <line x1="500" y1="70" x2="500" y2="90" stroke="var(--border-color)" stroke-width="2"/>
+
+                        <!-- Specific Standards -->
+                        <rect x="25" y="90" width="150" height="40" rx="4" fill="#3B82F6" filter="url(#shadow-rules)"/>
+                        <text x="100" y="115" fill="white" font-weight="bold" font-size="13" text-anchor="middle">API 661</text>
+                        <text x="100" y="150" fill="var(--text-color)" font-size="12" text-anchor="middle">Air-Cooled</text>
+                        <text x="100" y="165" fill="var(--text-color)" font-size="10" text-anchor="middle">Heat Exchangers</text>
+
+                        <rect x="225" y="90" width="150" height="40" rx="4" fill="#EC4899" filter="url(#shadow-rules)"/>
+                        <text x="300" y="115" fill="white" font-weight="bold" font-size="13" text-anchor="middle">API 530</text>
+                        <text x="300" y="150" fill="var(--text-color)" font-size="12" text-anchor="middle">Fired Heaters</text>
+                        <text x="300" y="165" fill="var(--text-color)" font-size="10" text-anchor="middle">Tube Thickness</text>
+
+                        <rect x="425" y="90" width="150" height="40" rx="4" fill="#10B981" filter="url(#shadow-rules)"/>
+                        <text x="500" y="115" fill="white" font-weight="bold" font-size="13" text-anchor="middle">TEMA / ASHRAE</text>
+                        <text x="500" y="150" fill="var(--text-color)" font-size="12" text-anchor="middle">HVAC & Process</text>
+                        <text x="500" y="165" fill="var(--text-color)" font-size="10" text-anchor="middle">Thermal Flow</text>
+                        
+                        <!-- Global standard at bottom -->
+                        <rect x="150" y="190" width="300" height="24" rx="4" fill="var(--bg-color)" stroke="var(--border-color)" stroke-width="1"/>
+                        <text x="300" y="206" fill="var(--text-color)" font-size="11" text-anchor="middle">All subject to strict Non-Destructive Testing (NDT)</text>
+                    </svg>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; text-align: left;">
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                        <h5 style="margin: 0 0 8px 0; color: var(--primary-color);">ASME BPVC Section VIII</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-color);">The foundational Boiler and Pressure Vessel Code. Dictates the absolute maximum allowable stresses, material selection, and welding procedures for the high-pressure tubes and common headers that the fins attach to.</p>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                        <h5 style="margin: 0 0 8px 0; color: #3B82F6;">API 661 / ISO 13706</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-color);">The absolute "bible" for Air-Cooled Heat Exchangers (ACHEs) in petroleum and natural gas industries. It specifies everything from finned tube bundle dimensions, fan clearances, vibrating limits, to thermal performance testing.</p>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border-left: 4px solid #EC4899;">
+                        <h5 style="margin: 0 0 8px 0; color: #EC4899;">API 530</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-color);">Dictates the precise calculation of heater tube thickness in petroleum refineries. It's critical for high-temperature fired heaters where finned tubes sit directly in the extreme radiation zone of furnace exhaust stacks.</p>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border-left: 4px solid #10B981;">
+                        <h5 style="margin: 0 0 8px 0; color: #10B981;">TEMA</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-color);">The Tubular Exchanger Manufacturers Association standard primarily governs shell-and-tube exchangers. While most TEMA units use bare tubes, "low-finned" tubes inside shells (e.g., condensers) strictly follow TEMA mechanical constraints.</p>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border-left: 4px solid #6366F1;">
+                        <h5 style="margin: 0 0 8px 0; color: #6366F1;">ASHRAE 33</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-color);">Methods of Testing Forced Circulation Air Cooling and Air Heating Coils. Standardizes the laboratory measurement of thermal capacity and airside pressure drop for standard commercial HVAC finned tube arrays.</p>
+                    </div>
+                    <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border-left: 4px solid #8B5CF6;">
+                        <h5 style="margin: 0 0 8px 0; color: #8B5CF6;">ISO 11953 / ASTM</h5>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-color);">Material fabrication and testing codes governing how the fins are physically bonded to the tube (e.g., extruded, tension-wound 'L' foot, or welded) to ensure the contact thermal resistance doesn't fail under expansion.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -983,6 +1163,10 @@
             const standardReference = document.getElementById('standard-reference');
             const calculationDetailsDiv = document.getElementById('calculation-details');
             
+            const resetBtn = document.getElementById('reset-calculations-btn');
+            const downloadBtn = document.getElementById('download-pdf-btn');
+            const initialTheorySection = document.getElementById('initial-theory-section');
+            
             const unitSystemSelect = document.getElementById('unit-system');
             const tubeOuterDiameterInput = document.getElementById('tube-outer-diameter');
             const finHeightInput = document.getElementById('fin-height');
@@ -1002,6 +1186,21 @@
             const finsUnitLabels = document.querySelectorAll('.fins-unit-label');
             const conductivityUnitLabels = document.querySelectorAll('.conductivity-unit-label');
             const convectionUnitLabels = document.querySelectorAll('.convection-unit-label');
+            
+            // Default configuration for reset functionality
+            const defaultValues = {
+                unitSystem: unitSystemSelect.value,
+                tubeOuterDiameter: tubeOuterDiameterInput.value,
+                finHeight: finHeightInput.value,
+                finThickness: finThicknessInput.value,
+                finsPerUnitLength: finsPerUnitLengthInput.value,
+                finConductivity: finConductivityInput.value,
+                baseTemperature: baseTemperatureInput.value,
+                ambientTemperature: ambientTemperatureInput.value,
+                externalConvectionCoefficient: externalConvectionCoefficientInput.value,
+                surfaceEmissivity: surfaceEmissivityInput.value,
+                tubeLength: tubeLengthInput.value
+            };
 
             const STEFAN_BOLTZMANN = 5.67e-8; // Stefan-Boltzmann constant W/(m^2 K^4)
             
@@ -1081,6 +1280,8 @@
             updateUI(); // Initial UI update
 
             calculateBtn.addEventListener('click', function() {
+                if(initialTheorySection) initialTheorySection.style.display = 'none';
+                
                 // 1. Read all raw input values
                 const unitSystem = unitSystemSelect.value;
                 const D_tube_outer_val = parseFloat(tubeOuterDiameterInput.value);
@@ -1271,6 +1472,145 @@
                 
                 displayMessage("Calculation completed successfully!", "info");
             });
+
+            // --- Reset Button Logic ---
+            if(resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    unitSystemSelect.value = defaultValues.unitSystem;
+                    tubeOuterDiameterInput.value = defaultValues.tubeOuterDiameter;
+                    finHeightInput.value = defaultValues.finHeight;
+                    finThicknessInput.value = defaultValues.finThickness;
+                    finsPerUnitLengthInput.value = defaultValues.finsPerUnitLength;
+                    finConductivityInput.value = defaultValues.finConductivity;
+                    baseTemperatureInput.value = defaultValues.baseTemperature;
+                    ambientTemperatureInput.value = defaultValues.ambientTemperature;
+                    externalConvectionCoefficientInput.value = defaultValues.externalConvectionCoefficient;
+                    surfaceEmissivityInput.value = defaultValues.surfaceEmissivity;
+                    tubeLengthInput.value = defaultValues.tubeLength;
+                    
+                    if(typeof updateUI === "function") updateUI();
+                    
+                    resultContainer.classList.remove('show');
+                    setTimeout(() => {
+                        resultContainer.style.display = 'none';
+                        if(initialTheorySection) initialTheorySection.style.display = 'block';
+                    }, 400);
+                    displayMessage("Configuration reset back to generic defaults.", "info");
+                });
+            }
+
+            // --- PDF Generation Logic ---
+            if(downloadBtn) {
+                downloadBtn.addEventListener('click', async function() {
+                    const originalBorder = resultContainer.style.border;
+                    const originalShadow = resultContainer.style.boxShadow;
+                    try {
+                        resultContainer.style.border = 'none';
+                        resultContainer.style.boxShadow = 'none';
+                        
+                        // We use html2canvas for snapshotting
+                        const canvas = await html2canvas(resultContainer, {
+                            scale: 2,
+                            useCORS: true,
+                            backgroundColor: document.body.classList.contains('dark-mode') ? '#1E293B' : '#FFFFFF',
+                            onclone: (clonedDoc) => {
+                                const mathEls = clonedDoc.querySelectorAll('mjx-container');
+                                mathEls.forEach(el => {
+                                    const svg = el.querySelector('svg');
+                                    if (svg) {
+                                        svg.setAttribute('width', svg.getAttribute('width') || '100%');
+                                        svg.setAttribute('height', svg.getAttribute('height') || '100%');
+                                    }
+                                });
+                            }
+                        });
+                        
+                        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                        
+                        const pdfWidth = pdf.internal.pageSize.getWidth();
+                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                        
+                        pdf.addImage(imgData, 'JPEG', 0, 10, pdfWidth, pdfHeight);
+                        pdf.save('Finned_Tube_Calculations.pdf');
+                        displayMessage('PDF downloaded successfully!', 'success');
+                    } catch (error) {
+                        displayMessage('PDF generation failed.', 'error');
+                    } finally {
+                        resultContainer.style.border = originalBorder;
+                        resultContainer.style.boxShadow = originalShadow;
+                    }
+                });
+            }
+
+            // --- Initialize Fin Efficiency Chart ---
+            const finCtx = document.getElementById('finEfficiencyChart');
+            if(finCtx) {
+                new Chart(finCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Base (0%)', '20%', '40%', '60%', '80%', 'Tip (100%)'],
+                        datasets: [
+                            {
+                                label: 'Copper Fin Profile',
+                                data: [100, 95, 91, 88, 86, 85],
+                                borderColor: '#10B981',
+                                backgroundColor: '#10B981',
+                                tension: 0.3,
+                                fill: false,
+                                borderWidth: 3
+                            },
+                            {
+                                label: 'Steel Fin Profile',
+                                data: [100, 80, 65, 52, 42, 35],
+                                borderColor: '#64748B',
+                                borderDash: [5, 5],
+                                tension: 0.3,
+                                fill: false,
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: {font: {family: "'Inter', sans-serif"}} } },
+                        scales: { 
+                            y: { title: { display: true, text: 'Temperature Ratio %' }, min: 0, max: 100 },
+                            x: { title: { display: true, text: 'Fin Length to Tip' } }
+                        }
+                    }
+                });
+            }
+
+            // --- Initialize Material Fouling/Conductivity Chart ---
+            const matCtx = document.getElementById('materialChart');
+            if(matCtx) {
+                new Chart(matCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Aluminum', 'Carbon Steel', 'Stainless Steel', 'Copper'],
+                        datasets: [
+                            {
+                                label: 'Thermal Conductivity (W/mK)',
+                                data: [205, 54, 16, 385],
+                                backgroundColor: ['#3B82F6', '#94A3B8', '#EF4444', '#F59E0B'],
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { 
+                            y: { title: { display: true, text: 'Conductivity (W/mK)' } }
+                        }
+                    }
+                });
+            }
+
 
             // New theme switch logic
             const themeSwitch = document.getElementById('theme-switch');
