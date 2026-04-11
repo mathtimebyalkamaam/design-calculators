@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,6 +31,7 @@
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <!-- Retained original MathJax configuration -->
+    <!-- MathJax & Chart.js Configuration -->
     <script>
         MathJax = {
             tex: {
@@ -40,6 +41,8 @@
             }
         };
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -735,6 +738,57 @@
         .footer-content { flex-direction: column; }
         .tank-type-option { flex-basis: 100%; } /* Single column for options on mobile */
         }
+
+        /* --- MODERN THEORY & FAQ STYLES --- */
+        .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-top: 30px; }
+        .faq-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Match standard shadowing */
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .faq-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .faq-card h4 { color: var(--primary-color); margin-top: 0; font-size: 1.1rem; }
+        .faq-card p { font-size: 0.93rem; line-height: 1.6; color: var(--text-color); }
+        
+        .visual-container {
+            background: var(--bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        .graph-wrapper { position: relative; height: 350px; width: 100%; }
+        
+        .svg-anim-box {
+            max-width: 500px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .pulse-motor { animation: motorPulse 2s infinite ease-in-out; }
+        @keyframes motorPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .flow-line { stroke-dasharray: 10; animation: flow 2s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -20; } }
+
+        @media (max-width: 768px) {
+            .faq-grid { grid-template-columns: 1fr; }
+            .graph-wrapper { height: 250px; }
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Storage Tank Volume Calculator - Design Calculators">
@@ -923,6 +977,26 @@
             <h3 style="color: var(--primary-color); margin-top: 25px;">Understanding Tank Heads: Flat vs. Ellipsoidal</h3>
             <p>While simple tanks may have flat ends, most industrial tanks designed to hold pressure (even low pressure) use "dished" or "domed" ends. This shape is far stronger and more efficient at distributing stress. The two most common types are:</p>
             
+            <div class="svg-anim-box" style="text-align: center; max-width: 600px;">
+                <h4 style="margin-top: 0; color: var(--primary-color);">Comparative Tank Head Profiles</h4>
+                <svg viewBox="0 0 300 100" style="width: 100%; height: auto;">
+                    <!-- Flat -->
+                    <path d="M20,90 L20,30 L80,30 L80,90" fill="none" stroke="var(--primary-color)" stroke-width="3"/>
+                    <line x1="20" y1="30" x2="80" y2="30" stroke="var(--accent-color)" stroke-dasharray="4" stroke-width="1"/>
+                    <text x="50" y="15" fill="var(--text-color)" font-size="10" text-anchor="middle">Flat</text>
+                    
+                    <!-- F&D Torispherical (approximate) -->
+                    <path d="M120,90 L120,40 Q130,20 150,20 Q170,20 180,40 L180,90" fill="none" stroke="var(--primary-color)" stroke-width="3" class="pulse-motor"/>
+                    <line x1="120" y1="40" x2="180" y2="40" stroke="var(--accent-color)" stroke-dasharray="4" stroke-width="1"/>
+                    <text x="150" y="15" fill="var(--text-color)" font-size="10" text-anchor="middle">Torispherical</text>
+                    
+                    <!-- 2:1 Ellipsoidal -->
+                    <path d="M220,90 L220,45 A30 15 0 0 1 280 45 L280,90" fill="none" stroke="var(--success-color)" stroke-width="3" class="pulse-motor"/>
+                    <line x1="220" y1="45" x2="280" y2="45" stroke="var(--accent-color)" stroke-dasharray="4" stroke-width="1"/>
+                    <text x="250" y="15" fill="var(--text-color)" font-size="10" text-anchor="middle">2:1 Ellipsoidal</text>
+                </svg>
+            </div>
+
             <h4>1. Torispherical (F&D) Heads</h4>
             <p>A "Flanged and Dished" (F&D) head is composed of three parts: a large "crown radius" (\(R\)), a small "knuckle radius" (\(r\)), and a straight flange. A standard ASME F&D head has \(R = D\) (Crown Radius = Tank Diameter) and \(r = 0.1 \cdot D\). While common, their geometry is complex to calculate.</p>
 
@@ -938,9 +1012,17 @@
                 </li>
             </ul>
 
+
             <h3 style="color: var(--primary-color); margin-top: 25px;">The Challenge: Partial Volume Calculation</h3>
             <p>Knowing the *total* volume is easy. The hard part is knowing the *partial* volume at any given liquid level (\(h\)). The relationship between height and volume is linear for a vertical cylinder or rectangular tank, but it is highly **non-linear** for all other types.</p>
             
+            <div class="visual-container">
+                <div class="graph-wrapper">
+                    <canvas id="volumeLinearityChart"></canvas>
+                </div>
+                <p style="text-align: center; font-size: 0.85rem; margin-top: 10px; font-style: italic;">Comparison of % Fill Height vs % Total Volume for Vertical vs. Horizontal Storage Tanks.</p>
+            </div>
+
             <h4>Vertical Tanks (Ellipsoidal/Conical)</h4>
             <p>For a vertical tank with a 2:1 ellipsoidal bottom, the volume changes slowly at first (at the very bottom) and then faster and faster as the liquid level approaches the "equator" (the tangent line). The formula for the partial volume within the bottom head is:</p>
             <p class="formula">\[ V_{\text{partial head}} = V_{\text{total head}} \cdot \left[ \left( \frac{h}{h_{\text{head}}} \right)^2 \cdot \left( 3 - 2 \cdot \frac{h}{h_{\text{head}}} \right) \right] \]</p>
@@ -953,6 +1035,98 @@
             <p>Because the volume-to-height relationship is so complex, operators on a plant site do not perform these calculations. Instead, they use a **"Strapping Chart"** or **"Tank Calibration Table"**. This is a pre-calculated table that lists the tank's volume at fine increments of height (e.g., every centimeter or 1/8th of an inch).</p>
             <p>An operator simply "dips" the tank (measures the liquid level, \(h\)) and looks up that height on the chart to find the precise volume. This calculator's **"Generate Strapping Chart"** feature performs this exact function, creating a 1,000-point table for any tank geometry you define, which can then be used for accurate, real-world inventory control.</p>
         </div>
+
+        <div class="tool-container" style="margin-top: 40px; border-top: 4px solid var(--secondary-color);">
+            <h2 class="math-content"><i class="fas fa-question-circle"></i> FAQ: Industrial Tank Volume Engineering</h2>
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <h4>1. Why is a horizontal tank's volume scaling non-linear?</h4>
+                    <p>As the liquid level rises from the bottom of a horizontal cylinder, the width of the liquid surface increases until the center (equator), then decreases. This causes the volume-to-height ratio to follow an S-curve rather than a straight line.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>2. What is "Dead Stock" or "Unpumpable Volume"?</h4>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto; overflow: visible;">
+                            <!-- Tank Shell -->
+                            <path d="M 20,10 L 20,70 L 80,70 L 80,10" fill="none" stroke="var(--text-color)" stroke-width="2"/>
+                            <!-- Liquid Level (Dead Stock) -->
+                            <rect x="22" y="55" width="56" height="13" fill="var(--danger-color)" opacity="0.6"/>
+                            <!-- Pump Suction Nozzle -->
+                            <path d="M 80,55 L 100,55 L 100,60 L 80,60 Z" fill="var(--primary-color)"/>
+                            <text x="50" y="64" fill="#fff" font-size="7" text-anchor="middle" font-weight="bold">Dead Stock</text>
+                            <text x="83" y="50" fill="var(--text-color)" font-size="6">Pump Line</text>
+                            <line x1="22" y1="55" x2="80" y2="55" stroke="var(--primary-color)" stroke-dasharray="2" stroke-width="1"/>
+                        </svg>
+                    </div>
+                    <p>It is the residual liquid at the very bottom of the tank (typically below the pump suction nozzle) that cannot be emptied by standard operational pumping. This must be mathematically subtracted from the total tank inventory during process operations.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>3. How does temperature affect tank volume?</h4>
+                    <div style="position: relative; height: 100px; width: 100%; margin: 10px 0;">
+                        <canvas id="tempVolChart"></canvas>
+                    </div>
+                    <p>Both the tank shell and the liquid expand or contract with temperature. In custody transfer (like API MPMS standard practices), measured liquid volume must be mathematically "corrected" to a standard reference temperature (typically 15°C or 60°F) using Volume Correction Factors (VCF).</p>
+                </div>
+                <div class="faq-card">
+                    <h4>4. What is API MPMS Chapter 2?</h4>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto;">
+                            <!-- Tank -->
+                            <path d="M 20,20 L 20,70 L 80,70 L 80,20 Z" fill="none" stroke="var(--text-color)" stroke-width="2"/>
+                            <!-- Tape -->
+                            <line x1="50" y1="10" x2="50" y2="65" stroke="var(--accent-color)" stroke-width="2"/>
+                            <!-- Spool/Weight -->
+                            <circle cx="50" cy="10" r="4" fill="var(--primary-color)"/>
+                            <rect x="48" y="65" width="4" height="4" fill="var(--primary-color)"/>
+                            <!-- Optics marking -->
+                            <path d="M 60,30 L 50,40 L 60,50" fill="none" stroke="var(--success-color)" stroke-width="1.5" stroke-dasharray="2" class="pulse-motor"/>
+                            <text x="75" y="42" fill="var(--text-color)" font-size="7" text-anchor="middle">Optical Laser</text>
+                        </svg>
+                    </div>
+                    <p>It is the American Petroleum Institute's standard for tank calibration (Tank Strapping). It defines the exact physical procedures (e.g., optical reference line, strapping tape) and mathematical methods to create an official gauging table for custody transfer.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>5. Why do tall vertical tanks mathematically "bulge"?</h4>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto;">
+                            <!-- Normal Tank Shell (dashed) -->
+                            <path d="M 30,10 L 30,70 L 70,70 L 70,10" fill="none" stroke="var(--text-color)" stroke-dasharray="2" stroke-width="1"/>
+                            <!-- Bulged Tank Shell -->
+                            <path d="M 30,10 Q 20,50 30,70 L 70,70 Q 80,50 70,10" fill="none" stroke="var(--primary-color)" stroke-width="2"/>
+                            <!-- Hydrostatic Profile -->
+                            <polygon points="50,10 50,65 35,65" fill="var(--accent-color)" opacity="0.3" class="pulse-motor"/>
+                            <text x="50" y="75" fill="var(--text-color)" font-size="6" text-anchor="middle">Hydrostatic Pressure \(\rho gh\)</text>
+                        </svg>
+                    </div>
+                    <p>The hydrostatic pressure from the liquid increases linearly with depth, exerting maximum outward force on the bottom tank shell courses. Large tanks mathematically "bulge" under this weight, slightly increasing the actual volume capacity compared to the nominal empty state.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>6. How often should an industrial tank be recalibrated?</h4>
+                    <p>Industry standards generally recommend recalibrating large storage tanks every 10 to 15 years, or immediately after any significant structural repair, modification, or settling of the tank foundation.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>7. Can I use a DP transmitter for level if the density changes?</h4>
+                    <p>Differential Pressure (DP) transmitters infer level by measuring hydrostatic head (\(P = \rho \cdot g \cdot h\)). If the fluid density (\(\rho\)) changes due to temperature variations or product blending, the inferred level will be erroneous unless compensated.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>8. What is Safe Fill Capacity vs. Nominal Capacity?</h4>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto;">
+                            <!-- Tank Shell -->
+                            <path d="M 20,10 L 20,70 L 80,70 L 80,10 Z" fill="none" stroke="var(--text-color)" stroke-width="2"/>
+                            <!-- Safe Fill Line -->
+                            <line x1="15" y1="25" x2="85" y2="25" stroke="var(--success-color)" stroke-width="2" stroke-dasharray="4"/>
+                            <rect x="22" y="27" width="56" height="41" fill="var(--primary-color)" opacity="0.3"/>
+                            <text x="50" y="22" fill="var(--success-color)" font-size="7" font-weight="bold" text-anchor="middle">Safe Fill (90%)</text>
+                            <line x1="15" y1="10" x2="85" y2="10" stroke="var(--danger-color)" stroke-width="1" stroke-dasharray="2"/>
+                            <text x="50" y="8" fill="var(--danger-color)" font-size="7" text-anchor="middle">Nominal Roof (100%)</text>
+                        </svg>
+                    </div>
+                    <p>Nominal capacity is the geometric volume up to the roof. Safe fill capacity is lower (typically 90-95%) to allow space for thermal expansion of the liquid without causing an overfill incident or venting liquid through relief valves.</p>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- NEW FOOTER -->
@@ -1668,6 +1842,99 @@
             calculateBtn.addEventListener('click', runCalculation);
             strappingChartBtn.addEventListener('click', generateStrappingChart);
 
+            // --- CHART INITIALIZATION ---
+            function initCharts() {
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                const textColor = isDarkMode ? '#CBD5E1' : '#475569';
+                const gridColor = isDarkMode ? 'rgba(203, 213, 225, 0.1)' : 'rgba(71, 85, 105, 0.1)';
+
+                const volCtx = document.getElementById('volumeLinearityChart')?.getContext('2d');
+                if (volCtx) {
+                    const h_perc = [];
+                    const v_horiz = [];
+                    const v_vert = [];
+                    for(let i=0; i<=100; i+=5) {
+                        h_perc.push(i + '%');
+                        v_vert.push(i); // Linear
+                        
+                        // Horizontal (circular segment approximation)
+                        let h = i/100;
+                        let R = 0.5;
+                        let r_h = R - h;
+                        let theta = 2 * Math.acos(r_h / R);
+                        if (isNaN(theta)) theta = (h > R) ? Math.PI*2 : 0; // Handle bounds cleanly
+                        let area = (R*R/2) * (theta - Math.sin(theta));
+                        let total_area = Math.PI * R*R;
+                        let v_perc = (area / total_area) * 100;
+                        if(i===0) v_perc=0;
+                        if(i===100) v_perc=100;
+                        v_horiz.push(v_perc);
+                    }
+
+                    new Chart(volCtx, {
+                        type: 'line',
+                        data: {
+                            labels: h_perc,
+                            datasets: [{
+                                label: 'Vertical Cylinder (Linear)',
+                                data: v_vert,
+                                borderColor: '#10B981',
+                                borderDash: [5, 5],
+                                fill: false,
+                                tension: 0
+                            }, {
+                                label: 'Horizontal Cylinder (S-Curve)',
+                                data: v_horiz,
+                                borderColor: '#2563EB',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { labels: { color: textColor } } },
+                            scales: {
+                                x: { title: { display: true, text: 'Fill Height (%)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor, maxTicksLimit: 11 } },
+                                y: { title: { display: true, text: 'Liquid Volume (%)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor }, min: 0 }
+                            }
+                        }
+                    });
+                }
+                
+                const tempCtx = document.getElementById('tempVolChart')?.getContext('2d');
+                if (tempCtx) {
+                    new Chart(tempCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['15°C (Ref)', '25°C', '35°C'],
+                            datasets: [{
+                                label: 'Volume Expansion (Liters)',
+                                data: [1000, 1008, 1016], // Simplified VCF example
+                                backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: true }
+                            },
+                            scales: {
+                                x: { grid: { display: false }, ticks: { color: textColor } },
+                                y: { grid: { color: gridColor }, ticks: { color: textColor }, min: 990 }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Init on load
+            initCharts();
+
             // Theme switch functionality
             const themeSwitch = document.getElementById('theme-switch');
             if (themeSwitch) {
@@ -1678,6 +1945,13 @@
                 themeSwitch.addEventListener('change', function() {
                     document.body.classList.toggle('dark-mode');
                     localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                    
+                    // Re-init chart for theme update
+                    let existingChart1 = Chart.getChart('volumeLinearityChart');
+                    if (existingChart1) existingChart1.destroy();
+                    let existingChart2 = Chart.getChart('tempVolChart');
+                    if (existingChart2) existingChart2.destroy();
+                    initCharts();
                 });
             }
         });

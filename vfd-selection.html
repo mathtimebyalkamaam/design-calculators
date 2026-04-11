@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -37,9 +37,10 @@
     </script>
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
-    <!-- PDF Generation Libraries -->
+    <!-- PDF & Graph Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -718,6 +719,52 @@
             }
         }
         .hidden { display: none; }
+        /* --- MODERN THEORY & FAQ STYLES --- */
+        .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-top: 30px; }
+        .faq-card { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+            transition: transform 0.3s; 
+        }
+        .faq-card:hover { transform: translateY(-5px); }
+        .faq-card h4 { color: var(--primary-color); margin-top: 0; font-size: 1.1rem; }
+        .faq-card p { font-size: 0.93rem; line-height: 1.6; color: var(--text-color); }
+        
+        .visual-container { 
+            background: var(--bg-color); 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border: 1px solid var(--border-color); 
+        }
+        .graph-wrapper { position: relative; height: 250px; width: 100%; }
+        
+        .svg-anim-box { 
+            max-width: 400px; 
+            margin: 20px auto; 
+            background: var(--card-bg); 
+            border-radius: 8px; 
+            padding: 15px; 
+            border: 1px solid var(--border-color); 
+        }
+
+        .pulse-motor { animation: motorPulse 2s infinite ease-in-out; }
+        @keyframes motorPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        .flow-line { stroke-dasharray: 10; animation: flow 2s linear infinite; }
+        @keyframes flow { to { stroke-dashoffset: -20; } }
+
+        @media (max-width: 768px) {
+            .faq-grid { grid-template-columns: 1fr; }
+            .graph-wrapper { height: 200px; }
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="World-Class VFD Selection Tool - Design Calculators - Electrical">
@@ -1134,17 +1181,35 @@
             <h3>1. Load Type: The Most Critical Factor</h3>
             <p>The type of load determines the torque required from the motor, which in turn dictates the overload capacity needed from the VFD. Loads are generally categorized into three types:</p>
             
+            <div class="visual-container">
+                <div class="graph-wrapper">
+                    <canvas id="torqueTypeChart"></canvas>
+                </div>
+                <p style="text-align: center; font-size: 0.85rem; margin-top: 10px; font-style: italic;">Comparison of Speed vs. Torque curves for different industrial loads.</p>
+            </div>
+
             <h4>Variable Torque (VT) Loads</h4>
             <ul>
                 <li><strong>Examples:</strong> Centrifugal fans, pumps, and blowers.</li>
-                <li><strong>Characteristics:</strong> Torque required is proportional to the square of the speed ($T \\propto N^2$), and power required is proportional to the cube of the speed ($P \\propto N^3$).</li>
+                <li><strong>Characteristics:</strong> Torque required is proportional to the square of the speed (\[ T \propto N^2 \]), and power required is proportional to the cube of the speed (\[ P \propto N^3 \]).</li>
                 <li><strong>VFD Sizing:</strong> These are the most energy-efficient applications for VFDs. They require low torque at low speeds. VFDs for VT loads are typically rated for <strong>110% overload for 60 seconds (Normal Duty)</strong>. This is the most economical VFD sizing.</li>
             </ul>
+
+            <div class="svg-anim-box" style="text-align: center;">
+                <svg viewBox="0 0 200 100" style="width: 100%; height: auto;">
+                    <rect x="20" y="30" width="60" height="40" fill="var(--primary-color)" rx="5" />
+                    <circle cx="120" cy="50" r="25" fill="none" stroke="var(--secondary-color)" stroke-width="3" class="pulse-motor" />
+                    <line x1="80" y1="50" x2="95" y2="50" stroke="var(--accent-color)" stroke-width="2" class="flow-line" />
+                    <text x="50" y="55" fill="white" font-size="10" text-anchor="middle">VFD</text>
+                    <text x="120" y="55" fill="var(--secondary-color)" font-size="8" text-anchor="middle">MOTOR</text>
+                    <text x="100" y="90" fill="var(--text-color)" font-size="8" text-anchor="middle">Dynamic V/Hz Scaling</text>
+                </svg>
+            </div>
 
             <h4>Constant Torque (CT) Loads</h4>
             <ul>
                 <li><strong>Examples:</strong> Conveyors, positive displacement pumps, mixers, extruders.</li>
-                <li><strong>Characteristics:</strong> The load requires the same amount of torque regardless of the speed. Power is directly proportional to speed ($P \\propto N$).</li>
+                <li><strong>Characteristics:</strong> The load requires the same amount of torque regardless of the speed. Power is directly proportional to speed (\[ P \propto N \]).</li>
                 <li><strong>VFD Sizing:</strong> These applications are more demanding. The VFD must be able to provide full torque at low speeds, which generates more heat. VFDs for CT loads are rated for <strong>150% overload for 60 seconds (Heavy Duty)</strong>. This often means selecting a VFD one size larger than for a VT load of the same power.</li>
             </ul>
 
@@ -1188,10 +1253,29 @@
             </ul>
 
             <h4>Long Motor Cables (dv/dt & Reflected Waves)</h4>
-            <p>The VFD's output is not a clean sine wave; it's a very fast-switching pulse-width-modulated (PWM) signal. This high-speed switching ($dv/dt$, or change-in-voltage over change-in-time) can cause problems, especially with long motor cables:</p>
+            <p>The VFD's output is not a clean sine wave; it's a very fast-switching pulse-width-modulated (PWM) signal. This high-speed switching (\[ dv/dt \], or change-in-voltage over change-in-time) can cause problems, especially with long motor cables:</p>
+            
+            <div class="visual-container">
+                <svg viewBox="0 0 400 120" style="width: 100%; border-radius: 8px;">
+                    <!-- VFD Output -->
+                    <rect x="10" y="40" width="40" height="40" fill="var(--primary-color)" rx="4" />
+                    <text x="30" y="65" fill="white" font-size="8" text-anchor="middle">VFD</text>
+                    
+                    <!-- Cable -->
+                    <line x1="50" y1="60" x2="330" y2="60" stroke="#94a3b8" stroke-width="4" />
+                    <path d="M 50 60 Q 190 20 330 60" fill="none" stroke="var(--secondary-color)" stroke-width="2" class="flow-line" />
+                    
+                    <!-- Wave Reflection -->
+                    <circle cx="350" cy="60" r="20" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="4" class="pulse-motor" />
+                    <text x="350" y="65" fill="#ef4444" font-size="8" text-anchor="middle">MOTOR</text>
+                    
+                    <text x="200" y="100" fill="var(--text-color)" font-size="9" text-anchor="middle">Reflected Wave Peak (~2x V_bus)</text>
+                </svg>
+            </div>
+
             <ul>
                 <li><strong>Reflected Waves:</strong> The fast voltage pulses can travel down the cable and reflect off the motor terminals, doubling the voltage at the motor (e.g., a 400V system can see 800V+ spikes). This destroys motor insulation and causes premature failure.</li>
-                <li><strong>Solution:</strong> For long cable runs (typically > 50-100 meters), an <strong>output filter (or "load reactor")</strong> is installed at the VFD's output. This filter smooths the PWM edges, reducing the $dv/dt$ and protecting the motor. Using "inverter-duty" rated motors (with Class F or H insulation) is also essential.</li>
+                <li><strong>Solution:</strong> For long cable runs (typically > 50-100 meters), an <strong>output filter (or "load reactor")</strong> is installed at the VFD's output. This filter smooths the PWM edges, reducing the \[ dv/dt \] and protecting the motor. Using "inverter-duty" rated motors (with Class F or H insulation) is also essential.</li>
             </ul>
             
             <h4>Control Method: V/f (Scalar) vs. Vector Control</h4>
@@ -1200,6 +1284,47 @@
                 <li><strong>Sensorless Vector Control (SVC):</strong> A more advanced method that uses a high-speed processor and a mathematical model of the motor to precisely control torque, even at low speeds. This is ideal for constant torque loads like conveyors and mixers that need good torque control without the expense of an encoder.</li>
                 <li><strong>Closed-Loop Vector:</strong> The highest performance. This uses an encoder on the motor shaft to provide exact speed and position feedback to the VFD. It is required for applications needing precise positioning or full torque at zero speed, such as hoists, elevators, and machine tools.</li>
             </ul>
+        </div>
+
+        <div class="content-block">
+            <h2 class="math-content">Frequently Asked Questions: VFD Engineering Insights</h2>
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <h4>1. How does a VFD actually save energy?</h4>
+                    <p>In centrifugal loads like fans and pumps, speed reduction yields dramatic power savings according to <strong>Affinity Laws</strong> (Power varies as the cube of speed). A 20% reduction in speed can save nearly 50% in energy.</p>
+                    <div class="visual-container" style="height: 150px;">
+                        <canvas id="energySavingsChart"></canvas>
+                    </div>
+                </div>
+                <div class="faq-card">
+                    <h4>2. What is the "V/Hz Ratio" and why is it constant?</h4>
+                    <p>To maintain constant magnetic flux in the motor, the voltage must change in direct proportion to the frequency. If voltage is too high at low frequency, the motor saturates; if too low, torque drops.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>3. What are "Harmonics" and how do they affect the grid?</h4>
+                    <p>VFDs use fast-switching transistors that draw non-linear current, creating high-frequency noise called harmonics. Excess harmonics can overheat upstream transformers and trip sensitive relay systems.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>4. Why do I need a Line Reactor?</h4>
+                    <p>A line reactor acts as an electrical buffer. It smooths the current spikes entering the drive, improves power factor, and protects the VFD's internal bridge rectifier from voltage surges in the supply line.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>5. Can I use a VFD with a standard motor?</h4>
+                    <p>It is risky. Standard motors lack the reinforced insulation needed to handle the high-voltage spikes ($dv/dt$) from a VFD's PWM output. Always use <strong>Inverter-Duty rated motors</strong> for reliable operation.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>6. How does altitude affect VFD performance?</h4>
+                    <p>At high altitudes (>1000m), air is thinner and less effective at cooling. The VFD must be derated by ~1% for every 100m above the limit to prevent thermal runaway of the power electronics.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>7. What is the difference between V/f and Vector control?</h4>
+                    <p>V/f is "scalar" control, fine for simple fans. Vector control is "intelligent" – it calculates the exact torque and flux vectors, allowing a motor to produce 100% torque even at 0.5 Hz speed.</p>
+                </div>
+                <div class="faq-card">
+                    <h4>8. When is dynamic braking required?</h4>
+                    <p>For high-inertia loads like large fans or hoisting applications. Rapidly slowing these down pumps energy back to the drive; a braking resistor burns this off as heat to prevent overvoltage faults.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1745,6 +1870,79 @@
             resetFormBtn.addEventListener('click', resetForm);
             downloadPdfBtn.addEventListener('click', downloadPDF);
 
+            // --- CHART INITIALIZATION ---
+            function initCharts() {
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                const textColor = isDarkMode ? '#CBD5E1' : '#475569';
+                const gridColor = isDarkMode ? 'rgba(203, 213, 225, 0.1)' : 'rgba(71, 85, 105, 0.1)';
+
+                // Torque Type Chart
+                const torqueCtx = document.getElementById('torqueTypeChart')?.getContext('2d');
+                if (torqueCtx) {
+                    new Chart(torqueCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['0%', '20%', '40%', '60%', '80%', '100%'],
+                            datasets: [{
+                                label: 'Constant Torque (Conveyors)',
+                                data: [100, 100, 100, 100, 100, 100],
+                                borderColor: '#ef4444',
+                                borderDash: [5, 5],
+                                fill: false,
+                                tension: 0
+                            }, {
+                                label: 'Variable Torque (Fans/Pumps)',
+                                data: [0, 4, 16, 36, 64, 100],
+                                borderColor: '#2563EB',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { labels: { color: textColor } } },
+                            scales: {
+                                x: { title: { display: true, text: 'Speed (%)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } },
+                                y: { title: { display: true, text: 'Torque (%)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor }, min: 0 }
+                            }
+                        }
+                    });
+                }
+
+                // Energy Savings Chart
+                const energyCtx = document.getElementById('energySavingsChart')?.getContext('2d');
+                if (energyCtx) {
+                    new Chart(energyCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['0%', '20%', '40%', '60%', '80%', '100%'],
+                            datasets: [{
+                                label: 'Power Consumption (P âˆ NÂ³)',
+                                data: [0, 0.8, 6.4, 21.6, 51.2, 100],
+                                borderColor: '#10B981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { display: true, grid: { display: false }, ticks: { color: textColor } },
+                                y: { display: true, grid: { color: gridColor }, ticks: { color: textColor }, min: 0 }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Init on load
+            initCharts();
+
             const themeSwitch = document.getElementById('theme-switch');
             if (themeSwitch) {
                 if (localStorage.getItem('theme') === 'dark') {
@@ -1759,6 +1957,8 @@
                         document.body.classList.remove('dark-mode');
                         localStorage.setItem('theme', 'light');
                     }
+                    // Re-init charts to update colors
+                    initCharts();
                 });
             }
         });

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <!-- AdSense & Analytics -->
@@ -547,6 +547,14 @@
             font-size: 0.9rem; color: #94A3B8;
         }
 
+        /* Animations & FAQ Extensions */
+        @keyframes pulseMotor {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pulse-motor { animation: pulseMotor 2s infinite; transform-origin: center; }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container { padding: 0 15px; }
@@ -789,44 +797,147 @@
 
         <!-- EDUCATIONAL CONTENT SECTION (MASSIVE) -->
         <div class="education-section card">
-            <h2><i class="fas fa-lightbulb"></i> Engineering Insights: Compressor Thermodynamics</h2>
+            <h2><i class="fas fa-lightbulb"></i> Engineering Theory: Compressor Thermodynamics</h2>
             
             <!-- Insight 1: Compression Process -->
             <div class="insight-card">
-                <h4><i class="fas fa-compress-arrows-alt"></i> 1. Adiabatic vs. Polytropic</h4>
-                <p>Compression adds energy to the gas.
+                <h4><i class="fas fa-compress-arrows-alt"></i> 1. Adiabatic vs. Polytropic Models</h4>
+                <div style="position: relative; height: 250px; width: 100%; margin: 15px 0;">
+                    <canvas id="polyVsAdiabaticChart"></canvas>
+                </div>
+                <p>Compression introduces immense kinetic energy into the gas molecules, which manifests directly as heat and pressure. Choosing the correct predictive thermodynamic model determines how accurately we can size the driver motor and the downstream piping.</p>
                 <ul>
-                    <li><strong>Adiabatic (Isentropic):</strong> Assumes perfect insulation (no heat loss) and reversible process. $PV^k = C$. Used as the reference for efficiency. Real compressors are never truly adiabatic because of friction and turbulence.</li>
-                    <li><strong>Polytropic:</strong> The real-world process. Includes heat transfer and friction. $PV^n = C$. The exponent $n$ is determined experimentally. Typically $1 < n < k$ if cooled, or $n > k$ if irreversible losses dominate.</li>
+                    <li><strong>Adiabatic (Isentropic, k):</strong> This idealized model assumes perfect thermal insulation (zero heat loss to the casing) and a fully mathematically reversible compression process ($PV^k = Constant$). It is universally used as the absolute theoretical baseline to calculate "Isentropic Efficiency". In reality, real-world industrial compressors are never purely adiabatic because inherent mechanical friction and extreme gas turbulence disrupt the reversibility.</li>
+                    <li><strong>Polytropic (n):</strong> The pragmatic, real-world engine model. It mathematically accounts for unavoidable heat transfer into the cylinder walls and internal fluid friction ($PV^n = Constant$). The exponent $n$ is always determined empirically through rigorous testing (e.g. $1.35$ for standard air). Usually, if the compressor is heavily water-jacket cooled, $1 < n < k$. If irreversible friction dominates over cooling, $n > k$.</li>
                 </ul>
-                </p>
             </div>
 
             <!-- Insight 2: Discharge Temperature -->
             <div class="insight-card">
-                <h4><i class="fas fa-thermometer-full"></i> 2. The Danger of Discharge Temp ($T_2$)</h4>
-                <p>Compressing gas creates heat. The theoretical discharge temperature is:
-                $$ T_2 = T_1 \left( \frac{P_2}{P_1} \right)^{\frac{n-1}{n}} $$
-                If $T_2$ exceeds 150-160Â°C, lubricating oil can break down or carbonize, and seals can fail. This sets the limit for the compression ratio per stage (usually max 3:1 or 4:1). If calculation shows $T_2 > 150^\circ C$, you need multi-stage compression with intercooling.</p>
+                <h4><i class="fas fa-thermometer-full"></i> 2. The Danger of High Discharge Temperature ($T_2$)</h4>
+                <div style="text-align: center; margin: 20px 0;">
+                    <svg viewBox="0 0 160 80" style="max-height: 100px; width: auto; overflow: visible;">
+                        <!-- Cylinder -->
+                        <path d="M 40,20 L 120,20 L 120,60 L 40,60 Z" fill="none" stroke="var(--text-color)" stroke-width="3"/>
+                        <!-- Piston -->
+                        <path d="M 30,22 L 70,22 L 70,58 L 30,58 Z" fill="var(--primary)" opacity="0.6"/>
+                        <!-- Piston Rod -->
+                        <line x1="0" y1="40" x2="30" y2="40" stroke="var(--primary)" stroke-width="4"/>
+                        <!-- Gas (Red Hot) -->
+                        <rect x="72" y="22" width="46" height="36" fill="url(#heatGrad)" class="pulse-motor"/>
+                        <defs>
+                            <linearGradient id="heatGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="var(--warning)" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="var(--danger)" stop-opacity="0.9"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Spark / Warning -->
+                        <path d="M 100,40 L 95,30 L 105,30 Z" fill="#FFF"/>
+                        <circle cx="100" cy="40" r="10" fill="none" stroke="var(--danger)" stroke-width="2" stroke-dasharray="3" class="pulse-motor"/>
+                        <text x="140" y="42" fill="var(--danger)" font-size="8" font-weight="bold">> 150°C</text>
+                        <text x="140" y="52" fill="var(--text-color)" font-size="6">Oil Breakdown Risk</text>
+                    </svg>
+                </div>
+                <p>Compressing gas heavily concentrates its kinetic internal energy, manifesting as an intense, sometimes dangerous, temperature spike at the discharge valve. The theoretical discharge temperature equation implies a steep, highly non-linear exponential climb:</p>
+                <p class="formula">$$ T_2 = T_1 \left( \frac{P_2}{P_1} \right)^{\frac{n-1}{n}} $$</p>
+                <p>If $T_2$ exceeds 150-160°C (300-320°F), severe mechanical problems unfold: synthetic lubricating oil begins to immediately carbonize (forming hard, abrasive deposits on valves), dynamic mechanical seals start to degrade, and the risk of auto-ignition (explosion) inside the air lines drastically heightens. Additionally, extreme heat severely throttles the volumetric efficiency of the cylinder. This thermal limit is the exact reason why single-stage compression ratios are strictly capped (usually max 3:1 or 4:1). To achieve high terminal pressures, engineers are forced by physics to use multi-stage compressors equipped with intercoolers (air-fin or shell-and-tube heat exchangers) to reset the gas temperature between each stage.</p>
             </div>
 
             <!-- Insight 3: Mass Flow -->
             <div class="insight-card">
-                <h4><i class="fas fa-weight-hanging"></i> 3. Mass Flow vs Volumetric Flow</h4>
-                <p>Compressors are sized by inlet volume ($m^3/h$), but the work done depends on Mass ($\dot{m}$).
-                <br>$\dot{m} = \rho_1 \times Q_1$.
-                <br>Since $\rho_1 \propto P_1 / T_1$, a hot summer day (High $T_1$) reduces the mass flow capability of the machine, while a cold day increases it (and power demand!). This calculator derives mass flow internally.</p>
+                <h4><i class="fas fa-weight-hanging"></i> 3. Mass Flow vs Volumetric Flow Density Shift</h4>
+                <div style="text-align: center; margin: 20px 0;">
+                    <svg viewBox="0 0 200 80" style="max-height: 90px; width: auto; overflow: visible;">
+                        <!-- Cold Air Input -->
+                        <circle cx="50" cy="40" r="30" fill="none" stroke="var(--secondary)" stroke-width="2"/>
+                        <text x="50" y="10" fill="var(--secondary)" font-size="7" font-weight="bold" text-anchor="middle">Cold Winter Day (0°C)</text>
+                        <circle cx="40" cy="30" r="1.5" fill="var(--secondary)"/> <circle cx="50" cy="35" r="1.5" fill="var(--secondary)"/> <circle cx="60" cy="35" r="1.5" fill="var(--secondary)"/>
+                        <circle cx="45" cy="45" r="1.5" fill="var(--secondary)"/> <circle cx="55" cy="42" r="1.5" fill="var(--secondary)"/> <circle cx="65" cy="48" r="1.5" fill="var(--secondary)"/>
+                        <!-- Hot Air Input -->
+                        <circle cx="150" cy="40" r="30" fill="none" stroke="var(--danger)" stroke-width="2"/>
+                        <text x="150" y="10" fill="var(--danger)" font-size="7" font-weight="bold" text-anchor="middle">Hot Summer Day (40°C)</text>
+                        <circle cx="140" cy="35" r="1.5" fill="var(--danger)"/> <circle cx="160" cy="45" r="1.5" fill="var(--danger)"/> <circle cx="145" cy="50" r="1.5" fill="var(--danger)"/>
+                        <text x="50" y="77" fill="var(--text-color)" font-size="6" text-anchor="middle">High Density ρ = 1.29 kg/m³</text>
+                        <text x="150" y="77" fill="var(--text-color)" font-size="6" text-anchor="middle">Low Density ρ = 1.12 kg/m³</text>
+                    </svg>
+                </div>
+                <p>Vendors physically size compressor casings and cylinders by their strict volumetric intake constraint ($m^3/h$). However, the actual thermodynamic work produced—and the monetary value of the fluid transferred—depends entirely on the mass throughput ($\dot{m}$). This discrepancy is governed by the Gas Law:</p>
+                <p class="formula">$$ \dot{m} = \rho_1 \times Q_1 \quad \text{where} \quad \rho_1 = \frac{P_1 \cdot MW}{Z \cdot R \cdot T_1} $$</p>
+                <p>Because suction density $\rho_1$ is inversely proportional to Inlet Temperature ($T_1$), ambient environmental conditions heavily dictate performance. A hot summer day (High $T_1$) spreads the molecules apart, severely dropping the mass handled per piston stroke and causing capacity bottlenecks downstream. Conversely, a freezing winter night packs the molecules tightly, causing a massive surge in mass flow which can instantly overload the prime mover motor (tripping the breaker on high amps!). This calculator automatically derives the true mass flow dynamically to prevent these sizing errors.</p>
             </div>
 
             <!-- Insight 4: Power Calculation -->
             <div class="insight-card">
-                <h4><i class="fas fa-bolt"></i> 4. Brake Horsepower (BHP)</h4>
-                <p>The <strong>Gas Power (GHP)</strong> is the energy added to the gas.
-                <br>The <strong>Brake Power (BHP)</strong> is what the motor must deliver to the shaft.
-                <br>$BHP = GHP / \eta_{mech}$.
-                <br>Mechanical losses (bearings, gears, seals) typically consume 2-5% of the power. This tool separates Gas Efficiency (Aerodynamic) from Mechanical Efficiency.</p>
+                <h4><i class="fas fa-bolt"></i> 4. Gas Power (GHP) vs Brake Horsepower (BHP)</h4>
+                <div style="text-align: center; margin: 20px 0;">
+                    <svg viewBox="0 0 240 60" style="max-height: 80px; width: auto; overflow: visible;">
+                        <!-- Motor -->
+                        <rect x="10" y="15" width="50" height="30" fill="var(--primary)" rx="4"/>
+                        <text x="35" y="32" fill="#fff" font-size="7" font-weight="bold" text-anchor="middle">Electric Motor</text>
+                        <text x="35" y="10" fill="var(--text-color)" font-size="6" text-anchor="middle">Grid Electrical Power</text>
+                        
+                        <!-- Shaft 1 -->
+                        <line x1="60" y1="30" x2="90" y2="30" stroke="#94A3B8" stroke-width="4"/>
+                        <text x="75" y="24" fill="var(--success)" font-size="6" font-weight="bold" text-anchor="middle">BHP Input</text>
+
+                        <!-- Gearbox/Friction -->
+                        <rect x="90" y="20" width="30" height="20" fill="var(--accent)" opacity="0.8" rx="2"/>
+                        <text x="105" y="32" fill="#fff" font-size="6" font-weight="bold" text-anchor="middle">Friction</text>
+                        <path d="M 105,40 L 105,48 L 110,45" fill="none" stroke="var(--danger)" stroke-width="1"/>
+                        <text x="105" y="55" fill="var(--danger)" font-size="5" text-anchor="middle">Mechanical Loss</text>
+
+                        <!-- Shaft 2 -->
+                        <line x1="120" y1="30" x2="150" y2="30" stroke="#94A3B8" stroke-width="4"/>
+                        <text x="135" y="24" fill="var(--secondary)" font-size="6" font-weight="bold" text-anchor="middle">GHP Output</text>
+
+                        <!-- Compressor -->
+                        <path d="M 150,10 L 200,20 L 200,40 L 150,50 Z" fill="var(--card)" stroke="var(--border)" stroke-width="2"/>
+                        <text x="175" y="32" fill="var(--heading)" font-size="7" font-weight="bold" text-anchor="middle">Compressor</text>
+                        
+                        <!-- Gas -->
+                        <line x1="200" y1="30" x2="220" y2="30" stroke="var(--primary)" stroke-width="2" stroke-dasharray="2" class="pulse-motor"/>
+                        <text x="210" y="25" fill="var(--text-color)" font-size="5" text-anchor="middle">Pressurized Gas</text>
+                    </svg>
+                </div>
+                <p>The <strong>Gas Power (GHP)</strong> represents the pure, theoretical thermodynamic energy pushed directly into the fluid stream to elevate its pressure. It assumes the machine itself operates with zero friction.</p>
+                <p>The <strong>Brake Power (BHP)</strong> is the massive, real-world power requirement that the prime mover (an Electric Motor or Steam Turbine) must absolutely deliver to the main driver shaft just to overcome internal mechanical resistance and break even.</p>
+                <p class="formula">$$ BHP = \frac{GHP}{\eta_{mech}} $$</p>
+                <p>Mechanical losses from heavy journal bearings, timing gearboxes, rod packing, and dynamic shaft seals typically hemorrhage 2% to 5% of the total energy input as waste heat. This advanced tool rigidly isolates aerodynamic Gas Efficiency ($\eta_{isentropic}$) from physical mechanical bearing efficiency ($\eta_{mech}$) to yield a highly accurate driver rating. Note: When selecting the final electric motor, engineers typically apply an additional 1.10 to 1.15 API "Service Factor" margin on top of the calculated BHP to prevent overheating during grid voltage droops.</p>
             </div>
         </div>
+
+        <div class="tool-container" style="margin-top: 40px; border-top: 4px solid var(--secondary); padding-top: 20px;">
+            <h2 class="math-content"><i class="fas fa-question-circle"></i> FAQ: Industrial Compressor Sizing</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: stretch; margin-top: 20px;">
+                <div class="insight-card" style="margin: 0;">
+                    <h4 style="margin-top: 0;">1. What is the Compressibility Factor (Z)?</h4>
+                    <p>The Ideal Gas Law ($PV = nRT$) naively assumes molecules are zero-volume dots that never physically interact. For deep industrial high pressures, molecules crowd together intensely and intermolecular atomic forces (Van der Waals forces) take over. The Compressibility Factor (Z) corrects this severe theoretical deviation ($PV = ZnRT$) based on the gas's Critical Pressure ($P_c$) and Critical Temperature ($T_c$). Using a generic ideal Z=1.0 at 100 bar pressure can hallucinate a massive 20-30% error in compressor power sizing!</p>
+                </div>
+                <div class="insight-card" style="margin: 0;">
+                    <h4 style="margin-top: 0;">2. Why use intercoolers in multi-stage setups?</h4>
+                    <p>Intercoolers actively strip the brutal heat of compression out of the gas stream between stages. This drastically shrinks the physical volume of the gas before it enters the next cylinder. Since mechanical compression work is mathematically bound to starting volume ($W = \int V dP$), intercooling acts as an emergency brake on total plant BHP power consumption. <strong>Crucially:</strong> Cooling gas often drops it below its dew point. Heavy condensation requires a liquid moisture separator after every intercooler to prevent the next stage from ingesting water.</p>
+                </div>
+                <div class="insight-card" style="margin: 0;">
+                    <h4 style="margin-top: 0;">3. Can I run liquid through a compressor?</h4>
+                    <p><strong>Absolutely Not.</strong> Unlike pumps, compressors violently attack gas pockets at high speeds. Gases compress; liquids are fundamentally incompressible. If rogue liquid droplets inject into a high-RPM centrifugal impeller, extreme mechanical shockwaves are generated. In reciprocating compressors, "liquid slugging" will instantly bend the steel connecting rods, blow out the cylinder head gaskets, or shatter the casing. This is precisely why automated Suction Knockout Drums (KOD) are a mandatory safety feature.</p>
+                </div>
+                <div class="insight-card" style="margin: 0;">
+                    <h4 style="margin-top: 0;">4. Centrifugal vs Reciprocating?</h4>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <svg viewBox="0 0 100 40" style="max-height: 40px; width: auto; overflow: visible;">
+                            <!-- Centrifugal (Smooth) -->
+                            <path d="M 10,25 Q 30,15 50,25" fill="none" stroke="var(--primary)" stroke-width="2"/>
+                            <!-- Reciprocating (Pulsing) -->
+                            <path d="M 60,25 L 70,5 L 80,25 L 90,5" fill="none" stroke="var(--danger)" stroke-width="2"/>
+                            <text x="30" y="38" fill="var(--text-color)" font-size="5" text-anchor="middle">Continuous Flow (Centrifugal)</text>
+                            <text x="75" y="38" fill="var(--text-color)" font-size="5" text-anchor="middle">Pulsating Flow (Reciprocating)</text>
+                        </svg>
+                    </div>
+                    <p><strong>Centrifugals:</strong> Dynamic, high-speed aerodynamic machines. They dominate mass-scale refining because they provide smooth, continuous workflows. However, they struggle to create extreme pressure ratios per stage and are highly susceptible to aerodynamic "Surge" (flow reversal).<br><strong>Reciprocating:</strong> Brute-force positive displacement pistons. They are the undisputed kings of pushing extreme ultra-high injection pressures (up to 3000+ bar) but inherently generate violent, destructive flow pulsations requiring acoustic dampeners.</p>
+                </div>
+            </div>
+        </div>
+
     </main>
 
         <footer>
@@ -981,6 +1092,11 @@
                 themeSwitch.addEventListener('change', function() {
                     document.body.classList.toggle('dark-mode');
                     localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                    let existingCtx = Chart.getChart('polyVsAdiabaticChart');
+                    if(existingCtx) existingCtx.destroy();
+                    initTheoryCharts();
+                    
+                    if(lastResult) performCalculation(); // Re-render results PV chart to match dark mode axes organically
                 });
             }
 
@@ -1213,6 +1329,45 @@
             messageBox.classList.add('show');
             setTimeout(() => messageBox.classList.remove('show'), 4000);
         }
+
+        // --- Theory Charts Initialization ---
+        function initTheoryCharts() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const colorTxt = isDark ? '#CBD5E1' : '#475569';
+            const colorGrid = isDark ? 'rgba(203,213,225,0.1)' : 'rgba(71,85,105,0.1)';
+            
+            const thCtx = document.getElementById('polyVsAdiabaticChart')?.getContext('2d');
+            if (thCtx) {
+                // Generate simplistic P-V curves P = C / V^n
+                let v = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5];
+                let p_iso = v.map(vi => 1 / Math.pow(vi, 1.0)); // n=1
+                let p_poly = v.map(vi => 1 / Math.pow(vi, 1.3)); // n=1.3
+                let p_adi = v.map(vi => 1 / Math.pow(vi, 1.4)); // n=1.4
+                
+                new Chart(thCtx, {
+                    type: 'line',
+                    data: {
+                        labels: v.map(vi => (vi*100).toFixed(0) + '%'),
+                        datasets: [
+                            { label: 'Isothermal (n=1)', data: p_iso, borderColor: '#10B981', borderDash: [5,5], fill: false, tension: 0.3 },
+                            { label: 'Polytropic (n=1.3)', data: p_poly, borderColor: '#3B82F6', fill: false, tension: 0.3 },
+                            { label: 'Adiabatic (k=1.4)', data: p_adi, borderColor: '#EF4444', fill: false, tension: 0.3 },
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: colorTxt } } },
+                        scales: {
+                            x: { title: { display: true, text: 'Volume (V)', color: colorTxt }, grid: { color: colorGrid }, ticks: { color: colorTxt }, reverse: true },
+                            y: { title: { display: true, text: 'Pressure (P)', color: colorTxt }, grid: { color: colorGrid }, ticks: { color: colorTxt } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Init theory graphics independently
+        window.addEventListener('load', initTheoryCharts);
     </script>
 </body>
 </html>
