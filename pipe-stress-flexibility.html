@@ -23,6 +23,7 @@
     <script type="text/javascript" id="MathJax-script" async
             src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -33,7 +34,7 @@
         // MathJax configuration to support inline and display LaTeX
         MathJax = {
             tex: {
-                inlineMath: [['\\(', '\\)']],
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
                 displayMath: [['\\[', '\\]']],
                 processEscapes: true
             }
@@ -227,55 +228,104 @@
         .slider.round:before {
             border-radius: 50%;
         }
-        /* Footer styling */
+        /* FOOTER */
         footer {
-            background-color: var(--footer-bg);
+            background: linear-gradient(135deg, #0F172A, #1E293B);
+            color: #CBD5E1;
+            padding: 50px 0 20px 0;
+            margin-top: 60px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        .footer-col {
+            flex: 1;
+            min-width: 200px;
+        }
+        .footer-col h4 {
             color: white;
-            padding: 25px 0;
-            text-align: center;
-            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
-            margin-top: 40px;
+            margin-bottom: 15px;
+            font-weight: 700;
         }
-        footer .disclaimer h3,
-        footer .social-share h3 {
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            font-size: 1.3em;
+        .footer-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-        footer .disclaimer p {
-            font-size: 0.95em;
-            color: #bdc3c7;
+        .footer-col ul li {
+            margin-bottom: 10px;
+        }
+        .footer-col a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-col a:hover {
+            color: var(--primary-color, #F59E0B);
+        }
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .footer-logo img {
+            height: 40px;
+            margin-right: 15px;
+        }
+        .footer-logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        .footer-description {
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
         .social-buttons {
-            margin-top: 20px;
             display: flex;
-            justify-content: center;
-            gap: 15px;
+            gap: 12px;
+            margin-top: 15px;
         }
         .social-btn {
-            display: inline-flex;
-            align-items: center;
+            width: 40px;
+            height: 40px;
+            display: flex;
             justify-content: center;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
+            align-items: center;
             color: white;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             text-decoration: none;
-            font-size: 1.4em;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .social-btn:hover {
-            transform: translateY(-5px) scale(1.1);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            transform: translateY(-4px);
         }
-        /* Specific social button colors */
         .social-btn.linkedin { background-color: #0A66C2; }
-        .social-btn.facebook { background-color: #1877F2; }
+        .social-btn.youtube { background-color: #FF0000; }
         .social-btn.twitter { background-color: #1DA1F2; }
+        .social-btn.facebook { background-color: #1877F2; }
         .social-btn.whatsapp { background-color: #25D366; }
-        .social-btn.reddit { background-color: #FF4500; }
-        .social-btn.email { background-color: #7f8c8d; }
+        .footer-disclaimer {
+            text-align: center;
+            padding-top: 25px;
+            border-top: 1px solid #334155;
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 0.9rem;
+        }
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 0.9rem;
+            color: #94A3B8;
+        }
         /* Calculator form styling */
         .calculator-form {
             background-color: var(--card-bg);
@@ -653,9 +703,6 @@
     </header>
 
     <main class="container">
-        <a href="indexMech.html" class="back-button">
-            <i class="fas fa-arrow-left"></i> Back to Tools
-        </a>
 
         <div class="tool-container">
             <h2>Pipe Stress & Flexibility Calculator</h2>
@@ -773,6 +820,9 @@
                     </thead>
                     <tbody id="result-table-body"></tbody>
                 </table>
+                <div id="chart-container" style="margin-top: 40px; position: relative; height: 400px; width: 100%; display: none;">
+                    <canvas id="stressChart"></canvas>
+                </div>
                 <div class="standard-reference" id="standard-reference"></div>
             </div>
         </div>
@@ -854,21 +904,50 @@
         <div class="tool-container" style="margin-top: 40px; border-top: 4px solid var(--secondary-color); padding-top: 20px;">
             <h2 class="math-content"><i class="fas fa-question-circle"></i> FAQ: Piping Design Diagnostics</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: stretch; margin-top: 20px;">
+                
                 <div class="insight-card" style="margin: 0;">
                     <h4 style="margin-top: 0;">1. Which Pipeline rules apply?</h4>
                     <p>Calculations broadly follow structural principles laid out in <strong>ASME B31.3 (Process Piping)</strong> and <strong>ASME B31.1 (Power Piping)</strong>. B31.3 is the ultimate bible for chemical and refinery environments, establishing the absolute threshold limits for hoop stress to prevent catastrophic facility explosions.</p>
                 </div>
+                
                 <div class="insight-card" style="margin: 0;">
-                    <h4 style="margin-top: 0;">2. Why is $t_{eff}$ used instead of normal thickness?</h4>
-                    <p>In industry, raw steel chemically rusts and erodes internally from fluid friction. <em>Corrosion Allowance ($C_A$)</em> dictates that if you purchase 8.0mm pipe, but the $C_A$ is 3.0mm, only 5.0mm ($t_{eff}$) actually performs load-bearing structural duty over the 20-year lifespan. The stress physics strictly only care about the $t_{eff}$ remaining.</p>
+                    <h4 style="margin-top: 0;">2. What is "Cold Springing"?</h4>
+                    <p>Cold Springing (or Cold Pull) is the deliberate prestressing of pipe during installation to offset thermal stress at operating temperature. The pipe is cut intentionally short by a specific margin (e.g., 50% of \(\Delta L_{thermal}\)) and physically yanked into the anchor. It effectively shifts thermal stress from hot conditions into cold conditions.</p>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <svg viewBox="0 0 200 60" style="max-height: 80px; width: auto; background:var(--bg-color); border-radius:8px;">
+                            <rect x="20" y="25" width="60" height="10" fill="var(--primary-color)" />
+                            <rect x="120" y="25" width="60" height="10" fill="var(--primary-color)" />
+                            <!-- Cold Gap -->
+                            <path d="M 80,30 L 120,30" fill="none" stroke="var(--error-color)" stroke-width="2" stroke-dasharray="2,2"/>
+                            <text x="100" y="20" text-anchor="middle" font-size="8" fill="var(--error-color)" font-weight="bold">Cold Gap (Prestress)</text>
+                        </svg>
+                    </div>
                 </div>
+
                 <div class="insight-card" style="margin: 0;">
-                    <h4 style="margin-top: 0;">3. Can I just use an Expansion Joint instead of a U-loop?</h4>
-                    <p>Stainless steel corrugated expansion bellows save massive geographical footprint space, but they frequently harbor stress-corrosion cracking pitfalls and possess significantly lower pressure ratings compared to pure steel U-bends. Bellows are widely treated as regular maintenance failure points, whereas a proper hard-pipe expansion loop lasts the entire life of the facility.</p>
+                    <h4 style="margin-top: 0;">3. Why is \(t_{eff}\) used instead of normal thickness?</h4>
+                    <p>In industry, raw steel chemically rusts and erodes internally from fluid friction. <em>Corrosion Allowance (\(C_A\))</em> dictates that if you purchase 8.0mm pipe, but the \(C_A\) is 3.0mm, only 5.0mm (\(t_{eff}\)) actually performs load-bearing structural duty over the lifespan. The stress physics strictly only care about the \(t_{eff}\) remaining.</p>
                 </div>
+
                 <div class="insight-card" style="margin: 0;">
-                    <h4 style="margin-top: 0;">4. What happens if I ignore Thermal Stress?</h4>
-                    <p>Because $\sigma_{thermal} = E \alpha \Delta T$, thermal stress is dangerously independent of pipe thickness. Upgrading to schedule 160 pipe will not solve a thermal load issue; it simply makes the load stronger against the anchors. If a rigid line exceeds its yield threshold, it will undergo plastic deformation, physically buckling sideways or blowing out gaskets at the flange faces.</p>
+                    <h4 style="margin-top: 0;">4. Can I use an Expansion Joint instead of a U-loop?</h4>
+                    <p>Stainless steel corrugated expansion bellows save massive geographical footprint space, but they frequently harbor stress-corrosion cracking pitfalls and possess significantly lower pressure ratings compared to pure steel U-bends. Bellows are widely treated as regular maintenance failure points, whereas a proper hard-pipe expansion loop lasts the life of the facility.</p>
+                </div>
+                
+                <div class="insight-card" style="margin: 0;">
+                    <h4 style="margin-top: 0;">5. What are Dynamic Loads vs. Thermal Loads?</h4>
+                    <p>Thermal stress is a <strong>static, secondary load</strong>. It self-relieves if the pipe slightly deforms. Dynamic loads—like Water Hammer, safety valve thrusts, seismic events, or pump vibration—are <strong>primary loads</strong>. They will actively break the pipe regardless of how much it yields. Piping design must account for both.</p>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <svg viewBox="0 0 200 60" style="max-height: 80px; width: auto; background:var(--bg-color); border-radius:8px;">
+                            <path d="M 20,40 Q 60,10 100,40 T 180,40" fill="none" stroke="var(--secondary-color)" stroke-width="3" />
+                            <text x="100" y="15" text-anchor="middle" font-size="8" fill="var(--secondary-color)" font-weight="bold">Fluid Hammer Surge Wave</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="insight-card" style="margin: 0;">
+                    <h4 style="margin-top: 0;">6. What happens if I ignore Thermal Stress?</h4>
+                    <p>Because \(\sigma_{thermal} = E \alpha \Delta T\), thermal stress is dangerously independent of pipe thickness. Upgrading to thicker schedule 160 pipe will not solve a thermal load issue; it simply makes the load stronger against the anchors. If a rigid line exceeds its yield threshold, it will physically buckle sideways or blow out gaskets.</p>
                 </div>
             </div>
         </div>
@@ -1442,6 +1521,133 @@
                 if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
                     window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
                 }
+
+                // Chart.js Visualization
+                const chartContainer = document.getElementById('chart-container');
+                chartContainer.style.display = 'block';
+
+                const ctx = document.getElementById('stressChart').getContext('2d');
+                if (window.stressChartInstance) {
+                    window.stressChartInstance.destroy();
+                }
+
+                // Generate data points
+                const tempData = [];
+                const expData = [];
+                const stressData = [];
+                
+                let step = (100) / 10; // Plot next 100 degrees from current operating temp
+                if (unitSystem !== 'metric') step = (100 * 5/9) / 10; // approx 180F steps
+                
+                let current_T_si = Tinst_si;
+                const plot_end_temp_si = Math.max(Top_si + (unitSystem === 'metric' ? 50 : 50*5/9), Tinst_si + 10);
+                step = (plot_end_temp_si - Tinst_si) / 20;
+
+                for (let i = 0; i <= 20; i++) {
+                    const temp_disp = unitSystem === 'metric' ? current_T_si : (current_T_si * 9/5 + 32);
+                    tempData.push(temp_disp.toFixed(0));
+                    
+                    const dT = current_T_si - Tinst_si;
+                    const l_exp_m = Lsection_si * alpha_si * dT;
+                    const thermal_stress_pa = E_si * alpha_si * dT;
+                    
+                    if (unitSystem === 'metric') {
+                        expData.push((l_exp_m * 1000).toFixed(2));
+                        stressData.push((thermal_stress_pa / 1e6).toFixed(2));
+                    } else {
+                        expData.push((l_exp_m / 0.0254).toFixed(3));
+                        stressData.push((thermal_stress_pa / 6894.76).toFixed(2));
+                    }
+                    current_T_si += step;
+                }
+
+                const textColor = getComputedStyle(document.body).getPropertyValue('--text-color').trim() || '#333';
+                const primColor = getComputedStyle(document.body).getPropertyValue('--primary-color').trim() || '#2196F3';
+                const errColor = getComputedStyle(document.body).getPropertyValue('--error-color').trim() || '#dc3545';
+
+                window.stressChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: tempData,
+                        datasets: [
+                            {
+                                label: `Thermal Expansion (${unitSystem === 'metric' ? 'mm' : 'in'})`,
+                                data: expData,
+                                borderColor: primColor,
+                                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                                yAxisID: 'y',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: `Thermal Stress (${unitSystem === 'metric' ? 'MPa' : 'psi'})`,
+                                data: stressData,
+                                borderColor: errColor,
+                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                yAxisID: 'y1',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: `Temperature (${unitSystem === 'metric' ? 'Â°C' : 'Â°F'})`,
+                                    color: textColor,
+                                    font: { weight: 'bold' }
+                                },
+                                ticks: { color: textColor }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: `Expansion (${unitSystem === 'metric' ? 'mm' : 'in'})`,
+                                    color: primColor,
+                                    font: { weight: 'bold' }
+                                },
+                                ticks: { color: textColor }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: `Restrained Stress (${unitSystem === 'metric' ? 'MPa' : 'psi'})`,
+                                    color: errColor,
+                                    font: { weight: 'bold' }
+                                },
+                                ticks: { color: textColor },
+                                grid: { drawOnChartArea: false }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: { color: textColor }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Thermal Expansion & Stress Build-up Profile',
+                                color: textColor,
+                                font: { size: 16 }
+                            }
+                        }
+                    }
+                });
 
                 // Display standard reference
                 standardReference.innerHTML = "This tool provides simplified, theoretical estimations for pipe stress and flexibility based on fundamental engineering principles. It accounts for thermal expansion, pressure stresses, and provides a preliminary guide for expansion loop sizing. For accurate design, safety, and compliance with industry regulations, it is <strong>imperative</strong> to consult comprehensive piping codes (e.g., ASME B31.1, B31.3), utilize specialized pipe stress analysis software (e.g., CAESAR II, AutoPIPE), and work with qualified pipe stress engineers.";
