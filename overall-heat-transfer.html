@@ -24,23 +24,22 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+        <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- MathJax script -->
-    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Retained original MathJax configuration -->
+    <!-- MathJax Configuration (must be before script load) -->
     <script>
-        MathJax = {
+        window.MathJax = {
             tex: {
                 inlineMath: [['\\(', '\\)']],
-                displayMath: [['\\[', '\\]']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true
             }
         };
     </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -701,6 +700,8 @@
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Overall Heat Transfer Coefficient Calculator - Design Calculators">
     <meta property="og:description" content="Professional Overall Heat Transfer Coefficient (U-value) calculator for flat walls and cylindrical pipes. Includes convection, conduction, and fouling.">
+
+    <meta name="theme-color" content="#2563EB">
 </head>
 <body>
 
@@ -710,7 +711,7 @@
         <div class="container">
             <nav class="navbar">
                 <a href="/" class="logo-container">
-                    <img src="logo.png" alt="Design Calculators Logo" class="logo">
+                    <img src="logo.png" alt="Design Calculators Logo" class="logo" width="42" height="42">
                     <span class="logo-text">Design Calculators</span>
                 </a>
 
@@ -1062,6 +1063,136 @@
                     <p style="margin-top: 15px; padding: 10px; background: rgba(16, 185, 129, 0.05); border-left: 4px solid var(--success-color); border-radius: 4px;">
                         <i class="fas fa-check-circle"></i> <strong>Rule of Thumb:</strong> When in doubt, for a liquid-liquid exchanger, a \(U\)-value between <strong>500 and 1500 W/m²K</strong> is a reasonable engineering first guess.
                     </p>
+                </div>
+
+                <!-- Insight 9: LMTD -->
+                <div class="insight-card" style="border-left-color: #8B5CF6;">
+                    <h4><i class="fas fa-temperature-low"></i> 9. The LMTD: Log Mean Temperature Difference</h4>
+                    <p>Once you know \(U\) and the required heat duty \(Q\), you need the <strong>driving force</strong> to calculate the required area. The LMTD accounts for the logarithmic temperature profile along the exchanger length.</p>
+                    <div class="formula-box" style="margin: 20px 0;">
+                        $$ Q = U \times A \times \Delta T_{lm} $$
+                    </div>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;">
+                        <div style="flex: 1; min-width: 280px;">
+                            <svg viewBox="0 0 400 180" class="theory-svg">
+                                <!-- Counter-flow diagram -->
+                                <text x="200" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">Counter-Flow Arrangement</text>
+                                <!-- Hot fluid -->
+                                <path d="M40,50 L360,80" stroke="#ef4444" stroke-width="3" fill="none"/>
+                                <text x="30" y="45" font-size="10" fill="#ef4444" font-weight="bold">T_h,in</text>
+                                <text x="340" y="100" font-size="10" fill="#ef4444">T_h,out</text>
+                                <polygon points="350,77 360,80 350,83" fill="#ef4444"/>
+                                <!-- Cold fluid -->
+                                <path d="M360,120 L40,140" stroke="#3b82f6" stroke-width="3" fill="none"/>
+                                <text x="340" y="115" font-size="10" fill="#3b82f6" font-weight="bold">T_c,in</text>
+                                <text x="30" y="155" font-size="10" fill="#3b82f6">T_c,out</text>
+                                <polygon points="50,141 40,140 50,137" fill="#3b82f6"/>
+                                <!-- ΔT annotations -->
+                                <line x1="50" y1="50" x2="50" y2="140" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4"/>
+                                <text x="55" y="100" font-size="9" fill="#f59e0b">ΔT₁</text>
+                                <line x1="350" y1="80" x2="350" y2="120" stroke="#10b981" stroke-width="1" stroke-dasharray="4"/>
+                                <text x="355" y="105" font-size="9" fill="#10b981">ΔT₂</text>
+                            </svg>
+                        </div>
+                        <div style="flex: 1; min-width: 280px;">
+                            <div class="formula-box">
+                                $$ \Delta T_{lm} = \frac{\Delta T_1 - \Delta T_2}{\ln\left(\frac{\Delta T_1}{\Delta T_2}\right)} $$
+                            </div>
+                            <p style="font-size: 0.9rem; margin-top: 10px;"><strong>Counter-flow</strong> always yields a higher LMTD than parallel-flow for the same terminal temperatures, meaning less area is required — which is why counter-flow is the preferred industrial arrangement.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insight 10: Material Thermal Conductivity Comparison -->
+                <div class="insight-card" style="border-left-color: #EF4444;">
+                    <h4><i class="fas fa-cubes"></i> 10. Wall Material: Thermal Conductivity Comparison</h4>
+                    <p>The tube/plate wall material matters enormously. The conduction resistance term \(L/k\) is directly proportional to thickness and inversely proportional to conductivity. This chart compares common materials.</p>
+                    <div class="chart-container" style="height: 350px;">
+                        <canvas id="conductivityChart"></canvas>
+                    </div>
+                    <p style="font-size: 0.85rem; margin-top: 12px; opacity: 0.8; background: #fffbeb; padding: 10px; border-radius: 6px;">
+                        <i class="fas fa-lightbulb" style="color: #f59e0b;"></i> <strong>Design Insight:</strong> Copper's conductivity is 25× that of stainless steel. However, stainless is chosen for corrosion resistance in chemical plants. The U-value penalty from using SS over Cu is minimal when convection resistance dominates (which it almost always does).
+                    </p>
+                </div>
+
+                <!-- Insight 11: NTU-Effectiveness -->
+                <div class="insight-card" style="border-left-color: #10B981;">
+                    <h4><i class="fas fa-percentage"></i> 11. NTU-Effectiveness: When Outlet Temps Are Unknown</h4>
+                    <p>The LMTD method requires known outlet temperatures. When only inlet temperatures are known, the <strong>NTU-Effectiveness (ε-NTU)</strong> method is used. It defines the exchanger's thermal effectiveness as:</p>
+                    <div class="formula-box" style="margin: 15px 0;">
+                        $$ \varepsilon = \frac{Q_{actual}}{Q_{max}} = \frac{C_{min}(T_{h,in} - T_{c,in})}{Q_{actual}} $$
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div style="background: rgba(37,99,235,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(37,99,235,0.2);">
+                            <h5 style="margin-top:0; color: var(--secondary-color);">NTU Definition</h5>
+                            <div class="formula-box" style="margin: 10px 0;">
+                                $$ NTU = \frac{U \times A}{C_{min}} $$
+                            </div>
+                            <p style="font-size: 0.85rem; margin: 0;">Higher NTU means a larger exchanger relative to the flow capacity. Typical NTU ranges: 1-3 for most industrial exchangers.</p>
+                        </div>
+                        <div style="background: rgba(16,185,129,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.2);">
+                            <h5 style="margin-top:0; color: var(--success-color);">Practical Limits</h5>
+                            <p style="font-size: 0.85rem; margin: 0;">For a counter-flow exchanger with equal heat capacities, effectiveness approaches:</p>
+                            <div class="formula-box" style="margin: 10px 0;">
+                                $$ \varepsilon = \frac{NTU}{1 + NTU} $$
+                            </div>
+                            <p style="font-size: 0.85rem; margin: 0;">Beyond ε ≈ 0.85, the required area grows exponentially with diminishing returns.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ SECTION -->
+            <div style="margin-top: 40px;">
+                <h3 style="border-bottom: 2px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-question-circle" style="color: var(--secondary-color); margin-right: 8px;"></i> Frequently Asked Questions (FAQ)</h3>
+                
+                <style>
+                    .faq-card {
+                        background: var(--card-bg);
+                        border: 1px solid var(--border-color);
+                        border-left: 4px solid var(--primary-color);
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                    }
+                    .faq-card h5 {
+                        color: var(--heading-color);
+                        font-size: 1.05rem;
+                        margin-top: 0;
+                        margin-bottom: 10px;
+                    }
+                    .faq-card p {
+                        color: var(--text-color);
+                        margin: 0;
+                        line-height: 1.6;
+                        font-size: 0.95rem;
+                    }
+                </style>
+
+                <div class="faq-card">
+                    <h5>Why is my calculated U-value much higher than published benchmarks?</h5>
+                    <p>Published values typically include fouling. Your "clean" U-value (without fouling) will always be higher than the "service" or "dirty" value. Also ensure your convection coefficients are realistic — online correlations sometimes overestimate \(h\) for low-velocity or highly viscous flows.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h5>Should I use U based on inner or outer area for design?</h5>
+                    <p>Convention varies by industry. For <strong>shell-and-tube exchangers</strong>, \(U_o\) (outer area) is the TEMA standard because the outer tube surface determines tube count and shell size. For <strong>plate exchangers</strong>, only one U-value exists since surfaces are equivalent. Always verify which convention your vendor's datasheet uses before comparing.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h5>How often should fouling factors be updated?</h5>
+                    <p>TEMA fouling factors are conservative <strong>end-of-run</strong> values representing worst-case conditions. In practice, operators should track actual U-values over time. A 20-30% drop from the clean value signals it's time for chemical cleaning or mechanical descaling. Some plants establish "clean" and "foul" U-value KPIs for each exchanger.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h5>Can I just increase tube thickness for better pressure rating without affecting U?</h5>
+                    <p><strong>Not exactly.</strong> While the conduction term \(L/k\) is usually small compared to the convection terms, doubling the wall thickness does double the conduction resistance. For high-conductivity materials like copper, this is negligible. But for stainless steel or titanium, thick-walled tubes can measurably reduce the U-value, sometimes by 5-10%.</p>
+                </div>
+
+                <div class="faq-card">
+                    <h5>What is the single most effective way to improve a low U-value?</h5>
+                    <p>Identify the <strong>controlling resistance</strong>. If one side has a film coefficient 10× lower than the other (e.g., gas vs. condensing steam), improving only that side will yield the most dramatic gains. Common tactics include adding fins (extended surface), increasing turbulence via baffles, or switching to a geometry that promotes mixing (plate vs. shell-and-tube).</p>
                 </div>
             </div>
         </div>
@@ -1516,6 +1647,63 @@
                             },
                             y: {
                                 grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // --- Thermal Conductivity Chart ---
+            const ctxK = document.getElementById('conductivityChart');
+            if (ctxK) {
+                const isDk = document.body.classList.contains('dark-mode');
+                new Chart(ctxK, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Copper', 'Aluminum', 'Carbon Steel', 'Nickel Alloy', 'Stainless Steel (316)', 'Titanium', 'Hastelloy C'],
+                        datasets: [{
+                            label: 'Thermal Conductivity (W/mK)',
+                            data: [385, 205, 50, 22, 16, 21.9, 11.2],
+                            backgroundColor: [
+                                'rgba(245, 158, 11, 0.75)',
+                                'rgba(139, 92, 246, 0.75)',
+                                'rgba(100, 116, 139, 0.75)',
+                                'rgba(236, 72, 153, 0.75)',
+                                'rgba(37, 99, 235, 0.75)',
+                                'rgba(16, 185, 129, 0.75)',
+                                'rgba(239, 68, 68, 0.75)'
+                            ],
+                            borderColor: [
+                                '#F59E0B', '#8B5CF6', '#64748B', '#EC4899', '#2563EB', '#10B981', '#EF4444'
+                            ],
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.raw + ' W/mK';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Conductivity (W/mK)', color: isDk ? '#cbd5e1' : '#64748b' },
+                                grid: { color: isDk ? '#334155' : 'rgba(0,0,0,0.05)' },
+                                ticks: { color: isDk ? '#cbd5e1' : '#64748b' }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { color: isDk ? '#cbd5e1' : '#64748b' }
                             }
                         }
                     }

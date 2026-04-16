@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -25,7 +25,8 @@
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+        <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- MathJax for LaTeX rendering -->
@@ -35,11 +36,142 @@
                 inlineMath: [['\\(', '\\)'], ['$', '$']],
                 displayMath: [['\\[', '\\]'], ['$$', '$$']]
             },
+            options: {
+                // Ensure all elements are processed, remove restriction
+                processHtmlClass: 'tex2jax_process' 
+            },
             svg: { fontCache: 'global' }
         };
     </script>
     <script type="text/javascript" id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <!-- Chart.js for Visuals -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+    <script>
+        // --- EDUCATIONAL CHART INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheoryCharts();
+            initFaqCharts();
+        });
+
+        function initTheoryCharts() {
+            const axisFont = { size: 9, family: 'Inter' };
+            const gridColor = 'rgba(0,0,0,0.06)';
+            const commonOpts = { responsive: true, maintainAspectRatio: false, elements: { point: { radius: 0 } } };
+
+            // 1. Inverse Square Law: Lux vs Distance
+            const dists = Array.from({length: 20}, (_, i) => 1 + i * 0.5);
+            new Chart(document.getElementById('theoryChart1'), {
+                type: 'line',
+                data: {
+                    labels: dists.map(d => d.toFixed(1) + 'm'),
+                    datasets: [{ label: 'Illuminance (Lux)', data: dists.map(d => 1000 / (d * d)), borderColor: '#2563EB', borderWidth: 2.5, tension: 0.4, fill: true, backgroundColor: 'rgba(37,99,235,0.05)' }]
+                },
+                options: { ...commonOpts, plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: 'Distance (m)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'Lux', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+
+            // 2. Lumen Method: CU vs RCR
+            const rcrVals = Array.from({length: 11}, (_, i) => i);
+            new Chart(document.getElementById('theoryChart2'), {
+                type: 'line',
+                data: {
+                    labels: rcrVals,
+                    datasets: [
+                        { label: '80/50/20 Refcl.', data: [0.85, 0.78, 0.70, 0.63, 0.57, 0.52, 0.47, 0.43, 0.40, 0.37, 0.35], borderColor: '#10B981', borderWidth: 2.5, tension: 0.3 },
+                        { label: '50/30/10 Refcl.', data: [0.72, 0.63, 0.55, 0.48, 0.42, 0.38, 0.34, 0.31, 0.28, 0.26, 0.24], borderColor: '#F59E0B', borderWidth: 2, borderDash: [5,3] }
+                    ]
+                },
+                options: { ...commonOpts, plugins: { legend: { display: true, position: 'top', labels: { font: { size: 8 }, boxWidth: 10 } } }, scales: { x: { display: true, title: { display: true, text: 'Room Cavity Ratio (RCR)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'CU', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor }, min: 0, max: 1 } } }
+            });
+
+            // 3. Spacing to Height Ratio (S/H) & Uniformity
+            const shVals = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+            new Chart(document.getElementById('theoryChart3'), {
+                type: 'bar',
+                data: {
+                    labels: shVals.map(s => s + ':1'),
+                    datasets: [{ label: 'Uniformity Quality', data: [95, 90, 85, 75, 60, 45, 30], backgroundColor: shVals.map(s => s <= 1.25 ? '#10B981' : s <= 1.5 ? '#F59E0B' : '#EF4444'), borderRadius: 6 }]
+                },
+                options: { ...commonOpts, plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: 'S/H Ratio', font: axisFont }, ticks: { font: axisFont }, grid: { display: false } }, y: { display: true, title: { display: true, text: 'Quality Score %', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor }, max: 100 } } }
+            });
+
+            // 4. LPD Benchmarks (ASHRAE 90.1)
+            new Chart(document.getElementById('theoryChart4'), {
+                type: 'bar',
+                data: {
+                    labels: ['Office', 'Retail', 'Hospital', 'School', 'Warehouse'],
+                    datasets: [{ label: 'W/m²', data: [8.5, 11.5, 10.0, 9.0, 5.0], backgroundColor: '#2563EB', borderRadius: 4 }]
+                },
+                options: { ...commonOpts, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: 'Power Density (W/m²)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { ticks: { font: { size: 8 } }, grid: { display: false } } } }
+            });
+        }
+
+        function initFaqCharts() {
+            const axisFont = { size: 9, family: 'Inter' };
+            const gridColor = 'rgba(0,0,0,0.06)';
+
+            // 1. LLF Decay
+            const years = [0, 1, 2, 3, 4, 5];
+            new Chart(document.getElementById('faqChart1'), {
+                type: 'line',
+                data: { labels: years.map(y => 'Yr ' + y), datasets: [{ label: 'Light Output %', data: [100, 92, 86, 82, 79, 77], borderColor: '#EF4444', borderWidth: 2.5, fill: true, backgroundColor: 'rgba(239,68,68,0.05)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: axisFont }, grid: { color: gridColor } }, y: { ticks: { font: axisFont }, min: 50, max: 100 } } }
+            });
+
+            // 2. Reflectance Impact
+            new Chart(document.getElementById('faqChart2'), {
+                type: 'doughnut',
+                data: { labels: ['Absorbed', 'Reflected'], datasets: [{ data: [30, 70], backgroundColor: ['#E2E8F0', '#2563EB'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 8 } } } }, cutout: '70%' }
+            });
+
+            // 3. CRI Comparison
+            new Chart(document.getElementById('faqChart3'), {
+                type: 'bar',
+                data: { labels: ['HPS', 'Mercury', 'LED', 'CRI 95+ LED'], datasets: [{ data: [25, 50, 80, 95], backgroundColor: ['#F59E0B', '#10B981', '#2563EB', '#6366F1'], borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 100, ticks: { font: axisFont } }, x: { ticks: { font: { size: 8 } } } } }
+            });
+
+            // 4. Color Temp (K)
+            const kvals = [2700, 3000, 4000, 5000, 6500];
+            new Chart(document.getElementById('faqChart4'), {
+                type: 'bar',
+                data: { labels: ['Warm', 'Soft', 'Neutral', 'Daylight', 'Cool'], datasets: [{ data: kvals, backgroundColor: ['#FDBA74', '#FEF3C7', '#F1F5F9', '#BFDBFE', '#60A5FA'], borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: 'Kelvin' }, ticks: { font: axisFont } } } }
+            });
+            
+            // 5. Task Lux Levels
+            new Chart(document.getElementById('faqChart5'), {
+                type: 'bar',
+                data: { labels: ['Hallway', 'Office', 'Drafting', 'Surgery'], datasets: [{ data: [100, 500, 750, 2000], backgroundColor: '#10B981', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Lux' } } } }
+            });
+
+            // 6. Efficiency (lm/W)
+            new Chart(document.getElementById('faqChart6'), {
+                type: 'bar',
+                data: { labels: ['Incand.', 'Halogen', 'CFL', 'LED'], datasets: [{ data: [15, 20, 65, 120], backgroundColor: '#F59E0B', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: 'lm/W' } } } }
+            });
+
+            // 7. Glare (UGR)
+            const ugr = [13, 16, 19, 22, 25, 28];
+            new Chart(document.getElementById('faqChart7'), {
+                type: 'line',
+                data: { labels: ugr, datasets: [{ label: 'Discomfort', data: [10, 25, 50, 75, 90, 100], borderColor: '#EF4444', borderWidth: 2, pointRadius: 3 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'UGR Rating' } }, y: { ticks: { display: false } } } }
+            });
+
+            // 8. Ballast Factor
+            new Chart(document.getElementById('faqChart8'), {
+                type: 'bar',
+                data: { labels: ['Low', 'Normal', 'High'], datasets: [{ data: [0.77, 0.88, 1.1], backgroundColor: '#2563EB', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0.5, max: 1.2 } } }
+            });
+        }
     </script>
 
     <style>
@@ -699,15 +831,148 @@
             .footer-content { flex-direction: column; gap: 25px; }
             .button-wrapper { flex-direction: column; }
             .btn.calculate, .btn.reset {
-                flex-basis: auto; /* Reset basis for stacking */
+                flex-basis: auto;
                 width: 100%;
                 margin-left: 0;
             }
         }
+
+        .hidden { display: none; }
+
+        /* --- THEORY & FAQ STYLES --- */
+        .theory-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 25px; 
+            margin: 40px auto; 
+            max-width: 1200px; 
+        }
+        
+        @media (max-width: 1024px) { 
+            .theory-grid { grid-template-columns: 1fr; } 
+        }
+
+        .theory-module { 
+            background: var(--card); 
+            border-radius: 12px; 
+            padding: 25px; 
+            border: 1px solid var(--border); 
+            border-top: 5px solid var(--secondary);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .theory-chart-container { 
+            background: #f8fafc; 
+            border-radius: 8px; 
+            padding: 15px; 
+            height: 220px; 
+            border: 1px solid var(--border);
+            margin: 10px 0;
+        }
+        
+        body.dark-mode .theory-chart-container { background: rgba(0,0,0,0.2); }
+
+        .faq-section { margin-top: 50px; }
+        
+        .faq-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        @media (max-width: 1024px) { 
+            .faq-grid { grid-template-columns: 1fr; } 
+        }
+
+        .faq-card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            padding: 24px; 
+            height: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .faq-card h4 { 
+            font-size: 1.15rem; 
+            color: var(--heading); 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-weight: 700;
+        }
+
+        .faq-answer { 
+            font-size: 1rem; 
+            line-height: 1.7; 
+            color: #1a202c; /* Deeper high-contrast text */
+            background: rgba(37, 99, 235, 0.08); 
+            padding: 20px; 
+            border-radius: 10px; 
+            border-left: 6px solid var(--secondary);
+            margin-bottom: 20px;
+            display: block !important;
+            height: auto !important;
+            max-height: none !important;
+            min-height: auto;
+            overflow: visible !important;
+            white-space: normal !important; /* CRITICAL: Ensure text wrapping */
+            word-wrap: break-word !important;
+        }
+        
+        body.dark-mode .faq-answer { 
+            background: rgba(255,255,255,0.08); 
+            color: #f1f5f9; 
+        }
+
+        .faq-visual { 
+            height: 200px; 
+            width: 100%; 
+            margin-top: auto; 
+            border-top: 1px solid var(--border); 
+            padding-top: 20px;
+        }
+
+        .edu-badge { 
+            display: inline-block; 
+            padding: 4px 10px; 
+            background: rgba(37, 99, 235, 0.1); 
+            color: var(--secondary); 
+            border-radius: 6px; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+        }
+        
+        .insight-card {
+            background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.03));
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid var(--secondary);
+            margin: 10px 0;
+        }
+
+        .insight-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Lighting Load Calculator - Design Calculators - Electrical">
     <meta property="og:description" content="Professional lighting load calculator using the Lumen Method. Calculates required luminaires, lux levels, spacing, and electrical load (W, VA, A) based on IEC and IES standards.">
+
+    <meta name="theme-color" content="#2563EB">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 </head>
 <body>
     <div id="custom-message-box"></div>
@@ -718,7 +983,7 @@
         <div class="container">
             <nav class="navbar">
                 <a href="/" class="logo-container">
-                    <img src="logo.png" alt="Design Calculators Logo" class="logo">
+                    <img src="logo.png" alt="Design Calculators Logo" class="logo" width="42" height="42">
                     <span class="logo-text">Design Calculators</span>
                 </a>
 
@@ -785,8 +1050,17 @@
             <h2><i class="fas fa-lightbulb"></i> Lighting Load Calculator</h2>
                         
             <div class="tool-description">
-                <p>This calculator assists electrical engineers in determining illumination requirements, luminaire spacing, and estimating lighting circuit loads for various indoor and outdoor spaces. It provides guidance based on common lighting design principles and international standards.</p>
-                <p style="font-weight: bold; color: var(--danger);">Disclaimer: This tool provides preliminary calculations for guidance only. Actual lighting design requires detailed photometric analysis, consideration of specific luminaire data, and adherence to local codes and project-specific requirements. Always consult relevant standards and qualified lighting designers or engineers for final designs.</p>
+                <p>Advanced lighting design tool utilizing the <strong>Lumen Method (Zonal Cavity)</strong> to determine luminaire requirements, illuminance levels, and electrical loads. Supports both indoor and outdoor (point-method estimation) applications.</p>
+                
+                <div class="insight-card" style="margin-top: 15px; border-left-color: var(--accent);">
+                    <h4 style="margin: 0 0 10px 0; color: var(--heading);"><i class="fas fa-certificate" style="color: var(--accent);"></i> Applicable Design Standards</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; font-size: 0.9rem;">
+                        <div class="edu-badge" style="margin: 0;"><i class="fas fa-check-circle"></i> IESNA Lighting Handbook</div>
+                        <div class="edu-badge" style="margin: 0;"><i class="fas fa-check-circle"></i> IEC 62443 / EN 12464-1</div>
+                        <div class="edu-badge" style="margin: 0;"><i class="fas fa-check-circle"></i> ASHRAE 90.1 (LPD)</div>
+                        <div class="edu-badge" style="margin: 0;"><i class="fas fa-check-circle"></i> CIE S 008/E:2001</div>
+                    </div>
+                </div>
             </div>
                     
             <div class="calculator-form">
@@ -975,45 +1249,177 @@
 
             <h3>The Lumen Method Explained</h3>
             <p>The goal of the Lumen Method is to determine the total number of luminaires (light fixtures) required to achieve a target average illuminance (brightness, measured in Lux) over a specific area. The core formula is:</p>
-            <p style="text-align:center; font-size: 1.2rem; font-family: 'Times New Roman', serif;">
-                <em>Total Lumens Required = (Illuminance Ã— Area) / (CU Ã— LLF)</em>
-            </p>
-            <p>Here is what each component means:</p>
-            <ul>
-                <li><strong>Illuminance (E, in Lux):</strong> This is your target brightness. It is the amount of light (lumens) falling on a one-square-meter surface. This value is dictated by standards like <strong>ISO 8995-1 / CIE S 008/E</strong> or the <strong>IES Lighting Handbook</strong>, which specify required lux levels for different tasks (e.g., 500 lux for an office, 100 lux for a storage area).</li>
-                <li><strong>Area (A, in mÂ²):</strong> The simple floor area of the space you are lighting.</li>
-                <li><strong>Coefficient of Utilization (CU):</strong> This is the most complex variable. It represents the efficiency of the lighting system in getting light from the luminaire to the working plane. It is a value between 0 and 1 and depends on:
-                    <ul>
-                        <li><strong>Luminaire Efficiency & Distribution:</strong> How much light escapes the fixture and in what direction.</li>
-                        <li><strong>Room Geometry (Room Cavity Ratio - RCR):</strong> A tall, narrow room (high RCR) is very inefficient, as most light hits the walls. A wide, short room (low RCR) is very efficient, as most light goes directly to the floor.</li>
-                        <li><strong>Surface Reflectances:</strong> Bright white ceilings (80% reflectance) and light-colored walls (60-70%) bounce light back to the working plane, *increasing* the CU. Dark surfaces absorb light, lowering the CU and requiring more fixtures for the same brightness.</li>
-                    </ul>
-                </li>
-                <li><strong>Light Loss Factor (LLF):</strong> This is a critical maintenance factor. A brand-new luminaire is brighter than it will be in 3 years. The LLF (a value less than 1, e.g., 0.8) accounts for this depreciation. It ensures your design *still* meets the required 500 lux at the *end* of its maintenance cycle. It includes:
-                    <ul>
-                        <li><strong>Lamp Lumen Depreciation (LLD):</strong> The gradual fading of the light source over time.</li>
-                        <li><strong>Luminaire Dirt Depreciation (LDD):</strong> The accumulation of dust and dirt on the fixture, which blocks light.</li>
-                    </ul>
-                </li>
-            </ul>
+        <!-- VISUAL THEORY SECTION -->
+        <section class="education-section">
+            <div class="section-title" style="text-align: center; margin-bottom: 40px;">
+                <span class="edu-badge">Educational Module</span>
+                <h2 style="font-size: 2.2rem; margin-top: 10px;">Visual Lighting Theory</h2>
+                <p style="max-width: 700px; margin: 0 auto; color: var(--text);">Master the physics of illumination and the Zonal Cavity method through interactive modules and design benchmarks.</p>
+            </div>
 
-            <h3>Beyond Average: Uniformity and Glare</h3>
-            <p>A successful design is not just about the *average* lux. Two other factors are critical for comfort and safety:</p>
-            <ul>
-                <li><strong>Uniformity (Uo):</strong> This is the ratio of minimum illuminance to average illuminance (E_min / E_avg). An office with an average of 500 lux is useless if it has 1000 lux under the lights and 100 lux in the corners. This creates eye strain and shadows. A good uniformity (e.g., Uo > 0.7) ensures the light is spread evenly. This is controlled by the **luminaire spacing (S)** relative to its **mounting height (H)**, known as the **S/H Ratio**.</li>
-                <li><strong>Glare (UGR):</strong> Discomfort from a light source being too bright is known as glare. In offices, this is measured by the <strong>Unified Glare Rating (UGR)</strong>. A low UGR (e.g., < 19 for an office) is essential for visual comfort and productivity. This is achieved by selecting low-glare luminaires and placing them correctly.</li>
-            </ul>
+            <div class="theory-grid">
+                <!-- Module 1 -->
+                <div class="theory-module">
+                    <span class="edu-badge">Optical Physics</span>
+                    <h3><i class="fas fa-ruler-combined"></i> The Foundation: Inverse Square Law</h3>
+                    <div class="faq-answer">
+                        The <strong>Inverse Square Law</strong> (\(E = I / d^2\)) is the gravity-equivalent of lighting. It explains why a small increase in mounting height causes a massive drop in brightness.
+                        <br><br>
+                        <strong>Interesting Fact:</strong> This law assumes a "point source." Modern LED panels with large surface areas (Area Sources) actually decay slower than \(1/d^2\) when you are very close to them—a phenomenon known as the "Near-Field" effect.
+                    </div>
+                    <div class="theory-chart-container">
+                        <canvas id="theoryChart1"></canvas>
+                    </div>
+                    <div class="insight-card">
+                        <i class="fas fa-microchip"></i> <strong>Elite Engineering Tip:</strong> When doubling height (e.g., from 3m to 6m), you don't just need 4x the lumens; you also need to re-verify the <strong>Beam Angle</strong> to prevent excessive wall-spill and light waste.
+                    </div>
+                </div>
 
-            <h3>Energy Efficiency & Electrical Load</h3>
-            <p>Modern lighting design is heavily regulated by energy codes (like <strong>ASHRAE 90.1</strong>) that limit the amount of power that can be used for lighting. This is measured in **Lighting Power Density (LPD)**, or Watts per square meter (W/mÂ²).</p>
-            <p>Once the total number of fixtures is known, the electrical load is calculated:</p>
-            <ol>
-                <li><strong>Total Real Power (W):</strong> No. of Luminaires Ã— Watts per Luminaire</li>
-                <li><strong>Total Apparent Power (VA):</strong> Total Real Power / Luminaire Power Factor</li>
-                <li><strong>Total Current (A):</strong> Total Apparent Power / Voltage (or / (Voltage Ã— âˆš3) for 3-phase)</li>
-            </ol>
-            <p>This final current value is what determines the size of your circuit breakers and cables, completing the design from a visual and electrical perspective.</p>
-        </div>
+                <!-- Module 2 -->
+                <div class="theory-module">
+                    <span class="edu-badge">Zonal Cavity Method</span>
+                    <h3><i class="fas fa-th-large"></i> The Math of Efficiency: CU & RCR</h3>
+                    <div class="faq-answer">
+                        The <strong>Coefficient of Utilization (CU)</strong> is the percentages of lumens that actually hit your desk. It is determined by the <strong>Room Cavity Ratio (RCR)</strong>:
+                        \[ \text{RCR} = \frac{5 \cdot h(L+W)}{L \cdot W} \]
+                        where \(h\) is the vertical distance from the luminaires to the workplane.
+                        <br><br>
+                        <strong>Interesting Info:</strong> Industrial high-bays often have CU values around 0.6-0.7, meaning 30-40% of the light is absorbed by walls or lost to the ceiling before it ever helps you see!
+                    </div>
+                    <div class="theory-chart-container">
+                        <canvas id="theoryChart2"></canvas>
+                    </div>
+                    <p style="font-size: 0.95rem; line-height: 1.5;">Maintaining high reflectance (\(>80\%\)) on ceilings is the most cost-effective way to boost your CU and reduce energy consumption.</p>
+                </div>
+
+                <!-- Module 3 -->
+                <div class="theory-module">
+                    <span class="edu-badge">Visual Ergonomics</span>
+                    <h3><i class="fas fa-vector-square"></i> Spacing, Uniformity & Eye Strain</h3>
+                    <div class="faq-answer">
+                        A common mistake is designing for <em>Average Lux</em> while ignoring <strong>Uniformity</strong> (\(U_o = E_{min} / E_{avg}\)). According to <strong>EN 12464-1</strong>, offices require \(U_o \ge 0.60\).
+                        <br><br>
+                        <strong>Why it matters:</strong> If one area is 1000 Lux and the corner is 100 Lux, your pupils will constantly dilate and contract as you look around the room, leading to "Visual Fatigue" and headaches by midday.
+                    </div>
+                    <div class="theory-chart-container">
+                        <canvas id="theoryChart3"></canvas>
+                    </div>
+                    <div class="insight-card">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Pro Tip:</strong> Never exceed the manufacturer's <strong>Spacing-to-Height (S/H)</strong> ratio. Doing so creates "Cave Effects" or dark spots directly between fixtures.
+                    </div>
+                </div>
+
+                <!-- Module 4 -->
+                <div class="theory-module">
+                    <span class="edu-badge">Energy Compliance</span>
+                    <h3><i class="fas fa-bolt"></i> Lighting Power Density (LPD) Limits</h3>
+                    <div class="faq-answer">
+                        <strong>LPD</strong> (\(\text{W/m}^2\)) is the primary metric for energy codes like <strong>ASHRAE 90.1</strong>. It limits how much power you can "burn" per square meter of floor space.
+                        <br><br>
+                        <strong>Interesting Info:</strong> In the 1990s, LPDs for offices were often over \(20\text{ W/m}^2\). Today, with high-efficacy LEDs, we can achieve superior lighting with less than \(8\text{ W/m}^2\)—a <strong>60% reduction</strong> in power load!
+                    </div>
+                    <div class="theory-chart-container">
+                        <canvas id="theoryChart4"></canvas>
+                    </div>
+                    <p style="font-size: 0.95rem; line-height: 1.5;">Choosing high-efficacy luminaires (\(>120\text{ lm/W}\)) is the easiest way to bypass strict LPD energy audits while maintaining high Lux levels.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section class="faq-section">
+            <div class="section-title" style="text-align: center; margin-bottom: 40px;">
+                <span class="edu-badge">Expert Solutions</span>
+                <h2>Lighting FAQ & Expert Insights</h2>
+            </div>
+            
+            <div class="faq-grid">
+                <div class="faq-card">
+                    <h4><i class="fas fa-hourglass-end"></i> What is Light Loss Factor (LLF)?</h4>
+                    <div class="faq-answer">
+                        LLF accounts for the "Real World" decay of light over time. It is a product of <strong>Lamp Lumen Depreciation (LLD)</strong> and <strong>Luminaire Dirt Depreciation (LDD)</strong>.
+                        <br><br>
+                        <strong>Interesting Info:</strong> Even with dust-proof LEDs, light output can drop by <strong>20%</strong> over 5 years. We calculate for "Maintained Illuminance" so the space is still safe and usable after years of operation.
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart1"></canvas></div>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fas fa-fill-drip"></i> The Hidden Power of Reflectance</h4>
+                    <div class="faq-answer">
+                        <strong>Surface Reflectance</strong> (\(\rho\)) can save significant money. A white ceiling (\(\rho = 80\%\)) bounces light back down, while a dark ceiling absorbs it.
+                        <br><br>
+                        <strong>Engineering Rule:</strong> Improving wall reflectance from 30% to 50% can sometimes reduce the required number of luminaires by <strong>15%</strong> for the same Lux target.
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart2"></canvas></div>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fas fa-palette"></i> CRI vs. Color Temperature (CCT)</h4>
+                    <div class="faq-answer">
+                        <strong>CCT</strong> (measured in Kelvin) is the "mood" (warm vs. cool). <strong>CRI</strong> (0-100) is the "quality" of color rendering.
+                        <br><br>
+                        <strong>Fun Fact:</strong> A high CRI (\(>90\)) is critical for retail. In a grocery store, a low CRI light will make fresh produce look "gray" and unappealing, directly impacting sales!
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart3"></canvas></div>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fas fa-thermometer-half"></i> Circadian Rhythm & Light</h4>
+                    <div class="faq-answer">
+                        Light affects our biological clocks. Blue-rich light (\(>5000\text{K}\)) suppresses melatonin, raising alertness—ideal for morning work. Warm light (\(<3000\text{K}\)) allows melatonin to rise, aiding sleep.
+                        <br><br>
+                        <strong>Pro Tip:</strong> Modern "Tunable White" systems shift the CCT throughout the day to mirror the natural sun cycle, improving worker well-being.
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart4"></canvas></div>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fas fa-eye"></i> Why 500 Lux for Offices?</h4>
+                    <div class="faq-answer">
+                        Human eyes evolved for outdoor levels (\(10,000+\) Lux). Indoor tasks like reading require high contrast. <strong>500 Lux</strong> is the international "Goldilocks" level for sustained desk work.
+                        <br><br>
+                        <strong>Standard Reference:</strong> <strong>EN 12464-1</strong> and <strong>IES HB-10</strong> specify these levels based on decades of visual performance research.
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart5"></canvas></div>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fas fa-leaf"></i> Luminaire Efficacy (lm/W)</h4>
+                    <div class="faq-answer">
+                        Measured in <strong>Lumens per Watt</strong>, this is the "Fuel Efficiency" of a light. Modern <strong>LEDs</strong> hit \(120-150\text{ lm/W}\), making them 10x more efficient than legacy bulbs.
+                        <br><br>
+                        <strong>Interesting Fact:</strong> A standard 60W incandescent bulb with \(15\text{ lm/W}\) generates more heat than light—it's actually a very efficient heater that happens to glow!
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart6"></canvas></div>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fas fa-low-vision"></i> Unified Glare Rating (UGR)</h4>
+                    <div class="faq-answer">
+                        UGR measures how much a light source is bothering your vision directly or via reflection. A <strong>UGR < 19</strong> is the global threshold for office comfort.
+                        <br><br>
+                        <strong>The Science:</strong> Glare creates "Veiling Luminance" in the eye, which reduces the contrast of what you are trying to see, causing rapid eye strain.
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart7"></canvas></div>
+                </div>
+
+                <div class="faq-card">
+                    <h4><i class="fas fa-plug"></i> The Driver/Ballast Factor (BF)</h4>
+                    <div class="faq-answer">
+                        The <strong>Ballast Factor</strong> is a multiplier for light output. A driver with \(BF = 0.95\) means the lamp will output only 95% of its theoretical rated lumens.
+                        <br><br>
+                        <strong>Critical Check:</strong> Always check the Driver Datasheet. A low-cost driver might have a low BF, meaning you need more fixtures to reach your target Lux!
+                    </div>
+                    <div class="faq-visual"><canvas id="faqChart8"></canvas></div>
+                </div>
+            </div>
+            
+            <div class="summary-box" style="margin-top: 40px;">
+                <h4><i class="fas fa-info-circle"></i> Design Disclaimer</h4>
+                <p>These calculations utilize the <strong>Point-to-Point</strong> and <strong>Zonal Cavity</strong> methods for estimation. For critical safety or architectural designs, utilize IES photometric files (.IES) in professional software like DIALux to account for specific light distributions and obstacles.</p>
+            </div>
+        </section>
     </main>
 
     <!-- New Footer from perfect.txt -->

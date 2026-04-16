@@ -1,4 +1,4 @@
-﻿
+
 <html lang="en">
 <head>
     <!-- AdSense & Analytics -->
@@ -24,7 +24,8 @@
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+        <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- PDF Generation -->
@@ -44,6 +45,145 @@
             },
             svg: { fontCache: 'global' }
         };
+
+        // --- EDUCATIONAL CHART INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheoryCharts();
+            initFaqCharts();
+        });
+
+        function initTheoryCharts() {
+            const axisFont = { size: 9, family: 'Inter' };
+            const gridColor = 'rgba(0,0,0,0.06)';
+            const commonOpts = { responsive: true, maintainAspectRatio: false, elements: { point: { radius: 0 } } };
+
+            // 1. Vena Contracta pressure profile
+            new Chart(document.getElementById('theoryChart1'), {
+                type: 'line',
+                data: {
+                    labels: ['Upstream', '', 'Valve', '', 'Vena C.', '', '', 'Downstream'],
+                    datasets: [
+                        { label: 'Globe (FL=0.9)', data: [10, 10, 7, 5, 4, 6, 7.5, 8], borderColor: '#2563EB', borderWidth: 2.5, tension: 0.4, pointRadius: 0 },
+                        { label: 'Ball (FL=0.55)', data: [10, 10, 5, 2, 1, 4, 7, 8], borderColor: '#EF4444', borderWidth: 2, borderDash: [5,3], tension: 0.4, pointRadius: 0 },
+                        { label: 'Pv (Vapor)', data: [3, 3, 3, 3, 3, 3, 3, 3], borderColor: '#F59E0B', borderWidth: 1.5, borderDash: [2,4], pointRadius: 0 }
+                    ]
+                },
+                options: { ...commonOpts, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'P (bar)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+
+            // 2. Flashing vs Cavitation
+            new Chart(document.getElementById('theoryChart2'), {
+                type: 'line',
+                data: {
+                    labels: ['Inlet', '', 'Valve', '', 'Vena C.', '', '', 'Outlet'],
+                    datasets: [
+                        { label: 'Cavitation', data: [10, 10, 6, 2, 0.5, 3, 5, 6], borderColor: '#EF4444', borderWidth: 2.5, tension: 0.4, pointRadius: 0 },
+                        { label: 'Flashing', data: [10, 10, 4, 1, 0.2, 0.5, 0.8, 1.0], borderColor: '#6366F1', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                        { label: 'Pv', data: [2, 2, 2, 2, 2, 2, 2, 2], borderColor: '#F59E0B', borderWidth: 1.5, borderDash: [3,3], pointRadius: 0 }
+                    ]
+                },
+                options: { ...commonOpts, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'P (bar)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+
+            // 3. Sigma risk zones
+            const sigmaVals = Array.from({length: 40}, (_, i) => 0.25 + i * 0.1);
+            new Chart(document.getElementById('theoryChart3'), {
+                type: 'line',
+                data: {
+                    labels: sigmaVals.map(s => s.toFixed(1)),
+                    datasets: [{ label: 'Damage Risk (%)', data: sigmaVals.map(s => s < 1 ? 100 : s < 1.5 ? 90 - (s-1)*60 : s < 2 ? 50 - (s-1.5)*80 : Math.max(0, 10 - (s-2)*10)), borderColor: '#EF4444', borderWidth: 2.5, pointRadius: 0, fill: true, backgroundColor: 'rgba(239,68,68,0.1)' }]
+                },
+                options: { ...commonOpts, plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: '\u03c3 (Sigma)', font: axisFont }, ticks: { maxTicksLimit: 8, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'Risk %', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+
+            // 4. FL comparison
+            new Chart(document.getElementById('theoryChart4'), {
+                type: 'bar',
+                data: {
+                    labels: ['Globe (Lin)', 'Globe (Eq%)', 'Segment', 'Ball', 'Butterfly'],
+                    datasets: [{ label: 'FL', data: [0.9, 0.85, 0.7, 0.6, 0.55], backgroundColor: ['#10B981', '#34D399', '#F59E0B', '#EF4444', '#DC2626'], borderRadius: 6 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 8 } }, grid: { display: false } }, y: { display: true, title: { display: true, text: 'FL', font: axisFont }, min: 0, max: 1, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+        }
+
+        function initFaqCharts() {
+            const axisFont = { size: 9, family: 'Inter' };
+            const gridColor = 'rgba(0,0,0,0.06)';
+
+            // 1. Noise vs sigma
+            const sigNoise = Array.from({length: 30}, (_, i) => 0.5 + i * 0.1);
+            new Chart(document.getElementById('faqChart1'), {
+                type: 'line',
+                data: { labels: sigNoise.map(s => s.toFixed(1)), datasets: [{ label: 'dB(A)', data: sigNoise.map(s => s < 1 ? 105 : s < 1.5 ? 105 - (s-1)*40 : s < 2 ? 85 - (s-1.5)*50 : Math.max(40, 60 - (s-2)*15)), borderColor: '#EF4444', borderWidth: 2.5, pointRadius: 0, fill: true, backgroundColor: 'rgba(239,68,68,0.08)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: '\u03c3', font: axisFont }, ticks: { maxTicksLimit: 6, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'Noise dB(A)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
+            });
+
+            // 2. Prevention effectiveness
+            new Chart(document.getElementById('faqChart2'), {
+                type: 'bar',
+                data: { labels: ['Globe Valve', 'Multi-Stage', 'Back Press.', 'Cool Fluid'], datasets: [{ label: 'Effectiveness', data: [65, 95, 50, 40], backgroundColor: ['#2563EB', '#10B981', '#F59E0B', '#6366F1'], borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: 'Effectiveness %', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { ticks: { font: { size: 8, family: 'Inter' } } } } }
+            });
+
+            // 3. Erosion rate vs velocity
+            const vel = Array.from({length: 30}, (_, i) => (i+1) * 2);
+            new Chart(document.getElementById('faqChart3'), {
+                type: 'line',
+                data: { labels: vel.map(v => v + 'm/s'), datasets: [{ label: 'Erosion', data: vel.map(v => Math.pow(v/10, 2.5)), borderColor: '#DC2626', borderWidth: 2.5, pointRadius: 0, fill: true, backgroundColor: 'rgba(220,38,38,0.08)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: 'Velocity', font: axisFont }, ticks: { maxTicksLimit: 6, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'mm/yr', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
+            });
+
+            // 4. Choked flow curve
+            const dpArr = Array.from({length: 30}, (_, i) => (i+1) * 0.5);
+            new Chart(document.getElementById('faqChart4'), {
+                type: 'line',
+                data: { labels: dpArr.map(d => d.toFixed(1)), datasets: [{ label: 'Flow', data: dpArr.map(d => d < 8 ? Math.sqrt(d) * 35 : 99), borderColor: '#2563EB', borderWidth: 2.5, pointRadius: 0, fill: true, backgroundColor: 'rgba(37,99,235,0.08)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: '\u0394P (bar)', font: axisFont }, ticks: { maxTicksLimit: 6, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'Flow', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
+            });
+
+            // 5. Temperature vs Pv
+            const temps = [20, 40, 60, 80, 100, 120, 140, 160, 180];
+            new Chart(document.getElementById('faqChart5'), {
+                type: 'line',
+                data: { labels: temps.map(t => t + '\u00b0C'), datasets: [
+                    { label: 'Pv Water', data: [0.02, 0.07, 0.2, 0.47, 1.01, 2.0, 3.6, 6.2, 10.0], borderColor: '#EF4444', borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#EF4444' },
+                    { label: 'Safe Margin', data: [10, 10, 10, 10, 10, 10, 10, 10, 10], borderColor: '#94A3B8', borderWidth: 1, borderDash: [4,4], pointRadius: 0 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, title: { display: true, text: 'Temp', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'bar(a)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+
+            // 6. Multi-stage vs single-stage pressure
+            new Chart(document.getElementById('faqChart6'), {
+                type: 'line',
+                data: { labels: ['P1', 'Stage 1', 'Stage 2', 'Stage 3', 'Stage 4', 'P2'], datasets: [
+                    { label: 'Multi-Stage', data: [10, 8.5, 7, 5.5, 4, 3], borderColor: '#10B981', borderWidth: 2.5, tension: 0.3, pointRadius: 3, pointBackgroundColor: '#10B981' },
+                    { label: 'Single-Stage', data: [10, 10, 10, 1.5, 2.5, 3], borderColor: '#EF4444', borderWidth: 2, borderDash: [5,3], tension: 0.4, pointRadius: 3, pointBackgroundColor: '#EF4444' },
+                    { label: 'Pv', data: [2, 2, 2, 2, 2, 2], borderColor: '#F59E0B', borderWidth: 1, borderDash: [2,4], pointRadius: 0 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'P (bar)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+
+            // 7. FL by valve type (grouped bar)
+            new Chart(document.getElementById('faqChart7'), {
+                type: 'bar',
+                data: { labels: ['Globe', 'Segment', 'Ball', 'Butterfly'], datasets: [
+                    { label: 'FL (min)', data: [0.85, 0.65, 0.55, 0.50], backgroundColor: 'rgba(37,99,235,0.6)', borderRadius: 4 },
+                    { label: 'FL (max)', data: [0.95, 0.75, 0.65, 0.60], backgroundColor: 'rgba(37,99,235,0.25)', borderRadius: 4 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { ticks: { font: axisFont }, grid: { display: false } }, y: { min: 0, max: 1, title: { display: true, text: 'FL', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+
+            // 8. Standards coverage
+            new Chart(document.getElementById('faqChart8'), {
+                type: 'bar',
+                data: { labels: ['ISA-75.01', 'IEC 60534', 'API 594', 'ASME B16'], datasets: [
+                    { label: 'Cavitation', data: [95, 90, 40, 30], backgroundColor: 'rgba(239,68,68,0.6)', borderRadius: 4 },
+                    { label: 'Sizing', data: [90, 95, 60, 50], backgroundColor: 'rgba(16,185,129,0.6)', borderRadius: 4 }
+                ] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { ticks: { font: { size: 8 } }, grid: { display: false } }, y: { display: true, title: { display: true, text: 'Coverage %', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
+            });
+        }
     </script>
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
@@ -545,10 +685,31 @@
             .card { padding: 20px; }
             .footer-content { flex-direction: column; gap: 25px; }
         }
+
+        /* --- THEORY & FAQ STYLES --- */
+        .theory-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 30px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+        @media (max-width: 1000px) { .theory-grid { grid-template-columns: 1fr; } }
+        .theory-module { background: var(--card); border-radius: 12px; padding: 30px; border: 1px solid var(--border); border-top: 5px solid var(--secondary); display: flex; flex-direction: column; height: 100%; transition: all 0.3s ease; }
+        .theory-module:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-top-color: var(--accent); }
+        .theory-module h3 { font-size: 1.4rem; margin-top: 0; margin-bottom: 15px; color: var(--primary); display: flex; align-items: center; gap: 12px; }
+        .theory-chart-container { background: #f8fafc; border-radius: 10px; margin: 20px 0; padding: 15px; height: 180px; border: 1px solid var(--border); position: relative; }
+        .faq-section { margin-top: 60px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+        .faq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+        @media (max-width: 1000px) { .faq-grid { grid-template-columns: 1fr; } }
+        .faq-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.3s; overflow: visible !important; height: auto !important; }
+        .faq-card:hover { border-color: var(--secondary); background: linear-gradient(to bottom right, var(--card), rgba(37, 99, 235, 0.02)); }
+        .faq-card h4 { font-size: 1.1rem; color: var(--heading); margin: 0 0 12px 0; display: flex; align-items: flex-start; gap: 10px; line-height: 1.4; }
+        .faq-card h4 i { margin-top: 4px; color: var(--secondary); font-size: 1rem; }
+        .faq-answer { display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; max-height: none !important; overflow: visible !important; font-size: 0.95rem !important; color: #1e293b !important; line-height: 1.7 !important; margin-bottom: 15px !important; padding: 14px !important; background: rgba(37, 99, 235, 0.05) !important; border-radius: 6px !important; border-left: 3px solid var(--secondary) !important; white-space: normal !important; word-wrap: break-word !important; min-height: 40px !important; }
+        body.dark-mode .faq-answer { background: rgba(255, 255, 255, 0.05) !important; color: #e2e8f0 !important; }
+        .faq-visual { border-top: 1px solid var(--border); padding-top: 15px; height: 160px; position: relative; }
+        .edu-badge { display: inline-block; padding: 2px 8px; background: rgba(37, 99, 235, 0.1); color: var(--secondary); border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Valve Cavitation & Flashing Prediction Tool - Industrial Grade">
     <meta property="og:description" content="Professional Control Valve Cavitation Calculator. Predicts Flashing, Incipient, and Choked Cavitation regimes using Sigma Index and Recovery Factor (FL). ISA-75.01 compliant.">
+
+    <meta name="theme-color" content="#2563EB">
 </head>
 <body>
     <div id="message-box" class="message-box"></div>
@@ -557,7 +718,7 @@
         <div class="container">
             <nav class="navbar">
                 <a href="/" class="logo-container">
-                    <img src="logo.png" alt="Design Calculators Logo" class="logo">
+                    <img src="logo.png" alt="Design Calculators Logo" class="logo" width="42" height="42">
                     <span class="logo-text">Design Calculators</span>
                 </a>
 
@@ -748,52 +909,104 @@
             </div>
         </div>
 
-        <!-- EDUCATIONAL CONTENT SECTION (MASSIVE) -->
-        <div class="education-section card">
-            <h2><i class="fas fa-lightbulb"></i> Engineering Insights: The Destructive Power of Cavitation</h2>
-            
-            <!-- Insight 1: Vena Contracta -->
-            <div class="insight-card">
-                <h4><i class="fas fa-compress-arrows-alt"></i> 1. The Vena Contracta Effect</h4>
-                <p>As fluid flows through the restrictive orifice of a control valve, its velocity increases to conserve mass. According to Bernoulli's principle, as velocity increases, pressure decreases. The pressure reaches its lowest point slightly downstream of the physical restriction; this point is called the <strong>Vena Contracta</strong>.</p>
-                <p>Crucially, the pressure at the Vena Contracta ($P_{vc}$) can drop significantly lower than the outlet pressure ($P_2$). This "pressure dip" is determined by the valve geometry, quantified by the **Liquid Pressure Recovery Factor ($F_L$)**.</p>
-            </div>
+        <!-- VISUAL EDUCATION SECTION -->
+        <div class="theory-grid">
+            <!-- Module 1: Vena Contracta -->
+            <article class="theory-module">
+                <span class="edu-badge">Fluid Mechanics</span>
+                <h3><i class="fas fa-compress-arrows-alt"></i> The Vena Contracta Effect</h3>
+                <p>As fluid flows through a valve restriction, velocity increases and pressure drops (Bernoulli's Principle). The <strong>lowest pressure point</strong> occurs slightly downstream at the <strong>Vena Contracta</strong>. This pressure ($P_{vc}$) can drop far below the outlet ($P_2$), and is governed by the valve's <strong>Pressure Recovery Factor ($F_L$)</strong>.</p>
+                <div class="theory-chart-container"><canvas id="theoryChart1"></canvas></div>
+                <p>Globe valves ($F_L \approx 0.9$) have shallow dips, while Ball/Butterfly valves ($F_L \approx 0.5$) have deep dips that risk crossing below the vapor pressure line.</p>
+            </article>
 
-            <!-- Insight 2: Flashing vs Cavitation -->
-            <div class="insight-card">
-                <h4><i class="fas fa-random"></i> 2. Flashing vs. Cavitation: Know the Difference</h4>
-                <p>Both phenomena start when $P_{vc}$ drops below the liquid's Vapor Pressure ($P_v$), causing bubbles to form.</p>
-                <ul>
-                    <li><strong>Flashing:</strong> The pressure never recovers above $P_v$. The bubbles persist downstream. The liquid turns into a liquid-vapor mixture. The damage mechanism is <strong>erosion</strong> (sandblasting effect) due to high velocity. It cannot be prevented by valve design, only accommodated (e.g., using hardened trims).</li>
-                    <li><strong>Cavitation:</strong> The pressure recovers <em>above</em> $P_v$ downstream. The vapor bubbles formed at the Vena Contracta suddenly collapse (implode) as the pressure rises. These implosions generate microscopic shockwaves (>100,000 psi) and micro-jets that pit and eat away metal. This is the "Gravel Sound". It destroys valves rapidly.</li>
-                </ul>
-            </div>
+            <!-- Module 2: Flashing vs Cavitation -->
+            <article class="theory-module">
+                <span class="edu-badge">Damage Mechanisms</span>
+                <h3><i class="fas fa-random"></i> Flashing vs. Cavitation</h3>
+                <p><strong>Flashing</strong> occurs when pressure never recovers above $P_v$; bubbles persist and cause <strong>erosion</strong>. <strong>Cavitation</strong> occurs when pressure recovers above $P_v$; bubbles violently <strong>implode</strong>, generating micro-jets exceeding 100,000 psi that pit and destroy metal surfaces within weeks.</p>
+                <div class="theory-chart-container"><canvas id="theoryChart2"></canvas></div>
+                <p>Flashing is a <strong>process condition</strong> (unavoidable), while cavitation can be mitigated through valve selection and multi-stage trim designs.</p>
+            </article>
 
-            <!-- Insight 3: Sigma Index -->
-            <div class="insight-card">
-                <h4><i class="fas fa-chart-line"></i> 3. The Cavitation Index ($\sigma$)</h4>
-                <p>The Sigma index is the ratio of "forces resisting cavitation" ($P_1 - P_v$) to "forces promoting cavitation" ($\Delta P$).</p>
-                <div class="formula">$$ \sigma = \frac{P_1 - P_v}{P_1 - P_2} $$</div>
-                <ul>
-                    <li>$\sigma > 2.0$: No Cavitation.</li>
-                    <li>$1.7 < \sigma < 2.0$: Incipient Cavitation (Light noise).</li>
-                    <li>$1.0 < \sigma < 1.5$: Constant Cavitation (Damage likely without special trim).</li>
-                    <li>$\sigma < 1.0$: Choked Flow / Flashing (Maximum flow limit reached).</li>
-                </ul>
-            </div>
+            <!-- Module 3: Sigma Index -->
+            <article class="theory-module">
+                <span class="edu-badge">Cavitation Analysis</span>
+                <h3><i class="fas fa-chart-line"></i> The Sigma Index ($\sigma$)</h3>
+                <p>The Sigma index quantifies cavitation risk: $\sigma = (P_1 - P_v) / (P_1 - P_2)$. Values above 2.0 indicate safe operation. Between 1.5–2.0 is incipient cavitation. Below 1.0 means choked flow where increasing $\Delta P$ yields no additional flow.</p>
+                <div class="theory-chart-container"><canvas id="theoryChart3"></canvas></div>
+                <p>Professional engineers use $\sigma$ alongside the manufacturer's $\sigma_{mr}$ (minimum recommended) to determine whether anti-cavitation trim is required per ISA-75.01.</p>
+            </article>
 
-            <!-- Insight 4: Valve Recovery Factor FL -->
-            <div class="insight-card">
-                <h4><i class="fas fa-cogs"></i> 4. The Role of $F_L$</h4>
-                <p>$F_L$ measures how much pressure recovery occurs after the Vena Contracta.
-                <br><strong>High Recovery ($F_L \approx 0.5-0.6$):</strong> Rotary valves (Ball/Butterfly). They have a streamlined flow path, so pressure recovers efficiently. However, this means the pressure dipped VERY low to get there. They cavitate easily.
-                <br><strong>Low Recovery ($F_L \approx 0.9$):</strong> Globe valves. The tortuous path prevents pressure recovery. The pressure dip is shallow, making them resistant to cavitation.</p>
-            </div>
-            
-            <!-- Insight 5: Choked Flow -->
-            <div class="insight-card">
-                <h4><i class="fas fa-ban"></i> 5. Choked Flow</h4>
-                <p>When cavitation becomes severe, the vapor bubbles occupy so much volume that they choke the flow passage. Increasing the pressure drop ($\Delta P$) no longer increases the flow rate. The flow is saturated. Calculating the Choked Pressure Drop ($\Delta P_{choked}$) is vital for sizing to ensure the valve can actually pass the required flow.</p>
+            <!-- Module 4: FL & Valve Types -->
+            <article class="theory-module">
+                <span class="edu-badge">Valve Selection</span>
+                <h3><i class="fas fa-cogs"></i> Recovery Factor $F_L$ & Choked Flow</h3>
+                <p><strong>High Recovery</strong> valves (Ball, $F_L \approx 0.6$) have streamlined paths — great for flow but dangerous for cavitation. <strong>Low Recovery</strong> valves (Globe, $F_L \approx 0.9$) dissipate energy in tortuous paths, making them inherently cavitation-resistant.</p>
+                <div class="theory-chart-container"><canvas id="theoryChart4"></canvas></div>
+                <p>When cavitation fills the passage with vapor, flow becomes <strong>choked</strong>. The choked $\Delta P = F_L^2 \times (P_1 - F_F \times P_v)$ sets the absolute maximum flow capacity.</p>
+            </article>
+        </div>
+
+        <!-- VISUAL FAQ SECTION -->
+        <div class="faq-section card">
+            <h2><i class="fas fa-question-circle"></i> Industrial Cavitation FAQ</h2>
+            <div class="faq-grid">
+                <!-- Q1 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-volume-up"></i> 1. What does cavitation sound like?</h4>
+                    <div class="faq-answer">Cavitation produces a distinctive sound often described as <strong>"gravel or rocks"</strong> passing through a pipe. Incipient cavitation starts as light crackling, progressing to a violent rattling at full cavitation. Experienced operators can diagnose the severity by ear alone. Acoustic emission sensors are used in modern predictive maintenance programs to detect onset automatically.</div>
+                    <div class="faq-visual"><canvas id="faqChart1"></canvas></div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-tools"></i> 2. How can cavitation be prevented?</h4>
+                    <div class="faq-answer">The primary methods are: <strong>(1)</strong> Select a valve with higher $F_L$ (Globe over Ball). <strong>(2)</strong> Use multi-stage trim (e.g., Fisher Cavitrol III) to distribute the pressure drop across multiple restrictions. <strong>(3)</strong> Increase back-pressure with downstream restriction. <strong>(4)</strong> Reduce inlet temperature to lower $P_v$. Each method reduces the severity of the Vena Contracta dip.</div>
+                    <div class="faq-visual"><canvas id="faqChart2"></canvas></div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-tint"></i> 3. Why is flashing worse than cavitation?</h4>
+                    <div class="faq-answer">While cavitation damage is localized to the trim area, <strong>flashing destroys the entire downstream piping</strong>. The two-phase flow travels at extremely high velocities, causing erosion across all wetted surfaces. Flashing cannot be eliminated by valve design — only mitigated using hardened materials (Stellite, Tungsten Carbide) and oversized downstream piping to reduce velocity.</div>
+                    <div class="faq-visual"><canvas id="faqChart3"></canvas></div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-exclamation-triangle"></i> 4. What is the choked flow limit?</h4>
+                    <div class="faq-answer">Once $\Delta P$ exceeds the choked limit ($\Delta P_{choked}$), increasing the pressure drop produces <strong>zero additional flow</strong>. The vaporized fluid fills the passage and blocks further throughput. This is critical for control valve sizing — specifying a valve that operates beyond its choked limit means the process will never reach design flow, regardless of how far you open the valve.</div>
+                    <div class="faq-visual"><canvas id="faqChart4"></canvas></div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-temperature-high"></i> 5. How does temperature affect cavitation risk?</h4>
+                    <div class="faq-answer">Higher fluid temperature raises the <strong>Vapor Pressure ($P_v$)</strong>. This narrows the gap between $P_1$ and $P_v$, reducing the Sigma index and dramatically increasing cavitation risk. Hot condensate and boiler feedwater applications at 150°C+ are especially vulnerable. Always check $P_v$ at the actual operating temperature, not at ambient.</div>
+                    <div class="faq-visual"><canvas id="faqChart5"></canvas></div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-drafting-compass"></i> 6. How do multi-stage trims work?</h4>
+                    <div class="faq-answer">Multi-stage trims divide the total $\Delta P$ across 2–8 separate restrictions in series. Each stage takes a small, safe pressure drop. The cumulative effect achieves the full $\Delta P$ without any single point crossing below $P_v$. Premium trims like <strong>Fisher Cavitrol</strong> and <strong>Masoneilan Lo-dB</strong> use drilled-cage or labyrinth-path designs to accomplish this.</div>
+                    <div class="faq-visual"><canvas id="faqChart6"></canvas></div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-ruler-combined"></i> 7. What is the $F_L$ difference between valve types?</h4>
+                    <div class="faq-answer">Globe valves ($F_L = 0.85-0.95$) are inherently cavitation-resistant due to their tortuous flow path. Ball valves ($F_L = 0.55-0.65$) and Butterfly valves ($F_L = 0.50-0.60$) have streamlined paths that create very deep Vena Contracta dips. For high $\Delta P$ liquid services, <strong>always start with a Globe valve</strong> and verify the Sigma index.</div>
+                    <div class="faq-visual"><canvas id="faqChart7"></canvas></div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="faq-card">
+                    <h4><i class="fas fa-shield-alt"></i> 8. Which standards govern cavitation analysis?</h4>
+                    <div class="faq-answer">The primary standards are <strong>ISA-75.01.01</strong> (Flow equations for sizing), <strong>IEC 60534-2-1</strong> (International equivalent), and <strong>API 594</strong> (Butterfly valve specs). These define $F_L$, $\sigma$, and the critical flow factor $F_F$. Manufacturers provide certified $F_L$ values from flow tests per these standards. Always use certified data, never textbook approximations, for safety-critical applications.</div>
+                    <div class="faq-visual"><canvas id="faqChart8"></canvas></div>
+                </div>
             </div>
         </div>
     </main>    <!-- FOOTER -->
