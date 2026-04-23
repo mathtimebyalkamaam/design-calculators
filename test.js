@@ -1,21 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cable Ampacity Calculator - Design Calculators - Electrical</title>
-    <link rel="canonical" href="https://designcalculators.co.in/cable-thermal-rating.html" />
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="Professional cable ampacity calculator based on IEC 60364 & NEC. Calculates corrected ampacity, voltage drop, and short-circuit withstand.">
-    <meta name="keywords" content="cable ampacity, ampacity calculator, iec 60364-5-52, nec ampacity, voltage drop calculator, short circuit withstand, cable sizing">
-    <meta name="author" content="Design Calculators">
-    <meta name="robots" content="index, follow">
 
-    <!-- AdSense & Analytics -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780" crossorigin="anonymous"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
-    <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
@@ -1955,9 +1938,4 @@
         }, 500);
         
     });
-    </script>
-</body>
-</html>
-
-
-
+    
