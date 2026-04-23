@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,6 +29,7 @@
 
     <!-- MathJax for formula rendering -->
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -1014,7 +1015,10 @@
             
             <!-- Result Container (Shared for all calculators) -->
             <div id="result-container" class="result-container">
-                <h3>Calculation Results</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                    <h3 style="margin-bottom: 0;">Calculation Results</h3>
+                    <button class="calculate-btn" id="download-pdf-btn" style="width: auto; padding: 8px 16px; font-size: 0.9rem; margin-top: 0; flex-shrink: 0;"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                </div>
                 
                 <!-- Motor Results -->
                 <div id="motor-calculation-details" class="calculation-section"></div>
@@ -1082,6 +1086,126 @@
             
             <h3>6. Coordination (Selectivity)</h3>
             <p><strong>What it is:</strong> In a large system, you don't want a small fault on a single motor to trip the main incomer breaker for the entire building. <strong>Selective Coordination</strong> ensures that only the breaker *closest* to the fault trips, isolating the problem while keeping the rest of the system online. This is achieved by carefully setting the time-delay and instantaneous trip levels of breakers in series (e.g., the motor breaker is set to trip faster than the MCC incomer, which is set to trip faster than the main transformer breaker).</p>
+
+            <div style="margin: 40px 0;">
+                <h3 style="text-align: center; border-bottom: none; margin-bottom: 20px;">Time-Current Curve (TCC) Selectivity Analysis</h3>
+                <svg viewBox="0 0 800 400" width="100%" height="auto" style="background: rgba(0,0,0,0.02); border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Inter', sans-serif; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);">
+                    <defs>
+                        <linearGradient id="loadGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#10B981" stop-opacity="0.2"/>
+                            <stop offset="100%" stop-color="#10B981" stop-opacity="0.05"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Grid Lines -->
+                    <g stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4,4">
+                        <line x1="100" y1="50" x2="750" y2="50"/>
+                        <line x1="100" y1="125" x2="750" y2="125"/>
+                        <line x1="100" y1="200" x2="750" y2="200"/>
+                        <line x1="100" y1="275" x2="750" y2="275"/>
+                        <line x1="100" y1="350" x2="750" y2="350"/>
+                        <!-- Vert -->
+                        <line x1="200" y1="50" x2="200" y2="350"/>
+                        <line x1="300" y1="50" x2="300" y2="350"/>
+                        <line x1="400" y1="50" x2="400" y2="350"/>
+                        <line x1="500" y1="50" x2="500" y2="350"/>
+                        <line x1="600" y1="50" x2="600" y2="350"/>
+                        <line x1="700" y1="50" x2="700" y2="350"/>
+                    </g>
+                    <!-- Axes -->
+                    <g stroke="#4B5563" stroke-width="2">
+                        <line x1="100" y1="350" x2="750" y2="350"/>
+                        <line x1="100" y1="50" x2="100" y2="350"/>
+                    </g>
+                    <!-- TCC Curve Area -->
+                    <path d="M 300 50 Q 300 150 400 250 L 400 350" fill="none" stroke="#2563EB" stroke-width="3"/>
+                    <path d="M 450 50 Q 450 150 550 250 L 550 350" fill="none" stroke="#F59E0B" stroke-width="3" stroke-dasharray="6,4"/>
+                    
+                    <!-- Motor Starting Curve Area -->
+                    <path d="M 200 350 L 200 300 Q 250 150 280 150 L 280 350 Z" fill="url(#loadGrad)"/>
+                    <path d="M 200 300 Q 250 150 280 150" fill="none" stroke="#10B981" stroke-width="2"/>
+                    
+                    <!-- Labels -->
+                    <text x="425" y="380" text-anchor="middle" font-size="14" fill="var(--text-color)" font-weight="600">Current (A) - Logarithmic Scale</text>
+                    <text x="40" y="200" text-anchor="middle" font-size="14" fill="var(--text-color)" transform="rotate(-90 40,200)" font-weight="600">Time (s) - Logarithmic Scale</text>
+                    
+                    <text x="240" y="270" text-anchor="middle" font-size="12" fill="#059669" font-weight="600">Motor Inrush</text>
+                    <text x="240" y="285" text-anchor="middle" font-size="10" fill="#059669">(Starting limit)</text>
+                    
+                    <text x="350" y="100" fill="#2563EB" font-size="12" font-weight="600">Motor Breaker (Downstream)</text>
+                    <text x="350" y="115" fill="#2563EB" font-size="10">Fast clearance limits damage</text>
+                    
+                    <text x="560" y="100" fill="#D97706" font-size="12" font-weight="600">Main Incomer (Upstream)</text>
+                    <text x="560" y="115" fill="#D97706" font-size="10">Time delay ensures coordination</text>
+                    
+                    <circle cx="280" cy="150" r="4" fill="#059669"/>
+                    <text x="270" y="140" text-anchor="end" font-size="10" fill="#059669">Max Start Inrush</text>
+                    
+                    <!-- Operating Zones -->
+                    <rect x="100" y="360" width="150" height="10" fill="#10B981" rx="2"/>
+                    <text x="175" y="385" text-anchor="middle" font-size="10" fill="#4B5563">FLA &amp; Normal Load</text>
+                    
+                    <rect x="250" y="360" width="200" height="10" fill="#F59E0B" rx="2"/>
+                    <text x="350" y="385" text-anchor="middle" font-size="10" fill="#4B5563">Overload Region</text>
+                    
+                    <rect x="450" y="360" width="300" height="10" fill="#EF4444" rx="2"/>
+                    <text x="600" y="385" text-anchor="middle" font-size="10" fill="#4B5563">Short Circuit Region (Ka)</text>
+
+                    <!-- Gap Arrow Indicator -->
+                    <g fill="none" stroke="#6B7280" stroke-width="1" marker-end="url(#arrowhead)" marker-start="url(#arrowstart)">
+                        <path d="M 405 200 L 495 200"/>
+                    </g>
+                    <text x="450" y="195" text-anchor="middle" font-size="10" fill="#6B7280">Selectivity Margin</text>
+                    
+                    <defs>
+                        <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                            <polygon points="0 0, 6 3, 0 6" fill="#6B7280" />
+                        </marker>
+                        <marker id="arrowstart" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto">
+                            <polygon points="6 0, 0 3, 6 6" fill="#6B7280" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+            
+        </div>
+        
+        <!-- FAQs Section -->
+        <div class="content-block" id="faqs">
+            <h2>Frequently Asked Questions (FAQs)</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">1. Why do we set the thermal trip to 115%-125% of the Full Load Amps?</h3>
+                    <p style="margin-bottom: 0;">This provides a buffer for normal variations in supply voltage or temporary minor load fluctuations without causing nuisance tripping, while effectively protecting the motor winding insulation against sustained overloads which generate excessive localized heat.</p>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">2. How does the motor starting method affect the magnetic/instantaneous trip setting?</h3>
+                    <p style="margin-bottom: 0;">A Direct-On-Line (DOL) start draws maximum inrush current (typically 6-8 times FLA), meaning the magnetic trip must be set proportionally high to avoid interruption. Methods like Star-Delta or Soft Starters reduce the inrush significantly (down to ~30-50% of DOL limit), permitting a tighter, more sensitive instantaneous trip setting that improves overall protection.</p>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">3. What is the fundamental difference between Icu and Ics ratings in a breaker?</h3>
+                    <p style="margin-bottom: 0;"><strong>Icu (Ultimate Short-Circuit Breaking Capacity)</strong> is the absolute maximum fault current a breaker can cleanly interrupt at least once safely. <strong>Ics (Service Short-Circuit Breaking Capacity)</strong> is the maximum fault current it can repeatedly interrupt and immediately return to normal service carrying nominal load.</p>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">4. Can I use a miniature circuit breaker (MCB) for a large industrial motor?</h3>
+                    <p style="margin-bottom: 0;">Generally, no. MCBs typically have fixed thermal and magnetic settings that do not tolerate high inductive industrial inrush currents well. MCCBs (Moulded Case Circuit Breakers) or ACBs (Air Circuit Breakers) provide the adjustable thermal delays and high short-circuit capacities required for rigorous industrial motors and transformers.</p>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">5. What is Selective Coordination and why is it mandatory for critical systems?</h3>
+                    <p style="margin-bottom: 0;">Selective coordination guarantees that a specific electrical fault is cleared by the protective device immediately upstream of the anomaly, without tripping main supply breakers higher up the chain. It ensures operational reliability by restricting blackout consequences to explicitly the faulted branch circuit.</p>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">6. How does transformer impedance (Z%) dictate downstream breaker rating?</h3>
+                    <p style="margin-bottom: 0;">The transformer's percentage impedance behaves as the primary bottleneck limiting fault current. A transformer with lower impedance will permit a much higher short-circuit fault current through to the secondary side circuit breaker, thereby demanding a larger breaking capacity (Icu rating).</p>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">7. Why should we factor in ambient temperature for cable and breaker rating?</h3>
+                    <p style="margin-bottom: 0;">Electrical resistance naturally climbs with temperature, compounding heat dissipation issues. Cable insulation and thermal magnetic breaker elements derate or pre-maturely trip in hot ambient conditions (above standard 30Â°C/40Â°C thresholds), demanding larger frame sizes or thicker cross-sectional conductors to compensate.</p>
+                </div>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px;">
+                    <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--primary-color);">8. What causes "nuisance tripping" and how can this calculator prevent it?</h3>
+                    <p style="margin-bottom: 0;">Nuisance tripping happens when healthy transient overloads (like normal pump startup) cross the magnetic curve of a poorly adjusted breaker. Using this calculator prevents these annoyances by establishing scientifically sound baseline minimums for inrush tolerance limits and peak thermal overloads.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1797,8 +1921,43 @@
                         animationDelay += delayIncrement;
                     }
                     transformerResultTable.classList.add('show');
-G                }
+                }
                 
+                // --- PDF Download Logic ---
+                const downloadPdfBtn = document.getElementById('download-pdf-btn');
+                if(downloadPdfBtn) {
+                    downloadPdfBtn.addEventListener('click', function() {
+                        const originalBtnContent = this.innerHTML;
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                        this.disabled = true;
+                        
+                        const element = document.getElementById('result-container');
+                        const opt = {
+                            margin:       0.3,
+                            filename:     'breaker-sizing-report.pdf',
+                            image:        { type: 'jpeg', quality: 0.98 },
+                            html2canvas:  { scale: 2, useCORS: true },
+                            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                        };
+                        
+                        // Temporarily hide the button itself so it doesn't appear in the PDF
+                        const btnDisplay = this.style.display;
+                        this.style.display = 'none';
+                        
+                        html2pdf().set(opt).from(element).save().then(() => {
+                            this.style.display = btnDisplay;
+                            this.innerHTML = originalBtnContent;
+                            this.disabled = false;
+                        }).catch(err => {
+                            console.error("PDF generation error: ", err);
+                            this.style.display = btnDisplay;
+                            this.innerHTML = originalBtnContent;
+                            this.disabled = false;
+                            displayMessage("Failed to generate PDF. Check console for details.", "error");
+                        });
+                    });
+                }
+
                 // Theme switch logic
                 const themeSwitch = document.getElementById('theme-switch');
                 if (themeSwitch) {
