@@ -43,6 +43,8 @@
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         /* Base Theme Variables from perfect.txt */
         :root {
@@ -774,6 +776,7 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
@@ -860,7 +863,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="load-current">Load Current (A) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The actual current drawn by the load connected to the cable. Used for voltage drop calculation.</span></span></label>
-                            <input type="number" id="load-current" value="100" min="0.1" step="0.1" required>
+                            <input type="number" id="load-current" value="20" min="0.1" step="0.1" required>
                         </div>
                         <div class="form-group">
                             <label for="system-voltage-vd">System Voltage (V) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The nominal line-to-line voltage of the system. Used for voltage drop percentage calculation.</span></span></label>
@@ -893,14 +896,22 @@
                         </div>
                     </div>
 
-                    <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Ampacity & More</button>
+                    <div class="btn-group" style="display: flex; gap: 15px; margin-top: 25px;">
+                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Ampacity & More</button>
+                        <button type="button" id="reset-btn" class="btn secondary"><i class="fas fa-sync-alt"></i> Reset</button>
+                        <button type="button" id="pdf-btn" class="btn accent" style="display: none;"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                    </div>
                 </form>
             </div>
         </div>
                         
         <!-- Results Container -->
         <div id="result-container" class="result-container">
-            <h3><i class="fas fa-clipboard-check"></i> Cable Ampacity Results</h3>
+            <h3 style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fas fa-clipboard-check"></i> Cable Ampacity Results</span>
+                <span id="verdict-tag" style="font-size: 0.9rem; padding: 4px 12px; border-radius: 20px; display: none;"></span>
+            </h3>
+            <div id="verdict-banner" style="display: none; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; font-weight: 800; font-size: 1.2rem; border: 2px solid transparent;"></div>
             <div id="calculation-details">
                 <!-- Calculation steps will be inserted here -->
             </div>
@@ -1211,20 +1222,37 @@
             }
         };
 
-        // Correction Factors (Ka) for Ambient Air Temp (Based on 30â„ƒ reference)
+        // Correction Factors (Ka) for Ambient Air Temp (Ref: IEC 60364-5-52 Table B.52.14, 30°C reference)
+        // Formula: k = sqrt((T_max - T_amb) / (T_max - T_ref)) where T_ref = 30°C
         const tempCorrectionFactors = {
-            pvc: { // 70C/75C insulation (using 70C as a conservative base)
-                '20': 1.08, '25': 1.04, '30': 1.00, '35': 0.96, '40': 0.91,
-                '45': 0.87, '50': 0.82, '55': 0.76, '60': 0.71, '65': 0.65, '70': 0.58
+            pvc: { // Max conductor temp 70°C, Reference ambient 30°C (IEC Table B.52.14)
+                '10': 1.22, '15': 1.17, '20': 1.12, '25': 1.06, '30': 1.00,
+                '35': 0.94, '40': 0.87, '45': 0.79, '50': 0.71, '55': 0.61,
+                '60': 0.50, '65': 0.35
             },
-            xlpe: { // 90C insulation
-                '20': 1.08, '25': 1.04, '30': 1.00, '35': 0.96, '40': 0.91,
-                '45': 0.87, '50': 0.82, '55': 0.76, '60': 0.71, '65': 0.65, '70': 0.58,
-                '75': 0.50, '80': 0.41, '85': 0.32, '90': 0.22
+            xlpe: { // Max conductor temp 90°C, Reference ambient 30°C (IEC Table B.52.14)
+                '10': 1.15, '15': 1.12, '20': 1.08, '25': 1.04, '30': 1.00,
+                '35': 0.96, '40': 0.91, '45': 0.87, '50': 0.82, '55': 0.76,
+                '60': 0.71, '65': 0.65, '70': 0.58, '75': 0.50, '80': 0.41
             }
         };
 
-        // Grouping Correction Factors (Kg)
+        // Installation Method Correction Factors (Ref: IEC 60364-5-52, relative to Method C baseline)
+        // These adjust the base ampacity for different heat dissipation characteristics
+        const installationMethodFactors = {
+            'B1': 0.90,  // Enclosed conduit on wall - restricted airflow
+            'C':  1.00,  // Reference method - cable on wall surface
+            'E':  1.08,  // Multi-core in free air - better ventilation
+            'F':  1.15,  // Single-core touching in free air - best air method
+            'D1': 0.85,  // In conduit in ground - ground dissipation with conduit barrier
+            'D2': 0.90,  // Direct buried - good ground contact
+            'in_raceway': 1.00,   // NEC reference
+            'in_tray_ventilated': 1.04, // NEC ventilated tray
+            'direct_burial': 0.90 // NEC direct burial
+        };
+
+        // Grouping Correction Factors (Kg) (Ref: IEC 60364-5-52, Table B.52.17)
+        // For bunched cables or cables in conduit/trunking, touching
         const groupingCorrectionFactors = {
             '1': 1.00, '2': 0.80, '3': 0.70, '4': 0.65, '5': 0.60,
             '6': 0.57, '7': 0.54, '8': 0.52, '9': 0.50, '10': 0.48,
@@ -1237,13 +1265,13 @@
             '41': 0.17, '42': 0.16
         };
 
-        // Soil Thermal Resistivity Correction Factors (Kp) (Ref: IEC, 20â„ƒ ground temp, 2.5 KÂ·m/W reference)
+        // Soil Thermal Resistivity Correction Factors (Kp) (Ref: IEC 60364-5-52 Table B.52.16, 2.5 K·m/W reference)
         const soilResistivityCorrectionFactors = {
-            '0.5': 1.25, '1.0': 1.18, '1.5': 1.10, '2.0': 1.05, '2.5': 1.00,
-            '3.0': 0.96, '3.5': 0.92, '4.0': 0.88, '4.5': 0.84, '5.0': 0.80
+            '0.5': 1.28, '0.7': 1.20, '1.0': 1.18, '1.5': 1.10, '2.0': 1.05, '2.5': 1.00,
+            '3.0': 0.96, '3.5': 0.93, '4.0': 0.89, '4.5': 0.86, '5.0': 0.83
         };
 
-        // Depth of Burial Correction Factors (Kd) (Ref: IEC, for direct buried cables, 0.7m ref)
+        // Depth of Burial Correction Factors (Kd) (Ref: IEC 60364-5-52, for direct buried cables, 0.7m ref)
         const depthCorrectionFactors = {
             '0.3': 1.10, '0.4': 1.07, '0.5': 1.05, '0.6': 1.02, '0.7': 1.00,
             '0.8': 0.98, '0.9': 0.96, '1.0': 0.95, '1.1': 0.93, '1.2': 0.92,
@@ -1327,11 +1355,15 @@
         const phaseTypeSelect = document.getElementById('phase-type');
         const faultDurationInput = document.getElementById('fault-duration');
         const calculateBtn = document.getElementById('calculate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const pdfBtn = document.getElementById('pdf-btn');
         const resultContainer = document.getElementById('result-container');
         const resultTableBody = document.getElementById('result-table-body');
         const calculationDetailsDiv = document.getElementById('calculation-details');
         const standardReferenceDiv = document.getElementById('standard-reference');
-        const emailShareBtn = document.getElementById('email-share-btn'); 
+        const verdictBanner = document.getElementById('verdict-banner');
+        const verdictTag = document.getElementById('verdict-tag');
+        const emailShareBtn = document.getElementById('email-share-btn'); // May not exist in DOM
 
         // --- DYNAMIC FORM LOGIC ---
         const iecSizes = ['1.5', '2.5', '4', '6', '10', '16', '25', '35', '50', '70', '95', '120', '150', '185', '240', '300', '400', '500', '630'];
@@ -1434,12 +1466,14 @@
         standardSelect.addEventListener('change', updateFormOptions);
         installationMethodSelect.addEventListener('change', updateBurialVisibility);
         calculateBtn.addEventListener('click', calculateAmpacity);
-        emailShareBtn.addEventListener('click', (e) => {
-            if (emailShareBtn.href === '#') {
-                e.preventDefault();
-                displayMessage("Please calculate results first to generate a shareable email.", "warning");
-            }
-        });
+        if (emailShareBtn) {
+            emailShareBtn.addEventListener('click', (e) => {
+                if (emailShareBtn.href === '#') {
+                    e.preventDefault();
+                    displayMessage("Please calculate results first to generate a shareable email.", "warning");
+                }
+            });
+        }
 
         // --- HELPER FUNCTIONS FOR INTERPOLATION ---
         function interpolateFactor(table, value) {
@@ -1465,7 +1499,6 @@
         // --- CALCULATION LOGIC ---
         function calculateAmpacity() {
             try {
-                // 1. Get all inputs
                 const standard = standardSelect.value;
                 const material = conductorMaterialSelect.value;
                 const size = conductorSizeSelect.value;
@@ -1481,18 +1514,17 @@
                 const phaseType = phaseTypeSelect.value;
                 const faultDuration = parseFloat(faultDurationInput.value);
 
-                // 2. Input Validation
                 if (isNaN(ambientTemp) || isNaN(numCircuits) || isNaN(loadCurrent) || isNaN(systemVoltageVd) || isNaN(cableLength) || isNaN(faultDuration)) {
                     throw new Error("Please fill all required fields with valid numbers.");
                 }
                 if (numCircuits < 1 || numCircuits > 42) {
-                    displayMessage("Number of circuits must be between 1 and 42 for this tool. For more, consult specific tables.", "warning");
+                    displayMessage("Number of circuits must be between 1 and 42 for this tool.", "warning");
                 }
                 const tempKeys = Object.keys(tempCorrectionFactors[insulation]).map(parseFloat);
                 const minTemp = Math.min(...tempKeys);
                 const maxTemp = Math.max(...tempKeys);
                 if (ambientTemp < minTemp || ambientTemp > maxTemp) {
-                    displayMessage(`Ambient temp (${ambientTemp}â„ƒ) is outside the tool's range (${minTemp}â„ƒ to ${maxTemp}â„ƒ). Results may be inaccurate.`, "warning");
+                    displayMessage("Ambient temp (" + ambientTemp + "\u2103) is outside the tool\u2019s range (" + minTemp + "\u2103 to " + maxTemp + "\u2103). Results may be inaccurate.", "warning");
                 }
 
                 const isBuried = installMethod.includes('D') || installMethod.includes('burial');
@@ -1500,223 +1532,398 @@
                     throw new Error("For buried installations, please provide valid Soil Resistivity and Depth of Burial.");
                 }
 
-                // 3. Look up Base Ampacity (Ib)
+                const T_max = insulation === 'pvc' ? 70 : 90;
+                const T_ref = 30;
+                const sizeUnit = standard === 'iec' ? 'mm\u00B2' : 'AWG/kcmil';
+                const installMethodName = installationMethodSelect.options[installationMethodSelect.selectedIndex].text;
+
                 const baseAmpacityTable = standard === 'iec' ? iecBaseAmpacity : necBaseAmpacity;
-                let Ib_raw = 0;
-                
-                // Fallback size safety catch
                 let safeSize = size;
                 if (!safeSize || safeSize.trim() === "") {
                     safeSize = standard === 'iec' ? '1.5' : '14';
                     conductorSizeSelect.value = safeSize;
                 }
-                
+                let Ib_raw;
                 try {
                     Ib_raw = baseAmpacityTable[material][insulation][safeSize];
                     if (!Ib_raw) throw new Error();
                 } catch (e) {
-                    throw new Error(`Base ampacity data not found for: ${material}, ${insulation}, ${safeSize}.`);
+                    throw new Error("Base ampacity data not found for: " + material + ", " + insulation + ", " + safeSize + ".");
                 }
 
-                let calculationHtml = '<h4><i class="fas fa-tasks"></i> Detailed Calculation Steps:</h4>';
-                
-                // --- Ampacity Calculation ---
-                calculationHtml += `<h4>1. Corrected Ampacity ($$I_z$$)</h4>`;
-                calculationHtml += `<p class="formula">$$ I_{z} = I_{b,raw} \\times k_{temp} \\times k_{group} \\times k_{soil} \\times k_{depth} $$</p>`;
-                calculationHtml += `<ul><li>Raw Base Ampacity (I<sub>b,raw</sub>) for size ${size} ${standard === 'iec' ? 'mmÂ²' : 'AWG/kcmil'} ${material} cable with ${insulation.toUpperCase()} insulation (Ref: ${standard.toUpperCase()} tables): <strong>${Ib_raw} A</strong>.</li></ul>`;
+                let stepNo = 0;
+                let calculationHtml = '<h4><i class="fas fa-tasks"></i> Detailed Step-by-Step Calculation Audit Trail</h4>';
 
-                // 4. Determine Correction Factors
-                // Temperature Correction (k_temp)
-                let tempRef = 30; // Default for NEC and IEC Air
-                if (isBuried && standard === 'iec') {
-                    tempRef = 20; // IEC default ground temp
-                }
-                // NEC uses 30C for both air and ground. IEC uses 30C for air, 20C for ground.
-                // Our simple table is based on 30C. We must adjust.
-                // This is a simplification; real tables are different.
-                // Let's stick to the 30C reference table for simplicity as coded.
-                let k_temp = interpolateFactor(tempCorrectionFactors[insulation], ambientTemp);
-                calculationHtml += `<ul><li>Ambient Temperature Correction (k<sub>temp</sub>) for ${ambientTemp}â„ƒ (Ref 30Â°C): <strong>${k_temp.toFixed(3)}</strong>.</li></ul>`;
-
-                // Grouping Correction (k_group)
-                let k_group = 1.0;
-                const effectiveNumCircuits = Math.min(numCircuits, 42);
-                k_group = interpolateFactor(groupingCorrectionFactors, effectiveNumCircuits);
-                if (numCircuits > 1) {
-                    calculationHtml += `<ul><li>Grouping Correction (k<sub>group</sub>) for ${numCircuits} circuits: <strong>${k_group.toFixed(3)}</strong>.</li></ul>`;
-                }
-
-                // Soil Resistivity (k_soil) and Depth (k_depth)
-                let k_soil = 1.0;
-                let k_depth = 1.0;
+                // STEP 1
+                stepNo++;
+                calculationHtml += '<h4>Step ' + stepNo + ': Identify Cable & Installation Parameters</h4>';
+                calculationHtml += '<ul>';
+                calculationHtml += '<li>Standard: <strong>' + (standard.toUpperCase() === 'IEC' ? 'IEC 60364-5-52:2009' : 'NEC (NFPA 70)') + '</strong></li>';
+                calculationHtml += '<li>Conductor Material: <strong>' + material.charAt(0).toUpperCase() + material.slice(1) + '</strong></li>';
+                calculationHtml += '<li>Conductor Size: <strong>' + size + ' ' + sizeUnit + '</strong></li>';
+                calculationHtml += '<li>Insulation Type: <strong>' + insulation.toUpperCase() + '</strong> (Max. conductor temp: <strong>' + T_max + '\u00B0C</strong>)</li>';
+                calculationHtml += '<li>Installation Method: <strong>' + installMethodName + '</strong> (Code: ' + installMethod + ')</li>';
+                calculationHtml += '<li>Ambient Temperature: <strong>' + ambientTemp + '\u00B0C</strong> (Reference: ' + T_ref + '\u00B0C)</li>';
+                calculationHtml += '<li>Number of Grouped Circuits: <strong>' + numCircuits + '</strong></li>';
                 if (isBuried) {
-                    k_soil = interpolateFactor(soilResistivityCorrectionFactors, soilResistivity);
-                    calculationHtml += `<ul><li>Soil Resistivity Correction (k<sub>soil</sub>) for ${soilResistivity} KÂ·m/W (Ref 2.5): <strong>${k_soil.toFixed(3)}</strong>.</li></ul>`;
-                    k_depth = interpolateFactor(depthCorrectionFactors, depthOfBurial);
-                    calculationHtml += `<ul><li>Depth of Burial Correction (k<sub>depth</sub>) for ${depthOfBurial} m (Ref 0.7m): <strong>${k_depth.toFixed(3)}</strong>.</li></ul>`;
+                    calculationHtml += '<li>Soil Thermal Resistivity: <strong>' + soilResistivity + ' K\u00B7m/W</strong> (Reference: 2.5 K\u00B7m/W)</li>';
+                    calculationHtml += '<li>Depth of Burial: <strong>' + depthOfBurial + ' m</strong> (Reference: 0.7 m)</li>';
+                }
+                calculationHtml += '</ul>';
+
+                // STEP 2
+                stepNo++;
+                var refTableName = standard === 'iec' ? 'IEC 60364-5-52, Table B.52.2 to B.52.5' : 'NEC Table 310.16';
+                calculationHtml += '<h4>Step ' + stepNo + ': Determine Base Ampacity (I<sub>b</sub>) from ' + standard.toUpperCase() + ' Tables</h4>';
+                calculationHtml += '<p>The base current-carrying capacity is read directly from the standard ampacity tables for reference conditions (' + T_ref + '\u00B0C ambient, single circuit, reference installation method).</p>';
+                calculationHtml += '<p class="calculation-step">From <strong>' + refTableName + '</strong>: I<sub>b</sub> = <strong>' + Ib_raw + ' A</strong> (' + size + ' ' + sizeUnit + ', ' + material + ', ' + insulation.toUpperCase() + ' insulation)</p>';
+
+                // STEP 3
+                stepNo++;
+                var k_temp = interpolateFactor(tempCorrectionFactors[insulation], ambientTemp);
+                var k_temp_calc = Math.sqrt((T_max - ambientTemp) / (T_max - T_ref));
+                calculationHtml += '<h4>Step ' + stepNo + ': Ambient Temperature Correction Factor (k<sub>1</sub>)</h4>';
+                calculationHtml += '<p>Per <strong>IEC 60364-5-52, Table B.52.14</strong>: Correction for ambient air temperatures other than ' + T_ref + '\u00B0C.</p>';
+                calculationHtml += '<p class="formula">$$ k_1 = \\sqrt{\\frac{T_{max} - T_{amb}}{T_{max} - T_{ref}}} = \\sqrt{\\frac{' + T_max + ' - ' + ambientTemp + '}{' + T_max + ' - ' + T_ref + '}} $$</p>';
+                calculationHtml += '<p class="calculation-step">$$ k_1 = \\sqrt{\\frac{' + (T_max - ambientTemp) + '}{' + (T_max - T_ref) + '}} = \\sqrt{' + ((T_max - ambientTemp) / (T_max - T_ref)).toFixed(4) + '} = ' + k_temp_calc.toFixed(4) + ' $$</p>';
+                calculationHtml += '<p class="calculation-step">Table lookup value (interpolated): <strong>k<sub>1</sub> = ' + k_temp.toFixed(3) + '</strong></p>';
+
+                // STEP 4
+                stepNo++;
+                var k_group = 1.0;
+                var effectiveNumCircuits = Math.min(numCircuits, 42);
+                k_group = interpolateFactor(groupingCorrectionFactors, effectiveNumCircuits);
+                calculationHtml += '<h4>Step ' + stepNo + ': Grouping/Mutual Heating Correction Factor (k<sub>2</sub>)</h4>';
+                calculationHtml += '<p>Per <strong>IEC 60364-5-52, Table B.52.17</strong>: When multiple circuits are installed together, mutual heating reduces each cable ampacity.</p>';
+                if (numCircuits === 1) {
+                    calculationHtml += '<p class="calculation-step">Single circuit installed \u2014 no grouping penalty: <strong>k<sub>2</sub> = ' + k_group.toFixed(3) + '</strong></p>';
+                } else {
+                    calculationHtml += '<p class="calculation-step">For ' + numCircuits + ' grouped circuits (bunched/touching): <strong>k<sub>2</sub> = ' + k_group.toFixed(3) + '</strong></p>';
+                    calculationHtml += '<p><em>Note: This represents a ' + ((1 - k_group) * 100).toFixed(0) + '% reduction in ampacity due to mutual heating.</em></p>';
                 }
 
-                // 5. Calculate Final Ampacity (Iz)
-                const Iz = Ib_raw * k_temp * k_group * k_soil * k_depth;
-                calculationHtml += `<p class="calculation-step">$$ I_z = ${Ib_raw} \\times ${k_temp.toFixed(3)} \\times ${k_group.toFixed(3)} \\times ${k_soil.toFixed(3)} \\times ${k_depth.toFixed(3)} = \\mathbf{${Iz.toFixed(2)} \\text{ A}} $$</p>`;
+                // STEP 5
+                stepNo++;
+                var k_install = installationMethodFactors[installMethod] || 1.0;
+                calculationHtml += '<h4>Step ' + stepNo + ': Installation Method Correction Factor (k<sub>3</sub>)</h4>';
+                calculationHtml += '<p>Per <strong>IEC 60364-5-52, Annex A & B</strong>: Different installation methods have different heat dissipation characteristics. Factor relative to reference method C.</p>';
+                calculationHtml += '<p class="calculation-step">Installation Method "' + installMethod + '" (' + installMethodName + '): <strong>k<sub>3</sub> = ' + k_install.toFixed(2) + '</strong></p>';
 
-                // --- Voltage Drop Calculation ---
-                let voltageDropV = 0;
-                let voltageDropPercent = 0;
-                let R_per_km, X_per_km;
+                // STEP 6 (burial factors if applicable)
+                var k_soil = 1.0;
+                var k_depth = 1.0;
+                if (isBuried) {
+                    stepNo++;
+                    k_soil = interpolateFactor(soilResistivityCorrectionFactors, soilResistivity);
+                    k_depth = interpolateFactor(depthCorrectionFactors, depthOfBurial);
+                    calculationHtml += '<h4>Step ' + stepNo + ': Soil Thermal Resistivity & Depth of Burial Correction (k<sub>4</sub>, k<sub>5</sub>)</h4>';
+                    calculationHtml += '<p>Per <strong>IEC 60364-5-52, Table B.52.16</strong>: Soil resistivity affects heat dissipation for buried cables.</p>';
+                    calculationHtml += '<p class="calculation-step">Soil Resistivity = ' + soilResistivity + ' K\u00B7m/W (Reference: 2.5 K\u00B7m/W) \u2192 <strong>k<sub>4</sub> = ' + k_soil.toFixed(3) + '</strong></p>';
+                    calculationHtml += '<p class="calculation-step">Depth of Burial = ' + depthOfBurial + ' m (Reference: 0.7 m) \u2192 <strong>k<sub>5</sub> = ' + k_depth.toFixed(3) + '</strong></p>';
+                }
 
+                // STEP: Compute Final Derated Ampacity
+                stepNo++;
+                var Iz = Ib_raw * k_temp * k_group * k_install * k_soil * k_depth;
+                calculationHtml += '<h4>Step ' + stepNo + ': Calculate Final Corrected Ampacity (I<sub>z</sub>)</h4>';
+                calculationHtml += '<p>The corrected current-carrying capacity combines all applicable derating factors:</p>';
+                calculationHtml += '<p class="formula">$$ I_z = I_b \\times k_1 \\times k_2 \\times k_3' + (isBuried ? ' \\times k_4 \\times k_5' : '') + ' $$</p>';
+                calculationHtml += '<p class="calculation-step">$$ I_z = ' + Ib_raw + ' \\times ' + k_temp.toFixed(3) + ' \\times ' + k_group.toFixed(3) + ' \\times ' + k_install.toFixed(2) + (isBuried ? ' \\times ' + k_soil.toFixed(3) + ' \\times ' + k_depth.toFixed(3) : '') + ' $$</p>';
+                calculationHtml += '<p class="calculation-step" style="font-size:1.15em; border-left-color: var(--success);">$$ \\boxed{I_z = ' + Iz.toFixed(2) + ' \\text{ A}} $$</p>';
+
+                // STEP: Cable Adequacy Check
+                stepNo++;
+                var utilizationPercent = (loadCurrent / Iz) * 100;
+                var isAdequate = loadCurrent <= Iz;
+                calculationHtml += '<h4>Step ' + stepNo + ': Cable Ampacity Adequacy Check</h4>';
+                calculationHtml += '<p>Per <strong>IEC 60364-4-43, Clause 433.1</strong>: The design current (I<sub>B</sub>) must not exceed the corrected current-carrying capacity (I<sub>z</sub>).</p>';
+                calculationHtml += '<p class="formula">$$ I_B \\leq I_z $$</p>';
+                calculationHtml += '<p class="calculation-step">$$ ' + loadCurrent + ' \\text{ A} ' + (isAdequate ? '\\leq' : '>') + ' ' + Iz.toFixed(2) + ' \\text{ A} \\quad \\Rightarrow \\textbf{' + (isAdequate ? 'PASS \\checkmark' : 'FAIL \\times') + '} $$</p>';
+                calculationHtml += '<p class="calculation-step">Cable Utilization: $$ \\frac{I_B}{I_z} = \\frac{' + loadCurrent + '}{' + Iz.toFixed(2) + '} = ' + utilizationPercent.toFixed(1) + '\\% $$</p>';
+                if (!isAdequate) {
+                    calculationHtml += '<p style="color:var(--danger); font-weight:bold;">WARNING: Load current (' + loadCurrent + ' A) exceeds cable rating (' + Iz.toFixed(2) + ' A). Select a larger conductor size or reduce grouping.</p>';
+                }
+
+                // STEP: I2R Heat Loss
+                stepNo++;
+                var R_per_km, X_per_km;
                 try {
-                    const impedanceData = conductorImpedance[material][standard][size];
+                    var impedanceData = conductorImpedance[material][standard][size];
                     if (!impedanceData) throw new Error("Impedance data not found.");
                     R_per_km = impedanceData.R;
                     X_per_km = impedanceData.X;
                 } catch (e) {
-                    throw new Error(`Impedance data not found for voltage drop calculation.`);
+                    throw new Error("Impedance data not found for voltage drop calculation.");
                 }
-                
-                const R_total = R_per_km * (cableLength / 1000);
-                const X_total = X_per_km * (cableLength / 1000);
-                const powerFactor = 0.8; // Assume 0.8 lagging PF for motor/industrial loads
-                const cosPhi = powerFactor;
-                const sinPhi = Math.sqrt(1 - (cosPhi * cosPhi)); 
+
+                var R_total = R_per_km * (cableLength / 1000);
+                var X_total = X_per_km * (cableLength / 1000);
+                var heatLossPerMeter = (loadCurrent * loadCurrent * R_per_km) / 1000;
+                var totalHeatLoss = loadCurrent * loadCurrent * R_total;
+
+                calculationHtml += '<h4>Step ' + stepNo + ': I\u00B2R Conductor Heat Loss</h4>';
+                calculationHtml += '<p>The resistive heating generated in the conductor is the fundamental thermal constraint.</p>';
+                calculationHtml += '<ul>';
+                calculationHtml += '<li>AC Resistance at operating temp: R = ' + R_per_km.toFixed(4) + ' \u03A9/km (Ref: IEC 60228)</li>';
+                calculationHtml += '<li>Total cable resistance: R<sub>total</sub> = ' + R_per_km.toFixed(4) + ' \u00D7 (' + cableLength + '/1000) = ' + R_total.toFixed(4) + ' \u03A9</li>';
+                calculationHtml += '<li>Reactance: X = ' + X_per_km.toFixed(4) + ' \u03A9/km, X<sub>total</sub> = ' + X_total.toFixed(4) + ' \u03A9</li>';
+                calculationHtml += '</ul>';
+                calculationHtml += '<p class="formula">$$ P_{loss} = I^2 \\times R_{total} $$</p>';
+                calculationHtml += '<p class="calculation-step">$$ P_{loss} = ' + loadCurrent + '^2 \\times ' + R_total.toFixed(4) + ' = \\mathbf{' + totalHeatLoss.toFixed(2) + ' \\text{ W}} \\quad (' + heatLossPerMeter.toFixed(2) + ' \\text{ W/m}) $$</p>';
+
+                // STEP: Voltage Drop
+                stepNo++;
+                var powerFactor = 0.8;
+                var cosPhi = powerFactor;
+                var sinPhi = Math.sqrt(1 - (cosPhi * cosPhi));
+                var voltageDropV = 0;
+                var multiplierLabel;
 
                 if (phaseType === 'single-phase') {
                     voltageDropV = 2 * loadCurrent * (R_total * cosPhi + X_total * sinPhi);
-                } else { // Three-phase
-                    voltageDropV = Math.sqrt(3) * loadCurrent * (R_total * cosPhi + X_total * sinPhi);
-                }
-                voltageDropPercent = (voltageDropV / systemVoltageVd) * 100;
-
-                calculationHtml += `<h4>2. Voltage Drop ($$\\Delta V$$)</h4>`;
-                calculationHtml += `<ul>                                    <li>Conductor Impedance (Ref): ${R_per_km.toFixed(3)} &Omega;/km (R), ${X_per_km.toFixed(3)} &Omega;/km (X)</li>                                    <li>Total Impedance for ${cableLength} m: ${R_total.toFixed(3)} &Omega; (R), ${X_total.toFixed(3)} &Omega; (X)</li>                                    <li>Assumed Power Factor (cos Ï†): ${powerFactor.toFixed(2)} (lagging)</li>                                </ul>`;
-                if (phaseType === 'single-phase') {
-                    calculationHtml += `<p class="formula">$$ \\Delta V = 2 \\times I_{load} \\times (R_{total} \\cos\\phi + X_{total} \\sin\\phi) $$</p>`;
-                    calculationHtml += `<p class="calculation-step">$$ \\Delta V = 2 \\times ${loadCurrent} \\times (${R_total.toFixed(3)} \\times ${cosPhi.toFixed(2)} + ${X_total.toFixed(3)} \\times ${sinPhi.toFixed(2)}) = \\mathbf{${voltageDropV.toFixed(2)} \\text{ V}} $$</p>`;
+                    multiplierLabel = '2';
                 } else {
-                    calculationHtml += `<p class="formula">$$ \\Delta V = \\sqrt{3} \\times I_{load} \\times (R_{total} \\cos\\phi + X_{total} \\sin\\phi) $$</p>`;
-                    calculationHtml += `<p class="calculation-step">$$ \\Delta V = \\sqrt{3} \\times ${loadCurrent} \\times (${R_total.toFixed(3)} \\times ${cosPhi.toFixed(2)} + ${X_total.toFixed(3)} \\times ${sinPhi.toFixed(2)}) = \\mathbf{${voltageDropV.toFixed(2)} \\text{ V}} $$</p>`;
+                    voltageDropV = Math.sqrt(3) * loadCurrent * (R_total * cosPhi + X_total * sinPhi);
+                    multiplierLabel = '\\sqrt{3}';
                 }
-                calculationHtml += `<p class="calculation-step">$$ \\text{%VD} = (${voltageDropV.toFixed(2)} \\text{ V} / ${systemVoltageVd} \\text{ V}) \\times 100 = \\mathbf{${voltageDropPercent.toFixed(2)} \\%} $$</p>`;
+                var voltageDropPercent = (voltageDropV / systemVoltageVd) * 100;
+                var receivingEndVoltage = systemVoltageVd - voltageDropV;
 
-                if (voltageDropPercent > 5) {
-                    calculationHtml += `<p style="color:var(--danger); font-weight:bold;">Warning: Voltage drop (${voltageDropPercent.toFixed(2)}%) exceeds the typical recommended maximum (e.g., 3-5%). Consider increasing conductor size.</p>`;
+                calculationHtml += '<h4>Step ' + stepNo + ': Voltage Drop Calculation (\u0394V)</h4>';
+                calculationHtml += '<p>Per <strong>IEC 60364-5-52, Clause 525</strong> & <strong>IEEE Std 141 (Red Book), \u00A73.11</strong>: Voltage drop shall not exceed 3\u20135% for branch circuits.</p>';
+                calculationHtml += '<ul>';
+                calculationHtml += '<li>Conductor resistance: R<sub>total</sub> = ' + R_per_km.toFixed(4) + ' \u00D7 ' + cableLength + '/1000 = <strong>' + R_total.toFixed(4) + ' \u03A9</strong></li>';
+                calculationHtml += '<li>Conductor reactance: X<sub>total</sub> = ' + X_per_km.toFixed(4) + ' \u00D7 ' + cableLength + '/1000 = <strong>' + X_total.toFixed(4) + ' \u03A9</strong></li>';
+                calculationHtml += '<li>Assumed Power Factor: cos \u03C6 = ' + cosPhi.toFixed(2) + ' \u2192 sin \u03C6 = ' + sinPhi.toFixed(4) + '</li>';
+                calculationHtml += '</ul>';
+                if (phaseType === 'single-phase') {
+                    calculationHtml += '<p class="formula">$$ \\Delta V = 2 \\times I_{load} \\times (R_{total} \\cos\\phi + X_{total} \\sin\\phi) $$</p>';
+                } else {
+                    calculationHtml += '<p class="formula">$$ \\Delta V = \\sqrt{3} \\times I_{load} \\times (R_{total} \\cos\\phi + X_{total} \\sin\\phi) $$</p>';
                 }
+                calculationHtml += '<p class="calculation-step">$$ \\Delta V = ' + multiplierLabel + ' \\times ' + loadCurrent + ' \\times (' + R_total.toFixed(4) + ' \\times ' + cosPhi.toFixed(2) + ' + ' + X_total.toFixed(4) + ' \\times ' + sinPhi.toFixed(4) + ') $$</p>';
+                calculationHtml += '<p class="calculation-step" style="font-size:1.15em; border-left-color: var(--secondary);">$$ \\boxed{\\Delta V = ' + voltageDropV.toFixed(2) + ' \\text{ V}} $$</p>';
 
-                // --- Short-Circuit Current Withstand Calculation ---
-                let shortCircuitWithstandkA = 0;
-                let kFactor = 0;
+                // STEP: Voltage Drop Percentage & Receiving-End Voltage
+                stepNo++;
+                calculationHtml += '<h4>Step ' + stepNo + ': Voltage Drop Percentage & Receiving-End Voltage</h4>';
+                calculationHtml += '<p class="formula">$$ \\%VD = \\frac{\\Delta V}{V_{system}} \\times 100 $$</p>';
+                calculationHtml += '<p class="calculation-step">$$ \\%VD = \\frac{' + voltageDropV.toFixed(2) + '}{' + systemVoltageVd + '} \\times 100 = \\mathbf{' + voltageDropPercent.toFixed(2) + '\\%} $$</p>';
+                calculationHtml += '<p class="calculation-step">Receiving-end voltage: V<sub>R</sub> = ' + systemVoltageVd + ' \u2212 ' + voltageDropV.toFixed(2) + ' = <strong>' + receivingEndVoltage.toFixed(2) + ' V</strong></p>';
 
+                var vdVerdict = '';
+                if (voltageDropPercent <= 3) {
+                    vdVerdict = '<p style="color:var(--success); font-weight:bold;">\u2713 EXCELLENT \u2014 Voltage drop (' + voltageDropPercent.toFixed(2) + '%) is within the 3% limit per IEC 60364-5-52 Annex G recommendation.</p>';
+                } else if (voltageDropPercent <= 5) {
+                    vdVerdict = '<p style="color:var(--warning); font-weight:bold;">\u26A0 ACCEPTABLE \u2014 Voltage drop (' + voltageDropPercent.toFixed(2) + '%) exceeds 3% but is within 5% maximum per IEC 60364-5-52.</p>';
+                } else {
+                    vdVerdict = '<p style="color:var(--danger); font-weight:bold;">\u2717 FAIL \u2014 Voltage drop (' + voltageDropPercent.toFixed(2) + '%) exceeds the 5% maximum. Per IEC & IEEE Std 141, increase conductor size or reduce cable length.</p>';
+                }
+                calculationHtml += vdVerdict;
+
+                // STEP: Short-Circuit Withstand
+                stepNo++;
+                var kFactor;
                 try {
                     kFactor = kFactorsShortCircuit[material][insulation];
                     if (!kFactor) throw new Error("K-factor data not found.");
                 } catch (e) {
-                    throw new Error(`K-factor data not found for short-circuit calculation.`);
+                    throw new Error("K-factor data not found for short-circuit calculation.");
                 }
-                
-                let conductorSizeSqMm = 0;
+
+                var conductorSizeSqMm = 0;
                 if (standard === 'nec') {
-                    const necToIecConversion = {
+                    var necToIecConversion = {
                         '14': 2.08, '12': 3.31, '10': 5.26, '8': 8.37, '6': 13.3, '4': 21.2, '3': 26.7, '2': 33.6,
                         '1': 42.4, '1/0': 53.5, '2/0': 67.4, '3/0': 85.0, '4/0': 107.2,
                         '250': 126.7, '300': 152.0, '350': 177.3, '400': 202.7, '500': 253.3,
                         '600': 304.0, '700': 354.7, '750': 380.0, '800': 405.3, '1000': 506.7
                     };
                     conductorSizeSqMm = necToIecConversion[size];
-                    if (!conductorSizeSqMm) throw new Error(`Conductor size conversion failed for ${size} AWG.`);
+                    if (!conductorSizeSqMm) throw new Error("Conductor size conversion failed for " + size + " AWG.");
                 } else {
                     conductorSizeSqMm = parseFloat(size);
                 }
 
+                var shortCircuitWithstandkA = 0;
                 if (faultDuration > 0 && conductorSizeSqMm > 0) {
-                    shortCircuitWithstandkA = (conductorSizeSqMm * kFactor) / (Math.sqrt(faultDuration) * 1000); // kA
+                    shortCircuitWithstandkA = (conductorSizeSqMm * kFactor) / (Math.sqrt(faultDuration) * 1000);
                 } else {
                     throw new Error("Fault duration or conductor size is invalid.");
                 }
 
-                calculationHtml += `<h4>3. Short-Circuit Withstand ($$I_{sc,withstand}$$)</h4>`;
-                calculationHtml += `<p>This is the adiabatic withstand current of the cable (Ref: IEC 60364-5-54).</p>`;
-                calculationHtml += `<ul>                                    <li>Conductor Area (A): ${conductorSizeSqMm.toFixed(2)} mmÂ²</li>                                    <li>K-factor (k) for ${material} ${insulation.toUpperCase()}: ${kFactor}</li>                                    <li>Fault Duration (t): ${faultDuration.toFixed(2)} s</li>                                </ul>`;
-                calculationHtml += `<p class="formula">$$ I_{sc,withstand} (kA) = \\frac{A \\times k}{1000 \\times \\sqrt{t}} $$</p>`;
-                calculationHtml += `<p class="calculation-step">$$ I_{sc,withstand} = \\frac{${conductorSizeSqMm.toFixed(2)} \\times ${kFactor}}{1000 \\times \\sqrt{${faultDuration.toFixed(2)}}} = \\mathbf{${shortCircuitWithstandkA.toFixed(2)} \\text{ kA}} $$</p>`;
+                var T_initial = insulation === 'pvc' ? 70 : 90;
+                var T_final = insulation === 'pvc' ? 160 : 250;
 
-                // 6. Display Results
+                calculationHtml += '<h4>Step ' + stepNo + ': Adiabatic Short-Circuit Current Withstand (I<sub>sc</sub>)</h4>';
+                calculationHtml += '<p>Per <strong>IEC 60364-5-54, Clause 543.1</strong> & <strong>IEC 60909</strong>: The adiabatic equation determines the maximum fault current the cable can withstand for a given protection clearing time.</p>';
+                calculationHtml += '<ul>';
+                calculationHtml += '<li>Conductor cross-section (S): <strong>' + conductorSizeSqMm.toFixed(2) + ' mm\u00B2</strong></li>';
+                calculationHtml += '<li>k-factor for ' + material + '/' + insulation.toUpperCase() + ': <strong>k = ' + kFactor + '</strong> (' + T_initial + '\u00B0C \u2192 ' + T_final + '\u00B0C)</li>';
+                calculationHtml += '<li>Protection clearing time (t): <strong>' + faultDuration + ' s</strong></li>';
+                calculationHtml += '</ul>';
+                calculationHtml += '<p class="formula">$$ I_{sc,withstand} = \\frac{S \\times k}{\\sqrt{t}} $$</p>';
+                calculationHtml += '<p class="calculation-step">$$ I_{sc,withstand} = \\frac{' + conductorSizeSqMm.toFixed(2) + ' \\times ' + kFactor + '}{\\sqrt{' + faultDuration + '}} = \\frac{' + (conductorSizeSqMm * kFactor).toFixed(1) + '}{' + Math.sqrt(faultDuration).toFixed(4) + '} $$</p>';
+                calculationHtml += '<p class="calculation-step" style="font-size:1.15em; border-left-color: var(--danger);">$$ \\boxed{I_{sc,withstand} = ' + (shortCircuitWithstandkA * 1000).toFixed(0) + ' \\text{ A} = ' + shortCircuitWithstandkA.toFixed(2) + ' \\text{ kA}} $$</p>';
+
+                // STEP: Minimum Required Cross-Section for Fault
+                stepNo++;
+                var minAreaForFault = (shortCircuitWithstandkA * 1000 * Math.sqrt(faultDuration)) / kFactor;
+                calculationHtml += '<h4>Step ' + stepNo + ': Verify Minimum Conductor Size for Fault Withstand</h4>';
+                calculationHtml += '<p>The adiabatic equation rearranged to find the minimum conductor area required:</p>';
+                calculationHtml += '<p class="formula">$$ S_{min} = \\frac{I_{sc} \\times \\sqrt{t}}{k} $$</p>';
+                calculationHtml += '<p class="calculation-step">$$ S_{min} = \\frac{' + (shortCircuitWithstandkA * 1000).toFixed(0) + ' \\times \\sqrt{' + faultDuration + '}}{' + kFactor + '} = \\frac{' + (shortCircuitWithstandkA * 1000).toFixed(0) + ' \\times ' + Math.sqrt(faultDuration).toFixed(4) + '}{' + kFactor + '} = ' + minAreaForFault.toFixed(2) + ' \\text{ mm}^2 $$</p>';
+                calculationHtml += '<p class="calculation-step">Selected conductor (' + conductorSizeSqMm.toFixed(2) + ' mm\u00B2) ' + (conductorSizeSqMm >= minAreaForFault ? '\u2265' : '<') + ' S<sub>min</sub> (' + minAreaForFault.toFixed(2) + ' mm\u00B2) \u2192 <strong>' + (conductorSizeSqMm >= minAreaForFault ? 'PASS \u2713' : 'FAIL \u2717') + '</strong></p>';
+
+                // STEP: Final Engineering Verdict
+                stepNo++;
+                var vdOk = voltageDropPercent <= 5;
+                var ampOk = isAdequate;
+                var overallPass = vdOk && ampOk;
+
+                // Mandatory Validation Logic
+                let errorMessages = [];
+                if (!ampOk) errorMessages.push("ERROR: Selected cable size is not suitable. Cable is overloaded.");
+                if (!vdOk) errorMessages.push("ERROR: Voltage drop exceeds acceptable limit.");
+                
+                // Update Verdict UI
+                verdictBanner.style.display = 'block';
+                if (overallPass) {
+                    verdictBanner.style.background = 'rgba(16, 185, 129, 0.1)';
+                    verdictBanner.style.borderColor = 'var(--success)';
+                    verdictBanner.style.color = 'var(--success)';
+                    verdictBanner.innerHTML = '<i class="fas fa-check-circle" style="font-size: 1.5rem; margin-bottom: 10px; display: block;"></i> COMPLIANCE VERDICT: PASS<br><span style="font-size: 0.9rem; font-weight: 400;">Selected cable meets all thermal and voltage drop requirements as per IEC 60364 & NEC.</span>';
+                    
+                    verdictTag.style.display = 'inline-block';
+                    verdictTag.style.background = 'var(--success)';
+                    verdictTag.style.color = 'white';
+                    verdictTag.textContent = 'PASS';
+                } else {
+                    verdictBanner.style.background = 'rgba(220, 38, 38, 0.1)';
+                    verdictBanner.style.borderColor = 'var(--danger)';
+                    verdictBanner.style.color = 'var(--danger)';
+                    
+                    let errorHtml = '<i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 10px; display: block;"></i> VALIDATION FAILED<br>';
+                    errorMessages.forEach(msg => {
+                        errorHtml += `<div style="margin: 5px 0;">${msg}</div>`;
+                    });
+                    errorHtml += '<div style="margin-top: 15px; font-size: 1.3rem; border-top: 1px solid rgba(220, 38, 38, 0.2); padding-top: 10px;">FINAL RESULT: NOT ACCEPTABLE \u2013 Please increase cable size.</div>';
+                    verdictBanner.innerHTML = errorHtml;
+                    
+                    verdictTag.style.display = 'inline-block';
+                    verdictTag.style.background = 'var(--danger)';
+                    verdictTag.style.color = 'white';
+                    verdictTag.textContent = 'FAIL';
+                }
+
+                calculationHtml += '<h4>Step ' + stepNo + ': Engineering Verdict & Summary</h4>';
+                calculationHtml += '<div style="background: ' + (overallPass ? 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05))' : 'linear-gradient(135deg, rgba(220,38,38,0.1), rgba(220,38,38,0.05))') + '; border-left: 5px solid ' + (overallPass ? 'var(--success)' : 'var(--danger)') + '; border-radius: 12px; padding: 20px; margin: 15px 0;">';
+                if (!overallPass) {
+                    calculationHtml += '<div style="color: var(--danger); font-weight: 800; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid rgba(220, 38, 38, 0.2); padding-bottom: 10px;">';
+                    errorMessages.forEach(msg => calculationHtml += `<div>\u2717 ${msg}</div>`);
+                    calculationHtml += '<div style="margin-top: 10px;">FINAL RESULT: NOT ACCEPTABLE \u2013 Please increase cable size.</div></div>';
+                } else {
+                    calculationHtml += '<h4 style="color: var(--success); margin-top:0;">\u2713 ALL CHECKS PASSED</h4>';
+                }
+                
+                calculationHtml += '<table style="width:100%; border-collapse:collapse; margin-top:10px;">';
+                calculationHtml += '<tr><td style="padding:8px;"><strong>Ampacity Check</strong></td><td style="padding:8px;">I<sub>B</sub> (' + loadCurrent + ' A) ' + (ampOk ? '\u2264' : '>') + ' I<sub>z</sub> (' + Iz.toFixed(2) + ' A)</td><td style="padding:8px; color:' + (ampOk ? 'var(--success)' : 'var(--danger)') + '; font-weight:bold;">' + (ampOk ? 'PASS' : 'FAIL') + '</td></tr>';
+                calculationHtml += '<tr><td style="padding:8px;"><strong>Voltage Drop</strong></td><td style="padding:8px;">' + voltageDropPercent.toFixed(2) + '% ' + (vdOk ? '\u2264' : '>') + ' 5%</td><td style="padding:8px; color:' + (vdOk ? 'var(--success)' : 'var(--danger)') + '; font-weight:bold;">' + (vdOk ? 'PASS' : 'FAIL') + '</td></tr>';
+                calculationHtml += '<tr><td style="padding:8px;"><strong>SC Withstand</strong></td><td style="padding:8px;">' + shortCircuitWithstandkA.toFixed(2) + ' kA for ' + faultDuration + ' s</td><td style="padding:8px; color:var(--success); font-weight:bold;">RATED</td></tr>';
+                var utilLabel = utilizationPercent <= 80 ? '<span style="color:var(--success)">Optimal</span>' : (utilizationPercent <= 100 ? '<span style="color:var(--warning)">High</span>' : '<span style="color:var(--danger)">Overloaded</span>');
+                calculationHtml += '<tr><td style="padding:8px;"><strong>Cable Utilization</strong></td><td style="padding:8px;">' + utilizationPercent.toFixed(1) + '%</td><td style="padding:8px;">' + utilLabel + '</td></tr>';
+                calculationHtml += '</table></div>';
+
+                // Display Results
                 calculationDetailsDiv.innerHTML = calculationHtml;
                 if (window.MathJax) {
                     window.MathJax.typesetPromise([calculationDetailsDiv]);
                 }
 
                 resultTableBody.innerHTML = '';
-                addResultRow("<strong>Final Corrected Ampacity (I<sub>z</sub>)</strong>", `<strong>${Iz.toFixed(2)} A</strong>`);
-                addResultRow("<strong>Voltage Drop</strong>", `<strong>${voltageDropV.toFixed(2)} V (${voltageDropPercent.toFixed(2)} %)</strong>`);
-                addResultRow("<strong>Short-Circuit Withstand (t=${faultDuration}s)</strong>", `<strong>${shortCircuitWithstandkA.toFixed(2)} kA</strong>`);
-                
-                addResultRow("--- Ampacity Inputs ---", "---");
+                addResultRow("Selected Conductor Size", "<strong>" + size + " " + sizeUnit + "</strong>");
+                addResultRow("<strong>Final Corrected Ampacity (I<sub>z</sub>)</strong>", "<strong>" + Iz.toFixed(2) + " A</strong>");
+                addResultRow("<strong>Voltage Drop</strong>", "<strong>" + voltageDropV.toFixed(2) + " V (" + voltageDropPercent.toFixed(2) + "%)</strong>");
+                addResultRow("<strong>Receiving-End Voltage</strong>", "<strong>" + receivingEndVoltage.toFixed(2) + " V</strong>");
+                addResultRow("<strong>Short-Circuit Withstand (t=" + faultDuration + "s)</strong>", "<strong>" + shortCircuitWithstandkA.toFixed(2) + " kA</strong>");
+                addResultRow("<strong>Cable Utilization</strong>", "<strong>" + utilizationPercent.toFixed(1) + "%</strong>");
+                addResultRow("<strong>I\u00B2R Heat Loss</strong>", "<strong>" + totalHeatLoss.toFixed(2) + " W (" + heatLossPerMeter.toFixed(2) + " W/m)</strong>");
+
+                addResultRow("--- Derating Factors ---", "---");
                 addResultRow("Selected Standard", standard.toUpperCase() === 'IEC' ? 'IEC 60364-5-52' : 'NEC (NFPA 70)');
-                addResultRow("Base Ampacity (I<sub>b,raw</sub>)", `${Ib_raw} A`);
-                addResultRow("Ambient Temperature", `${ambientTemp}â„ƒ`);
-                addResultRow("Number of Grouped Circuits", numCircuits);
-                addResultRow("Temp. Correction (k<sub>temp</sub>)", k_temp.toFixed(3));
-                addResultRow("Grouping Correction (k<sub>group</sub>)", k_group.toFixed(3));
+                addResultRow("Base Ampacity (I<sub>b</sub>)", Ib_raw + " A");
+                addResultRow("Installation Method", installMethodName);
+                addResultRow("Temp. Correction (k<sub>1</sub>)", k_temp.toFixed(3) + " (at " + ambientTemp + "\u00B0C, ref " + T_ref + "\u00B0C)");
+                addResultRow("Grouping Correction (k<sub>2</sub>)", k_group.toFixed(3) + " (" + numCircuits + " circuits)");
+                addResultRow("Installation Factor (k<sub>3</sub>)", k_install.toFixed(2) + " (Method " + installMethod + ")");
                 if (isBuried) {
-                    addResultRow("Soil Resistivity", `${soilResistivity} KÂ·m/W`);
-                    addResultRow("Depth of Burial", `${depthOfBurial} m`);
-                    addResultRow("Soil Correction (k<sub>soil</sub>)", k_soil.toFixed(3));
-                    addResultRow("Depth Correction (k<sub>depth</sub>)", k_depth.toFixed(3));
+                    addResultRow("Soil Correction (k<sub>4</sub>)", k_soil.toFixed(3) + " (" + soilResistivity + " K\u00B7m/W)");
+                    addResultRow("Depth Correction (k<sub>5</sub>)", k_depth.toFixed(3) + " (" + depthOfBurial + " m)");
                 }
 
-                addResultRow("--- Voltage Drop Inputs ---", "---");
-                addResultRow("Load Current", `${loadCurrent} A`);
-                addResultRow("System Voltage", `${systemVoltageVd} V`);
-                addResultRow("Cable Length", `${cableLength} m`);
-                addResultRow("Phase Type", phaseType.replace('-', ' ').charAt(0).toUpperCase() + phaseType.replace('-', ' ').slice(1));
-                
-                addResultRow("--- Short-Circuit Inputs ---", "---");
-                addResultRow("Conductor Area (A)", `${conductorSizeSqMm.toFixed(2)} mmÂ²`);
-                addResultRow("K-factor (k)", kFactor);
+                addResultRow("--- Voltage Drop Details ---", "---");
+                addResultRow("Load Current", loadCurrent + " A");
+                addResultRow("System Voltage", systemVoltageVd + " V");
+                addResultRow("Cable Length", cableLength + " m");
+                addResultRow("Phase Type", phaseType === 'single-phase' ? 'Single-Phase' : 'Three-Phase');
+                addResultRow("R (\u03A9/km) / X (\u03A9/km)", R_per_km.toFixed(4) + " / " + X_per_km.toFixed(4));
+                addResultRow("Assumed Power Factor", powerFactor.toFixed(2) + " lagging");
 
-                standardReferenceDiv.innerHTML = `Calculation is based on methodologies and simplified data derived from:
-                    <ul>
-                        <li><strong>IEC 60364-5-52:2009</strong> (Low-voltage electrical installations - Part 5-52).</li>
-                        <li><strong>NEC (NFPA 70)</strong>, specifically referencing Table 310.16.</li>
-                        <li><strong>IEC 60909</strong> & <strong>IEEE Std 242 (Buff Book)</strong> principles for short-circuit current withstand.</li>
-                    </ul>
-                    <p><strong>Disclaimer:</strong> This tool provides an estimate; always refer to the complete official standards, manufacturer data, and local codes for accurate design, safety verification, and compliance.</p>`;
+                addResultRow("--- Short-Circuit Details ---", "---");
+                addResultRow("Conductor Area (S)", conductorSizeSqMm.toFixed(2) + " mm\u00B2");
+                addResultRow("K-factor (k)", kFactor + " (" + material + "/" + insulation.toUpperCase() + ", " + T_initial + "\u00B0C \u2192 " + T_final + "\u00B0C)");
+                addResultRow("Fault Duration (t)", faultDuration + " s");
+
+                standardReferenceDiv.innerHTML = '<strong>Standards & References Applied:</strong>' +
+                    '<ul>' +
+                    '<li><strong>IEC 60364-5-52:2009</strong> \u2014 Current-carrying capacity tables (B.52.2\u2013B.52.5), Temperature correction (Table B.52.14), Grouping factors (Table B.52.17), Soil resistivity (Table B.52.16).</li>' +
+                    '<li><strong>IEC 60364-5-54</strong> \u2014 Adiabatic short-circuit withstand equation (Clause 543.1).</li>' +
+                    '<li><strong>IEC 60228</strong> \u2014 Conductor resistance data at operating temperature.</li>' +
+                    '<li><strong>IEC 60909</strong> \u2014 Short-circuit current calculation methodology.</li>' +
+                    '<li><strong>IEEE Std 141 (Red Book)</strong> \u2014 Voltage drop limits (\u00A73.11) and cable sizing best practices.</li>' +
+                    '<li><strong>IEEE Std 242 (Buff Book)</strong> \u2014 Protection coordination and cable damage curves.</li>' +
+                    '<li><strong>NEC (NFPA 70)</strong> \u2014 Table 310.16, ampacity for conductors rated 0\u20132000V.</li>' +
+                    '</ul>' +
+                    '<p><strong>Disclaimer:</strong> This tool provides an engineering estimate based on standard methodologies. Always refer to the complete official standards, manufacturer cable data sheets, and applicable local codes for final design verification and compliance.</p>';
 
                 resultContainer.style.display = 'block';
-                setTimeout(() => {
+                pdfBtn.style.display = 'inline-block';
+                setTimeout(function() {
                     resultContainer.classList.add('show');
                     resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 50);
 
-                // Update email share link
-                const emailSubject = encodeURIComponent("Cable Ampacity & Sizing Calculation Results");
-                const emailBody = encodeURIComponent(
-                    `Here are the cable calculation results from Design Calculators (https://designcalculators.co.in):\n\n` +
-                    `--- KEY RESULTS ---\n` +
-                    `Final Corrected Ampacity (Iz): ${Iz.toFixed(2)} A\n` +
-                    `Voltage Drop: ${voltageDropV.toFixed(2)} V (${voltageDropPercent.toFixed(2)} %)\n` +
-                    `Short-Circuit Withstand (${faultDuration}s): ${shortCircuitWithstandkA.toFixed(2)} kA\n\n` +
-                    `--- INPUTS ---\n` +
-                    `Standard: ${standard.toUpperCase()}\n` +
-                    `Conductor: ${size} ${standard === 'iec' ? 'mmÂ²' : 'AWG/kcmil'} ${material}\n` +
-                    `Insulation: ${insulation.toUpperCase()}\n` +
-                    `Installation: ${installationMethodSelect.options[installationMethodSelect.selectedIndex].text}\n` +
-                    `Ambient Temp: ${ambientTemp}â„ƒ\n` +
-                    `Grouping: ${numCircuits} circuits\n` +
-                    (isBuried ? `Soil Resistivity: ${soilResistivity} KÂ·m/W\n` : '') +
-                    (isBuried ? `Depth of Burial: ${depthOfBurial} m\n` : '') +
-                    `Load Current: ${loadCurrent} A\n` +
-                    `Cable Length: ${cableLength} m\n`
+                var emailSubject = encodeURIComponent("Cable Ampacity & Sizing Calculation Results");
+                var emailBody = encodeURIComponent(
+                    "Here are the cable calculation results from Design Calculators (https://designcalculators.co.in):\n\n" +
+                    "--- KEY RESULTS ---\n" +
+                    "Final Corrected Ampacity (Iz): " + Iz.toFixed(2) + " A\n" +
+                    "Voltage Drop: " + voltageDropV.toFixed(2) + " V (" + voltageDropPercent.toFixed(2) + "%)\n" +
+                    "Receiving-End Voltage: " + receivingEndVoltage.toFixed(2) + " V\n" +
+                    "Short-Circuit Withstand (" + faultDuration + "s): " + shortCircuitWithstandkA.toFixed(2) + " kA\n" +
+                    "Cable Utilization: " + utilizationPercent.toFixed(1) + "%\n" +
+                    "I2R Heat Loss: " + totalHeatLoss.toFixed(2) + " W\n\n" +
+                    "--- INPUTS ---\n" +
+                    "Standard: " + standard.toUpperCase() + "\n" +
+                    "Conductor: " + size + " " + sizeUnit + " " + material + "\n" +
+                    "Insulation: " + insulation.toUpperCase() + "\n" +
+                    "Installation: " + installMethodName + "\n" +
+                    "Ambient Temp: " + ambientTemp + " C\n" +
+                    "Grouping: " + numCircuits + " circuits\n" +
+                    (isBuried ? "Soil Resistivity: " + soilResistivity + " K.m/W\n" : '') +
+                    (isBuried ? "Depth of Burial: " + depthOfBurial + " m\n" : '') +
+                    "Load Current: " + loadCurrent + " A\n" +
+                    "Cable Length: " + cableLength + " m\n"
                 );
-                emailShareBtn.href = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+                if (emailShareBtn) emailShareBtn.href = "mailto:?subject=" + emailSubject + "&body=" + emailBody;
 
             } catch (e) {
                 displayMessage(e.message, "error");
-                // Hide results on error
                 resultContainer.classList.remove('show');
-                setTimeout(() => { resultContainer.style.display = 'none'; }, 500);
+                setTimeout(function() { resultContainer.style.display = 'none'; }, 500);
             }
         }
+
 
         function addResultRow(parameter, value) {
             const row = resultTableBody.insertRow();
@@ -1940,17 +2147,79 @@
         
         // Add chart update to calculation flow to sync dynamically
         calculateBtn.addEventListener('click', function() {
-            try { updateCharts(); } catch(e) {}
+            try { calculateAmpacity(); updateCharts(); } catch(e) { console.error(e); }
+        });
+
+        resetBtn.addEventListener('click', function() {
+            document.getElementById('ampacity-form').reset();
+            resultContainer.style.display = 'none';
+            pdfBtn.style.display = 'none';
+            resultContainer.classList.remove('show');
+            updateFormOptions();
+            updateCharts();
+            displayMessage("Form cleared.");
+        });
+
+        pdfBtn.addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const date = new Date().toLocaleDateString();
+            
+            // Header
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.text("Cable Sizing & Ampacity Report", 105, 20, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text("Generated by Design Calculators | " + date, 105, 30, { align: 'center' });
+            
+            // Results Table
+            const results = [];
+            const rows = resultTableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                if (cols.length === 2) {
+                    results.push([cols[0].innerText.replace(/[\u2192\u2713\u26A0\u2717]/g, ''), cols[1].innerText]);
+                }
+            });
+            
+            doc.autoTable({
+                startY: 50,
+                head: [['Parameter', 'Result Value']],
+                body: results,
+                theme: 'striped',
+                headStyles: { fillColor: [30, 58, 138] },
+                margin: { top: 50 }
+            });
+            
+            // Standard References
+            const finalY = doc.lastAutoTable.finalY + 15;
+            doc.setTextColor(30, 30, 30);
+            doc.setFontSize(14);
+            doc.text("Compliance & Standards:", 14, finalY);
+            doc.setFontSize(10);
+            doc.text([
+                "• IEC 60364-5-52:2009 Reference Methodology",
+                "• IEC 60364-5-54 Short-Circuit Equations",
+                "• NEC (NFPA 70) Conductor Tables",
+                "• Professional engineering safety margins applied."
+            ], 14, finalY + 8);
+            
+            // Footer
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text("© 2026 DesignCalculators.co.in - All results provided for guidance only.", 105, 285, { align: 'center' });
+            
+            doc.save("Cable_Sizing_Report.pdf");
+            displayMessage("PDF Report Downloaded");
         });
         
         setTimeout(function() {
             try { 
                 updateFormOptions(); // Final population sync
-                calculateAmpacity(); 
-                updateCharts(); 
             } catch (e) {
-                console.log("Initial silent run handled:", e);
-                updateCharts();
+                console.log("Initial population handled:", e);
             }
         }, 500);
         

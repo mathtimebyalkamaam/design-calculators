@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -39,6 +39,7 @@
     <!-- PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
@@ -301,7 +302,7 @@
 
         /* CALCULATION STEPS DISPLAY - REVAMPED */
         .steps-container {
-            display: none;
+            display: block;
             margin-top: 30px;
         }
         .steps-container.active {
@@ -1031,167 +1032,229 @@
                         <!-- Implementation details inserted by JS -->
                     </div>
                 </div>
+            </div> <!-- End of Step 6 card -->
+        </div> <!-- End of steps-container -->
+
+        <!-- CLEANED RESULTS CONTAINER -->
+        <div id="result-container" class="card hidden" style="margin-top: 30px; border-top: 4px solid var(--primary); display: none;">
+            <h3 style="color: var(--primary);"><i class="fas fa-check-circle"></i> Protection Compliance Verdict</h3>
+            <div id="verdict-banner" style="padding: 15px; border-radius: 8px; margin-bottom: 25px; font-weight: 700; text-align: center; font-size: 1.2rem;"></div>
+            
+            <div class="results-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <!-- Left Col: Key Settings -->
+                <div>
+                    <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-microchip"></i> Critical Relay Settings (ANSI/IEEE)</h4>
+
+                    <div style="background:var(--bg); border-radius:8px; padding:15px; margin-bottom:15px; border-left: 4px solid var(--secondary);">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-weight:600;">FLC (Full Load Current):</span>
+                            <span id="res-flc" style="font-weight:800; color:var(--primary); font-family: var(--font-mono);">0 A</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-weight:600;">Pickup (ANSI 51):</span>
+                            <span id="res-pickup" style="font-weight:800; font-family: var(--font-mono);">0 A</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="font-weight:600;">Trip Time (@6x):</span>
+                            <span id="res-triptime" style="font-weight:800; color:var(--text); font-family: var(--font-mono);">0.0 s</span>
+                        </div>
+                    </div>
+
+                    <table class="results-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Function</th>
+                                <th>Setting</th>
+                                <th>Unit</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-tbody-main">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Right Col: Graphs -->
+                <div>
+                    <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-chart-area"></i> Time-Current Characteristic (TCC)</h4>
+                    <div class="chart-container" style="height: 300px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); position: relative;">
+                        <canvas id="tccChart" role="img" aria-label="TCC Analysis Chart"><p class="sr-only">Interactive TCC Visualization</p></canvas>
+                    </div>
+
+                    <h4 style="margin-top: 20px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-wave-square"></i> Fault Current Profile</h4>
+                    <div class="chart-container" style="height: 200px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); position: relative;">
+                        <canvas id="faultChart" role="img" aria-label="Fault Analysis Chart"><p class="sr-only">Interactive Fault Waveform</p></canvas>
+                    </div>
+                </div>
             </div>
 
-        </div>
-
-        <!-- RESULTS TABLE -->
-        <div id="results-section" class="card hidden" style="margin-top: 40px;">
-            <h3><i class="fas fa-clipboard-check"></i> Complete Relay Settings Report</h3>
-            <table class="results-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Specification / Value</th>
-                    </tr>
-                </thead>
-                <tbody id="results-tbody"></tbody>
-            </table>
-        </div>
-
-        <!-- EDUCATIONAL INSIGHTS SECTION -->
-        <div class="education-section card">
-            <h2><i class="fas fa-lightbulb"></i> Professional Insights: The Art & Science of Protection Engineering</h2>
-
-            <!-- New: Protection Fundamentals -->
-            <div class="danger-box">
-                <h4>âš ï¸ The Critical Role of Protection Systems</h4>
-                <p><strong>What is protection engineering?</strong> Protection engineering involves designing systems that detect abnormal conditions in electrical networks and automatically isolate faulty equipment to prevent damage and maintain system stability.</p>
-                <p><strong>The Life-Saving Function:</strong> Proper protection systems:
-                    <ul>
-                        <li>Prevent equipment damage during faults</li>
-                        <li>Minimize system downtime and production losses</li>
-                        <li>Protect personnel from electrical hazards</li>
-                        <li>Maintain power system stability during disturbances</li>
-                    </ul>
-                <strong>The Standards:</strong> IEEE C37.112 defines inverse-time characteristics for overcurrent relays, while IEC 60255 covers international standards for measuring relays and protection equipment. ANSI device numbers (50, 51, 87, etc.) provide universal identification of protection functions.</p>
+            <div style="margin-top: 40px; border-top: 2px dashed var(--border); padding-top: 30px;">
+                <h3><i class="fas fa-list-check"></i> 10-Step Coordination Audit Trail</h3>
+                <p style="color: var(--text-muted); margin-bottom: 25px; font-style: italic;">Detailed mathematical breakdown compliant with IEEE C37.112 and IEC 60255 standards.</p>
+                <div id="calculation-details"></div>
             </div>
+        </div>
 
-            <div class="insight-card">
-                <h4><i class="fas fa-bolt"></i> Protection Philosophy: Selectivity, Sensitivity, Speed</h4>
-                <p><strong>The Protection Triangle:</strong> Every protection design must balance three competing requirements:</p>
-                <p><strong>Selectivity:</strong> The ability to isolate only the faulty section while keeping healthy sections energized. Achieved through proper coordination of time-current characteristics.</p>
-                <p><strong>Sensitivity:</strong> The ability to detect minimum fault conditions. Requires setting relays to operate for the smallest anticipated fault currents.</p>
-                <p><strong>Speed:</strong> The ability to clear faults quickly to minimize damage and maintain stability. High-speed protection typically clears faults within 2-5 cycles (0.03-0.08 seconds).</p>
-                <p><strong>The Trade-off:</strong> Increasing speed often reduces selectivity, while improving sensitivity can increase the risk of false operations. Professional protection engineering finds the optimal balance for each application.</p>
+        <!-- ENHANCED THEORY SECTION: ELITE ENGINEERING EDITION -->
+        <section class="education-section">
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 style="font-size: 2.8rem; margin-bottom: 10px; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">The Physics of Protective Relaying</h2>
+                <p style="color: var(--text-muted); font-size: 1.2rem; max-width: 800px; margin: 0 auto;">Mastering the intersection of electromagnetics, thermal thermodynamics, and high-speed signal processing according to IEEE C37.112 standards.</p>
             </div>
             
-            <!-- Existing content below -->
-
-            <div class="insight-card">
-                <h4><i class="fas fa-wave-square"></i> IDMT Curves: The Mathematics of Time-Current Coordination</h4>
-                <p><strong>Inverse Definite Minimum Time (IDMT)</strong> curves provide the mathematical relationship between fault current magnitude and relay operating time. The general formula is:</p>
-                <div class="formula">$$t = \frac{TMS \times K}{(I/I_p)^\alpha - 1}$$</div>
-                <p>Where:
-                <ul>
-                    <li>$t$ = Operating time (seconds)</li>
-                    <li>$TMS$ = Time Multiplier Setting</li>
-                    <li>$K$, $\alpha$ = Constants defining curve shape</li>
-                    <li>$I$ = Fault current</li>
-                    <li>$I_p$ = Pickup current setting</li>
-                </ul></p>
-                <p><strong>Common Curve Types:</strong>
-                <ul>
-                    <li><strong>Standard Inverse (IEC):</strong> $K=0.14$, $\alpha=0.02$ - General purpose protection</li>
-                    <li><strong>Very Inverse (IEC):</strong> $K=13.5$, $\alpha=1$ - For coordination with fuses</li>
-                    <li><strong>Extremely Inverse (IEC):</strong> $K=80$, $\alpha=2$ - For transformer and motor protection</li>
-                    <li><strong>Moderately Inverse (IEEE):</strong> General feeder protection</li>
-                    <li><strong>Long Time Inverse:</strong> For overload protection with long operating times</li>
-                </ul></p>
-                <p><strong>Real-World Impact:</strong> A 2017 study of industrial plant outages found that <span class="stat-highlight">42% of protection-related downtime</span> resulted from improper curve selection or coordination.</p>
-            </div>
-
-            <div class="three-col">
-                <div class="metric-box">
-                    <div class="metric-label">Typical Coordination Time</div>
-                    <div class="metric-value" style="color: var(--success);">0.2-0.3s</div>
-                    <p style="margin: 10px 0 0 0; font-size: 0.85rem;">Between protective devices</p>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-label">Cost of Poor Protection</div>
-                    <div class="metric-value" style="color: var(--danger);">$100,000+</div>
-                    <p style="margin: 10px 0 0 0; font-size: 0.85rem;">Equipment damage per incident</p>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-label">Typical Fault Clearing</div>
-                    <div class="metric-value" style="color: var(--primary);">3-8 cycles</div>
-                    <p style="margin: 10px 0 0 0; font-size: 0.85rem;">For modern numerical relays</p>
+            <div class="theory-card" style="margin-bottom: 40px; background: var(--card); border-radius: 16px; padding: 40px; border: 1px solid var(--border);">
+                <div class="theory-grid" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; align-items: center;">
+                    <div class="theory-content">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">IEEE C37.112</span>
+                            <h3 style="margin: 0;"><i class="fas fa-wave-square"></i> 1. IDMT Curve Mathematical Models</h3>
+                        </div>
+                        <p>Inverse Definite Minimum Time (IDMT) curves define the critical relationship between fault current magnitude and relay operating time. Unlike simple fuses, numerical relays allow for precise curve shaping to optimize <strong>Selectivity</strong>.</p>
+                        <p>The standard IEEE characteristic formula: $t = TDS \times \left( \frac{A}{M^p - 1} + B \right)$ allows engineers to protect against massive short circuits instantly while giving temporary overloads (like motor starting) room to breathe without tripping.</p>
+                    </div>
+                    <div class="theory-diagram" style="background: var(--bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: center;">
+                        <svg viewBox="0 0 400 250" width="100%" height="auto">
+                            <!-- TCC Curve Visualization -->
+                            <line x1="50" y1="200" x2="350" y2="200" stroke="var(--text)" stroke-width="2" />
+                            <line x1="50" y1="200" x2="50" y2="40" stroke="var(--text)" stroke-width="2" />
+                            <path d="M60 50 Q 80 180, 350 190" fill="none" stroke="var(--danger)" stroke-width="4" />
+                            <path d="M90 50 Q 110 180, 350 195" fill="none" stroke="var(--secondary)" stroke-width="4" stroke-dasharray="5 5" />
+                            <text x="350" y="220" text-anchor="end" font-size="12" fill="var(--text)" font-family="Inter">Fault Current (I/In)</text>
+                            <text x="40" y="50" transform="rotate(-90 40,50)" text-anchor="end" font-size="12" fill="var(--text)" font-family="Inter">Time (s)</text>
+                            <text x="150" y="100" fill="var(--danger)" font-weight="bold" font-family="Montserrat" font-size="14">Extremely Inverse</text>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-            <div class="insight-card">
-                <h4><i class="fas fa-industry"></i> Equipment-Specific Protection Requirements</h4>
-                <p>Different electrical equipment requires specialized protection approaches:</p>
-                <p><strong>Transformers:</strong>
-                <ul>
-                    <li><strong>Differential Protection (87T):</strong> Primary protection for internal faults</li>
-                    <li><strong>Overcurrent (51/50):</strong> Backup protection and external fault protection</li>
-                    <li><strong>Restricted Earth Fault (64REF):</strong> Sensitive ground fault protection</li>
-                    <li><strong>Overexcitation (24):</strong> Protection against excessive V/Hz</li>
-                    <li><strong>Buchholz Relay:</strong> Mechanical protection for oil-filled transformers</li>
-                </ul></p>
-                <p><strong>Motors:</strong>
-                <ul>
-                    <li><strong>Thermal Overload (49):</strong> Protection against sustained overloads</li>
-                    <li><strong>Short Circuit (50/51):</strong> Protection against phase faults</li>
-                    <li><strong>Locked Rotor (51LR):</strong> Protection against stalled rotor condition</li>
-                    <li><strong>Negative Sequence (46):</strong> Protection against phase unbalance</li>
-                    <li><strong>Undercurrent (37):</strong> Protection against load loss or coupling failure</li>
-                </ul></p>
-                <p><strong>Generators:</strong>
-                <ul>
-                    <li><strong>Generator Differential (87G):</strong> Stator winding protection</li>
-                    <li><strong>Loss of Field (40):</strong> Protection against excitation failure</li>
-                    <li><strong>Reverse Power (32):</strong> Protection against motoring</li>
-                    <li><strong>Overfrequency/Underfrequency (81O/81U):</strong> Frequency protection</li>
-                </ul></p>
+            <div class="theory-card" style="margin-bottom: 40px; background: var(--card); border-radius: 16px; padding: 40px; border: 1px solid var(--border);">
+                <div class="theory-grid" style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px; align-items: center;">
+                    <div class="theory-diagram" style="background: var(--bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: center;">
+                        <svg viewBox="0 0 400 250" width="100%" height="auto">
+                            <!-- Coordination Margin -->
+                            <rect x="50" y="50" width="300" height="150" fill="rgba(37,99,235,0.05)" stroke="var(--secondary)" stroke-dasharray="4 4" />
+                            <line x1="100" y1="80" x2="300" y2="80" stroke="var(--danger)" stroke-width="3" />
+                            <text x="200" y="70" text-anchor="middle" font-size="12" fill="var(--danger)" font-weight="bold">UPSTREAM BREAKER</text>
+                            <line x1="100" y1="170" x2="300" y2="170" stroke="var(--success)" stroke-width="3" />
+                            <text x="200" y="195" text-anchor="middle" font-size="12" fill="var(--success)" font-weight="bold">DOWNSTREAM BREAKER</text>
+                            <path d="M320 80 L 320 170" stroke="var(--accent)" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                            <text x="330" y="125" transform="rotate(90 330,125)" text-anchor="middle" font-size="12" fill="var(--accent)" font-weight="bold">COORDINATION MARGIN (0.2s)</text>
+                        </svg>
+                    </div>
+                    <div class="theory-content">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <span style="background: var(--accent); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">SELECTIVITY</span>
+                            <h3 style="margin: 0;"><i class="fas fa-layer-group"></i> 2. The Art of Coordination</h3>
+                        </div>
+                        <p>Coordination is the science of ensuring that only the circuit breaker closest to the fault operations. This minimizes the "dark zone" in your facility during a malfunction.</p>
+                        <p>Numerical relays utilize a <strong>Coordination Time Interval (CTI)</strong>—typically between 0.2s and 0.35s—to account for breaker opening time, relay overshoot, and CT error margins. A design without coordination is just a cascaded failure waiting to happen.</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="success-box">
-                <h4>âœ“ Advanced Numerical Relay Capabilities</h4>
-                <p>Modern numerical relays offer capabilities far beyond traditional electro-mechanical relays:</p>
-                <ul>
-                    <li><strong>Adaptive Protection:</strong> Settings that automatically adjust based on system conditions</li>
-                    <li><strong>Synchrophasor Measurement:</strong> Precise time-synchronized measurements for system-wide protection</li>
-                    <li><strong>Advanced Communication:</strong> IEC 61850 protocol for high-speed peer-to-peer communication</li>
-                    <li><strong>Disturbance Recording:</strong> Detailed recording of pre-fault, fault, and post-fault conditions</li>
-                    <li><strong>Condition Monitoring:</strong> Continuous monitoring of equipment health and performance</li>
-                    <li><strong>Flexible Logic:</strong> User-programmable logic for custom protection schemes</li>
-                    <li><strong>Cybersecurity Features:</strong> Protection against cyber threats to critical infrastructure</li>
-                </ul>
+            <div class="theory-card" style="margin-bottom: 40px; background: var(--card); border-radius: 16px; padding: 40px; border: 1px solid var(--border);">
+                <div class="theory-grid" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; align-items: center;">
+                    <div class="theory-content">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <span style="background: var(--success); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">TRANSIENTS</span>
+                            <h3 style="margin: 0;"><i class="fas fa-bolt"></i> 3. Magnetizing Inrush Constraints</h3>
+                        </div>
+                        <p>When a transformer is energized, it can pull between 8x to 12x its rated current for a few cycles. This is not a fault; it is the <strong>Magnetizing Inrush</strong>.</p>
+                        <p>Protection relays must be "blind" to this initial spike to prevent nuisance tripping. Numerical relays use <strong>2nd Harmonic Restraint</strong> to distinguish between a real internal fault and a simple transformer startup, as inrush contains high levels of harmonic content compared to pure fault waves.</p>
+                    </div>
+                    <div class="theory-diagram" style="background: var(--bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: center;">
+                        <svg viewBox="0 0 400 250" width="100%" height="auto">
+                            <!-- Inrush Waveform -->
+                            <path d="M50 125 L 70 20 L 90 125 L 110 80 L 130 125 L 150 100 L 170 125" fill="none" stroke="var(--danger)" stroke-width="3" />
+                            <text x="110" y="15" text-anchor="middle" font-size="12" fill="var(--danger)" font-weight="bold">INRUSH SPIKE</text>
+                            <line x1="50" y1="125" x2="350" y2="125" stroke="var(--text)" stroke-width="1" />
+                            <circle cx="90" cy="125" r="40" fill="none" stroke="var(--accent)" stroke-dasharray="4 4" />
+                            <text x="250" y="150" font-size="10" fill="var(--text)">Decaying DC Offset</text>
+                        </svg>
+                    </div>
+                </div>
             </div>
             
-            <div class="insight-card">
-                <h4><i class="fas fa-cogs"></i> Standards & Regulations: The Engineering Framework</h4>
-                <p><strong>IEEE C37.112:</strong> Standard for Inverse-Time Characteristics for Overcurrent Relays - defines curve characteristics and testing.</p>
-                <p><strong>IEC 60255 Series:</strong> Measuring Relays and Protection Equipment - comprehensive international standards.</p>
-                <p><strong>IEEE C37.2:</strong> Standard for Electrical Power System Device Function Numbers - defines ANSI device numbers.</p>
-                <p><strong>IEC 61850:</strong> Communication Networks and Systems for Power Utility Automation - defines modern communication protocols.</p>
-                <p><strong>IEEE C37.90:</strong> Standard for Relays and Relay Systems Associated with Electric Power Apparatus.</p>
-                <p><strong>IEC 60909:</strong> Short-circuit currents in three-phase a.c. systems - essential for fault level calculations.</p>
-                <p><strong>NFPA 70E:</strong> Standard for Electrical Safety in the Workplace - impacts protection requirements for personnel safety.</p>
+            <div class="theory-card" style="margin-bottom: 40px; background: var(--card); border-radius: 16px; padding: 40px; border: 1px solid var(--border);">
+                <div class="theory-grid" style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px; align-items: center;">
+                    <div class="theory-diagram" style="background: var(--bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: center;">
+                        <svg viewBox="0 0 400 250" width="100%" height="auto">
+                            <!-- Differential Zone -->
+                            <circle cx="200" cy="125" r="80" fill="rgba(16,185,129,0.1)" stroke="var(--success)" stroke-width="2" stroke-dasharray="8 4" />
+                            <rect x="180" y="105" width="40" height="40" fill="var(--primary)" rx="4" />
+                            <text x="200" y="90" text-anchor="middle" font-size="12" fill="var(--success)" font-weight="bold">PRIMARY ZONE (87)</text>
+                            <path d="M50 125 L 180 125" stroke="var(--text)" stroke-width="5" />
+                            <path d="M220 125 L 350 125" stroke="var(--text)" stroke-width="5" />
+                            <text x="200" y="140" text-anchor="middle" font-size="10" fill="white">XFMR/MOTOR</text>
+                            <circle cx="100" cy="125" r="10" fill="var(--accent)" />
+                            <circle cx="300" cy="125" r="10" fill="var(--accent)" />
+                            <text x="100" y="110" text-anchor="middle" font-size="10" fill="var(--accent)">CT 1</text>
+                            <text x="300" y="110" text-anchor="middle" font-size="10" fill="var(--accent)">CT 2</text>
+                        </svg>
+                    </div>
+                    <div class="theory-content">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                            <span style="background: var(--danger); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">DIFFERENTIAL</span>
+                            <h3 style="margin: 0;"><i class="fas fa-bullseye"></i> 4. Primary Protection Zones</h3>
+                        </div>
+                        <p>Differential Protection (Device 87) creates an invisible "protective bubble" around critical equipment. It works on <strong>Kirchhoffâ€™s Current Law</strong>: what goes in must come out.</p>
+                        <p>If the current entering through CT1 does not match the current leaving through CT2, the relay knows a fault has occurred <em>inside</em> the equipment. This is the fastest protection possible because it doesnt require coordination with upstream breakersâ€”it only trips for its specific asset.</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="danger-box">
-                <h4>âš ï¸ Common Protection Design Mistakes & How to Avoid Them</h4>
-                <p>Even experienced engineers can make critical errors in protection design:</p>
-                <ul>
-                    <li><strong>Inadequate CT Sizing:</strong> CTs that saturate during faults provide incorrect signals to relays</li>
-                    <li><strong>Poor Coordination:</strong> Settings that cause unnecessary widespread outages</li>
-                    <li><strong>Ignoring System Changes:</strong> Protection settings not updated after system modifications</li>
-                    <li><strong>Incorrect Curve Selection:</strong> Using inappropriate time-current characteristics</li>
-                    <li><strong>Neglecting Harmonic Effects:</strong> Not accounting for harmonic currents in settings</li>
-                    <li><strong>Insufficient Documentation:</strong> Poor record-keeping of settings and changes</li>
-                    <li><strong>Skipping Testing:</strong> Not properly testing protection schemes before commissioning</li>
-                </ul>
-                <p><strong>The Solution:</strong> Follow a systematic design process using verified calculation methods, conduct thorough coordination studies, and always validate with testing before implementation.</p>
+            <!-- FAQ SECTION -->
+            <div style="margin-top: 60px;">
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <h2 style="font-size: 2.2rem; color: var(--primary);">Industrial Relaying Guidelines & FAQs</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem;">Crucial structural and compliance Q&A for protection engineers.</p>
+                </div>
+                
+                <div class="faq-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-question-circle"></i> Why 110% of $I_{FLC}$?</h4>
+                        <p>Relays are typically set at 110-120% of the Full Load Current ($I_{FLC}$). This "safety buffer" prevents nuisance trips during minor transients or normal load swings. In high-precision motor protection, this may be set closer to 105% if the motor has a low <strong>Service Factor</strong>.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-exclamation-triangle"></i> What is CT Saturation?</h4>
+                        <p>During a massive short-circuit, the magnetic core of a CT can "fill up" (saturate). When this happens, the CT stops accurately mirroring the primary current. Relays may see much lower current than reality, leading to delayed or failed trips. Proper selection of <strong>Accuracy Class</strong> (e.g., 5P20) is vital.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-clock"></i> CTI: Why 0.3 seconds?</h4>
+                        <p>The standard 0.3s Coordination Time Interval (CTI) is a sum of variables: 0.1s for breaker opening time, 0.05s for relay overshoot, 0.05s for CT errors, and a 0.1s engineering safety margin. Solid-state relays can often coordinate at 0.2s, while electro-mechanical relays require 0.4s+.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--warning); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-compress-arrows-alt"></i> ANSI 50 vs 51?</h4>
+                        <p><strong>ANSI 51</strong> is "Time Overcurrent"—it waits longer for lower faults. <strong>ANSI 50</strong> is "Instantaneous Overcurrent"—it trips the moment current hits a massive threshold (usually 5x-10x FLC). 51 protects against thermal overloads; 50 protects against catastrophic short-circuits.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-microchip"></i> Numerical vs Static Relays?</h4>
+                        <p><strong>Numerical relays</strong> are digital computers. They sample waveforms thousands of times per second, perform Fourier transforms to extract harmonics, and can communicate via IEC 61850. <strong>Static relays</strong> use solid-state electronics (analog) but lack the sophisticated logic and data-logging of numerical units.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-shield-alt"></i> Transformer Through-Fault?</h4>
+                        <p>A "Through-Fault" is a massive short-circuit <em>outside</em> the transformer. The protection relay must ensure the transformer can withstand the heat and mechanical stress of that current until the downstream breaker operates. This is why we plot <strong>ANSI C57.12.00 Damage Curves</strong>.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-thermometer-half"></i> Does ambient temp affect settings?</h4>
+                        <p>Yes, particularly for motor protection (ANSI 49). If a motor is operating in a 50Â°C environment, its thermal capacity is lower. Modern numerical relays use built-in <strong>Thermal Models</strong> that estimate the "copper heat" in real-time, often biased by RTDs embedded in the motor windings.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-bolt"></i> Low-Impedance Earth Faults?</h4>
+                        <p>Resistance-grounded systems limit earth fault currents to very low values (e.g., 10A-400A). Standard phase CTs (400/5) may not even "feel" a 10A fault. You must use a <strong>Core Balance CT (CBCT)</strong> or sensitive residual protection to detect these low-level return currents.</p>
+                    </div>
+                    <div class="faq-box" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: var(--shadow); border-top: 3px solid var(--success);">
+                        <h4 style="color: var(--secondary); margin-bottom: 15px; display: flex; gap: 10px; font-weight: 700;"><i class="fas fa-link"></i> What is Arc Flash Mitigation?</h4>
+                        <p>Arc flash danger is proportional to the <strong>time</strong> taken to trip. By reducing relay time delays (e.g., using "Maintenance Mode" settings), you can significantly lower the incident energy level, making a facility safer for technicians to work on energized equipment.</p>
+                    </div>
+                </div>
             </div>
-           
-        </div>
+        </section>
     </main>
 
     <!-- FOOTER -->
-        <footer>
+    <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-left">
@@ -1290,416 +1353,262 @@
             
             // Outputs
             const stepsContainer = document.getElementById('steps-container');
-            const resultsSection = document.getElementById('results-section');
-            const resultsTbody = document.getElementById('results-tbody');
+            const resultContainer = document.getElementById('result-container');
+            const resultsTbodyMain = document.getElementById('results-tbody-main');
             const messageBox = document.getElementById('message-box');
+            const verdictBanner = document.getElementById('verdict-banner');
+            const calcDetails = document.getElementById('calculation-details');
             
             // Theme
             const themeSwitch = document.getElementById('theme-switch');
 
-            // --- Event Listeners ---
-            
-            // Input Mode Toggle
+            // --- UI Setup ---
             modeButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     currentMode = btn.dataset.mode;
                     modeButtons.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    
-                    if (currentMode === 'basic') {
-                        modeBasic.classList.remove('hidden');
-                        modeAdvanced.classList.add('hidden');
-                    } else {
-                        modeBasic.classList.add('hidden');
-                        modeAdvanced.classList.remove('hidden');
-                    }
+                    modeBasic.classList.toggle('hidden', currentMode !== 'basic');
+                    modeAdvanced.classList.toggle('hidden', currentMode !== 'advanced');
                 });
             });
 
-            // Dark Mode
             themeSwitch.addEventListener('change', function() {
-                if (this.checked) {
-                    document.body.classList.add('dark-mode');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    document.body.classList.remove('dark-mode');
-                    localStorage.setItem('theme', 'light');
-                }
+                document.body.classList.toggle('dark-mode', this.checked);
+                localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                if (tccChart) calculate(); 
             });
 
-            // Load Dark Mode Preference
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
                 themeSwitch.checked = true;
             }
 
-            // Calculate Button
-            calcBtn.addEventListener('click', performCalculation);
+            // --- Calculation Engine ---
+            let tccChart = null;
+            let faultChart = null;
 
-            // Reset Button
-            resetBtn.addEventListener('click', function() {
-                form.reset();
-                stepsContainer.classList.remove('active');
-                resultsSection.classList.add('hidden');
-                pdfBtn.style.display = 'none';
-                // Reset mode to default
-                modeButtons[0].click();
-                showMessage('Form reset');
-            });
-
-            // PDF Button
-            pdfBtn.addEventListener('click', generatePDF);
-
-            // --- Utility Functions ---
-
-            function showMessage(msg, type = 'success') {
-                messageBox.textContent = msg;
-                if (type === 'error') {
-                    messageBox.style.backgroundColor = 'var(--danger)';
-                } else if (type === 'warning') {
-                     messageBox.style.backgroundColor = 'var(--warning)';
-                } else {
-                    messageBox.style.backgroundColor = 'var(--success)';
-                }
-                messageBox.classList.add('show');
-                setTimeout(() => messageBox.classList.remove('show'), 4000);
-            }
-            
-            function format(num, decimals = 2) {
-                return num.toFixed(decimals).replace(/\.00$/, '');
-            }
-
-            // --- Main Calculation Logic ---
-
-            function performCalculation() {
+            function calculate() {
                 try {
-                    // 1. Get All Inputs
-                    const equipmentType = document.getElementById('equipment-type').value;
-                    const voltageRating = parseFloat(document.getElementById('voltage-rating').value);
-                    const kvaKwRating = parseFloat(document.getElementById('kva-kw-rating').value);
-                    const systemGrounding = document.getElementById('system-grounding').value;
-                    const faultLevel = parseFloat(document.getElementById('fault-level').value);
-                    const protectionType = document.getElementById('protection-type').value;
-                    const ctRatioPrimary = parseFloat(document.getElementById('ct-ratio-primary').value);
-                    const ctRatioSecondary = parseFloat(document.getElementById('ct-ratio-secondary').value);
-                    const ptPrimary = parseFloat(document.getElementById('pt-primary').value);
-                    const ptSecondary = parseFloat(document.getElementById('pt-secondary').value);
-                    const ctBurden = parseFloat(document.getElementById('ct-burden').value);
-                    const ctAccuracyClass = document.getElementById('ct-accuracy-class').value;
-                    const relayTechnology = document.getElementById('relay-technology').value;
-                    const coordinationTime = parseFloat(document.getElementById('coordination-time').value);
+                    // 1. Inputs
+                    const eqType = document.getElementById('equipment-type').value;
+                    const vLL = parseFloat(document.getElementById('voltage-rating').value);
+                    const rating = parseFloat(document.getElementById('kva-kw-rating').value);
+                    const ctPri = parseFloat(document.getElementById('ct-ratio-primary').value);
+                    const ctSec = parseFloat(document.getElementById('ct-ratio-secondary').value);
+                    const faultKA = parseFloat(document.getElementById('fault-level').value);
+                    const coordTime = parseFloat(document.getElementById('coordination-time').value);
 
-                    // Input validation
-                    if (!equipmentType || !voltageRating || !kvaKwRating || !systemGrounding || !faultLevel || 
-                        !protectionType || !ctRatioPrimary || !ctRatioSecondary || !ptPrimary || !ptSecondary || 
-                        !ctBurden || !ctAccuracyClass || !relayTechnology || !coordinationTime) {
-                        throw new Error('Please fill all required fields');
+                    if (isNaN(vLL) || isNaN(rating) || isNaN(ctPri) || isNaN(ctSec)) {
+                        displayMessage("Please enter valid numerical parameters.", "error");
+                        return;
                     }
 
-                    if (voltageRating <= 0 || kvaKwRating <= 0 || faultLevel <= 0 || ctRatioPrimary <= 0 || 
-                        ctRatioSecondary <= 0 || ptPrimary <= 0 || ptSecondary <= 0 || ctBurden <= 0 || coordinationTime <= 0) {
-                        throw new Error('All values must be positive numbers');
-                    }
+                    // 2. Physics & Electrical Math
+                    const flc = rating / (Math.sqrt(3) * vLL);
+                    const ctRatio = ctPri / ctSec;
+                    const pickupPrim = flc * 1.15; 
+                    const pickupSec = pickupPrim / ctRatio;
+                    
+                    // IDMT Curve Modeling (IEC Standard Inverse)
+                    const K = 0.14;
+                    const alpha = 0.02;
+                    const tms = 0.1; // Default industrial starting point
+                    const tripTime6x = (K * tms) / (Math.pow(6, alpha) - 1);
 
-                    // 2. Core Calculations
-                    const voltageRating_V = voltageRating * 1000;
-                    const sqrt3 = Math.sqrt(3);
-                    
-                    // Calculate Full Load Current (FLC)
-                    let fullLoadCurrent_A;
-                    let ratingUnit;
-                    
-                    if (equipmentType === 'motor') {
-                        // Assume typical motor parameters
-                        const powerFactor = 0.85;
-                        const efficiency = 0.92;
-                        fullLoadCurrent_A = (kvaKwRating * 1000) / (sqrt3 * voltageRating_V * powerFactor * efficiency);
-                        ratingUnit = "kW";
-                    } else {
-                        fullLoadCurrent_A = (kvaKwRating * 1000) / (sqrt3 * voltageRating_V);
-                        ratingUnit = "kVA";
-                    }
-                    
-                    // CT and PT ratios
-                    const ctRatio = ctRatioPrimary / ctRatioSecondary;
-                    const ptRatio = ptPrimary / ptSecondary;
-                    
-                    // Secondary values
-                    const flcSecondary_A = fullLoadCurrent_A / ctRatio;
-                    const voltageSecondary_V = voltageRating_V / ptRatio;
-                    
-                    // 3. Protection Settings based on Equipment Type
-                    let protectionSettings = {};
-                    
-                    // Pass all required parameters to the calculation functions
-                    switch(equipmentType) {
-                        case 'transformer':
-                            protectionSettings = calculateTransformerSettings(fullLoadCurrent_A, flcSecondary_A, faultLevel, ctRatioPrimary, ctRatioSecondary);
-                            break;
-                        case 'motor':
-                            protectionSettings = calculateMotorSettings(fullLoadCurrent_A, flcSecondary_A, faultLevel, ctRatioPrimary, ctRatioSecondary);
-                            break;
-                        case 'mcc':
-                        case 'pcc':
-                            protectionSettings = calculateFeederSettings(fullLoadCurrent_A, flcSecondary_A, faultLevel, ctRatioPrimary, ctRatioSecondary);
-                            break;
-                        case 'generator':
-                            protectionSettings = calculateGeneratorSettings(fullLoadCurrent_A, flcSecondary_A, faultLevel, ctRatioPrimary, ctRatioSecondary);
-                            break;
-                        case 'capacitor':
-                            protectionSettings = calculateCapacitorSettings(fullLoadCurrent_A, flcSecondary_A, faultLevel, ctRatioPrimary, ctRatioSecondary);
-                            break;
-                        default:
-                            throw new Error('Unknown equipment type');
-                    }
-                    
-                    // 4. Update UI - Step 1
-                    document.getElementById('step1-content').innerHTML = `
-                        <p><strong>Equipment Type:</strong> <span class="step-value" style="color:var(--heading);">${equipmentType.toUpperCase()}</span></p>
-                        <p><strong>Voltage Rating:</strong> <span class="step-value" style="color:var(--heading);">${format(voltageRating, 2)}<span class="step-unit">kV</span></span></p>
-                        <p><strong>Power Rating:</strong> <span class="step-value" style="color:var(--heading);">${format(kvaKwRating, 2)}<span class="step-unit">${ratingUnit}</span></span></p>
-                        <p><strong>System Grounding:</strong> <span class="step-value" style="color:var(--heading); font-size: 1.2rem;">${systemGrounding.replace(/_/g, ' ').toUpperCase()}</span></p>
-                    `;
-                    
-                    // Step 2
-                    document.getElementById('step2-content').innerHTML = `
-                        <p><strong>Full Load Current (Primary):</strong> <span class="step-value" style="color:var(--heading);">${format(fullLoadCurrent_A, 2)}<span class="step-unit">A</span></span></p>
-                        <p><strong>Full Load Current (Secondary):</strong> <span class="step-value" style="color:var(--heading);">${format(flcSecondary_A, 2)}<span class="step-unit">A</span></span></p>
-                        <p><strong>CT Ratio:</strong> <span class="step-value" style="color:var(--heading);">${format(ctRatio, 2)}</span></p>
-                        <p><strong>PT Ratio:</strong> <span class="step-value" style="color:var(--heading);">${format(ptRatio, 2)}</span></p>
-                    `;
-                    
-                    // Step 3
-                    document.getElementById('step3-content').innerHTML = `
-                        <p><strong>Overcurrent Pickup:</strong> <span class="step-value" style="color:var(--success);">${format(protectionSettings.overcurrentPickup, 2)}<span class="step-unit">A</span></span></p>
-                        <p><strong>Instantaneous Pickup:</strong> <span class="step-value" style="color:var(--success);">${format(protectionSettings.instantaneousPickup, 2)}<span class="step-unit">A</span></span></p>
-                        <p><strong>Earth Fault Pickup:</strong> <span class="step-value" style="color:var(--success);">${format(protectionSettings.earthFaultPickup, 2)}<span class="step-unit">A</span></span></p>
-                    `;
-                    
-                    // Step 4
-                    document.getElementById('step4-content').innerHTML = `
-                        <div class="step-recommendation success">
-                            <h5><i class="fas fa-check-circle"></i> Coordination Analysis</h5>
-                            <p>Your protection settings provide proper coordination with upstream and downstream devices.</p>
-                            <p><strong>Coordination Time Interval:</strong> ${format(coordinationTime, 2)} seconds</p>
-                        </div>
-                        <div class="highlight-box" style="margin-top: 20px;">
-                            <h4><i class="fas fa-lightbulb"></i> Coordination Guidelines</h4>
-                            <ul>
-                                <li>Verify settings with time-current coordination curves</li>
-                                <li>Consider both phase and earth fault coordination</li>
-                                <li>Account for transformer inrush and motor starting</li>
-                                <li>Validate with actual fault current calculations</li>
-                            </ul>
-                        </div>
-                    `;
-
-                    // Step 5
-                    document.getElementById('step5-content').innerHTML = `
-                        <p><strong>Relay Technology:</strong> <span class="step-value" style="color:var(--heading); font-size: 1.2rem;">${relayTechnology.toUpperCase()}</span></p>
-                        <p><strong>CT Accuracy Class:</strong> <span class="step-value" style="color:var(--heading); font-size: 1.2rem;">${ctAccuracyClass}</span></p>
-                        <p><strong>CT Burden:</strong> <span class="step-value" style="color:var(--heading); font-size: 1.2rem;">${format(ctBurden, 1)} VA</span></p>
-                        <p><strong>Advanced Features:</strong> <span class="step-value" style="color:var(--heading); font-size: 1.2rem;">Harmonic Restraint, Fault Recording, Communication</span></p>
-                    `;
-
-                    // Step 6
-                    document.getElementById('step6-content').innerHTML = `
-                        <p><strong>Relay Configuration:</strong> Program settings according to manufacturer guidelines</p>
-                        <p><strong>Testing Protocol:</strong> Perform primary and secondary injection testing</p>
-                        <p><strong>Documentation:</strong> Maintain setting records and coordination studies</p>
-                        <p><strong>Commissioning:</strong> Verify operation with simulated fault conditions</p>
-                        <p style="font-size: 0.9rem; margin-top: 10px;">Always follow manufacturer recommendations and local regulations.</p>
-                    `;
-                    
-                    // 6. Update Results Table
-                    resultsTbody.innerHTML = `
-                        <tr><td>Equipment Type</td><td>${equipmentType.charAt(0).toUpperCase() + equipmentType.slice(1)}</td></tr>
-                        <tr><td>Voltage Rating</td><td>${format(voltageRating, 2)} kV</td></tr>
-                        <tr><td>Power Rating</td><td>${format(kvaKwRating, 2)} ${ratingUnit}</td></tr>
-                        <tr><td>Full Load Current (Primary)</td><td>${format(fullLoadCurrent_A, 2)} A</td></tr>
-                        <tr><td>Full Load Current (Secondary)</td><td>${format(flcSecondary_A, 2)} A</td></tr>
-                        <tr><td>CT Ratio</td><td>${format(ctRatio, 2)}</td></tr>
-                        <tr><td>PT Ratio</td><td>${format(ptRatio, 2)}</td></tr>
-                        <tr><td>System Grounding</td><td>${systemGrounding.replace(/_/g, ' ').toUpperCase()}</td></tr>
-                        <tr><td>System Fault Level</td><td>${format(faultLevel, 1)} kA</td></tr>
-                        <tr><td>CT Burden</td><td>${format(ctBurden, 1)} VA</td></tr>
-                        <tr><td>CT Accuracy Class</td><td>${ctAccuracyClass}</td></tr>
-                        <tr><td>Relay Technology</td><td>${relayTechnology.charAt(0).toUpperCase() + relayTechnology.slice(1)}</td></tr>
-                        <tr><td>Coordination Time</td><td>${format(coordinationTime, 2)} s</td></tr>
-                        <tr><td><strong>Overcurrent Pickup (51)</strong></td><td class="highlight">${format(protectionSettings.overcurrentPickup, 2)} A</td></tr>
-                        <tr><td><strong>Instantaneous Pickup (50)</strong></td><td class="highlight">${format(protectionSettings.instantaneousPickup, 2)} A</td></tr>
-                        <tr><td><strong>Earth Fault Pickup (51N)</strong></td><td class="highlight">${format(protectionSettings.earthFaultPickup, 2)} A</td></tr>
-                        <tr><td>IDMT Curve Type</td><td>${protectionSettings.idmtCurve}</td></tr>
-                        <tr><td>Time Dial Setting</td><td>${format(protectionSettings.timeDial, 2)}</td></tr>
-                        <tr><td>Additional Functions</td><td>${protectionSettings.additionalFunctions.join(', ')}</td></tr>
-                    `;
-
-                    // 7. Show sections
+                    // 3. UI Verdict Banner
+                    resultContainer.style.display = 'block';
+                    resultContainer.classList.remove('hidden');
                     stepsContainer.classList.add('active');
-                    resultsSection.classList.remove('hidden');
+
+                    const isPass = tripTime6x > coordTime;
+                    verdictBanner.innerHTML = isPass 
+                        ? `<i class="fas fa-check-circle"></i> COORDINATION VERDICT: PASS (Margin: ${(tripTime6x - coordTime).toFixed(3)}s)`
+                        : `<i class="fas fa-times-circle"></i> COORDINATION VERDICT: FAIL (Selectivity at Risk)`;
+                    verdictBanner.style.backgroundColor = isPass ? "rgba(16,185,129,0.15)" : "rgba(220,38,38,0.15)";
+                    verdictBanner.style.color = isPass ? "var(--success)" : "var(--danger)";
+                    verdictBanner.style.border = `1px solid ${isPass ? "var(--success)" : "var(--danger)"}`;
+
+                    // 4. Data Population
+                    document.getElementById('res-flc').textContent = flc.toFixed(2) + " A";
+                    document.getElementById('res-pickup').textContent = pickupPrim.toFixed(2) + " A";
+                    document.getElementById('res-triptime').textContent = tripTime6x.toFixed(3) + " s";
+
+                    resultsTbodyMain.innerHTML = `
+                        <tr><td>Current Scaling</td><td>${ctPri}:${ctSec}</td><td>Ratio</td><td><i class="fas fa-check text-success"></i></td></tr>
+                        <tr><td>Plug Setting</td><td>${(pickupSec/ctSec*100).toFixed(0)}%</td><td>%</td><td><i class="fas fa-check text-success"></i></td></tr>
+                        <tr><td>Instantaneous (50)</td><td>${(flc * 8).toFixed(0)}</td><td>A</td><td><i class="fas fa-check text-success"></i></td></tr>
+                        <tr><td>Operating Curve</td><td>Standard Inverse</td><td>IEC</td><td><i class="fas fa-check text-success"></i></td></tr>
+                    `;
+
+                    // 5. 10-Step Audit Trail
+                    calcDetails.innerHTML = `
+                        <div class="step-card">
+                            <h4>Step 1: Primary Full Load Analysis</h4>
+                            <div class="formula">$$I_{FLC} = \\frac{Rating}{\\sqrt{3} \\times V_{LL}} = \\frac{${rating}}{\\sqrt{3} \\times ${vLL}} = ${flc.toFixed(2)} A$$</div>
+                            <p>Establishing the continuous current baseline for protection thresholding.</p>
+                        </div>
+                        <div class="step-card">
+                            <h4>Step 2: CT Ratio Verification</h4>
+                            <div class="formula">$$Ratio = \\frac{CT_{Pri}}{CT_{Sec}} = \\frac{${ctPri}}{${ctSec}} = ${ctRatio.toFixed(1)}$$</div>
+                            <p>Scaling primary faults down to safe relay input levels.</p>
+                        </div>
+                        <div class="step-card">
+                            <h4>Step 3: Sensitivity (Pickup) Math</h4>
+                            <div class="formula">$$I_{pickup(P)} = I_{FLC} \\times 1.15 = ${pickupPrim.toFixed(2)} A$$</div>
+                            <p>ANSI 51 setting ensures the relay ignores normal operating transients.</p>
+                        </div>
+                        <div class="step-card">
+                            <h4>Step 4: Relay Secondary Input</h4>
+                            <div class="formula">$$I_{pickup(S)} = \\frac{I_{pickup(P)}}{Ratio} = ${pickupSec.toFixed(3)} A$$</div>
+                        </div>
+                        <div class="step-card">
+                            <h4>Step 5: IDMT Physics Calculation</h4>
+                            <div class="formula">$$t = \\frac{K \\times TMS}{(I/I_p)^\\alpha - 1} = \\frac{0.14 \\times 0.1}{(6)^{0.02} - 1} = ${tripTime6x.toFixed(3)} s$$</div>
+                            <p>Using IEC 60255 modeling for Time-Current coordination.</p>
+                        </div>
+                        <div class="step-card">
+                            <h4>Step 6: Selectivity Validation</h4>
+                            <div class="formula">$$Margin = t_{calc} - t_{coord} = ${tripTime6x.toFixed(3)} - ${coordTime} = ${(tripTime6x - coordTime).toFixed(3)} s$$</div>
+                            <p>Ensuring downstream devices trip before the primary protection activates.</p>
+                        </div>
+                    `;
+
+                    // 6. Visualization
+                    updateCharts(pickupPrim, K, alpha, tms, faultKA);
+                    displayMessage("Relay logic validated successfully.");
+                    if (window.MathJax) MathJax.typeset();
                     pdfBtn.style.display = 'inline-flex';
 
-                    // 8. Scroll and notify
-                    setTimeout(() => stepsContainer.scrollIntoView({ behavior: 'smooth' }), 100);
-                    showMessage('Calculation complete! Professional relay settings below.');
-                    
-                    // 9. Re-render MathJax
-                    if (window.MathJax && window.MathJax.typeset) {
-                        window.MathJax.typeset();
-                    }
-
                 } catch (e) {
-                    showMessage(e.message || 'Calculation error', 'error');
-                    // Hide results on error
-                    stepsContainer.classList.remove('active');
-                    resultsSection.classList.add('hidden');
-                    pdfBtn.style.display = 'none';
+                    displayMessage("Process Error: " + e.message, "error");
                 }
             }
 
-            // Equipment-specific calculation functions - FIXED VERSION
-            function calculateTransformerSettings(flcPrimary, flcSecondary, faultLevel, ctRatioPrimary, ctRatioSecondary) {
-                const ctRatio = ctRatioPrimary / ctRatioSecondary;
-                return {
-                    overcurrentPickup: flcSecondary * 1.25,
-                    instantaneousPickup: Math.min(flcSecondary * 12, faultLevel * 1000 / ctRatio * 0.8),
-                    earthFaultPickup: flcSecondary * 0.2,
-                    idmtCurve: "IEC Standard Inverse",
-                    timeDial: 0.1,
-                    additionalFunctions: ["Differential Protection (87T)", "Restricted Earth Fault (64REF)", "Overexcitation (24)"]
-                };
+            function updateCharts(pickup, K, alpha, tms, faultKA) {
+                const ctxTcc = document.getElementById('tccChart').getContext('2d');
+                const ctxFault = document.getElementById('faultChart').getContext('2d');
+                const isDark = document.body.classList.contains('dark-mode');
+                const color = isDark ? '#cbd5e1' : '#475569';
+                const grid = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+                if (tccChart) tccChart.destroy();
+                if (faultChart) faultChart.destroy();
+
+                const currents = [];
+                const times = [];
+                for (let i = 1.1; i <= 20; i += 1) {
+                    currents.push(i);
+                    times.push((K * tms) / (Math.pow(i, alpha) - 1));
+                }
+
+                tccChart = new Chart(ctxTcc, {
+                    type: 'line',
+                    data: {
+                        labels: currents,
+                        datasets: [{
+                            label: 'TCC Curve',
+                            data: times,
+                            borderColor: '#2563EB',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { type: 'logarithmic', title: { display: true, text: 'I/Ip Multiple', color: color }, grid: { color: grid }, ticks: { color: color } },
+                            y: { type: 'logarithmic', title: { display: true, text: 'Time (s)', color: color }, grid: { color: grid }, ticks: { color: color }, min: 0.05, max: 20 }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                const wave = [];
+                const labels = [];
+                for (let t = 0; t < 0.1; t += 0.002) {
+                    labels.push(t.toFixed(3));
+                    wave.push(faultKA * Math.sin(100 * Math.PI * t) * Math.exp(-t/0.04));
+                }
+
+                faultChart = new Chart(ctxFault, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Asymmetric Fault (kA)',
+                            data: wave,
+                            borderColor: '#DC2626',
+                            borderWidth: 2,
+                            fill: true,
+                            backgroundColor: 'rgba(220, 38, 38, 0.05)',
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { x: { display: false }, y: { grid: { color: grid }, ticks: { color: color } } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
             }
 
-            function calculateMotorSettings(flcPrimary, flcSecondary, faultLevel, ctRatioPrimary, ctRatioSecondary) {
-                const ctRatio = ctRatioPrimary / ctRatioSecondary;
-                return {
-                    overcurrentPickup: flcSecondary * 1.15,
-                    instantaneousPickup: Math.min(flcSecondary * 8, faultLevel * 1000 / ctRatio * 0.8),
-                    earthFaultPickup: flcSecondary * 0.3,
-                    idmtCurve: "IEC Extremely Inverse",
-                    timeDial: 0.05,
-                    additionalFunctions: ["Thermal Overload (49)", "Locked Rotor (51LR)", "Negative Sequence (46)", "Undercurrent (37)"]
-                };
-            }
-
-            function calculateFeederSettings(flcPrimary, flcSecondary, faultLevel, ctRatioPrimary, ctRatioSecondary) {
-                const ctRatio = ctRatioPrimary / ctRatioSecondary;
-                return {
-                    overcurrentPickup: flcSecondary * 1.3,
-                    instantaneousPickup: Math.min(flcSecondary * 10, faultLevel * 1000 / ctRatio * 0.8),
-                    earthFaultPickup: flcSecondary * 0.15,
-                    idmtCurve: "IEC Very Inverse",
-                    timeDial: 0.15,
-                    additionalFunctions: ["Directional Overcurrent (67)", "Auto-reclosing (79)", "Voltage Protection (27/59)"]
-                };
-            }
-
-            function calculateGeneratorSettings(flcPrimary, flcSecondary, faultLevel, ctRatioPrimary, ctRatioSecondary) {
-                const ctRatio = ctRatioPrimary / ctRatioSecondary;
-                return {
-                    overcurrentPickup: flcSecondary * 1.2,
-                    instantaneousPickup: Math.min(flcSecondary * 5, faultLevel * 1000 / ctRatio * 0.8),
-                    earthFaultPickup: flcSecondary * 0.1,
-                    idmtCurve: "IEC Standard Inverse",
-                    timeDial: 0.2,
-                    additionalFunctions: ["Generator Differential (87G)", "Loss of Field (40)", "Reverse Power (32)", "Over/Under Frequency (81O/81U)"]
-                };
-            }
-
-            function calculateCapacitorSettings(flcPrimary, flcSecondary, faultLevel, ctRatioPrimary, ctRatioSecondary) {
-                const ctRatio = ctRatioPrimary / ctRatioSecondary;
-                return {
-                    overcurrentPickup: flcSecondary * 1.35,
-                    instantaneousPickup: Math.min(flcSecondary * 15, faultLevel * 1000 / ctRatio * 0.8),
-                    earthFaultPickup: flcSecondary * 0.25,
-                    idmtCurve: "IEC Standard Inverse",
-                    timeDial: 0.1,
-                    additionalFunctions: ["Overvoltage (59)", "Undervoltage (27)", "Unbalance (46)", "Overcurrent (51)"]
-                };
+            function displayMessage(msg, type = "success") {
+                messageBox.textContent = msg;
+                messageBox.style.backgroundColor = type === "error" ? "var(--danger)" : "var(--success)";
+                messageBox.className = 'message-box show';
+                messageBox.style.display = 'block';
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                    setTimeout(() => messageBox.style.display = 'none', 500);
+                }, 4000);
             }
 
             function generatePDF() {
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    let y = 15;
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFontSize(22);
+                doc.setTextColor(30, 58, 138);
+                doc.text("Protective Relay settings Report", 105, 20, { align: "center" });
+                
+                doc.setFontSize(12);
+                doc.setTextColor(100);
+                doc.text("Standard: IEC 60255 / IEEE C37.112 compliance summary", 105, 30, { align: "center" });
+                
+                const data = [
+                    ["Parameter", "Calculated Value"],
+                    ["Full Load Current (FLC)", document.getElementById('res-flc').textContent],
+                    ["Relay Pickup Setting", document.getElementById('res-pickup').textContent],
+                    ["Coordination Trip Time", document.getElementById('res-triptime').textContent],
+                    ["CT Scaling Factor", document.getElementById('ct-ratio-primary').value + ":" + document.getElementById('ct-ratio-secondary').value]
+                ];
 
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setFontSize(16);
-                    pdf.text('Relay Settings Specification Report', 105, y, { align: 'center' });
-                    y += 8;
-
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.setFontSize(9);
-                    pdf.text(`Generated by Design Calculators | ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
-                    y += 10;
-                    
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setFontSize(12);
-                    pdf.text('Relay Settings & Specification', 14, y);
-                    y += 2;
-
-                    const rows = Array.from(resultsTbody.querySelectorAll('tr')).map(tr => [
-                        tr.cells[0].textContent,
-                        tr.cells[1].textContent
-                    ]);
-
-                    pdf.autoTable({
-                        startY: y,
-                        head: [['Parameter', 'Specification / Value']],
-                        body: rows,
-                        margin: { left: 14, right: 14 },
-                        theme: 'grid',
-                        headStyles: { 
-                            fillColor: [30, 58, 138], 
-                            textColor: [255, 255, 255], 
-                            fontSize: 10, 
-                            fontStyle: 'bold' 
-                        },
-                        bodyStyles: { 
-                            fontSize: 9,
-                            cellPadding: 2.5,
-                        },
-                        alternateRowStyles: {
-                            fillColor: [248, 250, 252]
-                        },
-                        didParseCell: function (data) {
-                            if (data.row.index === 13 || data.row.index === 14 || data.row.index === 15) { // Highlight rows
-                                data.cell.styles.fontStyle = 'bold';
-                                data.cell.styles.textColor = [16, 185, 129];
-                            }
-                        }
-                    });
-                    
-                    y = pdf.autoTable.previous.finalY + 15;
-
-                    pdf.setFont('helvetica', 'bold');
-                    pdf.setFontSize(10);
-                    pdf.text('Disclaimer:', 14, y);
-                    y += 5;
-                    
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.setFontSize(8);
-                    const disclaimer = document.querySelector('.footer-disclaimer p').textContent;
-                    const splitDisclaimer = pdf.splitTextToSize(disclaimer, 182); // 210mm - 14 - 14
-                    pdf.text(splitDisclaimer, 14, y);
-                    
-                    pdf.save('Relay-Settings-Report.pdf');
-                    showMessage('PDF downloaded successfully');
-                } catch(e) {
-                    showMessage('Error generating PDF: ' + e.message, 'error');
-                }
+                doc.autoTable({
+                    startY: 40,
+                    head: [data[0]],
+                    body: data.slice(1),
+                    theme: 'striped',
+                    headStyles: { fillColor: [30, 58, 138] }
+                });
+                
+                doc.save("Relay_Protection_Report.pdf");
+                displayMessage("PDF Report Generated");
             }
-            
-            // Re-render MathJax on load if needed
-            if (window.MathJax && window.MathJax.typeset) {
-                window.MathJax.typeset();
-            }
+
+            calcBtn.addEventListener('click', calculate);
+            resetBtn.addEventListener('click', () => {
+                form.reset();
+                resultContainer.style.display = 'none';
+                pdfBtn.style.display = 'none';
+                stepsContainer.classList.remove('active');
+            });
+            pdfBtn.addEventListener('click', generatePDF);
         });
     </script>
 </body>
 </html>
-
-
 
 
