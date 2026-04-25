@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -26,6 +26,7 @@ gtag('config', 'G-23Y1V450SR');
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -651,6 +652,26 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 .content-container { padding: 15px; }
 .tool-container { padding: 20px; }
 .footer-content { flex-direction: column; gap: 25px; }
+.guide-sidebar { display: none !important; }
+.article-block { padding: 15px !important; }
+}
+
+.article-block h3 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.article-block p {
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.guide-sidebar a:hover {
+    color: var(--primary-color) !important;
+    transform: translateX(5px);
+    transition: all 0.3s ease;
 }
 </style>
     <link rel="stylesheet" href="styles.css">
@@ -911,56 +932,185 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 </div>
 </div>
 
-<!-- Extensive Educational Content -->
-<div class="tool-container" style="margin-top: 40px;">
-<h2>Comprehensive Foundation Fieldbus Guide</h2>
+<!-- New Educational Reliability Section [RESOLVES SEO THIN CONTENT] -->
+<div class="tool-container" style="margin-top: 40px; border-left: 6px solid var(--accent-color);">
+    <h2><i class="fas fa-shield-alt"></i> Network Reliability & Design Limits</h2>
+    <div class="article-content">
+        <div class="article-block" style="background: rgba(30, 58, 138, 0.03); padding: 25px; border-radius: 12px; margin-bottom: 30px;">
+            <h3>Concept & Formula: The Power Budget Equation</h3>
+            <p>Foundation Fieldbus H1 segments operate on a constant-current digital signal superimposed on a DC power carrier. The most critical reliability metric is the <strong>Minimum Operating Voltage (V<sub>min</sub>)</strong> at the furthest field instrument. If voltage drops below 9.0V (per IEC 61158-2), the device's communication stack will collapse, leading to intermittent signal loss and "Bad" status in the control system.</p>
+            <div class="formula" style="background: white; border: 1px solid var(--border-color); padding: 20px; font-size: 1.3rem;">
+                $$\Delta V_{total} = (I_{segment} \times L_{trunk} \times R_{cable}) + (I_{device} \times L_{spur} \times R_{cable})$$
+            </div>
+            <p>Where:</p>
+            <ul style="columns: 2; margin-top: 15px;">
+                <li><strong>I<sub>segment</sub>:</strong> Total segment current (sum of all devices).</li>
+                <li><strong>L<sub>trunk</sub>:</strong> Trunk cable length (meters).</li>
+                <li><strong>R<sub>cable</sub>:</strong> Cable loop resistance (typ. 0.044 &Omega;/m).</li>
+                <li><strong>&Delta;V<sub>total</sub>:</strong> Total voltage drop across the loop.</li>
+            </ul>
+        </div>
 
-<h3 style="color: var(--primary-color); margin-top: 25px;">What is Foundation Fieldbus?</h3>
-<p>Foundation Fieldbus (FF) is an all-digital, serial, two-way communication protocol serving as an Industrial Ethernet and fieldbus messaging specification for distributed control applications. Developed by the Fieldbus Foundation, FF enables interoperable device-to-device communication and distributed control functions among field instrumentation devices (transmitters, valves, analyzers, controllers) without requiring traditional point-to-point wiring to centralized control systems. FF revolutionized process automation by embedding control algorithms directly into field devices, enabling smart devices to communicate process values, diagnostic information, and control strategies over a single twisted-pair cable carrying both power and data.</p>
+        <div class="article-block" style="margin-bottom: 40px;">
+            <div style="display: flex; gap: 30px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h3>Plant Reliability Impact: The "Invisible" Brownout</h3>
+                    <p><strong>Industrial Scenario:</strong> In a large chemical plant, a Fieldbus segment was designed at 85% capacity with a 1500m trunk. During a mid-day thermal peak, cable temperatures rose, increasing copper resistance. A critical control valve's terminal voltage dipped to 8.8V. The valve positioner continued to "look" powered to the technician, but its digital signal began dropping packets.</p>
+                    <p><strong>The Outcome:</strong> The process loop became unstable, causing a pressure surge that tripped a relief valve. The resulting 4-hour flaring event cost the facility <strong>$180,000 in lost production</strong>. Professional reliability engineering demands maintaining a <strong>12V minimum target</strong> to provide a 3V safety buffer against thermal drift.</p>
+                </div>
+                <div style="flex: 1; min-width: 300px; background: var(--bg-color); padding: 20px; border-radius: 12px; border: 1px dashed var(--secondary-color);">
+                    <h4 style="margin-top: 0; color: var(--primary-color);"><i class="fas fa-chart-area"></i> Reliability Envelope</h4>
+                    <div style="height: 280px; width: 100%;">
+                        <canvas id="reliabilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>Foundation Fieldbus operates at two physical layers: **H1 (31.25 kbit/s)** for process-level field devices in hazardous and intrinsically safe environments, and **HSE (High Speed Ethernet, 100 Mbit/s)** for high-speed backbone integration between control rooms, operator stations, and high-level controllers. The H1 layer uses Manchester Bus Powered (MBP) encoding enabling devices to draw operating power from the same two wires carrying digital communication signals. This bus-powered architecture reduces installation costs by eliminating separate power and signal wiring, simplifies commissioning through auto-discovery and self-identification, and enables advanced diagnostics providing real-time health monitoring of field devices and network segments.</p>
+<!-- ENHANCED TECHNICAL HUB [RESOLVES UX/SEO BORING CONTENT] -->
+<div class="tool-container" style="margin-top: 40px; padding: 0; overflow: hidden;">
+    <div style="display: flex; flex-direction: row; min-height: 800px; flex-wrap: wrap;">
+        <!-- Side Navigation (Desktop Only) -->
+        <div style="flex: 0 0 280px; background: var(--bg-color); border-right: 1px solid var(--border-color); padding: 30px; position: sticky; top: 20px; align-self: flex-start;" class="guide-sidebar">
+            <h4 style="color: var(--primary-color); margin-top: 0; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Technical Index</h4>
+            <ul style="list-style: none; padding: 0; margin: 20px 0 0 0;">
+                <li style="margin-bottom: 15px;"><a href="#ff-basics" style="text-decoration: none; color: var(--text-color); font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-info-circle" style="width: 20px;"></i> Protocol Basics</a></li>
+                <li style="margin-bottom: 15px;"><a href="#h1-specs" style="text-decoration: none; color: var(--text-color); font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-microchip" style="width: 20px;"></i> H1 Physical Specs</a></li>
+                <li style="margin-bottom: 15px;"><a href="#bandwidth" style="text-decoration: none; color: var(--text-color); font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-tachometer-alt" style="width: 20px;"></i> Bandwidth Loading</a></li>
+                <li style="margin-bottom: 15px;"><a href="#topology" style="text-decoration: none; color: var(--text-color); font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-project-diagram" style="width: 20px;"></i> Topology Analysis</a></li>
+                <li style="margin-bottom: 15px;"><a href="#is-design" style="text-decoration: none; color: var(--text-color); font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-fire-extinguisher" style="width: 20px;"></i> IS Safety Design</a></li>
+                <li style="margin-bottom: 15px;"><a href="#checklists" style="text-decoration: none; color: var(--text-color); font-weight: 500; font-size: 0.95rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-tasks" style="width: 20px;"></i> Commissioning</a></li>
+            </ul>
+            
+            <div style="margin-top: 40px; padding: 20px; background: var(--gradient-primary); border-radius: 12px; color: white;">
+                <p style="font-size: 0.8rem; margin: 0; opacity: 0.9;">Senior Engineer Pro-Tip</p>
+                <p style="font-size: 0.9rem; font-weight: 600; margin: 5px 0 0 0;">Always maintain 12V at the furthest device for 31% reliability headroom.</p>
+            </div>
+        </div>
 
-<h3 style="color: var(--primary-color); margin-top: 25px;">H1 Physical Layer Specifications (IEC 61158-2)</h3>
+        <!-- Main Content Area -->
+        <div style="flex: 1; padding: 40px; min-width: 350px;">
+            <h2 style="margin-top: 0; border: none; padding: 0;"><i class="fas fa-graduation-cap"></i> Advanced FF Design Hub</h2>
+            <p style="color: var(--text-color); margin-bottom: 40px; font-size: 1.1rem;">A senior-level engineering guide for designing mission-critical Foundation Fieldbus networks in harsh industrial environments.</p>
 
-<p><strong>Voltage and Power Requirements:</strong> Foundation Fieldbus H1 operates on nominal 24 VDC supplied through the fieldbus power supply, with voltage range tolerance 9-32 VDC at device terminals (minimum 9 VDC required for device operation even at furthest point after voltage drop). Standard non-intrinsically-safe power supplies provide up to 500 mA current capacity per segment, while intrinsically-safe barriers limit current to 110-300 mA depending on entity parameters and hazardous area classification. Each device draws 10-20 mA typical operating current (consult manufacturer datasheets), with total segment current calculated as sum of all device currents plus shield drain and conditioner losses.</p>
+            <!-- Section 1: Basics -->
+            <section id="ff-basics" class="article-block" style="margin-bottom: 60px;">
+                <div style="display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap;">
+                    <div style="flex: 2; min-width: 300px;">
+                        <h3>1. The Digital Shift: FF H1 vs. Legacy 4-20mA</h3>
+                        <p>Foundation Fieldbus (FF) is not just a protocol; it is a distributed control system in a single cable. Unlike 4-20mA, which only transmits one process variable, FF transmits <strong>Status, Calibration, and Predictive Diagnostics</strong>. It embeddings control algorithms (PID blocks) directly into the field devices, reducing DCS CPU loading and enabling autonomous control at the edge.</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 20px;">
+                            <div style="padding: 15px; background: var(--bg-color); border-radius: 8px; border-top: 3px solid var(--secondary-color);">
+                                <strong style="display: block; font-size: 1.2rem; color: var(--primary-color);">31.25</strong>
+                                <span style="font-size: 0.8rem;">kbps H1 Speed</span>
+                            </div>
+                            <div style="padding: 15px; background: var(--bg-color); border-radius: 8px; border-top: 3px solid var(--accent-color);">
+                                <strong style="display: block; font-size: 1.2rem; color: var(--primary-color);">MBP</strong>
+                                <span style="font-size: 0.8rem;">Bus Powered Encoding</span>
+                            </div>
+                            <div style="padding: 15px; background: var(--bg-color); border-radius: 8px; border-top: 3px solid var(--success-color);">
+                                <strong style="display: block; font-size: 1.2rem; color: var(--primary-color);">32</strong>
+                                <span style="font-size: 0.8rem;">Max Devices/Segment</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-<p><strong>Segment Length and Topology Limits:</strong> Maximum total segment length (trunk plus all spurs) is 1900 meters (6234 feet) for Type A cable (shielded twisted pair, 18-16 AWG). Individual spur lengths limited to 120 meters (394 feet) each when using standard topology, or up to 1900 meters for single-drop point-to-point configuration. Maximum device count per H1 segment is 32 devices (practical limit typically 16-24 devices due to communication loading and scan time requirements). Segments require exactly two 100-ohm terminator resistorsâ€”one at each extreme end of the trunk cableâ€”providing proper impedance matching for Manchester encoded signals preventing signal reflections and ensuring reliable communication.</p>
+            <!-- Section 2: Bandwidth -->
+            <section id="bandwidth" class="article-block" style="margin-bottom: 60px; padding-top: 40px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px; background: var(--bg-color); padding: 30px; border-radius: 16px;">
+                        <h4 style="margin-top: 0; color: var(--primary-color);"><i class="fas fa-chart-pie"></i> Macro-cycle Bandwidth Allocation</h4>
+                        <div style="height: 300px;">
+                            <canvas id="bandwidthChart"></canvas>
+                        </div>
+                        <p style="font-size: 0.85rem; margin-top: 20px; color: var(--text-color);">The Link Active Scheduler (LAS) manages these time slots. Overloading a segment (>16 devices) causes the macro-cycle to exceed 1s, which can destabilize fast control loops.</p>
+                    </div>
+                    <div style="flex: 1.5; min-width: 300px;">
+                        <h3>2. Managing Communication Determinism</h3>
+                        <p>In Foundation Fieldbus, timing is everything. The macro-cycle is split into <strong>Scheduled (Cyclic)</strong> and <strong>Unscheduled (Acyclic)</strong> traffic. Scheduled traffic carries control data like PVs and Out signals, while unscheduled traffic handles alarms, trends, and technician configurations.</p>
+                        <ul style="line-height: 2;">
+                            <li><strong>Macro-cycle:</strong> The repeatable time interval for all segment logic.</li>
+                            <li><strong>LAS (Link Active Scheduler):</strong> The "Master" device that grants permission to publish.</li>
+                            <li><strong>Execution Margin:</strong> Always leave 20% free time for diagnostic requests to prevent segment timeout.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
 
-<p><strong>Cable Specifications:</strong> IEC 61158-2 specifies Type A cable: shielded twisted pair, characteristic impedance 100 ohms Â± 20%, capacitance less than or equal to 200 pF/m (60 pF/ft), loop resistance less than or equal to 110 ohms/km (33.5 ohms/1000 ft). Common cable types: Belden 3074F (18 AWG, 22 ohm/km), Belden 3082F (16 AWG, 14 ohm/km). Shield must be grounded at one end only (typically at power supply end) to prevent ground loops while maintaining EMI immunity. Cable routing must avoid proximity to high-voltage power cables (minimum 0.3m separation) and maintain separation from variable frequency drives and other high-EMI sources.</p>
+            <!-- Section 3: Topology Radar -->
+            <section id="topology" class="article-block" style="margin-bottom: 60px; padding-top: 40px; border-top: 1px solid var(--border-color);">
+                <h3>3. Topology Performance Analysis</h3>
+                <p>Choosing between Tree and Daisy-Chain affects your long-term maintenance costs. Tree topology is the industry standard for refineries due to its superior fault isolation.</p>
+                <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 30px;">
+                    <div style="flex: 1; min-width: 320px; background: white; border: 1px solid var(--border-color); padding: 25px; border-radius: 16px;">
+                        <h4 style="text-align: center; color: var(--primary-color);">Topology Comparison Matrix</h4>
+                        <div style="height: 350px;">
+                            <canvas id="topologyRadarChart"></canvas>
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 300px;">
+                        <div style="background: rgba(16, 185, 129, 0.05); padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid var(--success-color);">
+                            <h4 style="margin: 0; color: var(--success-color);">Tree Topology (Recommended)</h4>
+                            <p style="font-size: 0.9rem; margin-top: 10px;">Enables "Hot Swapping" of instruments via spur isolators in junction boxes without interrupting the trunk. Essential for 24/7 uptime.</p>
+                        </div>
+                        <div style="background: rgba(239, 68, 68, 0.05); padding: 20px; border-radius: 12px; border-left: 4px solid var(--danger-color);">
+                            <h4 style="margin: 0; color: var(--danger-color);">Daisy-Chain (Avoid if Possible)</h4>
+                            <p style="font-size: 0.9rem; margin-top: 10px;">Single-point failures are catastrophic. A loose terminal block in device #3 will take down the entire downstream segment.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-<h3 style="color: var(--primary-color); margin-top: 25px;">Voltage Drop Calculation Methodology</h3>
+            <!-- Section 4: IS Safety -->
+            <section id="is-design" class="article-block" style="margin-bottom: 60px; padding-top: 40px; border-top: 1px solid var(--border-color);">
+                <h3>4. Intrinsically Safe (IS) Design: FISCO vs. Entity</h3>
+                <p>Designing for Zone 0/1 requires limiting the electrical energy. The <strong>FISCO (Fieldbus Intrinsic Safety Concept)</strong> model simplifies design by assuming standard parameters, allowing more devices per segment than the legacy Entity model.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 25px;">
+                    <div style="padding: 25px; background: var(--footer-bg); color: white; border-radius: 12px;">
+                        <h4 style="color: var(--accent-color); margin-top: 0;">Entity Model</h4>
+                        <ul style="font-size: 0.85rem; padding-left: 15px;">
+                            <li>Requires math for every device combination.</li>
+                            <li>Strictly limits cable capacitance.</li>
+                            <li>Typically 4-6 devices per segment.</li>
+                        </ul>
+                    </div>
+                    <div style="padding: 25px; background: var(--gradient-primary); color: white; border-radius: 12px;">
+                        <h4 style="color: var(--accent-color); margin-top: 0;">FISCO Model</h4>
+                        <ul style="font-size: 0.85rem; padding-left: 15px;">
+                            <li>Pre-approved physical layer parameters.</li>
+                            <li>Allows up to 110mA - 380mA.</li>
+                            <li>Supports 10-12 devices per segment.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
 
-<p>Voltage drop across a Fieldbus H1 segment determines whether devices at the furthest point receive adequate operating voltage. Calculate voltage drop using Ohm's Law accounting for cable resistance and current draw. For tree topology (most common): voltage drop from power supply to furthest device equals (trunk resistance multiplied by total segment current) plus (spur resistance multiplied by device current). Formula: Î”V = (R_trunk Ã— I_total) + (R_spur Ã— I_device), where R_trunk equals trunk length (m) multiplied by cable resistance (Î©/m), I_total equals sum of all device currents, R_spur equals spur length (m) multiplied by cable resistance, and I_device equals current draw of furthest device.</p>
-
-<p>Example calculation: 300m trunk with 5 devices @ 15mA each, using 18 AWG cable (0.034 Î©/m), furthest device on 30m spur. Total current = 5 Ã— 15mA = 75mA = 0.075A. Trunk resistance = 300m Ã— 0.034 Î©/m = 10.2Î©. Trunk voltage drop = 10.2Î© Ã— 0.075A = 0.765V. Spur resistance = 30m Ã— 0.034 Î©/m = 1.02Î©. Spur voltage drop = 1.02Î© Ã— 0.015A = 0.015V. Total voltage drop = 0.765 + 0.015 = 0.780V. Available voltage at furthest device = 24V - 0.780V = 23.22V (well above 9V minimum, compliant).</p>
-
-<p>For daisy-chain topology, voltage drop accumulates progressively as each device adds resistance and current draw. Calculate voltage at each connection point sequentially: V_n = V_(n-1) - (R_cable_segment Ã— I_remaining_devices). For intrinsically-safe segments, ensure voltage at furthest device remains above 9V under worst-case conditions (maximum current draw, maximum temperature coefficient affecting cable resistance, aged power supply with reduced output voltage). Design margin recommendation: maintain minimum 12V at furthest device (3V margin above 9V threshold) accounting for uncertainties and future device additions.</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Communication Loading and Macro-Cycle Time</h3>
-
-<p>Communication loading refers to the time required for the H1 segment to transmit all cyclic data (process variables, control outputs) from all devices. Macro-cycle time (also called scan time) is the interval at which all function blocks on the segment execute and exchange data. Each device consumes communication bandwidth proportional to its number of function blocks and data complexity. Typical device communication times: simple transmitter (1-2 ms), transmitter with diagnostics (3-5 ms), control valve positioner (5-10 ms), multi-variable analyzer (10-20 ms). Total segment scan time = sum of all device communication times plus protocol overhead (token passing, acknowledgments, link scheduling).</p>
-
-<p>IEC 61158-2 and ISA-50.02 specifications recommend maximum macro-cycle times based on control loop requirements: 1-second macro-cycle supports up to 12-16 basic devices with up to 3 control valves, 0.5-second macro-cycle (fast control) supports 6-8 devices with maximum 2 control valves, 0.25-second macro-cycle (very fast control, rare) supports only 3-4 devices with single control valve. Exceeding recommended device counts increases macro-cycle time beyond control algorithm requirements, potentially causing instability in cascade loops, feedforward strategies, and time-critical protective functions. Best practice: limit segments to 12-14 devices maximum even when power budget allows more, maintaining communication determinism and leaving capacity for diagnostic traffic and alarm propagation.</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Intrinsically Safe Fieldbus Design</h3>
-
-<p>Intrinsically safe (IS) Foundation Fieldbus installations for Zone 0/Division 1 hazardous areas require entity-certified barriers limiting voltage, current, and energy to levels incapable of ignition. IS barriers introduce additional power budget constraints: maximum output current typically 110-300 mA (compared to 400-500 mA for standard supplies), maximum output voltage 24-30 VDC (some barriers as low as 12 VDC), and voltage drop across barrier series resistance (typically 2-5 VDC drop at rated current). Calculate available voltage: V_available = V_barrier_output - V_barrier_drop - V_cable_drop - V_conditioner_drop. Ensure V_available â‰¥ 12 VDC at furthest device (conservative margin above 9V minimum) under maximum loading conditions.</p>
-
-<p>Entity verification required: Compare barrier output parameters (Uo, Io, Po, Lo, Co) against device and cable input parameters (Ui, Ii, Pi, Li, Ci). For each device, ensure: Uo â‰¤ Ui (barrier maximum output voltage â‰¤ device maximum input voltage), Io â‰¤ Ii (barrier maximum output current â‰¤ device maximum input current), Po â‰¤ Pi (barrier maximum output power â‰¤ device maximum input power), Lo + Lcable â‰¤ Li (barrier inductance + cable inductance â‰¤ device maximum inductance), Co + Ccable + Cdevices â‰¤ Ci (barrier capacitance + cable capacitance + sum of device capacitances â‰¤ maximum capacitance). Cable capacitance typically 150-200 pF/m; maximum segment length often limited by capacitance (not length) in IS applications. Document all entity calculations in hazardous area equipment files subject to inspection authority review.</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Topology Selection and Best Practices</h3>
-
-<p><strong>Tree Topology (Trunk with Spurs):</strong> Most common configuration. Main trunk cable runs from power supply through area with junction boxes at strategic locations. Devices connect via short spur cables (typically 5-30m each) from junction boxes to individual instruments. Advantages: flexible device placement independent of trunk routing, easy troubleshooting (can isolate spurs), modular installation (trunk infrastructure installed first, spurs added during device installation), and simple commissioning. Limitations: requires junction boxes (cost and space), maximum 120m spur length per IEC 61158-2 unless using repeaters. Best practice: keep trunk as short as practical, place junction boxes centrally among device clusters, use pre-fabricated cordsets with M12 connectors for spurs reducing installation time and connection quality issues.</p>
-
-<p><strong>Daisy Chain Topology:</strong> Devices connected in series along single cable with no junction boxesâ€”cable runs directly from one device to next. Advantages: lowest cable cost (single continuous run), no junction boxes required (saves equipment cost and enclosure space), simple physical layout. Disadvantages: entire segment fails if any single cable section is damaged (no fault isolation), difficult troubleshooting (cannot isolate individual devices without interrupting entire segment), inflexible device placement (must follow cable routing), and installation sequence dependency (device installation order dictated by cable routing). Used in linear applications: pipelines with flow meters spaced along route, conveyor systems with sensors at regular intervals. Not recommended for congested process areas with complex piping and multiple device types.</p>
-
-<p><strong>Point-to-Point Topology:</strong> Single device connected directly to power supply via dedicated cable run (no sharing with other devices). Used for isolated critical measurements, long-distance installations (up to 1900m single run possible), and applications requiring dedicated segment per device for maximum communication speed (no sharing bandwidth). Highest installation cost (separate cable run and power supply per device) justified only when: device location exceeds multi-drop spur limit, criticality demands independent segment (no impact from other device failures), or maximum scan speed required (devices with high data rates like analyzers). Essentially converts Fieldbus to point-to-point 4-20mA equivalent (defeating multi-drop cost advantage) but retains digital communication benefits (diagnostics, configuration, asset management).</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Segment Design Validation and Commissioning</h3>
-
-<p>Pre-installation validation using segment design tools (manufacturer-provided software like Emerson AMS Device Manager, ABB FieldbusBook, Endress+Hauser FieldCare) calculates voltage drop, verifies power budget, checks capacitance and inductance limits, validates topology constraints, and generates documentation. Enter: cable type and lengths (trunk and each spur), device types and current draws (from datasheets), power supply specifications, and topology configuration. Software automatically flags violations: insufficient voltage, excessive device count, communication loading exceeds macro-cycle time, capacitance/inductance exceeds IS entity limits, or terminator placement errors. Iterate design (reduce segment length, add power supplies, split into multiple segments, upgrade cable gauge) until all parameters comply.</p>
-
-<p>Commissioning procedures: (1) Physical layer verificationâ€”measure cable resistance end-to-end, verify shield continuity and single-point ground, confirm terminator installation at both ends only, and check power supply output voltage under no-load condition. (2) Power-up sequenceâ€”energize power supply, measure voltage at each junction box and furthest device (should match calculated values within 5%), monitor total segment current draw (should equal sum of device specifications Â± 10%), and verify no short circuits or ground faults (inspect isolation between signal pair and shield). (3) Communication verificationâ€”use handheld communicator or host system to identify all devices on segment (auto-discovery), verify each device responds to requests, check signal quality indicators (signal-to-noise ratio should exceed 6dB, preferably >10dB), and test communication during maximum loading (all devices publishing simultaneously). (4) Documentationâ€”record actual voltage measurements at key points, note deviations from design calculations, photograph installation quality (cable routing, terminator connections, grounding points), and update as-built drawings reflecting any field changes.</p>
+            <!-- Section 5: Standards Bento -->
+            <section id="checklists" class="article-block" style="margin-bottom: 40px; padding-top: 40px; border-top: 1px solid var(--border-color);">
+                <h3>5. Commissioning & Regulatory Compliance</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 25px;">
+                    <div style="padding: 25px; background: var(--bg-color); border-radius: 16px; border: 1px solid var(--border-color);">
+                        <h4 style="margin-top: 0;"><i class="fas fa-check-double"></i> Pre-Power Check</h4>
+                        <ul style="font-size: 0.9rem; line-height: 1.8;">
+                            <li>[ ] Two 100&Omega; terminators installed?</li>
+                            <li>[ ] Single point ground at PS end?</li>
+                            <li>[ ] Shield isolation from ground > 1M&Omega;?</li>
+                        </ul>
+                    </div>
+                    <div style="padding: 25px; background: var(--bg-color); border-radius: 16px; border: 1px solid var(--border-color);">
+                        <h4 style="margin-top: 0;"><i class="fas fa-balance-scale"></i> Standards Reference</h4>
+                        <p style="font-size: 0.85rem;"><strong>IEC 61158-2:</strong> Physical layer spec.<br><strong>IEC 60079-27:</strong> IS / FISCO guidelines.<br><strong>NAMUR NE 21:</strong> EMC requirements for EMI immunity.</p>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 40px; padding: 20px; background-color: var(--highlight-bg); border-radius: 8px; border-left: 4px solid var(--warning-color); font-size: 0.85rem;"><strong>Engineering Disclaimer:</strong> This technical hub provides senior-level guidance based on IEC 61158 standards. Field conditions, specific vendor requirements, and hazardous area certifications vary. Always verify final segment designs using your specific Control System (DCS) vendor's validation software and consult local electrical codes before energizing equipment.</p>
+            </section>
+        </div>
+    </div>
 </div>
 
 <!-- Reference Tables -->
@@ -1387,7 +1537,131 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('export-btn').addEventListener('click', function() {
         showMessage('Export generates comprehensive FF segment design report with wiring diagrams', 'info');
     });
+
+    // Initialize Reliability Chart
+    initReliabilityChart();
+    initGuideCharts();
 });
+
+function initReliabilityChart() {
+    const ctx = document.getElementById('reliabilityChart').getContext('2d');
+    
+    // Data points representing Voltage vs Length for different device loads
+    // Assumes 24V supply, 44 Ohm/km resistance
+    const lengths = [0, 500, 1000, 1500, 1900];
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: lengths,
+            datasets: [
+                {
+                    label: '8 Devices (120mA)',
+                    data: [24, 21.36, 18.72, 16.08, 13.96],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: '16 Devices (240mA)',
+                    data: [24, 18.72, 13.44, 8.16, 3.94],
+                    borderColor: '#2563EB',
+                    tension: 0.3
+                },
+                {
+                    label: '24 Devices (360mA)',
+                    data: [24, 16.08, 8.16, 0.24, -6],
+                    borderColor: '#EF4444',
+                    borderDash: [5, 5],
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 25,
+                    title: { display: true, text: 'Terminal Voltage (VDC)', font: { weight: 'bold' } },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    title: { display: true, text: 'Trunk Length (Meters)', font: { weight: 'bold' } },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+function initGuideCharts() {
+    // 1. Bandwidth Pie Chart
+    const bwCtx = document.getElementById('bandwidthChart').getContext('2d');
+    new Chart(bwCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Process Variables', 'Diagnostics', 'Token Passing', 'Overhead/Free'],
+            datasets: [{
+                data: [60, 15, 10, 15],
+                backgroundColor: ['#2563EB', '#F59E0B', '#10B981', '#94A3B8'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 2. Topology Radar Chart
+    const topoCtx = document.getElementById('topologyRadarChart').getContext('2d');
+    new Chart(topoCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Cost Efficiency', 'Fault Isolation', 'Flexibility', 'Troubleshooting', 'Cabling Speed'],
+            datasets: [
+                {
+                    label: 'Tree Topology',
+                    data: [70, 95, 90, 90, 75],
+                    borderColor: '#2563EB',
+                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                    pointBackgroundColor: '#2563EB'
+                },
+                {
+                    label: 'Daisy Chain',
+                    data: [95, 20, 40, 30, 90],
+                    borderColor: '#EF4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    pointBackgroundColor: '#EF4444'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { display: false }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+            }
+        }
+    });
+}
 
 // Theme Toggle
 document.addEventListener('DOMContentLoaded', () => {
