@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -41,6 +41,7 @@
     <!-- PDF Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -706,6 +707,48 @@
             }
         }
         .hidden { display: none; }
+
+        /* Elite Engineering Layout Fixes */
+        .tech-article {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        .toc-sticky {
+            position: sticky;
+            top: 100px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+        }
+        .toc-sticky h4 { margin-top: 0; color: var(--primary-color); }
+        .toc-sticky ul { list-style: none; padding: 0; margin: 0; }
+        .toc-sticky li { margin-bottom: 10px; }
+        .toc-sticky a { text-decoration: none; color: var(--text-color); font-size: 0.9rem; transition: color 0.3s; }
+        .toc-sticky a:hover { color: var(--primary-color); }
+        .insight-card {
+            background: var(--bg-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .formula-block {
+            background: var(--hover-color);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            border: 1px dashed var(--primary-color);
+        }
+        @media (max-width: 992px) {
+            .tech-article { grid-template-columns: 1fr; }
+            .toc-sticky { display: none; }
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Advanced Motor Starting Current & Torque - Design Calculators - Electrical">
@@ -1023,77 +1066,222 @@
         </div>
     </main>
 
-    <!-- NEW CONTENT BLOCK for AdSense -->
-    <div class="container">
-        <div class="content-block">
-            <h2 class="math-content">A Guide to Motor Starting Methods and Their Impact</h2>
-            <p>Starting an AC induction motor is one of the most demanding events on an electrical system. Understanding the different starting methods and their consequences is essential for designing a reliable and safe system. This guide explores the key concepts this calculator models.</p>
+    <!-- EDUCATION SECTION (ELITE FRAMEWORK) -->
+    <div class="container" style="margin-top: 40px;">
+        <div class="education-section card">
+            <div class="tech-article">
+                <!-- TOC -->
+                <div class="toc-sticky">
+                    <h4>Table of Contents</h4>
+                    <ul>
+                        <li><a href="#inrush-theory">1. The Physics of Inrush</a></li>
+                        <li><a href="#starting-methods">2. Starting Method Comparison</a></li>
+                        <li><a href="#torque-speed">3. Torque-Speed Characteristics</a></li>
+                        <li><a href="#voltage-dip">4. Voltage Dip & Stiffness</a></li>
+                        <li><a href="#standards">5. International Standards</a></li>
+                        <li><a href="#faqs">6. Professional FAQs</a></li>
+                    </ul>
+                </div>
 
-            <h3>1. The Core Problem: Inrush Current</h3>
-            <p>When a motor is at a standstill (locked rotor), its windings act almost like a short circuit to the power supply. The instant it's energized, it draws a massive amount of current known as **Locked Rotor Current (LRC)**, or "inrush current."</p>
-            <ul>
-                <li><strong>Magnitude:</strong> This current is typically <strong>6 to 8 times</strong> the motor's normal Full Load Current (FLC), or 600-800%. This is what the "LRC Factor" in the calculator represents.</li>
-                <li><strong>The Problem:</strong> This huge current draw, even though brief, causes a significant voltage dip across the entire electrical network. This can cause lights to flicker, contactors to drop out, and sensitive electronic equipment (like computers or VFDs) to fault or reset. It also places immense thermal and mechanical stress on the motor and cables.</li>
-            </ul>
+                <!-- Content -->
+                <div class="article-content">
+                    <div id="inrush-theory">
+                        <h3>1. The Physics of Inrush Current</h3>
+                        <p>When a motor is at a standstill (Locked Rotor), its back-EMF is zero, and the stator windings act as a low-impedance inductive load. This results in the <strong>Locked Rotor Current (LRC)</strong>, typically 600% to 800% of the motor's full-load current (FLC).</p>
+                        
+                        <p>This high current causes rapid heating of the windings (Ohmic heating proportional to $I^2t$). Motors have a <strong>Thermal Limit Curve</strong> that defines how long they can withstand this current before the insulation begins to degrade.</p>
 
-            <h3>2. Key Performance Metrics</h3>
-            <ul>
-                <li><strong>Full Load Amps (FLA):</strong> The current the motor draws at its rated power output. This is the baseline for all calculations.</li>
-                <li><strong>Locked Rotor Current (LRC):</strong> The inrush current at 0 speed. This determines the required breaker settings and the severity of the voltage dip.</li>
-                <li><strong>Locked Rotor Torque (LRT):</strong> The "breakaway" torque the motor can produce at 0 speed. This is critical. The LRT *must* be greater than the load's static friction and breakaway torque, or the motor will stall.</li>
-            </ul>
+                        <div class="results-grid">
+                            <div class="chart-container" style="height: 350px; background: var(--bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border);">
+                                <h5 style="margin-top:0; text-align:center; font-size: 0.9rem;">Starting Current Profile ($I_{start}$ vs Time)</h5>
+                                <canvas id="currentProfileChart"></canvas>
+                            </div>
+                            <div class="chart-container" style="height: 350px; background: var(--bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border);">
+                                <h5 style="margin-top:0; text-align:center; font-size: 0.9rem;">Sub-transient Inrush Peak (First 10 Cycles)</h5>
+                                <canvas id="subTransientChart"></canvas>
+                            </div>
+                        </div>
 
-            <h3 class_="math-content">3. Comparing Motor Starting Methods</h3>
-            <p>The goal of a starting method is to reduce the inrush current, typically by reducing the voltage applied to the motor. However, there's a critical trade-off: **Torque is proportional to the square of the voltage ($T \propto V^2$).** If you reduce the voltage by 50%, you reduce the starting torque by 75%.</p>
+                        <div class="insight-card" style="margin-top: 20px;">
+                            <h4><i class="fas fa-bolt"></i> NEMA Code Letters & kVA/HP</h4>
+                            <p>For NEMA/IEEE motors, the starting current is categorized by <strong>Code Letters (A-V)</strong>, defining the kVA per horsepower. For example, a Code G motor draws 5.6–6.3 kVA/HP at startup. This is critical for sizing upstream transformers and circuit breakers.</p>
+                        </div>
+                        
+                        <h4>Thermal Recovery & Starts per Hour</h4>
+                        <p>Every start consumes a portion of the motor's thermal life. Standards like <strong>NEMA MG-1</strong> specify the maximum number of starts per hour (typically 2 cold starts or 1 hot start) to prevent cumulative insulation damage.</p>
+                    </div>
 
-            <h4>Method 1: Direct-On-Line (DOL)</h4>
-            <ul>
-                <li><strong>How it Works:</strong> The simplest method. A contactor connects the motor directly to the full line voltage.</li>
-                <li><strong>Starting Current:</strong> 100% of LRC (e.g., 600-800% of FLA).</li>
-                <li><strong>Starting Torque:</strong> 100% of LRT (e.g., 150-200% of rated torque).</li>
-                <li><strong>Pros:</strong> Simple, cheapest, provides the highest possible starting torque.</li>
-                <li><strong>Cons:</strong> Causes the maximum possible voltage dip and mechanical stress. Only suitable for small motors or very "stiff" (strong) power systems.</li>
-            </ul>
+                    <div id="starting-methods" style="margin-top: 40px;">
+                        <h3>2. Starting Method Comparison & Transients</h3>
+                        <p>The choice of starter balances the need for <strong>Starting Torque</strong> against the limitations of <strong>System Voltage Dip</strong>. Beyond the steady-state reduction, engineers must consider <strong>Switching Transients</strong>.</p>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th>Inrush ($I$)</th>
+                                    <th>Torque ($T$)</th>
+                                    <th>Transition Peak</th>
+                                    <th>Complexity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>DOL</strong></td>
+                                    <td>600-800%</td>
+                                    <td>100%</td>
+                                    <td>None</td>
+                                    <td>Low</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Star-Delta</strong></td>
+                                    <td>200-250%</td>
+                                    <td>33%</td>
+                                    <td>High (Re-connection)</td>
+                                    <td>Medium</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Soft Starter</strong></td>
+                                    <td>150-450%</td>
+                                    <td>9-50%</td>
+                                    <td>None (Smooth)</td>
+                                    <td>High</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>VFD</strong></td>
+                                    <td>100-150%</td>
+                                    <td>100%</td>
+                                    <td>None</td>
+                                    <td>Very High</td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-            <h4>Method 2: Star-Delta (Wye-Delta)</h4>
-            <ul>
-                <li><strong>How it Works:</strong> Requires a 6-lead motor. The motor is first connected in a "Star" (Wye) configuration. After it reaches ~80% speed, timers switch it to its normal "Delta" configuration.</li>
-                <li><strong>Starting Current:</strong> The line current is reduced to <strong>1/3 (33%)</strong> of the DOL inrush current.</li>
-                <li><strong>Starting Torque:</strong> The torque is also reduced to <strong>1/3 (33%)</strong> of the DOL torque.</li>
-                <li><strong>Pros:</strong> Simple, cost-effective, and significantly reduces inrush current.</li>
-                <li><strong>Cons:</strong> A violent "open transition" current and torque spike can occur during the switch from Star to Delta. The 33% starting torque may not be enough to start high-inertia loads.</li>
-            </ul>
+                        <div class="insight-card" style="border-left-color: var(--danger);">
+                            <h4><i class="fas fa-exclamation-triangle"></i> The Star-Delta Transition Spike</h4>
+                            <p>During the transition from Star to Delta, the motor is briefly disconnected. If the magnetic flux hasn't decayed, re-connection can cause a current spike <strong>higher than DOL inrush</strong>. Closed-transition starters use resistors to mitigate this.</p>
+                        </div>
+                    </div>
 
-            <h4>Method 3: Soft Starter (Solid-State Reduced Voltage)</h4>
-            <ul>
-                <li><strong>How it Works:</strong> Uses thyristors (SCRs) to "chop" the AC waveform, starting the motor at a low voltage (e.g., 30%) and smoothly ramping it up to 100% over several seconds.</li>
-                <li><strong>Starting Current:</strong> Adjustable. Typically set to <strong>300-400%</strong> of FLA. This is what the "Reduction Factor" in the calculator models.</li>
-                <li><strong>Starting Torque:</strong> Follows the $T \propto V^2$ rule, so it starts very low and ramps up. For example, a 50% voltage start gives only 25% torque.</li>
-                <li><strong>Pros:</strong> Extremely smooth, no-transition start. Eliminates mechanical shock. Highly adjustable.</li>
-                <li><strong>Cons:</strong> Poor starting torque for loads that are hard to get moving (e.g., loaded conveyors, high-inertia fans). More expensive than Star-Delta.</li>
-            </ul>
+                    <div id="torque-speed" style="margin-top: 40px;">
+                        <h3>3. Torque-Speed Characteristics & Slip</h3>
+                        <p>A motor must produce enough <strong>Accelerating Torque</strong> ($T_{accel} = T_{motor} - T_{load}$) to reach rated speed. If $T_{motor}$ falls below $T_{load}$ at any point, the motor will "hang" or stall.</p>
+                        
+                        <p>During the start, the <strong>Slip</strong> ($s$) decreases from 1.0 (standstill) to roughly 0.03 (rated load). The motor efficiency is lowest during the high-slip starting phase, which is why minimizing acceleration time is critical for thermal health.</p>
 
-            <h4>Method 4: Variable Frequency Drive (VFD)</h4>
-            <ul>
-                <li><strong>How it Works:</strong> A VFD (or VSD) converts AC to DC, then inverts it back to a "synthetic" AC at any frequency. It starts the motor at a very low frequency (e.g., 5 Hz) and low voltage, keeping the Voltage-to-Frequency (V/Hz) ratio constant.</li>
-                <li><strong>Starting Current:</strong> Fully controllable. Can be limited to <strong>100-150%</strong> of FLA, even while producing full torque.</li>
-                <li><strong>Starting Torque:</strong> Can provide <strong>100% (or even 150%)</strong> of rated torque from 0 speed.</li>
-                <li><strong>Pros:</strong> The best of all worlds. Low starting current *with* high starting torque. Offers full speed control for energy savings.</li>
-                <li><strong>Cons:</strong> Most expensive. Can introduce harmonic distortion back into the power system (requires filters).</li>
-            </ul>
+                        <div class="results-grid">
+                            <div class="chart-container" style="height: 350px; background: var(--bg); border-radius: 12px; padding: 15px; border: 1px solid var(--border);">
+                                <h5 style="margin-top:0; text-align:center; font-size: 0.9rem;">Torque-Speed Curve (Pull-up & Breakdown)</h5>
+                                <canvas id="torqueSpeedChart"></canvas>
+                            </div>
+                            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; background: var(--bg); border-radius: 12px; border: 1px solid var(--border);">
+                                <svg viewBox="0 0 200 200" style="width: 150px; height: 150px;">
+                                    <circle cx="100" cy="100" r="80" fill="none" stroke="var(--primary)" stroke-width="2" stroke-dasharray="10 5" />
+                                    <path d="M 100 100 L 100 20" stroke="var(--danger)" stroke-width="4" stroke-linecap="round">
+                                        <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="2s" repeatCount="indefinite" />
+                                    </path>
+                                    <text x="100" y="105" text-anchor="middle" font-size="12" fill="var(--primary)" font-weight="bold">Rotating Flux</text>
+                                </svg>
+                                <p style="font-size: 0.85rem; text-align: center; margin-top: 10px;">Induction motors operate on the principle of <strong>Rotating Magnetic Fields (RMF)</strong>.</p>
+                            </div>
+                        </div>
 
-            <h3>4. Analyzing the Results: Voltage Dip & Acceleration</h3>
-            
-            <h4>System Short Circuit Capacity (kVA) & Voltage Dip</h4>
-            <p>This value represents the "stiffness" or "strength" of your power system. A high value (e.g., 50,000 kVA) means you have a very strong utility or a large transformer, and a starting motor will barely affect it. A low value (e.g., 1,500 kVA) means you have a "soft" system (e.g., a small, dedicated transformer), and the motor's inrush current will cause a severe voltage dip. This calculator estimates this dip. Generally, a dip of <strong>10-15%</strong> at the motor terminals is acceptable, but a dip of >3% at the main bus (PCC) can affect other equipment.</p>
+                        <h4>Breakdown Torque ($T_{max}$)</h4>
+                        <p>This is the maximum torque the motor can produce. If the load exceeds this value, the motor will decelerate rapidly and stall. Ensuring a safe margin between breakdown torque and peak load torque is vital for process stability.</p>
+                    </div>
 
-            <h4>Inertia ($J$) and Acceleration Time ($t_{accel}$)</h4>
-            <p>Inertia is the resistance to rotational change. The total inertia ($J_{total}$) is the sum of the motor's own rotor inertia and the inertia of the connected load (e.g., a large fan or flywheel). A high-inertia load requires a lot of torque for a long time to get up to speed.</p>
-            <p>The calculation is based on the formula $t = (J \times \Delta\omega) / T_{accel}$, where $\Delta\omega$ is the change in speed (from 0 to rated) and $T_{accel}$ is the *average accelerating torque* (the motor's torque minus the load's torque). This calculator provides a simple estimate. A long acceleration time (e.g., >10-15 seconds) can be dangerous, as the motor is drawing high current the entire time and may overheat before it reaches full speed.</p>
+                    <div id="voltage-dip" style="margin-top: 40px;">
+                        <h3>4. Voltage Dip & Torque Sensitivity</h3>
+                        <p>The voltage dip at the point of common coupling (PCC) depends on the ratio of starting kVA to the <strong>System Short-Circuit Capacity</strong>. A weak system results in severe dips that can trip existing loads.</p>
+                        
+                        <div class="formula-block">
+                            $\% \Delta V = \frac{I_{start}}{I_{sc,available}} \times 100$
+                        </div>
+
+                        <p>Because $T \propto V^2$, even a "minor" voltage dip has a major impact on torque:</p>
+                        <ul style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <li><strong>90% Voltage:</strong> 81% Torque (-19%)</li>
+                            <li><strong>85% Voltage:</strong> 72% Torque (-28%)</li>
+                            <li><strong>80% Voltage:</strong> 64% Torque (-36%)</li>
+                            <li><strong>70% Voltage:</strong> 49% Torque (-51%)</li>
+                        </ul>
+
+                        <div class="results-grid">
+                            <div class="chart-container" style="height: 300px; margin-top: 15px;">
+                                <h5 style="margin-top:0; text-align:center; font-size: 0.9rem;">Voltage Dip vs System Stiffness</h5>
+                                <canvas id="voltageDipChart"></canvas>
+                            </div>
+                            <div class="chart-container" style="height: 300px; margin-top: 15px;">
+                                <h5 style="margin-top:0; text-align:center; font-size: 0.9rem;">Acceleration Time Increase vs Voltage Dip</h5>
+                                <canvas id="accelTimeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="standards" style="margin-top: 40px;">
+                        <h3>5. International Standards & Design Codes</h3>
+                        <p>Motor starting design is governed by global standards that ensure equipment safety and grid stability. Compliance with these codes is mandatory for industrial installations.</p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div class="insight-card" style="border-left-color: var(--secondary); margin: 0;">
+                                <strong>IEC 60034-12</strong>
+                                <p style="font-size: 0.85rem; margin-top: 5px;">Specifies starting performance for single-speed three-phase cage induction motors.</p>
+                            </div>
+                            <div class="insight-card" style="border-left-color: var(--accent); margin: 0;">
+                                <strong>NEMA MG-1 Part 12</strong>
+                                <p style="font-size: 0.85rem; margin-top: 5px;">Defines torque, slip, and current limits for North American motor designs.</p>
+                            </div>
+                            <div class="insight-card" style="border-left-color: var(--success); margin: 0;">
+                                <strong>IEEE 141 (Red Book)</strong>
+                                <p style="font-size: 0.85rem; margin-top: 5px;">Guidelines for voltage flicker and system stability during motor starting events.</p>
+                            </div>
+                        </div>
+
+                        <h4 style="margin-top: 25px;">Voltage Flicker Limits</h4>
+                        <p>According to <strong>IEEE 519</strong> and local utility codes, voltage flicker at the point of common coupling (PCC) must be limited to prevent interference with other consumers. Typically, a dip of <3% for frequent starts and <5% for infrequent starts is required.</p>
+                    </div>
+
+                    <div id="faqs" style="margin-top: 40px;">
+                        <h3>6. Professional FAQs</h3>
+                        <div style="display: grid; gap: 15px; margin-top: 20px;">
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">What is the difference between LRC and FLC?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">FLC is the current at rated load. LRC is the current when the rotor is stationary (speed=0), which is much higher.</div>
+                            </div>
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">How does voltage affect starting torque?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">Torque is proportional to the square of the voltage ($T \propto V^2$). A 10% voltage drop results in a ~19% torque reduction.</div>
+                            </div>
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">Why does a motor hum during startup?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">The high inrush current creates strong alternating magnetic fields that cause mechanical vibrations in the laminations and windings.</div>
+                            </div>
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">Can I use a Soft Starter for every application?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">Not for high-breakaway torque loads (like loaded crushers) where DOL or VFD might be required to ensure the motor starts.</div>
+                            </div>
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">Is it better to start a motor with or without load?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">Ideally, start without load to minimize acceleration time and thermal stress. However, many pumps and compressors must start against a fixed head/pressure.</div>
+                            </div>
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">How do high altitudes affect motor starting?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">At high altitudes, the thinner air provides less cooling. The motor may require derating or longer recovery times between starts to prevent winding failure.</div>
+                            </div>
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">What is the "Locked Rotor" condition exactly?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">It is a state where the motor is energized but the shaft is physically prevented from rotating ($RPM=0$). This is the point of maximum current and torque.</div>
+                            </div>
+                            <div class="gen-faq-item" style="border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg);">
+                                <div style="padding: 12px 15px; background: rgba(30, 58, 138, 0.05); font-weight: 700; color: var(--primary);">Can I start a 50Hz motor on a 60Hz supply?</div>
+                                <div style="padding: 12px 15px; line-height: 1.6; font-size: 0.9rem;">Only if the voltage is increased proportionally ($V/Hz$ ratio). A 400V/50Hz motor would typically need 480V/60Hz to maintain the same magnetic flux density.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- NEW FOOTER -->
         <footer>
         <div class="container">
             <div class="footer-content">
@@ -1713,6 +1901,146 @@
             startingMethodSelect.dispatchEvent(new Event('change'));
 
         });
+
+        let theoryCharts = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheoryCharts();
+            const themeSwitch = document.getElementById('theme-switch');
+            if(themeSwitch) {
+                themeSwitch.addEventListener('change', () => {
+                    setTimeout(initTheoryCharts, 100);
+                });
+            }
+        });
+
+        function initTheoryCharts() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#CBD5E1' : '#4B5563';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            // 1. Current Profile Chart
+            const currCtx = document.getElementById('currentProfileChart').getContext('2d');
+            if(theoryCharts.curr) theoryCharts.curr.destroy();
+            theoryCharts.curr = new Chart(currCtx, {
+                type: 'line',
+                data: {
+                    labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+                    datasets: [
+                        { label: 'DOL', data: [600, 600, 600, 600, 600, 580, 500, 100, 100, 100, 100], borderColor: '#EF4444', tension: 0.1 },
+                        { label: 'Soft Starter', data: [300, 310, 320, 330, 340, 350, 400, 100, 100, 100, 100], borderColor: '#F59E0B', tension: 0.4 },
+                        { label: 'Star-Delta', data: [200, 200, 200, 200, 200, 600, 500, 100, 100, 100, 100], borderColor: '#2563EB', tension: 0.1 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: textColor } } },
+                    scales: {
+                        x: { title: { display: true, text: 'Time (s)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Current (% FLA)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 2. Sub-transient Chart
+            const subCtx = document.getElementById('subTransientChart').getContext('2d');
+            if(theoryCharts.sub) theoryCharts.sub.destroy();
+            theoryCharts.sub = new Chart(subCtx, {
+                type: 'line',
+                data: {
+                    labels: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
+                    datasets: [{
+                        label: 'Asymmetric Current (A)',
+                        data: [1200, -1000, 900, -800, 750, -700, 680, -650, 620, -600, 600],
+                        borderColor: '#EF4444',
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Cycles', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Instantaneous Amps', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 3. Torque-Speed Chart
+            const torqueCtx = document.getElementById('torqueSpeedChart').getContext('2d');
+            if(theoryCharts.torque) theoryCharts.torque.destroy();
+            theoryCharts.torque = new Chart(torqueCtx, {
+                type: 'line',
+                data: {
+                    labels: [0, 20, 40, 60, 80, 90, 95, 100],
+                    datasets: [
+                        { label: 'Motor Torque', data: [180, 185, 200, 250, 280, 220, 100, 0], borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
+                        { label: 'Load Torque', data: [40, 45, 55, 70, 85, 95, 100, 105], borderColor: '#6366F1', borderDash: [5, 5], tension: 0.2 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: textColor } } },
+                    scales: {
+                        x: { title: { display: true, text: 'Speed (% Sync)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Torque (% Rated)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 4. Voltage Dip Chart
+            const dipCtx = document.getElementById('voltageDipChart').getContext('2d');
+            if(theoryCharts.dip) theoryCharts.dip.destroy();
+            theoryCharts.dip = new Chart(dipCtx, {
+                type: 'line',
+                data: {
+                    labels: ['10k', '20k', '50k', '100k', '200k'],
+                    datasets: [{
+                        label: 'Voltage Dip (%)',
+                        data: [25, 12.5, 5, 2.5, 1.25],
+                        borderColor: '#F97316',
+                        borderWidth: 3,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'System S-C Capacity (kVA)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Dip %', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 5. Accel Time Chart
+            const accCtx = document.getElementById('accelTimeChart').getContext('2d');
+            if(theoryCharts.acc) theoryCharts.acc.destroy();
+            theoryCharts.acc = new Chart(accCtx, {
+                type: 'line',
+                data: {
+                    labels: ['0%', '5%', '10%', '15%', '20%'],
+                    datasets: [{
+                        label: 'Accel Time Multiplier',
+                        data: [1, 1.15, 1.4, 1.8, 2.5],
+                        borderColor: '#8B5CF6',
+                        borderWidth: 3,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Voltage Dip (%)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Time Factor', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>

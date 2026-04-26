@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -39,6 +39,7 @@
     <!-- PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -46,6 +47,7 @@
     <link rel="manifest" href="/site.webmanifest">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     
+    <link rel="stylesheet" href="styles.css">
     <style>
         :root {
             --primary: #1E3A8A;
@@ -465,36 +467,168 @@
             color: #94A3B8;
         }
         
-        /* Responsive & Utility */
-        @media (max-width: 768px) {
-            .container { padding: 0 15px; }
-            .navbar { flex-direction: column; gap: 20px; }
-            .nav-links { flex-direction: column; gap: 12px; text-align: center; }
-            .form-row { grid-template-columns: 1fr; }
-            .card { padding: 20px; }
-            .footer-content { flex-direction: column; gap: 25px; }
-            .btn-group { flex-direction: column; }
+            /* Elite Layout Integration */
+        .tech-article {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
+            align-items: start;
         }
-        .hidden { display: none; }
-        
+
+        .toc-sidebar {
+            position: sticky;
+            top: 100px;
+            background: var(--card);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .toc-sidebar h4 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg);
+        }
+
+        .toc-sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .toc-sidebar li {
+            margin-bottom: 12px;
+        }
+
+        .toc-sidebar a {
+            text-decoration: none;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            display: block;
+            padding: 5px 0;
+        }
+
+        .toc-sidebar a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .content-area {
+            min-width: 0;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .chart-container {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            height: 350px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .formula-card {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            margin: 20px 0;
+        }
+
+        .standards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .standard-tag {
+            background: rgba(30, 58, 138, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .standard-tag strong {
+            display: block;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 1024px) {
+            .tech-article { grid-template-columns: 1fr; }
+            .toc-sidebar { display: none; }
+        }
+
+        .faq-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .faq-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .faq-item h4 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+            font-size: 1.05rem;
+        }
+
+        .faq-item p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
         /* Tooltip */
         .info-icon { color: var(--primary); margin-left: 5px; cursor: help; }
         .tooltip { position: relative; display: inline-block; }
         .tooltip .tooltiptext {
             visibility: hidden; width: 260px;
-            background-color: #333; color: #fff;
-            text-align: center; border-radius: 6px;
-            padding: 8px; position: absolute;
-            z-index: 10; bottom: 125%; left: 50%;
+            background-color: #1e293b; color: #fff;
+            text-align: center; border-radius: 8px;
+            padding: 12px; position: absolute;
+            z-index: 1000; bottom: 125%; left: 50%;
             margin-left: -130px; opacity: 0;
-            transition: opacity 0.3s, transform 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateY(10px);
             font-family: 'Inter', sans-serif;
             font-size: 0.85rem; line-height: 1.4;
+            pointer-events: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+            display: block; /* Ensure it doesn't take space in flow */
         }
         .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; transform: translateY(0); }
+        .hidden { display: none !important; }
     </style>
-    <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Pressure Relief Valve Sizing (API 520) - Design Calculators - Instrumentation">
     <meta property="og:description" content="Professional API 520 Pressure Relief Valve (PRV/PSV) sizing calculator. Features automatic API 526 orifice selection, viscosity correction, reaction force calculation, and fluid property library.">
 
@@ -625,189 +759,256 @@
                     </div>
                 </div>
             </nav>
-    </header>
-
-    <main class="container">
-        <div class="card">
-            <h2><i class="fas fa-gauge-high"></i> Pressure Relief Valve (PRV) Sizing - API 520</h2>
-            
-            <p>This industrial-grade calculator sizes Pressure Relief Valves (PRV/PSV) according to <strong>API Standard 520 Part I</strong>. It supports Gas/Vapor (Critical Flow), Steam (Napier's), and Liquid service with <strong>iterative viscosity correction</strong>. The tool selects the standard <strong>API 526 Orifice</strong>, estimates reaction forces, and checks against valve type limits.</p>
-            
-            <div class="calculator-form">
-                <form id="prv-sizing-form">
-                    <h3>1. Service & Process Conditions</h3>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fluid-type">Fluid Phase / Service <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the state of the fluid. 'Gas/Vapor' uses the critical flow formula (most common). 'Liquid' uses incompressible flow logic with Re correction.</span></span></label>
-                            <select id="fluid-type">
-                                <option value="gas">Gas / Vapor (Critical Flow)</option>
-                                <option value="steam">Steam</option>
-                                <option value="liquid">Liquid</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="valve-type">Valve Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Used to validate Back Pressure limits. Conventional (<10% BP), Bellows (<30-50% BP), Pilot (High BP).</span></span></label>
-                            <select id="valve-type">
-                                <option value="conventional">Conventional (Spring Loaded)</option>
-                                <option value="bellows">Balanced Bellows</option>
-                                <option value="pilot">Pilot Operated</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="mass-flow">Required Mass Flow Rate ($W$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The amount of fluid that must be relieved to prevent overpressure. Default unit: lb/hr.</span></span></label>
-                            <input type="number" id="mass-flow" step="any" value="50000" required>
-                        </div>
-                        <div class="form-group hidden" id="vol-flow-group">
-                            <label for="vol-flow">Required Volumetric Flow ($Q$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">For Liquid service. Unit: GPM (US Gallons per Minute).</span></span></label>
-                            <input type="number" id="vol-flow" step="any" value="100">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="set-pressure">Set Pressure ($P_{set}$) [psig] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The gauge pressure at which the valve begins to open.</span></span></label>
-                            <input type="number" id="set-pressure" step="any" value="100" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="overpressure">Allowable Overpressure [%] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Typically 10% for single valve non-fire, 16% for multiple valves, 21% for fire case.</span></span></label>
-                            <input type="number" id="overpressure" step="any" value="10" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="back-pressure">Total Back Pressure ($P_b$) [psig] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Superimposed + Built-up back pressure. High back pressure may require a Bellows valve.</span></span></label>
-                            <input type="number" id="back-pressure" step="any" value="5" required>
-                        </div>
-                    </div>
-
-                    <h3 id="fluid-props-title">2. Fluid Properties</h3>
-                    
-                    <div class="form-row" id="gas-props-row">
-                        <div class="form-group">
-                            <label for="gas-library">Fluid Library (Gas) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Auto-populate MW and k for common gases.</span></span></label>
-                            <select id="gas-library">
-                                <option value="custom">-- Custom / Manual Entry --</option>
-                                <option value="air">Air</option>
-                                <option value="nitrogen">Nitrogen (N2)</option>
-                                <option value="oxygen">Oxygen (O2)</option>
-                                <option value="methane">Methane (CH4)</option>
-                                <option value="propane">Propane (C3H8)</option>
-                                <option value="steam">Steam (H2O)</option>
-                                <option value="ammonia">Ammonia (NH3)</option>
-                                <option value="hydrogen">Hydrogen (H2)</option>
-                                <option value="chlorine">Chlorine (Cl2)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="temp">Relieving Temperature ($T$) [Â°F] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Fluid temperature at relieving conditions.</span></span></label>
-                            <input type="number" id="temp" step="any" value="150" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="mw">Molecular Weight ($M$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Molecular weight of the gas/vapor. E.g., Air=29, Methane=16.</span></span></label>
-                            <input type="number" id="mw" step="any" value="29" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="k-value">Specific Heat Ratio ($k = C_p/C_v$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Ratio of specific heats. Determines the expansion coefficient (C). Air ~ 1.4.</span></span></label>
-                            <input type="number" id="k-value" step="0.01" value="1.4" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="z-factor">Compressibility Factor ($Z$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Compensates for non-ideal gas behavior. Use 1.0 for ideal gas assumption.</span></span></label>
-                            <input type="number" id="z-factor" step="0.01" value="1.0" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row hidden" id="liquid-props-row">
-                        <div class="form-group">
-                            <label for="sg">Specific Gravity ($G$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Relative density to water. Water = 1.0.</span></span></label>
-                            <input type="number" id="sg" step="0.01" value="1.0">
-                        </div>
-                        <div class="form-group">
-                            <label for="viscosity">Viscosity [cP] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Dynamic viscosity in Centipoise. Used to calculate Reynolds Number and Kv correction factor. Enter 1.0 for water.</span></span></label>
-                            <input type="number" id="viscosity" step="0.01" value="1.0">
-                        </div>
-                    </div>
-
-                    <h3>3. Valve Factors (API Standard)</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="kd">Discharge Coefficient ($K_d$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Efficiency of the nozzle. API 520 effective values: Gas/Steam=0.975, Liquid=0.65.</span></span></label>
-                            <input type="number" id="kd" step="0.001" value="0.975" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="kb">Back Pressure Factor ($K_b$ / $K_w$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Correction for back pressure. 1.0 for conventional valves in critical flow or balanced bellows at low back pressure.</span></span></label>
-                            <input type="number" id="kb" step="0.001" value="1.0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="kc">Comb. Correction Factor ($K_c$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">1.0 unless a rupture disc is installed upstream (then 0.9).</span></span></label>
-                            <input type="number" id="kc" step="0.1" value="1.0" required>
-                        </div>
-                    </div>
-
-                    <div class="btn-group" style="margin-top: 25px;">
-                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Size</button>
-                        <button type="button" id="reset-btn" class="btn accent"><i class="fas fa-sync-alt"></i> Reset</button>
-                        <button type="button" id="pdf-btn" class="btn secondary" style="display: none;"><i class="fas fa-file-pdf"></i> Download Datasheet</button>
-                    </div>
-                </form>
-            </div>
         </div>
-        
-        <!-- Steps Container -->
-        <div id="steps-container" class="steps-container math-content"></div>
+        </header>
 
-        <!-- Results Table -->
-        <div id="results-section" class="card hidden" style="margin-top: 40px;">
-            <h3><i class="fas fa-clipboard-check"></i> Sizing Summary & Selection</h3>
-            <table class="results-table">
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody id="results-tbody"></tbody>
-            </table>
-        </div>
-        
-        <!-- Educational Section -->
-        <div id="education-section" class="education-section card">
-            <h2><i class="fas fa-lightbulb"></i> Professional Insights: The "Industrial Grade" Approach</h2>
-
-            <div class="insight-card">
-                <h4><i class="fas fa-wrench"></i> Selection: Conventional vs. Bellows vs. Pilot</h4>
-                <p>Selecting the right valve type is just as important as the orifice sizing. The key constraint is <strong>Back Pressure</strong>.</p>
+        <main class="container">
+        <div class="tech-article">
+            <!-- Sidebar TOC -->
+            <aside class="toc-sidebar">
+                <h4>Calculation Guide</h4>
                 <ul>
-                    <li><strong>Conventional (Spring-Loaded):</strong> Simple and reliable. However, the set pressure increases directly with back pressure. Use only when total back pressure is <strong>< 10%</strong> of the set pressure.</li>
-                    <li><strong>Balanced Bellows:</strong> Uses a metal bellows to shield the top of the disc from back pressure. Essential for variable back pressure or when total back pressure is between <strong>10% and 30-50%</strong> of set pressure. Also protects moving parts from corrosive fluids.</li>
-                    <li><strong>Pilot Operated:</strong> Uses process pressure to seal the valve. The higher the pressure, the tighter the seal. Ideal for back pressures <strong>> 50%</strong> or when the operating pressure is very close to the set pressure (95%+).</li>
+                    <li><a href="#calculator"><i class="fas fa-calculator"></i> Sizing Tool</a></li>
+                    <li><a href="#api-theory"><i class="fas fa-book"></i> API 520 Physics</a></li>
+                    <li><a href="#choked-flow"><i class="fas fa-wind"></i> Choked Flow</a></li>
+                    <li><a href="#standards"><i class="fas fa-file-contract"></i> Standards</a></li>
+                    <li><a href="#visuals"><i class="fas fa-chart-line"></i> Performance Visuals</a></li>
+                    <li><a href="#faqs"><i class="fas fa-question-circle"></i> Professional FAQs</a></li>
                 </ul>
-            </div>
+            </aside>
 
-            <div class="success-box">
-                <h4><i class="fas fa-water"></i> Viscosity Correction ($K_v$): The Iterative Trap</h4>
-                <p>Many simple calculators ignore viscosity. For thick liquids (oil, polymer), the flow becomes laminar, drastically reducing valve capacity. API 520 requires an <strong>iterative calculation</strong>:</p>
-                <ol>
-                    <li>Assume turbulent flow ($K_v = 1.0$) and calculate a preliminary Area ($A$).</li>
-                    <li>Use this $A$ to calculate the Reynolds Number ($Re$) for the valve.</li>
-                    <li>Find the new $K_v$ from the API 520 chart/formula based on $Re$.</li>
-                    <li>Recalculate Area using the new $K_v$.</li>
-                    <li>Repeat until the area converges.</li>
-                </ol>
-                <p><strong>This tool performs this iteration automatically for you.</strong></p>
-            </div>
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <div id="calculator" class="card">
+                    <h2><i class="fas fa-gauge-high"></i> PRV Sizing - API 520</h2>
+                    <p>Professional sizing for Gas, Steam, and Liquid relief cases with iterative viscosity correction and API 526 orifice selection.</p>
+                    
+                    <div class="calculator-form">
+                        <form id="prv-sizing-form">
+                            <h3>1. Service & Process Conditions</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="fluid-type">Fluid Phase / Service <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the state of the fluid. 'Gas/Vapor' uses the critical flow formula. 'Liquid' uses incompressible flow logic with Re correction.</span></span></label>
+                                    <select id="fluid-type">
+                                        <option value="gas">Gas / Vapor (Critical Flow)</option>
+                                        <option value="steam">Steam</option>
+                                        <option value="liquid">Liquid</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="valve-type">Valve Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Conventional (&lt;10% BP), Bellows (&lt;30-50% BP), Pilot (High BP).</span></span></label>
+                                    <select id="valve-type">
+                                        <option value="conventional">Conventional (Spring Loaded)</option>
+                                        <option value="bellows">Balanced Bellows</option>
+                                        <option value="pilot">Pilot Operated</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="mass-flow-group">
+                                    <label for="mass-flow">Relief Rate ($W$) [lb/hr] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The amount of fluid that must be relieved. Default unit: lb/hr.</span></span></label>
+                                    <input type="number" id="mass-flow" step="any" value="50000" required>
+                                </div>
+                                <div class="form-group hidden" id="vol-flow-group">
+                                    <label for="vol-flow">Liquid Rate ($Q$) [GPM] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">For Liquid service. Unit: GPM (US Gallons per Minute).</span></span></label>
+                                    <input type="number" id="vol-flow" step="any" value="100">
+                                </div>
+                            </div>
 
-            <div class="danger-box">
-                <h4><i class="fas fa-exclamation-triangle"></i> Reaction Forces & Piping Support</h4>
-                <p>When a relief valve opens, it acts like a rocket engine. The high-velocity gas exiting the tailpipe creates a massive backward thrust called <strong>Reaction Force</strong>.</p>
-                <p>For open discharge systems, API 520 Part II provides the formula to calculate this force. The outlet piping support <strong>must</strong> be designed to withstand this dynamic load, or the pipe could shear off during a relief event.</p>
-            </div>
-            
-            <div class="insight-card">
-                <h4><i class="fas fa-ruler-combined"></i> API 526 Flange Ratings</h4>
-                <p>Standard API 526 valves have specific inlet/outlet flange combinations based on the orifice size and pressure rating. For example, a 'J' Orifice valve typically comes in <strong>2" Inlet x 3" Outlet</strong> or <strong>3" Inlet x 4" Outlet</strong> configurations.</p>
-                <p>Always verify the flange rating (e.g., 150#, 300#, 600#) against your detailed pipe spec. The sizing here gives you the internal orifice; the body size is the next step in specification.</p>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="set-pressure">Set Pressure [psig] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The gauge pressure at which the valve begins to open.</span></span></label>
+                                    <input type="number" id="set-pressure" step="any" value="100" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="overpressure">Overpressure [%] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Typically 10% for single valve non-fire, 16% for multiple valves, 21% for fire case.</span></span></label>
+                                    <input type="number" id="overpressure" step="any" value="10" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="back-pressure">Back Pressure [psig] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Superimposed + Built-up back pressure. High back pressure may require a Bellows valve.</span></span></label>
+                                    <input type="number" id="back-pressure" step="any" value="5" required>
+                                </div>
+                            </div>
+
+                             <h3 id="fluid-props-title">2. Fluid Properties</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="gas-library">Quick Selection (Library)</label>
+                                    <select id="gas-library">
+                                        <option value="">-- Select Fluid --</option>
+                                        <option value="air">Air</option>
+                                        <option value="nitrogen">Nitrogen</option>
+                                        <option value="oxygen">Oxygen</option>
+                                        <option value="methane">Methane</option>
+                                        <option value="propane">Propane</option>
+                                        <option value="steam">Steam (Pure)</option>
+                                        <option value="ammonia">Ammonia</option>
+                                        <option value="hydrogen">Hydrogen</option>
+                                        <option value="chlorine">Chlorine</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row" id="gas-props-row">
+                                <div class="form-group">
+                                    <label for="mw">Molecular Weight ($M$)</label>
+                                    <input type="number" id="mw" step="any" value="29" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="temp">Relieving Temp [°F]</label>
+                                    <input type="number" id="temp" step="any" value="150" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="k-value">Ratio of Heats ($k$)</label>
+                                    <input type="number" id="k-value" step="0.01" value="1.4" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="z-factor">Compressibility ($Z$)</label>
+                                    <input type="number" id="z-factor" step="0.01" value="1.0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="kd">Discharge Coeff. ($K_d$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Effective discharge coefficient. Typical: 0.975 for Vapor, 0.650 for Liquid.</span></span></label>
+                                    <input type="number" id="kd" step="0.001" value="0.975" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="kb">Back Pressure Factor ($K_b$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Correction for back pressure. 1.0 for Conventional/Pilot. For Bellows, use manufacturer chart.</span></span></label>
+                                    <input type="number" id="kb" step="0.01" value="1.0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="kc">Combination Factor ($K_c$) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">1.0 for PRV alone. 0.9 if a Rupture Disk is installed in series.</span></span></label>
+                                    <input type="number" id="kc" step="0.01" value="1.0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row hidden" id="liquid-props-row">
+                                <div class="form-group">
+                                    <label for="sg">Specific Gravity ($G$)</label>
+                                    <input type="number" id="sg" step="0.01" value="1.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="viscosity">Viscosity [cP]</label>
+                                    <input type="number" id="viscosity" step="0.01" value="1.0">
+                                </div>
+                            </div>
+
+                            <div class="btn-group" style="margin-top: 25px;">
+                                <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Size</button>
+                                <button type="button" id="reset-btn" class="btn accent"><i class="fas fa-sync-alt"></i> Reset</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Results Display -->
+                <div id="results-section" class="card hidden">
+                    <h3><i class="fas fa-clipboard-check"></i> Sizing Summary</h3>
+                    <table class="results-table">
+                        <tbody id="results-tbody"></tbody>
+                    </table>
+                    
+                    <div class="results-grid">
+                        <div class="chart-container">
+                            <canvas id="capacityChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="reactionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div id="steps-container" class="steps-container"></div>
+
+                    <div class="btn-group" style="margin-top: 20px;">
+                        <button type="button" id="pdf-btn" class="btn secondary"><i class="fas fa-file-pdf"></i> Download Report</button>
+                    </div>
+                </div>
+
+                <!-- Theory Sections -->
+                <div id="api-theory" class="card" style="margin-top: 40px;">
+                    <h2><i class="fas fa-book"></i> The Physics of Pressure Relief</h2>
+                    <p>Relief valves are the last line of defense in industrial process plants. API Standard 520 provides the formulas for sizing these critical components based on the relieving fluid's behavior.</p>
+                    
+                    <div class="insight-card">
+                        <h4><i class="fas fa-microchip"></i> Critical vs. Sub-critical Flow</h4>
+                        <p>For gas and vapor, the flow becomes <strong>"Choked"</strong> or <strong>"Critical"</strong> when the downstream pressure is less than or equal to the critical pressure ($P_{cf}$). At this point, the gas reaches sonic velocity ($Mach = 1$) at the nozzle throat.</p>
+                        <div class="formula-card">
+                            $P_{cf} = P_1 \left( \frac{2}{k+1} \right)^{\frac{k}{k-1}}$
+                        </div>
+                        <p>Once choked, the mass flow rate becomes independent of the downstream (back) pressure. This is why API 520 Part I formulas are divided into critical and sub-critical cases.</p>
+                    </div>
+
+                    <div id="visuals" class="results-grid">
+                        <div class="chart-container">
+                            <h5 style="text-align:center; margin-top:0;">Back Pressure Sensitivity</h5>
+                            <canvas id="bpChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h5 style="text-align:center; margin-top:0;">API 526 Orifice Capacities</h5>
+                            <canvas id="orificeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="choked-flow" class="card">
+                    <h3><i class="fas fa-wind"></i> Fire Relief & Thermal Expansion</h3>
+                    <p>One of the most common sizing scenarios is the <strong>Fire Case (API 521)</strong>. When a vessel is engulfed in fire, the heat input causes the internal fluid to vaporize or expand.</p>
+                    <div class="success-box">
+                        <h4>API 521 Heat Input Formula</h4>
+                        <p>For an uninsulated vessel, the heat absorbed ($Q_f$) is typically calculated as:</p>
+                        <p><strong>$Q_f = 21,000 \cdot F \cdot A^{0.82}$</strong> [BTU/hr]</p>
+                        <p>Where $F$ is the environment factor and $A$ is the wetted surface area. The required relief rate is then $W = Q_f / \lambda$ (Latent heat of vaporization).</p>
+                    </div>
+                </div>
+
+                <div id="standards" class="card">
+                    <h2><i class="fas fa-file-contract"></i> International Design Codes</h2>
+                    <div class="standards-grid">
+                        <div class="standard-tag"><strong>API 520</strong> Sizing & Selection</div>
+                        <div class="standard-tag"><strong>API 521</strong> Relief Systems</div>
+                        <div class="standard-tag"><strong>API 526</strong> Flanged Steel PRVs</div>
+                        <div class="standard-tag"><strong>ASME Sec VIII</strong> Pressure Vessels</div>
+                    </div>
+                </div>
+
+                <div id="faqs" class="card">
+                    <h2><i class="fas fa-question-circle"></i> Professional FAQs</h2>
+                    <div class="faq-grid">
+                        <div class="faq-item">
+                            <h4>Why is a Bellows valve used for back pressure?</h4>
+                            <p>A balanced bellows isolates the bonnet from the outlet pressure, ensuring the set pressure remains constant regardless of variable back pressure in the discharge header.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>What is "Chatter" and why is it dangerous?</h4>
+                            <p>Chatter is the rapid opening and closing of a PRV. It can lead to mechanical failure, seat damage, and catastrophic loss of containment.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>What is the difference between a PSV and a PRV?</h4>
+                            <p>A Pressure Safety Valve (PSV) typically pops wide open (gas/vapor), while a Pressure Relief Valve (PRV) opens proportionally to the pressure (liquid).</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>How often should a PRV be tested?</h4>
+                            <p>Most industrial standards recommend a "Pop Test" every 1 to 3 years depending on the service criticality and fluid cleanliness.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>What is the 3% Rule?</h4>
+                            <p>API 520 recommends that the pressure drop in the inlet piping to the PRV should not exceed 3% of the set pressure to prevent valve instability.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Can I size a PRV for two-phase flow?</h4>
+                            <p>Yes, but it requires the <strong>Omega Method</strong> or <strong>HEM (Homogeneous Equilibrium Model)</strong>, which is more complex than basic API 520 sizing.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>What is the Overpressure limit for Fire cases?</h4>
+                            <p>Per ASME and API, the allowable overpressure for a single valve in a fire scenario is typically 21%.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4>Why is the discharge coefficient ($K_d$) 0.975?</h4>
+                            <p>0.975 is the effective discharge coefficient for a certified API nozzle design in vapor service, accounting for friction and entrance losses.</p>
+                        </div>
+                </div>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
         <!-- FOOTER -->
         <footer>
@@ -841,11 +1042,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele.html'>Electrical Tools</a></li>
-                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
-                            <li><a href='/about.html'>About Us</a></li>
-                            <li><a href='/faq.html'>FAQ</a></li>
+                            <li><a href="/indexele.html">Electrical Tools</a></li>
+                            <li><a href="/indexmech.html">Mechanical Tools</a></li>
+                            <li><a href="/indexinst.html">Instrumentation Tools</a></li>
+                            <li><a href="/about.html">About Us</a></li>
+                            <li><a href="/faq.html">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -853,10 +1054,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact.html'>Contact Us</a></li>
-                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
-                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                            <li><a href="/contact.html">Contact Us</a></li>
+                            <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                            <li><a href="/sitemap2.html">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -895,7 +1096,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- API 526 Standard Orifices Data ---
+            try {
+                // --- API 526 Standard Orifices Data ---
             const apiOrifices = [
                 { letter: 'D', area: 0.110, typical: '1" x 2"' },
                 { letter: 'E', area: 0.196, typical: '1" x 2"' },
@@ -938,8 +1140,7 @@
             // Groups to toggle
             const gasPropsRow = document.getElementById('gas-props-row');
             const liquidPropsRow = document.getElementById('liquid-props-row');
-            const massFlowInput = document.getElementById('mass-flow');
-            const volFlowInput = document.getElementById('vol-flow');
+            const massFlowGroup = document.getElementById('mass-flow-group');
             const volFlowGroup = document.getElementById('vol-flow-group');
             const kdInput = document.getElementById('kd');
             
@@ -957,15 +1158,15 @@
                 if (type === 'liquid') {
                     gasPropsRow.classList.add('hidden');
                     liquidPropsRow.classList.remove('hidden');
-                    massFlowInput.parentElement.classList.add('hidden');
+                    massFlowGroup.classList.add('hidden');
                     volFlowGroup.classList.remove('hidden');
-                    kdInput.value = "0.650"; 
+                    if(kdInput) kdInput.value = "0.650";
                 } else {
                     gasPropsRow.classList.remove('hidden');
                     liquidPropsRow.classList.add('hidden');
-                    massFlowInput.parentElement.classList.remove('hidden');
+                    massFlowGroup.classList.remove('hidden');
                     volFlowGroup.classList.add('hidden');
-                    kdInput.value = "0.975"; 
+                    if(kdInput) kdInput.value = "0.975";
                 }
             });
 
@@ -1243,9 +1444,12 @@
 
                     stepsContainer.classList.add('active');
                     resultsSection.classList.remove('hidden');
+                    updateResultCharts(A_req, reactionForce);
                     pdfBtn.style.display = 'inline-flex';
-                    
-                    setTimeout(() => { resultsSection.scrollIntoView({ behavior: 'smooth' }); }, 100);
+
+                    setTimeout(() => {
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
                     if (window.MathJax) { window.MathJax.typeset(); }
 
                 } catch (e) {
@@ -1370,9 +1574,131 @@
                 pdf.save('PRV-Sizing-Report.pdf');
                 showMessage('PDF Report downloaded.');
             }
-        });
+        let prvCharts = {};
+
+        function initTheoryCharts() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#CBD5E1' : '#4B5563';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            // 1. Back Pressure Chart
+            const bpCtx = document.getElementById('bpChart').getContext('2d');
+            if(prvCharts.bp) prvCharts.bp.destroy();
+            prvCharts.bp = new Chart(bpCtx, {
+                type: 'line',
+                data: {
+                    labels: [0, 5, 10, 15, 20, 25, 30, 40, 50],
+                    datasets: [{
+                        label: 'Conventional Capacity (%)',
+                        data: [100, 100, 100, 95, 88, 80, 70, 55, 40],
+                        borderColor: '#EF4444',
+                        tension: 0.1
+                    }, {
+                        label: 'Balanced Bellows (%)',
+                        data: [100, 100, 100, 100, 100, 100, 100, 95, 90],
+                        borderColor: '#10B981',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    aspectRatio: false,
+                    plugins: { legend: { labels: { color: textColor } } },
+                    scales: {
+                        x: { title: { display: true, text: 'Back Pressure (% of Set)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Effective Capacity (%)', color: textColor }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 2. Orifice Chart
+            const oriCtx = document.getElementById('orificeChart').getContext('2d');
+            if(prvCharts.ori) prvCharts.ori.destroy();
+            prvCharts.ori = new Chart(oriCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T'],
+                    datasets: [{
+                        label: 'Area (sq in)',
+                        data: [0.11, 0.196, 0.307, 0.503, 0.785, 1.287, 1.838, 2.853, 3.6, 4.34, 6.38, 11.05, 16.0, 26.0],
+                        backgroundColor: '#2563EB'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    aspectRatio: false,
+                    plugins: { legend: { labels: { color: textColor } } },
+                    scales: {
+                        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                        y: { title: { display: true, text: 'Area (sq in)', color: textColor }, ticks: { color: textColor }, grid: { color: gridColor } }
+                    }
+                }
+            });
+        }
+
+        function updateResultCharts(A_req, reaction) {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#CBD5E1' : '#4B5563';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+
+            // 3. Capacity vs Req Chart
+            const capCtx = document.getElementById('capacityChart').getContext('2d');
+            if(prvCharts.cap) prvCharts.cap.destroy();
+            prvCharts.cap = new Chart(capCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Req Area', 'Excess Area'],
+                    datasets: [{
+                        data: [A_req, Math.max(0.1, A_req * 0.1)],
+                        backgroundColor: ['#2563EB', '#E2E8F0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    aspectRatio: false,
+                    plugins: {
+                        title: { display: true, text: 'Required Area Proportion', color: textColor },
+                        legend: { position: 'bottom', labels: { color: textColor } }
+                    }
+                }
+            });
+
+            // 4. Reaction Force Chart
+            const reacCtx = document.getElementById('reactionChart').getContext('2d');
+            if(prvCharts.reac) prvCharts.reac.destroy();
+            prvCharts.reac = new Chart(reacCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Reaction Force'],
+                    datasets: [{
+                        label: 'lbf',
+                        data: [reaction],
+                        backgroundColor: '#F59E0B'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    aspectRatio: false,
+                    plugins: { title: { display: true, text: 'Thrust / Reaction Force', color: textColor } },
+                    scales: {
+                        y: { title: { display: true, text: 'Pounds Force (lbf)', color: textColor }, ticks: { color: textColor }, grid: { color: gridColor } }
+                    }
+                }
+            });
+        }
+
+            initTheoryCharts();
+            if(themeSwitch) {
+                themeSwitch.addEventListener('change', () => {
+                    setTimeout(initTheoryCharts, 100);
+                });
+            }
+
+        } catch (e) {
+            showMessage(e.message, "error");
+            console.error(e);
+        }
+    });
     </script>
 </body>
 </html>
-
-
