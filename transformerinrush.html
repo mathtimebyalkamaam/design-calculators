@@ -30,6 +30,10 @@
     <!-- Chart.js (UMD) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
     <!-- MathJax -->
     <script>
         window.MathJax = {
@@ -232,6 +236,63 @@
             .footer-content { flex-direction: column; gap: 25px; }
             .results-grid { grid-template-columns: 1fr; }
             .tech-article { grid-template-columns: 1fr; }
+        }
+
+        /* FAQ Styling */
+        .gen-faq-item {
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            display: block !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+        .gen-faq-answer {
+            padding: 15px 20px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text);
+            display: block !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+        }
+        .gen-faq-answer p {
+            margin: 0;
+            padding: 0;
+            display: block !important;
+            white-space: normal !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+
+        /* Standards Hub Styling */
+        .standards-hub {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .standard-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--secondary);
+            border: 1px solid var(--border);
+        }
+        .standard-card h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        .standard-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
         }
     </style>
     <link rel="stylesheet" href="styles.css">
@@ -445,8 +506,8 @@
                     </div>
 
                     <div class="button-wrapper">
-                        <button type="button" class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print Settings</button>
-                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Settings</button>
+                        <button type="button" class="btn btn-outline" id="pdf-btn"><i class="fas fa-file-pdf"></i> Download PDF Report</button>
+                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-bolt"></i> Run Inrush Analysis</button>
                     </div>
                 </form>
             </div>
@@ -539,35 +600,184 @@
                         <li><a href="#set-50">ANSI 50 (Instantaneous)</a></li>
                         <li><a href="#set-51">ANSI 51 (Time Overcurrent)</a></li>
                         <li><a href="#set-87">ANSI 87 (Differential)</a></li>
-                        <li><a href="#physics">Inrush Physics</a></li>
+                        <li><a href="#math-model">The Holcomb-Specht Model</a></li>
+                        <li><a href="#harmonics">Harmonic Restraint Physics</a></li>
+                        <li><a href="#sympathetic">Sympathetic Inrush</a></li>
+                        <li><a href="#physics">Core Saturation & $X_{air}$</a></li>
                     </ul>
                 </div>
 
                 <div class="article-content">
                     <div id="set-50">
                         <h3>ANSI 50: Avoiding the "Hair Trigger"</h3>
-                        <p>The Instantaneous Overcurrent element (50) is designed to trip immediately for severe faults. However, Inrush Current can look exactly like a fault in magnitude.</p>
-                        <p><strong>IEEE C37.91 Standard:</strong> Recommends setting the instantaneous unit above the peak inrush current to avoid nuisance tripping. A margin of <strong>1.5x to 1.6x</strong> is often used to account for DC offset asymmetry and relay measurement tolerances.</p>
+                        <p>The <strong>Instantaneous Overcurrent element (50)</strong> is designed to trip immediately (typically &lt;20ms) for severe faults. However, the magnetizing inrush current can look exactly like a phase-to-phase fault in magnitude, often reaching <strong>8x to 15x</strong> of the transformer's rated current ($I_{rated}$).</p>
+                        <p><strong>IEEE C37.91 Guidelines:</strong> To prevent nuisance tripping, the instantaneous unit must be set above the worst-case peak inrush. This calculator applies a <strong>Safety Margin of 1.5x to 1.6x</strong> to the peak inrush calculated via core saturation models. If the relay supports <strong>Inrush Restraint (harmonic blocking)</strong>, this setting can be lowered to provide better protection for internal secondary faults.</p>
                     </div>
 
                     <div id="set-51">
-                        <h3>ANSI 51: Riding the Decay</h3>
-                        <p>The Time-Overcurrent element (51) protects against prolonged overloads. It typically picks up at <strong>125% to 150%</strong> of full load amps (FLA) per <strong>NEC 450.3</strong>.</p>
-                        <p><strong>The Logic:</strong> Inrush current decays exponentially. The relay must have enough time delay to "ride through" this decay period. Our tool calculates the time ($t_{ride}$) it takes for the inrush RMS to fall below the pickup setting.</p>
+                        <h3>ANSI 51: Riding the Decay Curve</h3>
+                        <p>The <strong>Time-Overcurrent element (51)</strong> provides overload protection. Per <strong>NEC 450.3</strong>, this is usually set at <strong>125% to 250%</strong> of the transformer's full-load current ($I_{FLA}$), depending on the presence of secondary protection.</p>
+                        <div class="calculation-step">
+                            <strong>Coordination Rule:</strong> The relay's Time-Dial (Inverse Curve) must be selected such that the trip time $T_{trip}$ at the inrush magnitude is greater than the system's L/R decay time. 
+                            $$T_{trip} > t_{decay} \approx 3 \cdot \tau$$
+                            Where $\tau = \frac{L_{total}}{R_{total}}$ is the system time constant.
+                        </div>
                     </div>
 
                     <div id="set-87">
-                        <h3>ANSI 87: The Harmonic Fingerprint</h3>
-                        <p>Differential relays compare current entering and leaving. Inrush only enters, so it looks like a fault. However, inrush is asymmetrical and rich in <strong>2nd Harmonics</strong> (100Hz/120Hz).</p>
-                        <p><strong>Logic:</strong> We calculate the 2nd harmonic content based on the peak saturation flux. Standard practice is to restrain (block) tripping if the 2nd harmonic exceeds <strong>15% to 20%</strong> of the fundamental.</p>
+                        <h3>ANSI 87: Harmonic Fingerprinting</h3>
+                        <p><strong>Differential Protection (87)</strong> is the gold standard for large power transformers. It compares the current entering the primary with the current leaving the secondary. During inrush, current only enters the primary, creating a massive "differential" signal.</p>
+                        <p><strong>The Harmonic Solution:</strong> High-end relays use <strong>2nd Harmonic Restraint</strong>. Inrush current is highly asymmetrical, which mathematically results in a large second harmonic component ($100\text{Hz}$ or $120\text{Hz}$). 
+                        <br><strong>Typical Setting:</strong> Restrain trip if $I_{2nd} > 15\% \text{ to } 20\%$ of the fundamental $I_{1st}$. This allows the relay to stay stable during energization while remaining sensitive to internal faults which have low harmonic content.</p>
+                    </div>
+
+                    <div id="math-model">
+                        <h3>The Holcomb-Specht Analytical Model</h3>
+                        <p>To accurately predict inrush, we must model the <strong>Saturation Dynamics</strong> of the core iron. The peak current $I_{peak}$ occurs when the magnetic flux $\Phi(t)$ exceeds the saturation flux $\Phi_{sat}$.</p>
+                        <div class="formula">
+                            $$I_{peak} = \frac{\sqrt{2} \cdot V_{rms}}{Z_{air}} \cdot \left[ \cos(\theta) + \frac{B_r}{B_m} + \frac{B_{sat}}{B_m} - 1 \right]$$
+                        </div>
+                        <p>Where:
+                        <ul>
+                            <li>$B_{sat}$: Saturation flux density (typically $1.9\text{T}$ to $2.0\text{T}$ for CRGO steel).</li>
+                            <li>$B_r$: Residual flux density remaining in the core.</li>
+                            <li>$\theta$: Switching angle relative to voltage zero.</li>
+                            <li>$Z_{air}$: <strong>Air-Core Impedance</strong>, representing the winding inductance when the iron core is fully saturated.</li>
+                        </ul>
+                        </p>
+                    </div>
+
+                    <div id="harmonics">
+                        <h3>Harmonic Restraint & Waveform Asymmetry</h3>
+                        <p>The waveform of an inrush current is essentially a series of <strong>discontinuous unipolar pulses</strong>. This extreme asymmetry is what generates the harmonics used for protection logic. Using Fourier Transform analysis, we can determine the ratio of the 2nd harmonic to the fundamental:</p>
+                        <div class="highlight-box">
+                            $$K_{2nd} = \frac{I_{100Hz}}{I_{50Hz}} \approx \frac{4}{3\pi} \cdot \sin\left(\frac{\alpha}{2}\right)$$
+                            Where $\alpha$ is the <strong>saturation angle</strong> (the duration in each cycle that the core is in the saturated state).
+                        </div>
+                        <p>As the inrush decays, the saturation angle $\alpha$ decreases, and the 2nd harmonic content actually <strong>increases</strong> relative to the fundamental, providing a robust signal for harmonic restraint throughout the energization period.</p>
+                    </div>
+
+                    <div id="sympathetic">
+                        <h3>Sympathetic Inrush Phenomenon</h3>
+                        <p>A common cause of unexpected relay trips in industrial plants is <strong>Sympathetic Inrush</strong>. This occurs when a transformer is already energized, and a second, parallel transformer is switched onto the same bus.</p>
+                        <div class="calculation-step">
+                            <strong>The Mechanism:</strong> The inrush to the new transformer causes a voltage dip and a DC offset in the system voltage. This DC component can slowly drive the <strong>already-energized</strong> transformer into saturation, causing it to draw its own inrush current even though it was already running normally.
+                        </div>
+                        <p>This "double inrush" can exceed the busbar's protection settings or cause differential relays on the healthy transformer to trip falsely. Proper coordination requires accounting for the combined peak of both units.</p>
                     </div>
 
                     <div id="physics">
-                        <h3>Underlying Physics</h3>
+                        <h3>Core Saturation & Air-Core Reactance ($X_{air}$)</h3>
                         <div class="highlight-box">
                              <strong>Core Saturation:</strong> Energization forces magnetic flux to $2 \cdot \phi_{max}$. The iron core saturates, permeability drops, and the winding acts like an air-core inductor ($X_{air}$), drawing massive current limited only by source impedance ($Z_{src}$).
                         </div>
+                        
+                        <div class="results-grid" style="margin-top: 30px;">
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="bhCurveChart"></canvas>
+                                <p style="text-align: center; font-size: 0.8rem; margin-top: 5px;">B-H Curve: Saturation Region Analysis</p>
+                            </div>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="harmonicChart"></canvas>
+                                <p style="text-align: center; font-size: 0.8rem; margin-top: 5px;">Harmonic Spectrum during Inrush</p>
+                            </div>
+                        </div>
+
+                        <div class="results-grid" style="margin-top: 20px;">
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="decayChart"></canvas>
+                                <p style="text-align: center; font-size: 0.8rem; margin-top: 5px;">Inrush Decay Profile (Time Constant)</p>
+                            </div>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="residualChart"></canvas>
+                                <p style="text-align: center; font-size: 0.8rem; margin-top: 5px;">Residual Flux ($\Phi_{res}$) Sensitivity</p>
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STANDARDS HUB -->
+        <div class="card">
+            <h2><i class="fas fa-shield-alt"></i> Standards Compliance Hub</h2>
+            <div class="standards-hub">
+                <div class="standard-card">
+                    <h4>IEEE C37.91</h4>
+                    <p>Guide for Protective Relay Applications to Power Transformers. Defines the 1.5x margin for instantaneous units.</p>
+                </div>
+                <div class="standard-card">
+                    <h4>IEC 60076-1</h4>
+                    <p>Power Transformers - General Requirements. Specifies standard impedance and inrush withstand characteristics.</p>
+                </div>
+                <div class="standard-card">
+                    <h4>NEC 450.3</h4>
+                    <p>National Electrical Code: Overcurrent Protection for Transformers. Sets maximum trip levels for primary/secondary.</p>
+                </div>
+                <div class="standard-card">
+                    <h4>ANSI/IEEE C57.12.00</h4>
+                    <p>Standard General Requirements for Liquid-Immersed Distribution, Power, and Regulating Transformers.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ SECTION -->
+        <div class="card faq-section">
+            <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+            
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">Why does a transformer draw high current when first energized?</h4>
+                <div class="gen-faq-answer">
+                    <p>This is due to magnetic saturation. At the moment of energization, the magnetic flux can reach up to twice its normal peak value. If the core saturates, its permeability drops drastically, and the winding's impedance becomes nearly equal to its air-core reactance, leading to massive current spikes.</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">How do I set the ANSI 50 (Instantaneous) relay to avoid nuisance trips?</h4>
+                <div class="gen-faq-answer">
+                    <p>The standard practice is to set the Instantaneous (50) element above the calculated peak inrush current. Typically, a margin of 1.5 to 1.6 times the peak inrush is used. If the relay has "Inrush Restraint" features, you can set it closer to the full load current.</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">What is the "Second Harmonic Restraint" in differential protection?</h4>
+                <div class="gen-faq-answer">
+                    <p>Inrush current is highly asymmetrical and contains a significant amount of 2nd harmonic (100Hz/120Hz). Internal faults, however, consist mainly of the fundamental frequency. Relays use this "harmonic fingerprint" to distinguish between inrush (restrain trip) and real faults (allow trip).</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">Does the switching angle affect the inrush magnitude?</h4>
+                <div class="gen-faq-answer">
+                    <p>Yes, significantly. If the transformer is energized at the voltage peak (90 degrees), the inrush is minimal. If energization occurs at the voltage zero-crossing (0 degrees), the magnetic flux must undergo a full 200% swing, leading to the worst-case saturation and highest inrush current.</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">What is Residual Flux and how does it impact settings?</h4>
+                <div class="gen-faq-answer">
+                    <p>Residual flux is the magnetism remaining in the core from the last time the transformer was de-energized. If this flux is in the same direction as the new flux during energization, the core will saturate much faster and deeper, leading to even higher inrush peaks.</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">Can I use Pre-Insertion Resistors (PIR) to reduce inrush?</h4>
+                <div class="gen-faq-answer">
+                    <p>Yes. Pre-insertion resistors are briefly switched into the circuit before the main breaker closes. They provide a damping effect that limits the initial current spike and helps the flux build up more gradually, often reducing inrush by 50-80%.</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">How long does the inrush current typically last?</h4>
+                <div class="gen-faq-answer">
+                    <p>The decay of inrush current is determined by the L/R time constant of the system. For distribution transformers, it might last for 10-20 cycles (200-400ms). For large power transformers with very low resistance, the inrush can persist for several seconds.</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">What is the difference between cold and hot inrush?</h4>
+                <div class="gen-faq-answer">
+                    <p>"Cold" inrush occurs when energizing a transformer that has been off for a long time. "Hot" inrush (or sympathetic inrush) occurs when a transformer is already energized and another transformer on the same bus is switched on, causing a voltage dip that shifts the flux in the first unit.</p>
                 </div>
             </div>
         </div>
@@ -668,8 +878,14 @@
                 document.body.classList.toggle('dark-mode');
                 localStorage.setItem('theme', this.checked ? 'dark' : 'light');
                 if(window.myChart) updateChartTheme();
+                updateTheoryChartsTheme();
             });
         }
+
+        // Initialize Theory Charts on load
+        window.addEventListener('load', () => {
+            initializeTheoryCharts();
+        });
 
         function displayMessage(message, type = "info") {
             let messageBox = document.getElementById('message-box');
@@ -705,6 +921,126 @@
 
         // --- CALCULATION ENGINE ---
         let myChart = null;
+        let theoryCharts = {};
+
+        function initializeTheoryCharts() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#CBD5E1' : '#4B5563';
+            const gridColor = isDark ? '#334155' : '#E2E8F0';
+
+            // 1. B-H Curve Chart
+            const bhCtx = document.getElementById('bhCurveChart').getContext('2d');
+            theoryCharts.bh = new Chart(bhCtx, {
+                type: 'line',
+                data: {
+                    labels: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 300],
+                    datasets: [{
+                        label: 'Magnetic Flux Density (B) [Tesla]',
+                        data: [0, 0.4, 0.7, 0.9, 1.1, 1.25, 1.4, 1.5, 1.6, 1.7, 1.8, 1.85, 1.88, 1.9, 1.91],
+                        borderColor: '#2563EB',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Magnetizing Force (H)' }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Flux Density (B)' }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 2. Harmonic Chart
+            const harmonicCtx = document.getElementById('harmonicChart').getContext('2d');
+            theoryCharts.harmonic = new Chart(harmonicCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1st (Fundamental)', '2nd', '3rd', '4th', '5th'],
+                    datasets: [{
+                        label: 'Magnitude (%)',
+                        data: [100, 22, 8, 4, 2],
+                        backgroundColor: ['#1E3A8A', '#F59E0B', '#DC2626', '#10B981', '#6366F1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
+                        x: { grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 3. Decay Chart
+            const decayCtx = document.getElementById('decayChart').getContext('2d');
+            theoryCharts.decay = new Chart(decayCtx, {
+                type: 'line',
+                data: {
+                    labels: [0, 50, 100, 150, 200, 250, 300, 350, 400],
+                    datasets: [{
+                        label: 'RMS Current (A)',
+                        data: [5000, 3200, 2100, 1400, 950, 680, 500, 380, 320],
+                        borderColor: '#DC2626',
+                        fill: false,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Time (ms)' }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Current' }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+
+            // 4. Residual Flux Chart
+            const residualCtx = document.getElementById('residualChart').getContext('2d');
+            theoryCharts.residual = new Chart(residualCtx, {
+                type: 'line',
+                data: {
+                    labels: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90],
+                    datasets: [{
+                        label: 'Peak Inrush Multiplier',
+                        data: [6, 6.5, 7.2, 8.1, 9.5, 11.2, 13.5, 16.2, 19.8, 24.5],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Residual Flux (%)' }, grid: { color: gridColor }, ticks: { color: textColor } },
+                        y: { title: { display: true, text: 'Inrush ($xI_{rated}$)' }, grid: { color: gridColor }, ticks: { color: textColor } }
+                    }
+                }
+            });
+        }
+
+        function updateTheoryChartsTheme() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#CBD5E1' : '#4B5563';
+            const gridColor = isDark ? '#334155' : '#E2E8F0';
+
+            Object.values(theoryCharts).forEach(chart => {
+                chart.options.scales.x.ticks.color = textColor;
+                chart.options.scales.y.ticks.color = textColor;
+                chart.options.scales.x.grid.color = gridColor;
+                chart.options.scales.y.grid.color = gridColor;
+                chart.update();
+            });
+        }
 
         document.getElementById('calculate-btn').addEventListener('click', function() {
             // 1. Get Inputs
@@ -939,6 +1275,86 @@
             myChart.options.scales.y.grid.color = grid;
             myChart.options.plugins.legend.labels.color = isDark ? '#CBD5E1' : '#4B5563';
             myChart.update();
+        }
+
+        // --- PDF GENERATION ---
+        document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const isDark = document.body.classList.contains('dark-mode');
+
+            // 1. Header
+            doc.setFillColor(30, 58, 138); // Navy
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.text("TRANSFORMER INRUSH REPORT", 105, 20, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("Professional Protection Settings Analysis", 105, 30, { align: "center" });
+
+            // 2. Input Data Table
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(14);
+            doc.text("1. System & Transformer Specifications", 14, 50);
+            
+            const inputData = [
+                ["System Voltage", document.getElementById('sys-v').value + " V"],
+                ["Rated Power", document.getElementById('tx-kva').value + " kVA"],
+                ["Source SC MVA", document.getElementById('src-mva').value + " MVA"],
+                ["Transformer Impedance", document.getElementById('tx-z').value + " %"],
+                ["Core Material", document.getElementById('tx-core').options[document.getElementById('tx-core').selectedIndex].text],
+                ["Residual Flux", document.getElementById('tx-res').value + " %"]
+            ];
+
+            doc.autoTable({
+                startY: 55,
+                head: [['Parameter', 'Value']],
+                body: inputData,
+                theme: 'striped',
+                headStyles: { fillColor: [30, 58, 138] }
+            });
+
+            // 3. Results Table
+            doc.setFontSize(14);
+            doc.text("2. Calculated Protection Settings (ANSI)", 14, doc.autoTable.previous.finalY + 15);
+            
+            const resultsData = [
+                ["ANSI 50 (Instantaneous)", document.getElementById('rec-50').textContent],
+                ["ANSI 51 (Time Overcurrent)", document.getElementById('rec-51').textContent],
+                ["ANSI 87 (2nd Harmonic)", document.getElementById('rec-87').textContent],
+                ["Peak Inrush Current", document.getElementById('phys-peak').textContent],
+                ["Inrush Time Constant", document.getElementById('phys-tau').textContent],
+                ["Estimated Voltage Dip", document.getElementById('phys-dip').textContent]
+            ];
+
+            doc.autoTable({
+                startY: doc.autoTable.previous.finalY + 20,
+                head: [['Relay Element', 'Recommended Setting']],
+                body: resultsData,
+                theme: 'grid',
+                headStyles: { fillColor: [16, 185, 129] }
+            });
+
+            // 4. Chart Capture
+            const canvas = document.getElementById('mainChart');
+            const chartImg = canvas.toDataURL('image/png', 1.0);
+            doc.setFontSize(14);
+            doc.text("3. Inrush vs. Protection Envelope", 14, doc.autoTable.previous.finalY + 15);
+            doc.addImage(chartImg, 'PNG', 14, doc.autoTable.previous.finalY + 20, 180, 80);
+
+            // 5. Footer
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            const today = new Date().toLocaleDateString();
+            doc.text(`Generated by Design Calculators (designcalculators.co.in) on ${today}`, 105, 285, { align: "center" });
+            doc.text("Standard: IEEE C37.91 | Coordination: ANSI 50/51/87", 105, 290, { align: "center" });
+
+            doc.save(`Transformer_Inrush_Analysis_${Date.now()}.pdf`);
+            displayMessage("PDF Report Downloaded Successfully!", "success");
         }
     </script>
 </body>

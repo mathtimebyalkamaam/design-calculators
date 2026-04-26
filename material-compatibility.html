@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -38,6 +38,9 @@
         <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -152,6 +155,39 @@
             overflow-x: hidden;
             margin: 0;
             padding: 0;
+        }
+
+        /* Chart & Diagram Containers */
+        .visual-analysis-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 40px;
+        }
+        @media (max-width: 992px) {
+            .visual-analysis-section { grid-template-columns: 1fr; }
+        }
+        .chart-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            height: 400px;
+            position: relative;
+        }
+        .diagram-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .diagram-svg {
+            max-width: 100%;
+            height: auto;
         }
 
         .container {
@@ -638,7 +674,54 @@
             padding: 0;
             border: none;
             box-shadow: none;
-            margin-top: 60px;
+            margin-top: 40px;
+        }
+
+        /* FAQ Styling - Static List */
+        .gen-faq-item {
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--card-bg);
+            overflow: hidden;
+        }
+        .gen-faq-question {
+            padding: 15px 20px;
+            background: var(--bg-color);
+            color: var(--primary-color);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 1.1rem;
+        }
+        .gen-faq-answer {
+            padding: 15px 20px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            color: var(--text-color);
+        }
+
+        /* Standards Hub */
+        .standards-hub {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .standard-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        .standard-card h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+        }
+        .standard-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
         }
 
         .guide-header {
@@ -703,52 +786,8 @@
             margin-bottom: 8px;
         }
 
-        /* FAQ Accordion */
-        .faq-section {
-            margin-top: 60px;
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: var(--shadow-md);
-        }
-
-        .faq-item {
-            border-bottom: 1px solid var(--border-color);
-            padding: 15px 0;
-        }
-
-        .faq-question {
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--heading-color);
-            font-size: 1.05rem;
-        }
-
-        .faq-question:hover {
-            color: var(--secondary-color);
-        }
-
-        .faq-answer {
-            display: none;
-            margin-top: 15px;
-            color: var(--text-color);
-            line-height: 1.7;
-        }
-
-        .faq-item.active .faq-answer {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
         .faq-icon {
-            transition: transform 0.3s;
-        }
-
-        .faq-item.active .faq-icon {
-            transform: rotate(180deg);
+            display: none;
         }
 
         @keyframes fadeIn {
@@ -1103,7 +1142,58 @@
                             id="result-mat-name"></span></h4>
                     <p style="font-size:0.9em; margin-bottom:15px; color:var(--text-color);">Standard: <span
                             id="result-std" style="font-weight:bold;"></span></p>
-                    <div id="results-grid" class="results-grid"></div>
+                    <div class="results-grid" id="results-grid">
+                    <!-- Cards populated by JS -->
+                </div>
+
+                <!-- NEW VISUAL ANALYSIS SECTION -->
+                <div class="visual-analysis-section">
+                    <div class="chart-box">
+                        <h4 style="margin-top:0; color:var(--primary-color);">Material Performance Profile</h4>
+                        <canvas id="materialRadarChart"></canvas>
+                    </div>
+                    <div class="chart-box">
+                        <h4 style="margin-top:0; color:var(--primary-color);">Resistance by Chemical Class</h4>
+                        <canvas id="groupPerformanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="visual-analysis-section">
+                    <div class="chart-box">
+                        <h4 style="margin-top:0; color:var(--primary-color);">Temperature vs. Resistance Decay</h4>
+                        <canvas id="tempDecayChart"></canvas>
+                    </div>
+                    <div class="diagram-box">
+                        <h4 style="margin-top:0; color:var(--primary-color);">Galvanic Corrosion Logic</h4>
+                        <svg class="diagram-svg" width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Electrolyte -->
+                            <rect x="20" y="40" width="260" height="140" rx="10" fill="var(--secondary-color)" fill-opacity="0.1" />
+                            <text x="150" y="170" text-anchor="middle" font-size="12" fill="var(--text-color)" font-weight="bold">Electrolyte (Chemical Media)</text>
+                            
+                            <!-- Anode -->
+                            <rect x="60" y="60" width="40" height="100" fill="#EF4444" rx="4" />
+                            <text x="80" y="50" text-anchor="middle" font-size="10" fill="#EF4444" font-weight="bold">ANODE</text>
+                            <text x="80" y="110" text-anchor="middle" font-size="8" fill="white">Corroding</text>
+                            
+                            <!-- Cathode -->
+                            <rect x="200" y="60" width="40" height="100" fill="#10B981" rx="4" />
+                            <text x="220" y="50" text-anchor="middle" font-size="10" fill="#10B981" font-weight="bold">CATHODE</text>
+                            <text x="220" y="110" text-anchor="middle" font-size="8" fill="white">Protected</text>
+                            
+                            <!-- Ion Flow -->
+                            <path d="M100 110 Q 150 80 200 110" stroke="var(--primary-color)" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+                            <text x="150" y="85" text-anchor="middle" font-size="10" fill="var(--primary-color)">Ion Flow ($e^-$)</text>
+                            
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--primary-color)" />
+                                </marker>
+                            </defs>
+                        </svg>
+                        <p style="font-size: 0.85rem; margin-top: 15px; text-align: center; color: var(--text-color); opacity: 0.8;">
+                            Always check the <strong>Galvanic Series</strong> when joining two different metals in a conductive media to prevent localized failure.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -1546,48 +1636,151 @@
         </div>
 
         <!-- FAQ Section -->
-        <div class="faq-section">
-            <h2>Frequently Asked Questions (FAQ)</h2>
+        <!-- STANDARDS COMPLIANCE HUB -->
+        <div class="card content-section" style="background: var(--card-bg); padding: 40px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); margin-top: 40px;">
+            <h2><i class="fas fa-shield-alt"></i> International Standards Compliance</h2>
+            <p>Material selection for critical industrial infrastructure is governed by stringent international codes to ensure safety and longevity.</p>
+            <div class="standards-hub">
+                <div class="standard-card">
+                    <h4>ISO 15156 (NACE MR0175)</h4>
+                    <p>Materials for use in H2S-containing environments in oil and gas production. Defines resistance to Sulfide Stress Cracking (SSC).</p>
+                </div>
+                <div class="standard-card">
+                    <h4>ASTM G1-03</h4>
+                    <p>Standard Practice for Preparing, Cleaning, and Evaluating Corrosion Test Specimens. The baseline for all chemical resistance data.</p>
+                </div>
+                <div class="standard-card">
+                    <h4>ISO 12944</h4>
+                    <p>Corrosion protection of steel structures by protective paint systems. Classifies environments from C1 (low) to CX (extreme).</p>
+                </div>
+                <div class="standard-card">
+                    <h4>ASTM D543</h4>
+                    <p>Standard Practices for Evaluating the Resistance of Plastics to Chemical Reagents. The core standard for polymer compatibility.</p>
+                </div>
+            </div>
+        </div>
 
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">What is the difference between 'Excellent' and
-                    'Good' compatibility ratings? <i class="fas fa-chevron-down faq-icon"></i></div>
-                <div class="faq-answer">'Excellent' implies the material can withstand the chemical for indefinite
-                    periods with negligible corrosion or degradation. 'Good' suggests the material is resistant but may
-                    experience minor swelling, weight loss, or discoloration over long durations or at elevated
-                    temperatures. Always verify with specific temperature data.</div>
+        <!-- EXTENDED THEORY VISUALS -->
+        <div class="card content-section" style="background: var(--card-bg); padding: 40px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); margin-top: 40px;">
+            <h2><i class="fas fa-microscope"></i> Corrosion Science & Analytics</h2>
+            <p>Understanding the physics of material degradation beyond simple "Pass/Fail" ratings.</p>
+            
+            <div class="visual-analysis-section">
+                <div class="chart-box">
+                    <h4 style="margin-top:0; color:var(--primary-color);">PREN Ranking (Pitting Resistance)</h4>
+                    <canvas id="prenChart"></canvas>
+                    <p style="font-size:0.75rem; margin-top:5px; text-align:center;">$PREN = \%Cr + 3.3 \cdot (\%Mo + 0.5 \cdot \%W) + 16 \cdot \%N$</p>
+                </div>
+                <div class="chart-box">
+                    <h4 style="margin-top:0; color:var(--primary-color);">Acid Concentration vs. Corrosion Rate</h4>
+                    <canvas id="acidCorrosionChart"></canvas>
+                    <p style="font-size:0.75rem; margin-top:5px; text-align:center;">Typical Isocorrosion curve for Sulfuric Acid ($H_2SO_4$)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MATERIAL SELECTION DECISION MATRIX -->
+        <div class="card content-section" style="background: var(--card-bg); padding: 40px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); margin-top: 40px;">
+            <h2><i class="fas fa-project-diagram"></i> Material Selection Decision Matrix</h2>
+            <p>Choosing the right material requires balancing technical resistance with economic viability and thermal constraints.</p>
+            
+            <div class="table-container" style="overflow-x: auto; margin-top: 20px;">
+                <table class="compatibility-table">
+                    <thead>
+                        <tr>
+                            <th>Material Class</th>
+                            <th>Cost Index</th>
+                            <th>Max Temp (°C)</th>
+                            <th>Primary Use Case</th>
+                            <th>Key Limitation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Standard SS (304/316)</td>
+                            <td>$ (Base)</td>
+                            <td>450°C</td>
+                            <td>General Purpose, Food Grade</td>
+                            <td>Chloride Pitting</td>
+                        </tr>
+                        <tr>
+                            <td>Duplex Alloys</td>
+                            <td>$$</td>
+                            <td>300°C</td>
+                            <td>Marine & High Pressure</td>
+                            <td>Embrittlement > 315°C</td>
+                        </tr>
+                        <tr>
+                            <td>Hastelloy/Inconel</td>
+                            <td>$$$$$</td>
+                            <td>900°C+</td>
+                            <td>Severe Acids, High Temp</td>
+                            <td>Extremely High Cost</td>
+                        </tr>
+                        <tr>
+                            <td>PTFE / Polymers</td>
+                            <td>$$</td>
+                            <td>260°C</td>
+                            <td>Full Chemical Inertness</td>
+                            <td>Pressure/Creep issues</td>
+                        </tr>
+                        <tr>
+                            <td>Titanium</td>
+                            <td>$$$$</td>
+                            <td>500°C</td>
+                            <td>Oxidizing Media, Chlorine</td>
+                            <td>Reducing Acid failure</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="font-size: 0.85rem; margin-top: 15px; font-style: italic; color: var(--text-color); opacity: 0.8;">
+                *Note: Cost Index is relative and fluctuates with global commodity markets. Temp limits are for atmospheric pressure.
+            </p>
+        </div>
+
+        <!-- FAQ SECTION - STATIC -->
+        <div class="faq-section" style="margin-top: 40px; background: var(--card-bg); padding: 40px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+            <h2 style="margin-top:0;"><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+            
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">What is the difference between 'Excellent' and 'Good' compatibility?</div>
+                <div class="gen-faq-answer">'Excellent' implies the material can withstand the chemical for indefinite periods with negligible corrosion. 'Good' suggests minor swelling or discoloration over long durations or at elevated temperatures.</div>
             </div>
 
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">Is 316 Stainless Steel compatible with Seawater? <i
-                        class="fas fa-chevron-down faq-icon"></i></div>
-                <div class="faq-answer">316 Stainless Steel has 'Good' resistance to flowing seawater but is susceptible
-                    to crevice corrosion and pitting in stagnant seawater. For critical marine applications, Super
-                    Duplex steels or Titanium are often preferred for 'Excellent' long-term performance.</div>
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">Is 316 Stainless Steel compatible with Seawater?</div>
+                <div class="gen-faq-answer">316 Stainless Steel has 'Good' resistance to flowing seawater but is susceptible to crevice corrosion and pitting in stagnant seawater. For critical marine applications, Super Duplex steels or Titanium are often preferred for 'Excellent' long-term performance.</div>
             </div>
 
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">Can PTFE (Teflon) be used with almost any chemical?
-                    <i class="fas fa-chevron-down faq-icon"></i></div>
-                <div class="faq-answer">PTFE is chemically inert to almost all industrial chemicals, making it the 'Gold
-                    Standard' for seals and linings. Exceptions include molten alkali metals (like sodium) and elemental
-                    fluorine at high temperatures.</div>
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">Can PTFE (Teflon) be used with almost any chemical?</div>
+                <div class="gen-faq-answer">PTFE is chemically inert to almost all industrial chemicals, making it the 'Gold Standard' for seals and linings. Exceptions include molten alkali metals (like sodium) and elemental fluorine at high temperatures.</div>
             </div>
 
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">Why are elastomers like EPDM incompatible with oils?
-                    <i class="fas fa-chevron-down faq-icon"></i></div>
-                <div class="faq-answer">EPDM (Ethylene Propylene Diene Monomer) swells and degrades rapidly when exposed
-                    to petroleum-based oils and fuels due to its chemical structure. Viton (FKM) or Nitrile (Buna-N) are
-                    the correct choices for hydrocarbon services.</div>
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">Why are elastomers like EPDM incompatible with oils?</div>
+                <div class="gen-faq-answer">EPDM (Ethylene Propylene Diene Monomer) swells and degrades rapidly when exposed to petroleum-based oils and fuels due to its chemical structure. Viton (FKM) or Nitrile (Buna-N) are the correct choices for hydrocarbon services.</div>
             </div>
 
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">How does temperature affect chemical compatibility?
-                    <i class="fas fa-chevron-down faq-icon"></i></div>
-                <div class="faq-answer">Chemical reaction rates generally double for every 10Â°C rise in temperature. A
-                    material rated 'Good' at 20Â°C might fail rapidly at 60Â°C. Plastic and elastomer ratings are
-                    particularly sensitive to temperature increases.</div>
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">How does temperature affect chemical compatibility?</div>
+                <div class="gen-faq-answer">Chemical reaction rates generally double for every 10°C rise in temperature. A material rated 'Good' at 20°C might fail rapidly at 60°C. Plastic and elastomer ratings are particularly sensitive to temperature increases.</div>
+            </div>
+
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">What is Stress Corrosion Cracking (SCC)?</div>
+                <div class="gen-faq-answer">SCC is the growth of crack formation in a corrosive environment. It can lead to unexpected sudden failure of normally ductile metals subjected to a tensile stress, especially at elevated temperatures.</div>
+            </div>
+
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">What does PREN stand for and why is it important?</div>
+                <div class="gen-faq-answer">PREN stands for Pitting Resistance Equivalent Number. It is a predictive measurement of a stainless steel's resistance to localized pitting corrosion in chloride-containing environments. Higher numbers indicate better resistance.</div>
+            </div>
+
+            <div class="gen-faq-item">
+                <div class="gen-faq-question">Are these ratings valid for mixtures of chemicals?</div>
+                <div class="gen-faq-answer">No. Chemical mixtures can behave very differently than pure substances. Synergistic effects can cause rapid degradation even if the material is resistant to each component individually. Always test specific mixtures.</div>
             </div>
         </div>
 
@@ -1753,6 +1946,7 @@
                     body.classList.remove('dark-mode');
                     localStorage.setItem('theme', 'light-mode');
                 }
+                updateChartsTheme();
             });
 
             // Add fade-in effect to the chart on load
@@ -1762,7 +1956,176 @@
                     compatibilityChart.classList.add('loaded');
                 }, 100);
             }
+
+            initializeGlobalCharts();
         });
+
+        let radarChart = null;
+        let groupChart = null;
+        let tempChart = null;
+
+        function initializeGlobalCharts() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const color = isDark ? '#E2E8F0' : '#475569';
+            const grid = isDark ? '#334155' : '#E2E8F0';
+
+            // 1. Group Performance Chart (Class comparison)
+            const gCtx = document.getElementById('groupPerformanceChart').getContext('2d');
+            groupChart = new Chart(gCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Stainless', 'Polymers', 'Elastomers', 'Exotics'],
+                    datasets: [{
+                        label: 'Avg Resistance Index (%)',
+                        data: [72, 94, 65, 88],
+                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#6366F1'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: grid }, ticks: { color: color } },
+                        x: { grid: { display: false }, ticks: { color: color } }
+                    }
+                }
+            });
+
+            // 2. Temp Decay Chart
+            const tCtx = document.getElementById('tempDecayChart').getContext('2d');
+            tempChart = new Chart(tCtx, {
+                type: 'line',
+                data: {
+                    labels: ['20°C', '40°C', '60°C', '80°C', '100°C', '150°C'],
+                    datasets: [{
+                        label: 'Metals Life Expectancy',
+                        data: [100, 95, 88, 82, 75, 60],
+                        borderColor: '#3B82F6',
+                        tension: 0.3
+                    }, {
+                        label: 'Polymers Integrity',
+                        data: [100, 85, 60, 30, 10, 0],
+                        borderColor: '#F59E0B',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: color } } },
+                    scales: {
+                        y: { title: { display: true, text: 'Resistance %', color: color }, grid: { color: grid }, ticks: { color: color } },
+                        x: { grid: { color: grid }, ticks: { color: color } }
+                    }
+                }
+            });
+
+            // 3. PREN Chart
+            const pCtx = document.getElementById('prenChart').getContext('2d');
+            new Chart(pCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['SS304', 'SS316', 'Duplex 2205', 'Super Duplex', 'Hastelloy C'],
+                    datasets: [{
+                        label: 'PREN Value',
+                        data: [19, 25, 35, 42, 65],
+                        backgroundColor: '#2563EB'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: grid }, ticks: { color: color } },
+                        y: { grid: { display: false }, ticks: { color: color } }
+                    }
+                }
+            });
+
+            // 4. Acid Corrosion Chart
+            const aCtx = document.getElementById('acidCorrosionChart').getContext('2d');
+            new Chart(aCtx, {
+                type: 'line',
+                data: {
+                    labels: ['0%', '20%', '40%', '60%', '80%', '95%', '100%'],
+                    datasets: [{
+                        label: 'Corrosion Rate (mm/yr)',
+                        data: [0.1, 0.5, 2.5, 8.0, 1.2, 0.2, 0.1],
+                        borderColor: '#DC2626',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: grid }, ticks: { color: color } },
+                        x: { grid: { color: grid }, ticks: { color: color } }
+                    }
+                }
+            });
+        }
+
+        function updateRadarChart(material) {
+            const isDark = document.body.classList.contains('dark-mode');
+            const color = isDark ? '#E2E8F0' : '#475569';
+            const grid = isDark ? '#334155' : '#E2E8F0';
+
+            const scoreMap = { "Excellent": 4, "Good": 3, "Fair": 2, "Poor": 1 };
+            const values = material.ratings.map(r => scoreMap[r] || 0);
+
+            const ctx = document.getElementById('materialRadarChart').getContext('2d');
+            if (radarChart) radarChart.destroy();
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: CHEMICALS.map(c => c.length > 15 ? c.substring(0,12)+'..' : c),
+                    datasets: [{
+                        label: material.name,
+                        data: values,
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: '#2563EB',
+                        pointBackgroundColor: '#2563EB'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 4,
+                            ticks: { display: false },
+                            grid: { color: grid },
+                            angleLines: { color: grid },
+                            pointLabels: { color: color, font: { size: 10 } }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function updateChartsTheme() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const color = isDark ? '#E2E8F0' : '#475569';
+            const grid = isDark ? '#334155' : '#E2E8F0';
+
+            [groupChart, tempChart, radarChart].forEach(chart => {
+                if(!chart) return;
+                chart.options.scales.x ? chart.options.scales.x.ticks.color = color : null;
+                chart.options.scales.y ? chart.options.scales.y.ticks.color = color : null;
+                chart.options.scales.r ? chart.options.scales.r.pointLabels.color = color : null;
+                chart.update();
+            });
+        }
 
         function updateResults() {
             const matIndex = document.getElementById('tool-material').value;
@@ -1792,6 +2155,7 @@
             }
 
             resultDiv.style.display = 'block';
+            updateRadarChart(material);
         }
 
         function createResultCard(label, rating, container) {
