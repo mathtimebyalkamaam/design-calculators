@@ -1552,6 +1552,16 @@
                                 <p style="font-size: 0.85rem; margin: 0; text-align: left;">Conduction across the surface of bushings or end-windings. It is highly dependent on environmental contamination (dust, salt) and relative humidity. $I_S$ can be bypassed using the <strong>Guard Terminal</strong> to prevent false diagnostic failures.</p>
                             </div>
                         </div>
+
+                        <div style="margin-top: 40px; background: var(--bg); padding: 25px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+                            <h4 style="margin-top:0; text-align: center; font-size: 1.1rem; color: var(--primary);">Dielectric Current Decay Spectrum</h4>
+                            <div style="height: 320px;">
+                                <canvas id="dielectricSpectrumChart"></canvas>
+                            </div>
+                            <p style="font-size: 0.85rem; text-align: center; margin-top: 15px; color: var(--text); opacity: 0.8; font-style: italic;">
+                                Total Current $I_{total} = I_C + I_A + I_L + I_S$. Note the exponential decay of capacitive and absorption components over the 10-minute test duration.
+                            </p>
+                        </div>
                     </section>
 
                     <!-- Section: Standards -->
@@ -1707,11 +1717,38 @@
                                 <h4>Guard Terminal Logic?</h4>
                                 <p>Essential for testing cables and bushings in outdoor substations where dirt and rain can cause massive surface currents that mask internal dielectric health.</p>
                             </div>
+                            <div class="faq-card">
+                                <h4>What is Step Voltage Testing?</h4>
+                                <p>Involves applying IR tests at increasing voltage increments. A significant drop in resistance (&gt;25%) between steps indicates potential physical flaws or cracks in the insulation that are "breakdown sensitive."</p>
+                            </div>
+                            <div class="faq-card">
+                                <h4>Discharge Safety Protocols?</h4>
+                                <p>IEEE 43 mandates that the asset be grounded for at least 4x the duration of the test. For a 10-minute PI test, ground the winding for 40 minutes to ensure capacitive charges are dissipated.</p>
+                            </div>
                         </div>
 
                         <p style="margin-top: 40px; padding: 30px; background-color: var(--card); border-radius: 12px; border: 1px solid var(--border); border-left: 6px solid var(--primary); font-size: 0.9rem; color: var(--text); line-height: 1.8;">
                             <strong>Senior Reliability Engineer's Note:</strong> Insulation resistance is a trending tool, not a single-point absolute. A motor with 5000MΩ that drops to 500MΩ in six months is more concerning than a motor that has consistently read 200MΩ for ten years. Always compare current data against the asset's historical fingerprint.
                         </p>
+                    </section>
+
+                    <!-- INDUSTRIAL STANDARDS HUB -->
+                    <section class="article-block">
+                        <h3>8. Global Compliance Standards</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                            <div style="background: var(--grad-dark); color: white; padding: 25px; border-radius: 12px;">
+                                <h4 style="color: var(--secondary); margin-top: 0;">IEEE 43-2013</h4>
+                                <p style="font-size: 0.85rem; opacity: 0.9;">The "Gold Standard" for testing insulation resistance of rotating machinery. Defines the mandatory 1min and 10min PI requirements.</p>
+                            </div>
+                            <div style="background: var(--grad-dark); color: white; padding: 25px; border-radius: 12px;">
+                                <h4 style="color: var(--accent); margin-top: 0;">ANSI/NETA MTS</h4>
+                                <p style="font-size: 0.85rem; opacity: 0.9;">Maintenance Testing Specifications for electrical power equipment. Provides the definitive "Acceptance vs Maintenance" tables for all assets.</p>
+                            </div>
+                            <div style="background: var(--grad-dark); color: white; padding: 25px; border-radius: 12px;">
+                                <h4 style="color: var(--success); margin-top: 0;">IEC 60034-27</h4>
+                                <p style="font-size: 0.85rem; opacity: 0.9;">Off-line insulation resistance and polarization index measurements on winding insulation of rotating electrical machines.</p>
+                            </div>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -1873,6 +1910,58 @@
                     plugins: { 
                         legend: { display: false },
                         title: { display: true, text: 'PI Health Index', font: { size: 12 } }
+                    }
+                }
+            });
+
+            // 3. Dielectric Spectrum Chart
+            const spectrumCtx = document.getElementById('dielectricSpectrumChart').getContext('2d');
+            new Chart(spectrumCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1s', '10s', '30s', '1m', '2m', '5m', '10m'],
+                    datasets: [
+                        {
+                            label: 'Total Current (It)',
+                            data: [1000, 200, 100, 50, 35, 25, 20],
+                            borderColor: '#2563EB',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Capacitive (Ic)',
+                            data: [800, 50, 5, 0, 0, 0, 0],
+                            borderColor: '#64748B',
+                            borderDash: [5, 5],
+                            fill: false
+                        },
+                        {
+                            label: 'Absorption (Ia)',
+                            data: [180, 130, 75, 30, 15, 5, 2],
+                            borderColor: '#F59E0B',
+                            fill: false
+                        },
+                        {
+                            label: 'Leakage (Il)',
+                            data: [20, 20, 20, 20, 20, 20, 20],
+                            borderColor: '#10B981',
+                            borderDash: [2, 2],
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            type: 'logarithmic',
+                            title: { display: true, text: 'Current (Relative log scale)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
                     }
                 }
             });

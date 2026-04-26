@@ -528,41 +528,35 @@
             border-bottom: 2px solid var(--border);
             padding-bottom: 15px;
         }
-        .faq-item {
+        .gen-faq-item {
             margin-bottom: 15px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            overflow: hidden;
             background: var(--input-bg);
+            display: block !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
         }
-        .faq-item summary {
+        .gen-faq-answer {
             padding: 15px 20px;
-            cursor: pointer;
-            font-weight: 600;
-            color: var(--heading);
-            background: var(--bg);
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.2s;
-        }
-        .faq-item summary:hover {
-            background: rgba(37, 99, 235, 0.05);
-            color: var(--secondary);
-        }
-        .faq-item summary::-webkit-details-marker { display: none; }
-        .faq-item summary::after {
-            content: '+';
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-        .faq-item[open] summary::after { content: '-'; }
-        .faq-answer {
-            padding: 15px 20px;
-            border-top: 1px solid var(--border);
             font-size: 0.95rem;
             line-height: 1.6;
+            color: var(--text);
+            display: block !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+        }
+        .gen-faq-answer p {
+            margin: 0;
+            padding: 0;
+            display: block !important;
+            white-space: normal !important;
+            height: auto !important;
+            max-height: none !important;
         }
 
         /* Tooltip */
@@ -820,6 +814,7 @@
                             <button type="button" class="preset-btn" onclick="loadPreset('home')"><i class="fas fa-home"></i> Residential</button>
                             <button type="button" class="preset-btn" onclick="loadPreset('site')"><i class="fas fa-hard-hat"></i> Construction (Motor Heavy)</button>
                             <button type="button" class="preset-btn" onclick="loadPreset('office')"><i class="fas fa-server"></i> Data Center (Non-Linear)</button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('industrial')"><i class="fas fa-industry"></i> Industrial DG (Heavy Duty)</button>
                         </div>
                     </div>
 
@@ -977,12 +972,21 @@
                 <div class="article-block">
                     <h3>2. ISO 8528 Ratings: Prime vs. Standby</h3>
                     <p>Understanding the standard ratings defined by ISO 8528-1 is essential for commercial specification. Misapplying these ratings can lead to warranty voiding or premature failure.</p>
-                    <ul>
-                        <li><strong>Standby Power (ESP):</strong> The maximum power available during a variable electrical power sequence, under the stated operating conditions, for which a generating set is capable of delivering in the event of a utility power outage. It is typically limited to 200-500 hours per year, with no overload capability. This is the rating most backup generators use.</li>
-                        <li><strong>Prime Power (PRP):</strong> The maximum power which a generating set is capable of delivering continuously while supplying a variable electrical load. The generator can run 24/7/365 at varying loads (usually 70% average). It typically includes a 10% overload capability for 1 hour in every 12 hours of operation.</li>
-                        <li><strong>Continuous Power (COP):</strong> The power available for an unlimited number of hours at a constant 100% load. This is rare and used for base-loading power plants.</li>
-                    </ul>
-                    <p><strong>Design Tip:</strong> A generator rated 500 kVA Standby is essentially the same machine as one rated 450 kVA Prime. The difference is the allowed thermal stress profile. If you are designing for a construction site (Prime application), you must derate the machine compared to a hospital backup (Standby application).</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                        <div style="background: var(--bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                            <h4 style="margin-top:0; border:none; font-size: 0.9rem; text-align: center;">Voltage & Current Phasor Relationship</h4>
+                            <div style="height: 180px;">
+                                <canvas id="phasorChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <p><strong>Standby Power (ESP):</strong> The maximum power available during a variable electrical power sequence, under the stated operating conditions, for which a generating set is capable of delivering in the event of a utility power outage. It is typically limited to 200-500 hours per year, with no overload capability.</p>
+                            <p><strong>Prime Power (PRP):</strong> The maximum power which a generating set is capable of delivering continuously while supplying a variable electrical load. The generator can run 24/7/365 at varying loads (usually 70% average).</p>
+                        </div>
+                    </div>
+
+                    <p><strong>Design Tip:</strong> A generator rated 500 kVA Standby is essentially the same machine as one rated 450 kVA Prime. The difference is the allowed thermal stress profile. If you are designing for a construction site (Prime application), you must derate the machine compared to a hospital backup (Standby application). Building in a 10% safety buffer is standard practice.</p>
                 </div>
 
                 <div class="article-block">
@@ -999,29 +1003,60 @@
                 <div class="article-block">
                     <h3>4. Non-Linear Loads and Harmonics (IEEE 519)</h3>
                     <p>Modern commercial loads are increasingly "non-linear." This includes UPS systems, Variable Frequency Drives (VFDs), LED drivers, and computer power supplies. Unlike resistive heaters, these devices draw current in pulses rather than smooth sine waves.</p>
-                    <p>These pulses distort the voltage waveform, creating <strong>Total Harmonic Distortion (THD)</strong>. High THD causes heating in the generator alternator windings. To mitigate this:</p>
-                    <ul>
-                        <li><strong>Oversizing:</strong> We typically oversize the alternator by 20-25% (or use a lower temperature rise alternator, e.g., 80Â°C or 105Â°C rise) to handle the skin effect heating caused by harmonics.</li>
-                        <li><strong>Impedance:</strong> Lower impedance alternators (larger kVA) are "stiffer" sources and resist waveform distortion better.</li>
-                    </ul>
-                    <p>This calculator applies a <strong>Harmonic Factor (1.25x)</strong> when you select "Non-Linear Load" to emulate this necessary upsizing per IEEE 519 guidelines.</p>
+                    
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
+                        <div style="flex: 1; min-width: 300px; background: var(--bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                             <h4 style="margin-top:0; border:none; font-size: 0.9rem; text-align: center;">Typical Load Composition (Industrial)</h4>
+                             <div style="height: 180px;">
+                                <canvas id="loadCompChart"></canvas>
+                             </div>
+                        </div>
+                        <div style="flex: 1.5; min-width: 300px;">
+                            <p>These pulses distort the voltage waveform, creating <strong>Total Harmonic Distortion (THD)</strong>. High THD causes heating in the generator alternator windings. To mitigate this:</p>
+                            <ul>
+                                <li><strong>Oversizing:</strong> We typically oversize the alternator by 20-25% to handle the skin effect heating caused by harmonics.</li>
+                                <li><strong>Impedance:</strong> Lower impedance alternators (larger kVA) are "stiffer" sources and resist waveform distortion better.</li>
+                            </ul>
+                            <p>This calculator applies a <strong>Harmonic Factor (1.25x)</strong> when you select "Non-Linear Load" to emulate this necessary upsizing per IEEE 519 guidelines.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="article-block">
                     <h3>5. Environmental Derating</h3>
-                    <p>Generators breathe air. Diesel engines need oxygen for combustion, and alternators need air for cooling. Manufacturers rate generators at Standard Reference Conditions (usually 25Â°C or 27Â°C, and 100-150m altitude). Deviating from this requires derating:</p>
-                    <ul>
-                        <li><strong>Altitude:</strong> Air becomes less dense (lower partial pressure of O2) as you go up. Turbochargers help, but generally, expect ~3-4% power loss for every 300m above 1000m.</li>
-                        <li><strong>Temperature:</strong> Hot air is less dense and provides less cooling. Expect ~1-2% loss for every 5Â°C above rated ambient (usually 40Â°C or 50Â°C for industrial sets).</li>
-                    </ul>
-                    <p>Failing to account for a 40Â°C day on a rooftop in Denver (high altitude) could result in a generator that shuts down on "Under Frequency" or "Over Temperature" just when it's needed most.</p>
+                    <p>Generators breathe air. Diesel engines need oxygen for combustion, and alternators need air for cooling. Manufacturers rate generators at Standard Reference Conditions (usually 25°C or 27°C, and 100-150m altitude). Deviating from this requires derating:</p>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
+                        <div style="flex: 1; min-width: 300px;">
+                            <ul>
+                                <li><strong>Altitude:</strong> Air becomes less dense (lower partial pressure of O2) as you go up. Turbochargers help, but generally, expect ~3-4% power loss for every 300m above 1000m.</li>
+                                <li><strong>Temperature:</strong> Hot air is less dense and provides less cooling. Expect ~1-2% loss for every 5°C above rated ambient (usually 40°C or 50°C for industrial sets).</li>
+                            </ul>
+                        </div>
+                        <div style="flex: 1; min-width: 300px; background: var(--bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                             <h4 style="margin-top:0; border:none; font-size: 0.9rem; text-align: center;">Power Capability vs. Ambient Temp</h4>
+                             <div style="height: 200px;">
+                                <canvas id="deratingChart"></canvas>
+                             </div>
+                        </div>
+                    </div>
+                    <p>Failing to account for a 40°C day on a rooftop in Denver (high altitude) could result in a generator that shuts down on "Under Frequency" or "Over Temperature" just when it's needed most.</p>
                 </div>
 
                 <div class="article-block">
                     <h3>6. Fuel Systems and Operational Cost</h3>
                     <p>Fuel consumption is largely linear with load, but efficiency drops at low loads. A diesel engine is most efficient at 70-80% load. </p>
-                    <h4>Wet Stacking</h4>
-                    <p>Running a diesel generator below 30% load for extended periods causes "wet stacking"â€”unburned fuel and soot accumulate in the exhaust system because the cylinder temperature is too low for complete combustion. This can glaze cylinder liners and destroy the engine. This is why sizing a generator "too big" "just to be safe" is poor engineering practice. The generator should be sized so the base load is at least 30-40% of its rating.</p>
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin: 20px 0;">
+                        <div style="flex: 1.2; min-width: 300px;">
+                            <h4>Wet Stacking</h4>
+                            <p>Running a diesel generator below 30% load for extended periods causes "wet stacking"—unburned fuel and soot accumulate in the exhaust system because the cylinder temperature is too low for complete combustion. This can glaze cylinder liners and destroy the engine. The generator should be sized so the base load is at least 30-40% of its rating.</p>
+                        </div>
+                        <div style="flex: 1; min-width: 280px; background: var(--bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                             <h4 style="margin-top:0; border:none; font-size: 0.9rem; text-align: center;">Fuel Consumption vs. Load</h4>
+                             <div style="height: 180px;">
+                                <canvas id="fuelCurveChart"></canvas>
+                             </div>
+                        </div>
+                    </div>
                     <h4>Fuel Types</h4>
                     <ul>
                         <li><strong>Diesel:</strong> High energy density, long shelf life (with treatment), standard for mission-critical (data centers, hospitals).</li>
@@ -1042,51 +1077,88 @@
             </div>
         </div>
 
+        <!-- INDUSTRIAL STANDARDS HUB -->
+        <div class="card" style="background: var(--grad-dark); color: white; border: none;">
+            <h2 style="color: white; border-color: rgba(255,255,255,0.1);"><i class="fas fa-shield-check"></i> Industrial Standards Compliance</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border-left: 4px solid var(--secondary);">
+                    <h4 style="color: var(--secondary); margin-top: 0;">ISO 8528</h4>
+                    <p style="font-size: 0.85rem; opacity: 0.9; margin: 0;">International standard for reciprocating internal combustion engine driven alternating current generating sets. Defines ESP, PRP, and COP ratings.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent);">
+                    <h4 style="color: var(--accent); margin-top: 0;">NFPA 110</h4>
+                    <p style="font-size: 0.85rem; opacity: 0.9; margin: 0;">Standard for Emergency and Standby Power Systems. Critical for life-safety applications in hospitals and high-rise buildings.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border-left: 4px solid var(--success);">
+                    <h4 style="color: var(--success); margin-top: 0;">IEEE 446</h4>
+                    <p style="font-size: 0.85rem; opacity: 0.9; margin: 0;">The "Orange Book" - Recommended Practice for Emergency and Standby Power Systems for Industrial and Commercial Applications.</p>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border-left: 4px solid #E2E8F0;">
+                    <h4 style="color: #E2E8F0; margin-top: 0;">IEC 60034-1</h4>
+                    <p style="font-size: 0.85rem; opacity: 0.9; margin: 0;">Rating and performance of rotating electrical machines. Ensures the alternator is sized correctly for thermal and transient loads.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- NEW FAQ SECTION -->
         <div class="card faq-section">
             <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
             
-            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <summary itemprop="name">How do I calculate the right generator size for my home or business?</summary>
-                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <span itemprop="text">To calculate generator size, you must sum the running watts of all appliances you intend to power. However, critical loads like air conditioners and pumps are "inductive" and require a starting surge (3-6x running watts). This calculator automatically accounts for that surge. A general rule of thumb is to take your total running kW, add the highest starting surge, and divide by 0.8 (Power Factor) to get the required kVA.</span>
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">How do I calculate the right generator size for my home or business?</h4>
+                <div class="gen-faq-answer">
+                    <p>To calculate generator size, you must sum the running watts of all appliances you intend to power. However, critical loads like air conditioners and pumps are "inductive" and require a starting surge (3-6x running watts). This calculator automatically accounts for that surge. A general rule of thumb is to take your total running kW, add the highest starting surge, and divide by 0.8 (Power Factor) to get the required kVA.</p>
                 </div>
-            </details>
+            </div>
 
-            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <summary itemprop="name">What is the difference between Prime and Standby ratings?</summary>
-                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <span itemprop="text"><strong>Standby (ESP)</strong> ratings are for emergency backup power only (typically &lt;200 hours/year) with no overload capability. <strong>Prime (PRP)</strong> ratings are for generators running as the primary power source (like at a construction site) for unlimited hours with variable load. Prime ratings are typically 10% lower than Standby ratings for the same physical machine.</span>
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">What is the difference between Prime and Standby ratings?</h4>
+                <div class="gen-faq-answer">
+                    <p><strong>Standby (ESP)</strong> ratings are for emergency backup power only (typically &lt;200 hours/year) with no overload capability. <strong>Prime (PRP)</strong> ratings are for generators running as the primary power source (like at a construction site) for unlimited hours with variable load. Prime ratings are typically 10% lower than Standby ratings for the same physical machine.</p>
                 </div>
-            </details>
+            </div>
 
-            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <summary itemprop="name">How much fuel does a diesel generator consume per hour?</summary>
-                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <span itemprop="text">Fuel consumption depends on the load. A modern diesel generator consumes approximately 0.27 to 0.30 liters per kWh of actual load produced. For example, a 100 kVA generator running at 75% load (60 kW) will consume roughly 16-18 liters of diesel per hour.</span>
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">How much fuel does a diesel generator consume per hour?</h4>
+                <div class="gen-faq-answer">
+                    <p>Fuel consumption depends on the load. A modern diesel generator consumes approximately 0.27 to 0.30 liters per kWh of actual load produced. For example, a 100 kVA generator running at 75% load (60 kW) will consume roughly 16-18 liters of diesel per hour.</p>
                 </div>
-            </details>
+            </div>
 
-            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <summary itemprop="name">What happens if I undersize my generator?</summary>
-                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <span itemprop="text">Undersizing leads to two main issues: 1) Voltage Collapse, where the generator cannot handle the inrush current of starting motors, causing lights to dim and motors to stall. 2) Overheating, where running above rated capacity damages the alternator insulation. Most modern generators will simply shut down on "Under Voltage" or "Overload" faults.</span>
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">What happens if I undersize my generator?</h4>
+                <div class="gen-faq-answer">
+                    <p>Undersizing leads to two main issues: 1) Voltage Collapse, where the generator cannot handle the inrush current of starting motors, causing lights to dim and motors to stall. 2) Overheating, where running above rated capacity damages the alternator insulation. Most modern generators will simply shut down on "Under Voltage" or "Overload" faults.</p>
                 </div>
-            </details>
+            </div>
 
-            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <summary itemprop="name">Why do non-linear loads (UPS, LEDs) require larger generators?</summary>
-                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <span itemprop="text">Non-linear loads draw current in pulses rather than a smooth sine wave, creating Harmonic Distortion (THD). This "dirty power" causes excessive heating in the generator's alternator. To prevent this, IEEE 519 recommends oversizing the alternator or using a "low temperature rise" alternator (typically 20-25% larger kVA) to handle the harmonic heat.</span>
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">Why do non-linear loads (UPS, LEDs) require larger generators?</h4>
+                <div class="gen-faq-answer">
+                    <p>Non-linear loads draw current in pulses rather than a smooth sine wave, creating Harmonic Distortion (THD). This "dirty power" causes excessive heating in the generator's alternator. To prevent this, IEEE 519 recommends oversizing the alternator or using a "low temperature rise" alternator (typically 20-25% larger kVA) to handle the harmonic heat.</p>
                 </div>
-            </details>
+            </div>
 
-            <details class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                <summary itemprop="name">What is wet stacking and how do I avoid it?</summary>
-                <div class="faq-answer" itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-                    <span itemprop="text">Wet stacking is a condition where unburned fuel and carbon accumulate in the exhaust system of a diesel engine because it is running under too light a load (typically &lt;30%). To avoid this, ensure your generator is sized correctly so it runs at 60-80% capacity, or use a "load bank" periodically to burn off the carbon deposits.</span>
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">What is wet stacking and how do I avoid it?</h4>
+                <div class="gen-faq-answer">
+                    <p>Wet stacking is a condition where unburned fuel and carbon accumulate in the exhaust system of a diesel engine because it is running under too light a load (typically &lt;30%). To avoid this, ensure your generator is sized correctly so it runs at 60-80% capacity, or use a "load bank" periodically to burn off the carbon deposits.</p>
                 </div>
-            </details>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">How does altitude and temperature affect generator performance?</h4>
+                <div class="gen-faq-answer">
+                    <p>Generators are typically rated at 25°C at sea level. As air becomes thinner (altitude) or hotter (temperature), its density decreases, meaning less oxygen for combustion and less cooling for the alternator. Generators generally derate by 3.5% for every 1000ft above 3300ft and 1% for every 10°F above 104°F ambient.</p>
+                </div>
+            </div>
+
+            <div class="gen-faq-item">
+                <h4 style="padding: 15px 20px; margin:0; background: var(--bg); border-bottom: 1px solid var(--border); color: var(--primary);">What is 'Step Load' or 'Block Loading' capability?</h4>
+                <div class="gen-faq-answer">
+                    <p>Step load refers to the amount of load (expressed as a percentage of the generator's rating) that can be applied in a single step without the voltage or frequency dropping below acceptable limits (per ISO 8528-5). Modern diesel sets can typically handle a 60-100% block load, whereas gas sets may be limited to 25-50% per step.</p>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -1215,6 +1287,16 @@
                 document.getElementById('start-surge').value = '10.0'; 
                 document.getElementById('margin').value = '20';
                 document.getElementById('fuel-type').value = 'diesel';
+            } else if (type === 'industrial') {
+                document.getElementById('phase-type').value = '3';
+                document.getElementById('voltage').value = '415';
+                document.getElementById('rating-type').value = 'prime';
+                document.getElementById('run-load').value = '250.0';
+                document.getElementById('load-type').value = 'nonlinear';
+                document.getElementById('start-surge').value = '150.0';
+                document.getElementById('margin').value = '25';
+                document.getElementById('fuel-type').value = 'diesel';
+                document.getElementById('fuel-cost').value = '1.10';
             }
             displayMessage(`${type.toUpperCase()} scenario loaded.`, "success");
             updateFuelUnits();
@@ -1247,7 +1329,92 @@
             document.getElementById('calculate-btn').addEventListener('click', performCalculation);
             document.getElementById('pdf-btn').addEventListener('click', generatePDF);
             updateFuelUnits();
+            initTheoryCharts();
         });
+
+        function initTheoryCharts() {
+            // 1. Derating Chart
+            const derateCtx = document.getElementById('deratingChart').getContext('2d');
+            new Chart(derateCtx, {
+                type: 'line',
+                data: {
+                    labels: ['20°C', '30°C', '40°C', '50°C', '60°C'],
+                    datasets: [{
+                        label: 'Power Capability (%)',
+                        data: [100, 100, 100, 92, 84],
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { min: 70, max: 110 } }
+                }
+            });
+
+            // 2. Fuel Curve Chart
+            const fuelCtx = document.getElementById('fuelCurveChart').getContext('2d');
+            new Chart(fuelCtx, {
+                type: 'line',
+                data: {
+                    labels: ['25%', '50%', '75%', '100%'],
+                    datasets: [{
+                        label: 'Liters per Hour',
+                        data: [8, 14, 20, 28],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 3. Phasor Chart
+            const phasorCtx = document.getElementById('phasorChart').getContext('2d');
+            new Chart(phasorCtx, {
+                type: 'bubble',
+                data: {
+                    datasets: [
+                        { label: 'Voltage Vector (V)', data: [{x: 0, y: 0, r: 0}, {x: 10, y: 0, r: 5}], backgroundColor: '#2563EB' },
+                        { label: 'Current Vector (I)', data: [{x: 0, y: 0, r: 0}, {x: 8, y: -6, r: 5}], backgroundColor: '#F59E0B' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { min: -12, max: 12 }, y: { min: -12, max: 12 } },
+                    plugins: { tooltip: { enabled: false } }
+                }
+            });
+
+            // 4. Load Composition Chart
+            const loadCtx = document.getElementById('loadCompChart').getContext('2d');
+            new Chart(loadCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Motors (Inductive)', 'UPS/VFD (Non-Linear)', 'Lighting/Misc'],
+                    datasets: [{
+                        data: [50, 30, 20],
+                        backgroundColor: ['#2563EB', '#F59E0B', '#10B981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        }
 
         function performCalculation() {
             // 1. Get Inputs

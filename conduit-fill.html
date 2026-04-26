@@ -1258,6 +1258,49 @@
             </div>
         </section>
 
+        <!-- THEORY SECTION -->
+        <section class="card" style="margin-top: 40px;">
+            <h2 style="font-size: 1.8rem;"><i class="fas fa-book-open" style="color: var(--primary);"></i> Engineering Theory: Conduit Fill Physics</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 25px;">
+                <div>
+                    <h3 style="font-size: 1.2rem; border: none; padding: 0;">1. The 40% Fill Rule</h3>
+                    <p style="font-size: 0.95rem;">The National Electrical Code (NEC) limit of 40% for three or more conductors is not arbitrary. It is based on two critical engineering constraints: <strong>Heat Dissipation</strong> and <strong>Pulling Jam Risk</strong>.</p>
+                    <div style="background: var(--bg); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary); margin: 15px 0;">
+                        <p style="margin: 0; font-size: 0.9rem; font-style: italic;">"The 60% void space is required to allow convective airflow, preventing the conductors from exceeding their insulation's thermal rating (e.g., 75°C or 90°C) due to resistive heating ($I^2R$)."</p>
+                    </div>
+                </div>
+                <div style="background: var(--bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                    <h4 style="margin-top:0; text-align: center; font-size: 1rem;">Conduit Fill Distribution</h4>
+                    <div style="height: 200px;">
+                        <canvas id="fillTheoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid var(--border);">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div style="background: var(--grad-dark); color: white; padding: 25px; border-radius: 12px;">
+                    <h4 style="color: var(--secondary); margin-top: 0;">2. Jamming Ratio ($D/d$)</h4>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">When pulling three conductors, a ratio of $2.8 < D/d < 3.2$ is critical. This is the range where wires can wedge or "jam" against the conduit walls during a bend, causing massive tension spikes and insulation damage.</p>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; border: none; padding: 0;">3. Standards Compliance Hub</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="font-size: 0.9rem; color: var(--text-muted);">
+                            <strong style="color: var(--text);">NFPA 70 (NEC):</strong> Chapter 9, Tables 1, 4, 5
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-muted);">
+                            <strong style="color: var(--text);">CSA C22.1:</strong> Rule 12-910 (Canadian Code)
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-muted);">
+                            <strong style="color: var(--text);">BS 7671:</strong> Appendix 5 (UK Standards)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- EXPANDED FAQ SECTION -->
         <section class="card" style="margin-top: 40px; margin-bottom: 80px;">
             <h2 style="font-size: 1.8rem;"><i class="fas fa-question-circle" style="color: var(--primary);"></i> Industrial Conduit Fill FAQs</h2>
@@ -1570,6 +1613,79 @@
                     messageBox.classList.remove('show');
                 }, 4000);
             }
+
+            function initTheoryChart() {
+                const ctx = document.getElementById('fillTheoryChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Conductor Area', 'Required Air Void (60%)'],
+                        datasets: [{
+                            data: [40, 60],
+                            backgroundColor: ['#2563EB', '#E2E8F0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            function generatePDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFillColor(30, 58, 138);
+                doc.rect(0, 0, 210, 40, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(22);
+                doc.text("Conduit Fill Compliance Report", 15, 25);
+                doc.setFontSize(10);
+                doc.text("NFPA 70 / NEC Standard Analysis", 15, 32);
+
+                let y = 50;
+                doc.setTextColor(0);
+                doc.setFontSize(14);
+                doc.text("System Parameters", 15, y);
+                y += 10;
+
+                const mainData = [
+                    ["Conduit Type", document.getElementById('result-conduit-type').textContent],
+                    ["Trade Size", document.getElementById('result-conduit-size').textContent],
+                    ["Total Fill %", document.getElementById('final-fill-percentage').textContent],
+                    ["Compliance", document.getElementById('compliance-status').textContent]
+                ];
+
+                doc.autoTable({
+                    startY: y,
+                    head: [["Parameter", "Value"]],
+                    body: mainData,
+                    theme: 'grid',
+                    headStyles: { fillColor: [30, 58, 138] }
+                });
+
+                y = doc.lastAutoTable.finalY + 15;
+                doc.text("Conductor Breakdown", 15, y);
+                y += 5;
+
+                doc.autoTable({
+                    startY: y,
+                    html: '#result-table',
+                    theme: 'striped',
+                    headStyles: { fillColor: [59, 130, 246] }
+                });
+
+                doc.save('Conduit_Fill_Report.pdf');
+            }
+
+            initTheoryChart();
+            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
 
             // --- Main Calculation Logic ---
 

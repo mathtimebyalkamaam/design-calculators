@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -45,6 +45,11 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- PDF & Chart Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* Exact Theme Variables */
@@ -842,6 +847,95 @@
             .footer-content { flex-direction: column; gap: 25px; }
             .long-text p { text-align: left; }
         }
+
+        /* Premium FAQ & Standards Styling */
+        .faq-section {
+            margin-top: 40px;
+        }
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .faq-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .faq-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--secondary);
+            box-shadow: var(--shadow-lg);
+        }
+        .faq-item h4 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .faq-item p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .standards-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .standard-tag {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--heading);
+        }
+        .standard-tag i { color: var(--accent); }
+        
+        .theory-chart-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            height: 300px;
+        }
+        
+        .pdf-download-section {
+            margin-top: 40px;
+            text-align: center;
+            padding: 30px;
+            background: var(--grad);
+            color: white;
+            border-radius: 12px;
+        }
+        .pdf-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .pdf-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Professional Hydraulic Cylinder Analyst - Design Calculators">
@@ -974,6 +1068,7 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
@@ -1115,8 +1210,9 @@
                     </tbody>
             </table>
             
-            <div style="display: flex; justify-content: center; margin-top: 20px;">
+            <div style="display: flex; justify-content: center; margin-top: 20px; gap: 15px;">
                 <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Report</button>
+                <button type="button" id="download-pdf-btn" class="clear-results-btn" style="background-color: var(--success);"><i class="fas fa-file-pdf"></i> Download PDF Report</button>
             </div>
         </div>
 
@@ -1139,6 +1235,9 @@
                     <p>$$Force (N) = Pressure (Pa) \times Area (m^2)$$</p>
                     <p>$$Velocity (m/s) = \frac{Flow (m^3/s)}{Area (m^2)}$$</p>
                 </div>
+                <div class="theory-chart-container">
+                    <canvas id="forceAreaChart"></canvas>
+                </div>
             </div>
 
             <div class="content-panel">
@@ -1150,6 +1249,9 @@
                 <p>We use <strong>Euler's Critical Load Formula</strong> to determine safety:</p>
                 <div class="math-content">
                     <p class="formula">$$F_{crit} = \frac{\pi^2 E I}{(K L)^2}$$</p>
+                </div>
+                <div class="theory-chart-container">
+                    <canvas id="bucklingChart"></canvas>
                 </div>
                 <p>Where:</p>
                 <ul>
@@ -1205,13 +1307,54 @@
             </div>
 
             <div class="content-panel">
-                <h3>6. Sizing Best Practices</h3>
-                <ul>
-                    <li><strong>Oversize for Tonnage:</strong> Never size a cylinder to run at 100% of the relief valve setting. Aim for 80-85% to leave headroom for friction and pressure drops.</li>
-                    <li><strong>Check Rod Speed:</strong> Seals have a maximum velocity rating (typically 0.5 m/s for standard polyurethanes). Exceeding this generates heat and destroys seals.</li>
-                    <li><strong>Cushioning:</strong> If the piston hits the end cap at high speed, it causes shock damage. Use internal cushions or external deceleration valves for speeds > 0.1 m/s.</li>
-                    <li><strong>Port Sizing:</strong> Ensure the ports (BSP/SAE) are large enough to handle the flow without causing cavitation or excessive backpressure. Oil velocity in pressure lines should stay below 5-6 m/s.</li>
-                </ul>
+                <h3>7. Industrial Standards & Regulatory Info</h3>
+                <p>Ensuring compliance with international standards is vital for safety and interoperability in fluid power systems.</p>
+                <div class="standards-list">
+                    <div class="standard-tag"><i class="fas fa-certificate"></i> ISO 3320 (Bore/Rod Ratios)</div>
+                    <div class="standard-tag"><i class="fas fa-certificate"></i> ISO 6020 (Mounting Dims)</div>
+                    <div class="standard-tag"><i class="fas fa-certificate"></i> ISO 10100 (Acceptance Tests)</div>
+                    <div class="standard-tag"><i class="fas fa-certificate"></i> NFPA T3.6.7 (Buckling Load)</div>
+                    <div class="standard-tag"><i class="fas fa-certificate"></i> ASME B30.1 (Jack Safety)</div>
+                    <div class="standard-tag"><i class="fas fa-certificate"></i> ISO 4413 (System Safety)</div>
+                </div>
+            </div>
+
+            <div class="content-panel faq-section">
+                <h3>8. Industrial Forensic FAQ</h3>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> How does seal friction affect force?</h4>
+                        <p>Friction can reduce effective output force by 5% to 15% depending on seal material and pressure. In high-precision applications, this must be subtracted from theoretical force.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> What is pressure intensification?</h4>
+                        <p>If the rod-side flow is blocked while extending, the pressure in the rod end spikes due to the smaller area. This can exceed component ratings and cause bursts.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> Why use a safety factor of 3.5?</h4>
+                        <p>Industry standards (NFPA) recommend 3.5 to account for non-ideal conditions like side loads, material fatigue, and installation misalignment which lower the theoretical Euler limit.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> How do side loads affect life?</h4>
+                        <p>Hydraulic cylinders are designed for axial loads only. Side loads cause rapid wear of the gland bushing and piston seals, leading to external and internal leakage.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> Tie-rod vs. Welded cylinders?</h4>
+                        <p>Tie-rod cylinders are easier to repair and standard in manufacturing. Welded cylinders are more compact, withstand higher pressures, and are preferred in mobile/off-road machinery.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> When to use a regenerative circuit?</h4>
+                        <p>Use it when high extension speed is needed but high force is not required during the initial phase of the stroke. It effectively reduces the area to just the rod area.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> Temperature and efficiency?</h4>
+                        <p>High temperatures lower oil viscosity, increasing internal leakage (slippage) across the piston seals, which significantly drops volumetric efficiency.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4><i class="fas fa-question-circle"></i> Common causes of rod failure?</h4>
+                        <p>The top three causes are buckling due to over-extension, mechanical impact causing dents (which destroy seals), and corrosion due to poor chrome plating quality.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -1247,11 +1390,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele.html'>Electrical Tools</a></li>
-                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
-                            <li><a href='/about.html'>About Us</a></li>
-                            <li><a href='/faq.html'>FAQ</a></li>
+                            <li><a href="/indexele.html">Electrical Tools</a></li>
+                            <li><a href="/indexmech.html">Mechanical Tools</a></li>
+                            <li><a href="/indexinst.html">Instrumentation Tools</a></li>
+                            <li><a href="/about.html">About Us</a></li>
+                            <li><a href="/faq.html">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1259,10 +1402,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact.html'>Contact Us</a></li>
-                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
-                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                            <li><a href="/contact.html">Contact Us</a></li>
+                            <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                            <li><a href="/sitemap2.html">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1608,6 +1751,116 @@
                     }
                 });
             }
+
+            // --- Enhanced Theory Charts ---
+            function initTheoryCharts() {
+                // 1. Force vs Bore Diameter
+                const forceCtx = document.getElementById('forceAreaChart').getContext('2d');
+                new Chart(forceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [40, 63, 80, 100, 125, 160, 200],
+                        datasets: [{
+                            label: 'Push Force (kN) @ 210 bar',
+                            data: [26, 65, 105, 165, 257, 422, 660],
+                            borderColor: '#2563EB',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: 'Force Sensitivity vs Bore Diameter' }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Bore Diameter (mm)' } },
+                            y: { title: { display: true, text: 'Force (kN)' } }
+                        }
+                    }
+                });
+
+                // 2. Buckling Risk vs Rod Diameter
+                const buckCtx = document.getElementById('bucklingChart').getContext('2d');
+                new Chart(buckCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['36mm', '45mm', '56mm', '70mm', '90mm'],
+                        datasets: [{
+                            label: 'Critical Buckling Load (kN)',
+                            data: [120, 290, 680, 1650, 4400],
+                            backgroundColor: '#F59E0B'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: { display: true, text: 'Buckling Stability (Logarithmic Growth)' }
+                        },
+                        scales: {
+                            y: { type: 'logarithmic', title: { display: true, text: 'Load (kN)' } }
+                        }
+                    }
+                });
+            }
+
+            // --- PDF Generation Logic ---
+            function generatePDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                // Header
+                doc.setFillColor(30, 58, 138);
+                doc.rect(0, 0, 210, 40, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(22);
+                doc.text("HYDRAULIC CYLINDER ANALYST", 105, 20, { align: "center" });
+                doc.setFontSize(10);
+                doc.text("ENGINEERING DESIGN REPORT", 105, 30, { align: "center" });
+                
+                // Asset Info
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(12);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 15, 50);
+                doc.text(`Bore: ${boreInput.value} mm`, 15, 60);
+                doc.text(`Rod: ${rodInput.value} mm`, 15, 70);
+                doc.text(`Stroke: ${strokeInput.value} mm`, 15, 80);
+                doc.text(`Pressure: ${pressureInput.value} bar`, 110, 60);
+                doc.text(`Flow: ${flowInput.value} LPM`, 110, 70);
+                
+                // Table
+                const rows = [];
+                const tableRows = document.querySelectorAll('#result-table-body tr');
+                tableRows.forEach(tr => {
+                    const cells = tr.querySelectorAll('td');
+                    if (cells.length >= 3) {
+                        rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText]);
+                    }
+                });
+                
+                doc.autoTable({
+                    startY: 90,
+                    head: [['Parameter', 'Primary Value', 'Secondary Info']],
+                    body: rows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [30, 58, 138] }
+                });
+                
+                // Footer
+                doc.setFontSize(8);
+                doc.setTextColor(100);
+                doc.text("Generated by Design Calculators - Commercial Engineering Suite", 105, 285, { align: "center" });
+                
+                doc.save(`Hydraulic_Analysis_${boreInput.value}mm.pdf`);
+                displayMessage("Report downloaded successfully", "success");
+            }
+
+            const pdfBtn = document.getElementById('download-pdf-btn');
+            if(pdfBtn) pdfBtn.addEventListener('click', generatePDF);
+            initTheoryCharts();
         });
     </script>
 </body>
