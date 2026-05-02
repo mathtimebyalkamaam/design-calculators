@@ -48,6 +48,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
     
+    <!-- Chart.js for Theory Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- Favicon (from new header) -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -981,6 +984,7 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
@@ -998,6 +1002,15 @@
                     <div class="form-section">
                         <h3><i class="fas fa-shield-alt"></i> Barrier (Source) Parameters (from Certificate)</h3>
                         <div class="form-row">
+                            <div class="form-group" style="flex-basis: 100%;">
+                                <label for="barrier-gas-group">Gas Group (For Reference) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Gas grouping determines the allowable limits for Ca and La. For documentation and reporting purposes.</span></span></label>
+                                <select id="barrier-gas-group" style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-size: 1rem; color: var(--text-color); background-color: var(--input-bg);">
+                                    <option value="IIC (Hydrogen, Acetylene)">IIC (Hydrogen, Acetylene) - Most Restrictive</option>
+                                    <option value="IIB (Ethylene)">IIB (Ethylene)</option>
+                                    <option value="IIA (Propane)">IIA (Propane) - Least Restrictive</option>
+                                    <option value="I (Methane/Mining)">I (Methane/Mining)</option>
+                                </select>
+                            </div>
                             <div class="form-group">
                                 <label for="barrier-uo">Barrier Uo (Voc) [Max Output Voltage] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum output voltage of the barrier under open circuit conditions.</span></span></label>
                                 <input type="number" id="barrier-uo" step="0.01" value="28" required>
@@ -1038,6 +1051,14 @@
                                     <option value="mH">mH</option>
                                     <option value="uH">uH</option>
                                     <option value="nH">nH</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="barrier-lr-ratio">Barrier Allowable L/R Ratio (Optional) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum allowable inductance-to-resistance ratio of the cable, if specified on the barrier certificate.</span></span></label>
+                                <input type="number" id="barrier-lr-ratio" step="0.1" placeholder="e.g., 40">
+                                <select id="barrier-lr-ratio-unit">
+                                    <option value="uH/Ohm">uH/&Omega;</option>
+                                    <option value="mH/Ohm">mH/&Omega;</option>
                                 </select>
                             </div>
                         </div>
@@ -1134,6 +1155,7 @@
                     <!-- Safety Factors -->
                     <div class="form-section">
                         <h3><i class="fas fa-user-shield"></i> Safety Factors (Optional, but Recommended)</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-color); opacity: 0.8; margin-bottom: 15px;">Note: While not strictly mandated by IEC 60079-11 for barrier limits, applying a safety factor (e.g., 1.5) to cable properties is a standard industry practice to account for aging, temperature fluctuations, and measurement tolerances.</p>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="safety-factor-c">Capacitance Safety Factor <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Multiplier applied to cable capacitance for additional safety margin (e.g., 1.5).</span></span></label>
@@ -1164,6 +1186,10 @@
         <div id="results-section" class="card hidden">
             <h3><i class="fas fa-clipboard-check"></i> Intrinsic Safety Validation Results</h3>
             <p class="status-display" id="loop-status-display">Loop Status: N/A</p>
+            
+            <div id="rule-50-banner" style="display: none; background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--warning); padding: 15px; margin-bottom: 20px; border-radius: 4px; font-size: 0.95rem;">
+                <strong style="color: #b45309;"><i class="fas fa-exclamation-triangle"></i> 50% Rule Applied:</strong> Note: Both $C_i$ and $L_i$ exceed 1% of the barrier limits. Per IEC 60079-11, the allowable $C_a$ and $L_a$ have been reduced by 50% for this calculation.
+            </div>
             
             <table class="results-table">
                 <thead>
@@ -1213,6 +1239,9 @@
                     </li>
                 </ul>
                 <p>This tool provides a calculation aid for loop validation. It does not replace the need for thorough understanding of the relevant standards and review by certified experts.</p>
+            </div>
+        </div>
+
         <!-- EDUCATION SECTION (Visual Refactor) -->
         <div id="education-section" class="education-section tool-container math-content">
             <h2><i class="fas fa-book-open"></i> Engineer's Guide to Intrinsic Safety (Ex i)</h2>
@@ -1283,7 +1312,7 @@
                             </thead>
                             <tbody>
                                 <tr><td><strong>Principle</strong></td><td>Passive (Fuse/Diode)</td><td>Active (Transformer)</td></tr>
-                                <tr><td><strong>Earthing</strong></td><td>Requires Dedicated Earth (< 1&Omega;)</td><td>No dedicated earth needed</td></tr>
+                                <tr><td><strong>Earthing</strong></td><td>Requires Dedicated Earth (&lt; 1&Omega;)</td><td>No dedicated earth needed</td></tr>
                                 <tr><td><strong>Power</strong></td><td>Lossy</td><td>Power Efficient</td></tr>
                                 <tr><td><strong>Cost</strong></td><td>Low Cost</td><td>Higher Performance</td></tr>
                             </tbody>
@@ -1296,7 +1325,7 @@
                 <h4><i class="fas fa-fire"></i> 4. Gas Groups & ATEX Classification</h4>
                 <div style="display: flex; gap: 20px; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 280px;">
-                        <p>Ignition energy varies by gas. A loop safe for **Propane (IIA)** may be unstable for **Hydrogen (IIC)**. Certification parameters like $C_a$ and $L_a$ are often provided as a matrix based on these groups.</p>
+                        <p>Ignition energy varies by gas. A loop safe for <strong>Propane (IIA)</strong> may be unstable for <strong>Hydrogen (IIC)</strong>. Certification parameters like $C_a$ and $L_a$ are often provided as a matrix based on these groups.</p>
                         <ul>
                             <li><strong>Group IIC:</strong> Hydrogen, Acetylene (Highly Sensitive)</li>
                             <li><strong>Group IIB:</strong> Ethylene, Ether</li>
@@ -1317,16 +1346,35 @@
 
             <div class="insight-card" style="border-left-color: #8b5cf6;">
                 <h4><i class="fas fa-vial"></i> 5. The "Simple Apparatus" Rule</h4>
-                <p>Not all field devices need an IS certificate. **Simple Apparatus** are devices like RTDs, Thermocouples, or Switches that do not store or generate significant energy ($< 1.5V, < 0.1A, < 25mW$).</p>
+                <p>Not all field devices need an IS certificate. <strong>Simple Apparatus</strong> are devices like RTDs, Thermocouples, or Switches that do not store or generate significant energy (&lt; 1.5V, &lt; 0.1A, &lt; 25mW).</p>
                 <div class="success-box">
-                    <p>While they don't need a certificate, they **STILL REQUIRE** an IS Barrier to limit the energy entering the hazardous area from the control system.</p>
+                    <p>While they don't need a certificate, they <strong>STILL REQUIRE</strong> an IS Barrier to limit the energy entering the hazardous area from the control system.</p>
+                </div>
+            </div>
+            
+            <div class="insight-card" style="border-left-color: #3b82f6;">
+                <h4><i class="fas fa-chart-line"></i> 6. Ignition Curves & Fault Tolerance (Ex ia / ib / ic)</h4>
+                <div style="display: flex; gap: 25px; flex-wrap: wrap;">
+                    <div style="flex: 1.5; min-width: 300px;">
+                        <p><strong>Minimum Igniting Current (MIC)</strong> is the smallest current in a specific inductive circuit that will cause ignition of a gas mixture. Intrinsic safety testing historically relies on the "Spark Test Apparatus" to establish these baseline ignition curves.</p>
+                        <p>The chart demonstrates the non-linear relationship between voltage and current required to ignite different gas groups. As voltage increases, the allowable current drops exponentially. <strong>Group IIC (Hydrogen)</strong> requires the least energy to ignite, resulting in the most restrictive curve, whereas <strong>Group IIA (Propane)</strong> allows significantly higher energy levels before ignition occurs.</p>
+                        <p style="margin-top: 15px;"><strong>Fault Tolerance Classifications:</strong></p>
+                        <ul style="margin-bottom: 0;">
+                            <li><strong>Ex ia (Zone 0/20):</strong> Equipment remains intrinsically safe with up to <strong>two</strong> independent, countable faults. It is suitable for continuous hazard areas.</li>
+                            <li><strong>Ex ib (Zone 1/21):</strong> Equipment remains safe with up to <strong>one</strong> countable fault. It is suitable for areas where hazards are likely to occur occasionally.</li>
+                            <li><strong>Ex ic (Zone 2/22):</strong> Safe only in normal operation. Suitable for areas where hazards are unlikely and would exist only for a short time.</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; background: var(--input-bg); border-radius: 8px; padding: 15px;">
+                        <div style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="ignitionCurveChart"></canvas>
+                        </div>
+                        <p style="text-align: center; font-size: 0.8rem; margin-top: 10px; color: var(--text-color); opacity: 0.7;">Representative Ignition Curves (Voltage vs. Current)</p>
+                    </div>
                 </div>
             </div>
         </div>
-           </div>
-        </div>
     </main>
-
     <!-- New Footer from file.txt -->
         <footer>
         <div class="container">
@@ -1359,11 +1407,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele.html'>Electrical Tools</a></li>
-                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
-                            <li><a href='/about.html'>About Us</a></li>
-                            <li><a href='/faq.html'>FAQ</a></li>
+                            <li><a href="/indexele.html">Electrical Tools</a></li>
+                            <li><a href="/indexmech.html">Mechanical Tools</a></li>
+                            <li><a href="/indexinst.html">Instrumentation Tools</a></li>
+                            <li><a href="/about.html">About Us</a></li>
+                            <li><a href="/faq.html">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1371,10 +1419,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact.html'>Contact Us</a></li>
-                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
-                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                            <li><a href="/contact.html">Contact Us</a></li>
+                            <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                            <li><a href="/sitemap2.html">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1415,6 +1463,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- Form Elements ---
+            const barrierGasGroupSelect = document.getElementById('barrier-gas-group');
             const barrierUoInput = document.getElementById('barrier-uo');
             const barrierUoUnitSelect = document.getElementById('barrier-uo-unit');
             const barrierIoInput = document.getElementById('barrier-io');
@@ -1425,6 +1474,8 @@
             const barrierCaUnitSelect = document.getElementById('barrier-ca-unit');
             const barrierLaInput = document.getElementById('barrier-la');
             const barrierLaUnitSelect = document.getElementById('barrier-la-unit');
+            const barrierLrRatioInput = document.getElementById('barrier-lr-ratio');
+            const barrierLrRatioUnitSelect = document.getElementById('barrier-lr-ratio-unit');
             const deviceUiInput = document.getElementById('device-ui');
             const deviceUiUnitSelect = document.getElementById('device-ui-unit');
             const deviceIiInput = document.getElementById('device-ii');
@@ -1459,6 +1510,7 @@
             const dynamicRecommendationsDiv = document.getElementById('dynamic-recommendations');
             const recommendationsList = document.getElementById('recommendations-list');
             const messageBox = document.getElementById('message-box');
+            const rule50Banner = document.getElementById('rule-50-banner');
             const loadingOverlay = document.getElementById('loading-overlay'); // From old file, added to new HTML
 
             // --- Default values for resetting form ---
@@ -1491,7 +1543,8 @@
                 length: { 'm': 1, 'ft': 0.3048 },
                 capacitance_per_length: { 'F/m': 1, 'uF/m': 1e-6, 'nF/m': 1e-9, 'pF/m': 1e-12, 'pF/ft': (1e-12 / 0.3048) },
                 inductance_per_length: { 'H/m': 1, 'mH/m': 1e-3, 'uH/m': 1e-6, 'nH/m': 1e-9, 'nH/ft': (1e-9 / 0.3048) },
-                resistance_per_length: { 'Ohm/m': 1, 'Ohm/ft': 1 / 0.3048 }
+                resistance_per_length: { 'Ohm/m': 1, 'Ohm/ft': 1 / 0.3048 },
+                lr_ratio: { 'uH/Ohm': 1e-6, 'mH/Ohm': 1e-3 }
             };
 
             // --- New showMessage function (from template) ---
@@ -1546,6 +1599,7 @@
                 resultTableBody.innerHTML = '';
                 dynamicRecommendationsDiv.style.display = 'none';
                 recommendationsList.innerHTML = '';
+                rule50Banner.style.display = 'none';
                 loopStatusDisplay.textContent = 'Loop Status: N/A';
                 loopStatusDisplay.className = 'status-display';
                 downloadResultsBtn.classList.add('hidden');
@@ -1588,6 +1642,7 @@
                 let recommendations = [];
 
                 // --- 1. Get and Validate Inputs ---
+                let barrierGasGroup = barrierGasGroupSelect.value;
                 let barrierUo = parseFloat(barrierUoInput.value) * unitConversions.voltage[barrierUoUnitSelect.value];
                 let barrierIo = parseFloat(barrierIoInput.value) * unitConversions.current[barrierIoUnitSelect.value];
                 let barrierPo = parseFloat(barrierPoInput.value) * unitConversions.power[barrierPoUnitSelect.value];
@@ -1604,6 +1659,8 @@
                 let cableResistancePerLength = parseFloat(cableResistancePerMeterInput.value) * unitConversions.resistance_per_length[cableResistancePerMeterUnitSelect.value];
                 let safetyFactorC = parseFloat(safetyFactorCInput.value);
                 let safetyFactorL = parseFloat(safetyFactorLInput.value);
+                
+                let barrierLrRatio = barrierLrRatioInput.value ? (parseFloat(barrierLrRatioInput.value) * unitConversions.lr_ratio[barrierLrRatioUnitSelect.value]) : null;
                 
                 // Simple validation
                 const inputs = { barrierUo, barrierIo, barrierPo, barrierCa, barrierLa, deviceUi, deviceIi, devicePi, deviceCi, deviceLi, cableLength, cableCapacitancePerLength, cableInductancePerLength, cableResistancePerLength, safetyFactorC, safetyFactorL };
@@ -1650,6 +1707,7 @@
                 const totalCableResistance = cableResistancePerLength * cableLength; // Not used in primary checks, but good to have
                 const factoredCableCapacitance = totalCableCapacitance * safetyFactorC;
                 const factoredCableInductance = totalCableInductance * safetyFactorL;
+                const cableLrRatioCalc = cableInductancePerLength / cableResistancePerLength;
 
                 stepsHtml += `<div class="step-card">
                     <h4><span class="number">2</span>Calculate Total Cable Parameters</h4>
@@ -1659,11 +1717,12 @@
                             <p class="calculation-step">Cable Length: ${cableLength.toFixed(2)} m</p>
                             <p class="calculation-step">Cc (unfactored): ${cableCapacitancePerLength.toExponential(2)} F/m * ${cableLength.toFixed(2)} m = ${totalCableCapacitance.toExponential(2)} F</p>
                             <p class="calculation-step">Lc (unfactored): ${cableInductancePerLength.toExponential(2)} H/m * ${cableLength.toFixed(2)} m = ${totalCableInductance.toExponential(2)} H</p>
+                            <p class="calculation-step">Cable L/R Ratio: ${cableInductancePerLength.toExponential(2)} H/m / ${cableResistancePerLength.toExponential(2)} &Omega;/m = ${(cableLrRatioCalc * 1e6).toFixed(2)} &mu;H/&Omega;</p>
                         </div>
                         <div class="formula-block">
                             <p><strong>Factored Cable Values:</strong></p>
-                            <p class="formula">$$C_{c-factored} = C_c \times SF_C$$</p>
-                            <p class="formula">$$L_{c-factored} = L_c \times SF_L$$</p>
+                            <p class="formula">$$C_{c-factored} = C_c \\times SF_C$$</p>
+                            <p class="formula">$$L_{c-factored} = L_c \\times SF_L$$</p>
                             <p><strong>Factored Cable C (Cc_f):</strong></p>
                             <div class="step-value" style="font-size: 1.5rem;">${factoredCableCapacitance.toExponential(2)}<span class="step-unit">F</span></div>
                             <p><strong>Factored Cable L (Lc_f):</strong></p>
@@ -1681,11 +1740,11 @@
                         </div>
                         <div class="formula-block">
                             <p><strong>Validation Formulas:</strong></p>
-                            <p class="formula">$$U_o \le U_i$$</p>
-                            <p class="formula">$$I_o \le I_i$$</p>
-                            <p class="formula">$$P_o \le P_i$$</p>
-                            <p class="formula">$$C_i + C_{c-factored} \le C_a$$</p>
-                            <p class="formula">$$L_i + L_{c-factored} \le L_a$$</p>
+                            <p class="formula">$$U_o \\le U_i$$</p>
+                            <p class="formula">$$I_o \\le I_i$$</p>
+                            <p class="formula">$$P_o \\le P_i$$</p>
+                            <p class="formula">$$C_i + C_{c-factored} \\le C_a$$</p>
+                            <p class="formula">$$L_i + L_{c-factored} \\le L_a$$</p>
                         </div>
                     </div>
                 </div>`;
@@ -1697,9 +1756,9 @@
                 const voltageCheck = barrierUo <= deviceUi;
                 if (!voltageCheck) {
                     overallPass = false;
-                    recommendations.push("<strong>Voltage Check FAILED:</strong> Barrier Uo must be $\le$ Device Ui. Select a barrier with lower Uo or a device with higher Ui.");
+                    recommendations.push("<strong>Voltage Check FAILED:</strong> Barrier Uo must be $\\le$ Device Ui. Select a barrier with lower Uo or a device with higher Ui.");
                 }
-                addResultRow('Voltage Check ($U_o \le U_i$)', 
+                addResultRow('Voltage Check ($U_o \\le U_i$)', 
                              `${barrierUo.toFixed(3)} V`, 
                              `${deviceUi.toFixed(3)} V`, 
                              'N/A', 
@@ -1710,9 +1769,9 @@
                 const currentCheck = barrierIo <= deviceIi;
                 if (!currentCheck) {
                     overallPass = false;
-                    recommendations.push("<strong>Current Check FAILED:</strong> Barrier Io must be $\le$ Device Ii. Select a barrier with lower Io or a device with higher Ii.");
+                    recommendations.push("<strong>Current Check FAILED:</strong> Barrier Io must be $\\le$ Device Ii. Select a barrier with lower Io or a device with higher Ii.");
                 }
-                addResultRow('Current Check ($I_o \le I_i$)', 
+                addResultRow('Current Check ($I_o \\le I_i$)', 
                              `${barrierIo.toFixed(3)} A`, 
                              `${deviceIi.toFixed(3)} A`, 
                              'N/A', 
@@ -1723,24 +1782,34 @@
                 const powerCheck = barrierPo <= devicePi;
                 if (!powerCheck) {
                     overallPass = false;
-                    recommendations.push("<strong>Power Check FAILED:</strong> Barrier Po must be $\le$ Device Pi. Select a barrier with lower Po or a device with higher Pi.");
+                    recommendations.push("<strong>Power Check FAILED:</strong> Barrier Po must be $\\le$ Device Pi. Select a barrier with lower Po or a device with higher Pi.");
                 }
-                addResultRow('Power Check ($P_o \le P_i$)', 
+                addResultRow('Power Check ($P_o \\le P_i$)', 
                              `${barrierPo.toFixed(3)} W`, 
                              `${devicePi.toFixed(3)} W`, 
                              'N/A', 
                              powerCheck ? 'PASS' : 'FAIL', 
                              powerCheck ? 'highlight' : 'error');
 
+                // --- The 50% Rule (Co/Lo) ---
+                let applied50PercentRule = false;
+                rule50Banner.style.display = 'none';
+                if (deviceCi > 0.01 * barrierCa && deviceLi > 0.01 * barrierLa) {
+                    applied50PercentRule = true;
+                    barrierCa = barrierCa / 2;
+                    barrierLa = barrierLa / 2;
+                    rule50Banner.style.display = 'block';
+                }
+
                 // Capacitance Check
                 const totalLoopCapacitance = deviceCi + factoredCableCapacitance;
                 const capacitanceCheck = totalLoopCapacitance <= barrierCa;
                 if (!capacitanceCheck) {
                     overallPass = false;
-                    recommendations.push("<strong>Capacitance Check FAILED:</strong> Total Loop C ($C_i + C_c$) must be $\le$ Barrier Ca. Use a shorter/lower-capacitance cable or a barrier with higher Ca.");
+                    recommendations.push("<strong>Capacitance Check FAILED:</strong> Total Loop C ($C_i + C_c$) must be $\\le$ Barrier Ca. Use a shorter/lower-capacitance cable or a barrier with higher Ca.");
                 }
-                addResultRow('Capacitance Check ($C_i + C_c \le C_a$)', 
-                             `$\le ${barrierCa.toExponential(2)} F$`, 
+                addResultRow('Capacitance Check ($C_i + C_c \\le C_a$)', 
+                             `$\\le ${barrierCa.toExponential(2)} F$`, 
                              `${deviceCi.toExponential(2)} F`, 
                              `${factoredCableCapacitance.toExponential(2)} F (Factored)`, 
                              capacitanceCheck ? 'PASS' : 'FAIL', 
@@ -1748,15 +1817,27 @@
                 
                 // Inductance Check
                 const totalLoopInductance = deviceLi + factoredCableInductance;
-                const inductanceCheck = totalLoopInductance <= barrierLa;
+                let inductanceCheck = totalLoopInductance <= barrierLa;
+                let lrFallbackUsed = false;
+                
+                if (!inductanceCheck && barrierLrRatio) {
+                    const cableLrRatio = cableInductancePerLength / cableResistancePerLength;
+                    if (cableLrRatio <= barrierLrRatio) {
+                        inductanceCheck = true;
+                        lrFallbackUsed = true;
+                        recommendations.push(`<strong>L/R Ratio Fallback Used:</strong> Standard inductance check failed ($L_{total} > L_a$), but the cable's L/R ratio (${(cableLrRatio * 1e6).toFixed(2)} $\\mu H/\\Omega$) is $\\le$ the barrier's allowable L/R ratio (${(barrierLrRatio * 1e6).toFixed(2)} $\\mu H/\\Omega$). This satisfies IEC 60079-11 for long cables.`);
+                    }
+                }
+                
                 if (!inductanceCheck) {
                     overallPass = false;
-                    recommendations.push("<strong>Inductance Check FAILED:</strong> Total Loop L ($L_i + L_c$) must be $\le$ Barrier La. Use a shorter/lower-inductance cable or a barrier with higher La.");
+                    recommendations.push("<strong>Inductance Check FAILED:</strong> Total Loop L ($L_i + L_c$) must be $\\le$ Barrier La. Use a shorter/lower-inductance cable, a barrier with higher La, or verify compliance via the L/R ratio method.");
                 }
-                addResultRow('Inductance Check ($L_i + L_c \le L_a$)', 
-                             `$\le ${barrierLa.toExponential(2)} H$`, 
-                             `${deviceLi.toExponential(2)} H`, 
-                             `${factoredCableInductance.toExponential(2)} H (Factored)`, 
+                
+                addResultRow('Inductance Check ($L_i + L_c \\le L_a$)', 
+                             lrFallbackUsed ? `L/R $\\le ${(barrierLrRatio * 1e6).toFixed(1)} \\mu H/\\Omega$` : `$\\le ${barrierLa.toExponential(2)} H$`, 
+                             lrFallbackUsed ? 'N/A' : `${deviceLi.toExponential(2)} H`, 
+                             lrFallbackUsed ? `L/R: ${(cableInductancePerLength / cableResistancePerLength * 1e6).toFixed(1)} \\mu H/\\Omega` : `${factoredCableInductance.toExponential(2)} H (Factored)`, 
                              inductanceCheck ? 'PASS' : 'FAIL', 
                              inductanceCheck ? 'highlight' : 'error');
 
@@ -1829,6 +1910,7 @@
                 
                 const inputs = [
                     ["Barrier Parameters", ""],
+                    ["  - Gas Group", barrierGasGroupSelect.value],
                     ["  - Uo (Max Output Voltage)", barrierUoInput.value + " " + barrierUoUnitSelect.value],
                     ["  - Io (Max Short Circuit Current)", barrierIoInput.value + " " + barrierIoUnitSelect.value],
                     ["  - Po (Max Output Power)", barrierPoInput.value + " " + barrierPoUnitSelect.value],
@@ -1940,6 +2022,80 @@
                     } else {
                         document.body.classList.remove('dark-mode');
                         localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            // --- Theory Chart Initialization (Ignition Curves) ---
+            const ctxIgnition = document.getElementById('ignitionCurveChart');
+            if (ctxIgnition && typeof Chart !== 'undefined') {
+                new Chart(ctxIgnition, {
+                    type: 'line',
+                    data: {
+                        labels: [10, 15, 20, 24, 28, 30, 32, 40],
+                        datasets: [
+                            {
+                                label: 'IIC (Hydrogen)',
+                                data: [2.5, 1.0, 0.4, 0.2, 0.1, 0.08, 0.06, 0.03],
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4,
+                                fill: false,
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'IIB (Ethylene)',
+                                data: [5.0, 2.5, 1.2, 0.6, 0.3, 0.25, 0.2, 0.08],
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                tension: 0.4,
+                                fill: false,
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'IIA (Propane)',
+                                data: [8.0, 4.5, 2.5, 1.4, 0.8, 0.6, 0.5, 0.15],
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                fill: false,
+                                borderWidth: 2
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { boxWidth: 12, font: { size: 10 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y + ' A';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Voltage (V)' },
+                                grid: { color: 'rgba(200, 200, 200, 0.1)' }
+                            },
+                            y: {
+                                type: 'logarithmic',
+                                title: { display: true, text: 'Min. Igniting Current (A)' },
+                                grid: { color: 'rgba(200, 200, 200, 0.1)' },
+                                min: 0.01,
+                                max: 10
+                            }
+                        }
                     }
                 });
             }
