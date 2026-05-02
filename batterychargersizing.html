@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Battery Charger Sizing Calculator - Design Calculators</title>
+    <meta name="description" content="Professional Industrial Battery Charger Sizing Calculator. Calculate required charger current (Amps) based on IEEE 946 standards for substations, oil & gas, and industrial DC systems.">
+    <meta name="keywords" content="battery charger sizing, industrial charger, dc system design, ieee 946, 110v dc charger, 24v dc charger, substation charger sizing">
+    <meta name="author" content="Design Calculators">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://designcalculators.co.in/batterychargersizing.html" />
+
+    <!-- AdSense & Google Analytics -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5936527763614780" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-23Y1V450SR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-23Y1V450SR');
+    </script>
+    
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Tool-specific overrides */
+        .tool-container { background: var(--card-bg); border-radius: 20px; padding: 48px; box-shadow: var(--card-shadow); margin-bottom: 60px; border: 1px solid var(--border-color); }
+        .hero-banner { background: var(--gradient-primary); color: white; padding: 35px 25px; border-radius: 16px; margin-bottom: 25px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15); }
+        .hero-banner h1 { font-family: 'Montserrat', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 10px; }
+        .calculator-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; }
+        @media (max-width: 1024px) { .calculator-grid { grid-template-columns: 1fr; } }
+        
+        .input-card { background: var(--card-bg); padding: 32px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .input-card:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0,0,0,0.05); border-color: var(--primary-color); }
+        .input-card h3 { margin-bottom: 24px; color: var(--primary-color); font-family: 'Montserrat', sans-serif; font-size: 1.3rem; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px; }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+        .form-row.full-width { grid-template-columns: 1fr; }
+        
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--heading-color); }
+        .form-group input, .form-group select { width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); font-size: 0.95rem; font-weight: 500; transition: all 0.3s ease; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); cursor: pointer; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary-color); background: var(--card-bg); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); outline: none; transform: translateY(-1px); }
+        
+        .btn-calculate { width: 100%; background: var(--gradient-primary); color: white; padding: 16px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; transition: transform 0.3s; margin-top: 20px; font-size: 1.1rem; }
+        .btn-calculate:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2); }
+        
+        .results-card { background: var(--card-bg); padding: 32px; border-radius: 16px; border: 2px solid var(--primary-color); display: none; }
+        .results-card.active { display: block; animation: slideIn 0.5s ease-out; }
+        .result-value { font-size: 3rem; font-weight: 800; color: var(--primary-color); margin: 15px 0; }
+        
+        .theory-section { margin-top: 80px; }
+        .theory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 40px; }
+        .theory-card { background: var(--card-bg); padding: 32px; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); }
+        .theory-card h4 { color: var(--primary-color); margin-bottom: 20px; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 12px; }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .step-item { background: var(--bg-color); border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid var(--border-color); transition: all 0.3s; }
+        .step-item:hover { border-left-color: var(--primary-color); transform: translateX(5px); }
+        .step-header { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .step-number { background: var(--primary-color); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; }
+        .step-title { font-weight: 700; color: var(--heading-color); font-size: 1.05rem; }
+        .step-body { font-size: 0.92rem; color: var(--text-color); line-height: 1.5; }
+        .step-value { font-weight: 700; color: var(--primary-color); margin-top: 8px; display: block; font-family: 'Courier New', Courier, monospace; }
+
+        /* Infographic Theory Styling */
+        .infographic-card { background: var(--card-bg); border-radius: 24px; padding: 40px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: hidden; position: relative; }
+        .infographic-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -12px rgba(50, 50, 93, 0.25); border-color: var(--primary-color); }
+        .infographic-card h4 { font-size: 1.4rem; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; color: var(--primary-color); }
+        .infographic-card .icon-box { background: var(--gradient-primary); color: white; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .visual-container { margin: 25px 0; background: var(--bg-color); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); }
+        .key-insight { background: rgba(37, 99, 235, 0.08); border-left: 5px solid var(--primary-color); padding: 20px; border-radius: 8px; margin-top: 25px; }
+        .key-insight strong { color: var(--primary-color); display: block; margin-bottom: 5px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-top: 20px; }
+        .stat-item { text-align: center; padding: 15px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); }
+        .stat-value { font-size: 1.3rem; font-weight: 800; color: var(--primary-color); display: block; }
+        .stat-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-color); opacity: 0.7; }
+
+        .tooltip { position: relative; display: inline-block; cursor: help; color: var(--secondary-color); margin-left: 5px; }
+        .tooltip .tooltiptext { visibility: hidden; width: 250px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 6px; padding: 12px; position: absolute; z-index: 100; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s; font-size: 0.85rem; line-height: 1.4; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+    </style>
+
+    <!-- Standardised SEO Schema (Auto-generated) -->
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "SoftwareApplication",
+            "name": "Industrial Battery Charger Sizing Calculator - Design Calculators",
+            "url": "https://designcalculators.co.in/batterychargersizing.html",
+            "description": "Professional Industrial Battery Charger Sizing Calculator. Calculate required charger current (Amps) based on IEEE 946 standards for substations, oil & gas, and industrial DC systems.",
+            "applicationCategory": "UtilityApplication",
+            "operatingSystem": "Web",
+            "author": {
+                "@type": "Person",
+                "@id": "https://designcalculators.co.in/#person",
+                "name": "Anil Sharma",
+                "url": "https://designcalculators.co.in/about.html"
+            },
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+            }
+        },
+        {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://designcalculators.co.in"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Electrical Tools",
+                    "item": "https://designcalculators.co.in/indexele.html"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "Industrial Battery Charger Sizing Calculator",
+                    "item": "https://designcalculators.co.in/batterychargersizing.html"
+                }
+            ]
+        }
+    ]
+}
+    </script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-bg-animation"></div>
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo-container">
+                    <img src="logo.png" alt="Design Calculators Logo" class="logo" width="42" height="42">
+                    <span class="logo-text">Design Calculators</span>
+                </a>
+
+                <div class="nav-menu">
+                    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+
+                    <ul class="nav-links">
+                        <li><a href="/index.html">Home</a></li>
+                        
+    <li class="dropdown">
+        <a href="/indexele.html" class="dropdown-toggle">Electrical <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/arcflash.html">Arc Flash Calculator</a><a href="/breaker-sizing.html">Breaker Sizing</a><a href="/cable-thermal-rating.html">Cable Ampacity</a><a href="/comm-cable-loss.html">Comm Cable Loss</a><a href="/earth-conductor-size.html">Earth Conductor Size</a><a href="/generatorsizing.html">Generator Sizing</a><a href="/harmonicsanalyser.html">Harmonics Analyser</a><a href="/insulationresistance.html">Insulation Resistance</a><a href="/logicgate.html">Logic Gates Simulator</a><a href="/motor-starting.html">Motor Starting Current</a><a href="/pcbtrace.html">PCB Trace Width</a><a href="/protection-device.html">Protection Device</a><a href="/resistor.html">Resistor Color Code</a><a href="/solarcable.html">Solar Cable Sizing</a><a href="/systemxrcalculator.html">System X/R Ratio</a><a href="/transmissionline.html">Transmission Line</a><a href="/vfd-selection.html">VFD Selection Tool</a></div><div><a href="/batterylife.html">Battery Life Estimator</a><a href="/busbarampacity.html">Busbar Ampacity</a><a href="/cablepulling.html">Cable Pulling Tension</a><a href="/conduit-fill.html">Conduit Fill Calculator</a><a href="/earthingfaultsimulator.html">Earthing Fault Simulator</a><a href="/grounding.html">Grounding System Design</a><a href="/hvac-sizing.html">HVAC Sizing Calculator</a><a href="/lcresonancecalculator.html">LC Resonance Calculator</a><a href="/maintenance-guide.html">Maintenance Guide</a><a href="/nemaipconvertor.html">NEMA to IP Converter</a><a href="/power-factor.html">Power Factor Correction</a><a href="/relay-coordination.html">Relay Coordination</a><a href="/short-circuit.html">Short Circuit Current</a><a href="/solarpvarray.html">Solar PV Array</a><a href="/transformer-calculator.html">Transformer Calculator</a><a href="/unit-converter.html">Unit Converter</a><a href="/voltage-drop.html">Voltage Drop Calculator</a></div><div><a href="/battery-sizing.html">Battery Sizing (AH)</a><a href="/batterychargersizing.html">Battery Charger Sizing</a><a href="/busbarshortcircuit.html">Busbar Short Circuit</a><a href="/cable-sizing.html">Cable Sizing Calculator</a><a href="/ctsaturation.html">CT Saturation</a><a href="/equipment-relay.html">Equipment Relay Setting</a><a href="/harmonic-distortion.html">Harmonic Distortion</a><a href="/industriallighting.html">Industrial Lighting</a><a href="/lighting-calulator.html">Lighting Calculator</a><a href="/motor-efficiency.html">Motor Efficiency</a><a href="/neutral-earth-fault-current.html">Neutral Earth Fault</a><a href="/powertriangletool.html">Power Triangle</a><a href="/electricalresidentialload.html">Residential Load Calc</a><a href="/skindepth.html">Skin Depth Calculator</a><a href="/symmetricalcomponents.html">Symmetrical Components</a><a href="/transformerinrush.html">Transformer Inrush</a><a href="/ups-sizing.html">UPS Sizing</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexele.html" class="view-all-link">View All Electrical Tools →</a>
+            </div>
+        </div>
+    </li>
+                        
+    <li class="dropdown">
+        <a href="/indexinst.html" class="dropdown-toggle">Instrumentation <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/adc-resolution.html">ADC Resolution</a><a href="/capillarylengthtemperatureerror.html">Capillary Error</a><a href="/cv-kv-valve.html">Cv/Kv Valve Sizing</a><a href="/dp-level.html">DP Level Measurement</a><a href="/hydrostatic-level.html">Hydrostatic Level</a><a href="/instrument-range.html">Instrument Range</a><a href="/loop-impedance.html">Loop Impedance</a><a href="/orifice-plate.html">Orifice Plate Beta</a><a href="/pid-tuning.html">PID Tuning</a><a href="/profibus.html">Profibus Calculator</a><a href="/tempsensorresponse.html">Response Time (Tau)</a><a href="/rtd-lead-comp.html">RTD Lead Wire Comp.</a><a href="/sealfluidzeroshift.html">Seal Fluid Shift</a><a href="/snr-calculator.html">SNR Calculator</a><a href="/thermocoupleextensioncable.html">TC Extension Cable</a><a href="/thermowellwakefreq.html">Thermowell Frequency</a><a href="/pressuretransmitteroverrange.html">Tx Overrange</a><a href="/valvecavitationcalculator.html">Valve Cavitation</a><a href="/vibrationtransmitter.html">Vibration Tx</a><a href="/zoneclassificationhelper.html">Zone Classification</a></div><div><a href="/baud-rate.html">Baud Rate Calculator</a><a href="/gascompressibility.html">Compressibility (Z)</a><a href="/dbcalculator.html">dB Gain/Loss Calc</a><a href="/flowprofiledistortioncalculator.html">Flow Distortion</a><a href="/impulselinefreezing.html">Impulse Freezing</a><a href="/intrinsic-safety.html">Intrinsic Safety Loop</a><a href="/measurement.html">Measurement Uncertainty</a><a href="/ph-temp-comp.html">pH Temp Compensation</a><a href="/plcscantime.html">PLC Scan Time</a><a href="/pressurereliefvalve.html">PRV Sizing (API 520)</a><a href="/reynoldsnumbercal.html">Reynolds Number</a><a href="/rtdselfheating.html">RTD Self-Heating</a><a href="/signal-scaling.html">Signal Scaling</a><a href="/staticheadcal.html">Static Head</a><a href="/temperaturesensorlag.html">Temp Sensor Lag</a><a href="/thermowell-wake.html">Thermowell Wake</a><a href="/ultrasoniclevel.html">Ultrasonic Level</a><a href="/valve-cv.html">Valve Cv Viewer</a><a href="/wetlegdensitycompensation.html">Wet Leg Compensation</a></div><div><a href="/capacitance-level.html">Capacitance Level</a><a href="/controlvalvenoise.html">Control Valve Noise</a><a href="/dp-flow-conversion.html">DP Flow Conversion</a><a href="/hartdevices.html">HART Devices</a><a href="/impulse-pressure-drop.html">Impulse Pressure Drop</a><a href="/junctionbox.html">Junction Box Sizing</a><a href="/orifice-flow.html">Orifice Flow Calculator</a><a href="/pid-symbol-library.html">PID Symbol Library</a><a href="/power-supply-load.html">Power Supply Load</a><a href="/prvsizing.html">Relief Orifice Area</a><a href="/rtdexcitationcurrentselection.html">RTD Excitation</a><a href="/rtd-tc-conversion.html">RTD/TC Conversion</a><a href="/sil.html">SIL Calculator</a><a href="/steamflow.html">Steam Flow</a><a href="/thermocouplecjccalculator.html">Thermocouple CJC</a><a href="/turndown.html">Turndown Ratio</a><a href="/controlvalveauthority.html">Valve Authority</a><a href="/controlvalveleakage.html">Valve Leakage Class</a><a href="/wirelesshart.html">WirelessHART Range</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexinst.html" class="view-all-link">View All Instrumentation Tools →</a>
+            </div>
+        </div>
+    </li>
+                        
+    <li class="dropdown">
+        <a href="/indexmech.html" class="dropdown-toggle">Mechanical <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
+        <div class="dropdown-menu">
+            <div class="repo-grid"><div><a href="/aircompressorfad.html">Air Compressor FAD</a><a href="/asme-vessel.html">ASME Vessel Design</a><a href="/belt-pulley.html">Belt & Pulley</a><a href="/bolt-torque.html">Bolt Torque</a><a href="/controlvalveactuator.html">Control Valve Actuator</a><a href="/frictionfactortool.html">Darcy Friction Factor</a><a href="/fatigue.html">Fatigue Analysis</a><a href="/fuel-combustion.html">Fuel Combustion</a><a href="/gas.html">Gas Properties</a><a href="/heat-exchanger.html">Heat Exchanger</a><a href="/hydroliccylinder.html">Hydraulic Cylinder</a><a href="/material-compatibility.html">Material Compatibility</a><a href="/nozzle-reinforcement.html">Nozzle Reinforcement</a><a href="/openchannelflow.html">Open Channel Flow</a><a href="/pipescheduletool.html">Pipe Schedule & Stress</a><a href="/pump-head.html">Pump Head</a><a href="/shaft-power-torque.html">Shaft Power & Torque</a><a href="/steam-table.html">Steam Table</a><a href="/vibrationanalysis.html">Vibration Analysis</a></div><div><a href="/air-flow-duct.html">Air Flow Duct Sizing</a><a href="/beam-deflection.html">Beam Deflection</a><a href="/bernoulli-equation.html">Bernoulli Equation</a><a href="/chiller-capacity.html">Chiller Capacity</a><a href="/cooling-tower-sizing.html">Cooling Tower Sizing</a><a href="/darcy-weisbach.html">Darcy-Weisbach</a><a href="/finned-tube-heat-transfer.html">Finned Tube Heat</a><a href="/furnace-heat-duty.html">Furnace Heat Duty</a><a href="/gear-design.html">Gear Design</a><a href="/heat-loss-pipes.html">Heat Loss Pipes</a><a href="/jacketed-vessel-heat-transfer.html">Jacketed Vessel</a><a href="/metalweight.html">Metal Weight Calculator</a><a href="/nptbspthreadcalculator.html">NPT/BSP Threads</a><a href="/overall-heat-transfer.html">Overall Heat Transfer</a><a href="/pipe-stress-flexibility.html">Pipe Stress</a><a href="/pump-power.html">Pump Power</a><a href="/specific-heat-enthalpy.html">Specific Heat</a><a href="/storage-tank-volume.html">Storage Tank Volume</a><a href="/weldingstress.html">Welding Stress</a></div><div><a href="/allowable-stress-safety-factor.html">Allowable Stress</a><a href="/bearinglife.html">Bearing Life Calculator</a><a href="/boiler-efficiency.html">Boiler Efficiency</a><a href="/compressor-power.html">Compressor Power</a><a href="/corrosion-rate.html">Corrosion Rate</a><a href="/fan-laws.html">Fan Laws</a><a href="/foundation.html">Foundation Design</a><a href="/gas-laws.html">Gas Laws</a><a href="/hardness.html">Hardness Converter</a><a href="/conduction-convection-radiation.html">Heat Transfer Modes</a><a href="/machining.html">Machining Calculator</a><a href="/momentofinertia.html">Moment of Inertia</a><a href="/oring.html">O-Ring Sizing</a><a href="/pipe-flow.html">Pipe Flow Calculator</a><a href="/psychrometric.html">Psychrometric Calc</a><a href="/reynolds-number.html">Reynolds Number</a><a href="/spring.html">Spring Design</a><a href="/thermal-expansion.html">Thermal Expansion</a></div>
+            </div>
+            <div class="view-all-container">
+                <a href="/indexmech.html" class="view-all-link">View All Mechanical Tools →</a>
+            </div>
+        </div>
+    </li>
+                        <li><a href="/index.html#articles">Articles</a></li>
+                        <li><a href="/sitemap2.html">Site Map</a></li>
+                    </ul>
+
+                    <div class="theme-toggle">
+                        <i class="fas fa-sun icon"></i>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-switch">
+                            <span class="slider"></span>
+                        </label>
+                        <i class="fas fa-moon icon"></i>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="tool-container">
+            <div class="hero-banner">
+                <h1>Industrial Battery Charger Sizing</h1>
+                <p style="font-size: 1.1rem; opacity: 0.9;">Advanced Engineering Tool for Substation & Industrial DC Systems</p>
+            </div>
+
+            <div class="tool-intro" style="background: var(--card-bg); padding: 25px 30px; border-radius: 16px; border-left: 5px solid var(--primary-color); margin-bottom: 40px; box-shadow: var(--card-shadow); line-height: 1.6;">
+                <p style="font-size: 0.95rem; color: var(--text-color);"><strong><i class="fas fa-info-circle" style="color: var(--primary-color); margin-right: 5px;"></i> About This Tool:</strong> This advanced engineering calculator determines the optimal continuous current rating and standard frame size for Industrial Battery Chargers (Float-Cum-Boost). It precisely follows <strong>IEEE 946</strong> and IEC guidelines for designing DC power systems for stationary applications.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; font-size: 0.85rem; font-weight: 600;">
+                    <div style="background: var(--bg-color); padding: 10px 15px; border-radius: 8px;"><i class="fas fa-temperature-high" style="color: #EF4444; margin-right: 8px;"></i> Env. & Altitude Derating</div>
+                    <div style="background: var(--bg-color); padding: 10px 15px; border-radius: 8px;"><i class="fas fa-history" style="color: #F59E0B; margin-right: 8px;"></i> EoL Aging Compensation</div>
+                    <div style="background: var(--bg-color); padding: 10px 15px; border-radius: 8px;"><i class="fas fa-project-diagram" style="color: #10B981; margin-right: 8px;"></i> Topology Evaluation</div>
+                </div>
+            </div>
+
+            <div class="calculator-grid">
+                <div class="input-card">
+                    <h3><i class="fas fa-cogs" style="margin-right: 8px;"></i> Engineering Parameters</h3>
+                    <form id="charger-form">
+                        
+                        <h4 style="margin: 0 0 10px; font-size: 0.95rem; color: var(--secondary-color); border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">1. DC System Architecture (FCBC Configuration)</h4>
+                        <div class="form-row full-width" style="margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label for="sys-arch">Select Rectifier / Battery Topology <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Defines float-cum-boost and redundancy logic.</span></span></label>
+                                <select id="sys-arch" style="border: 2px solid var(--primary-color); background-color: rgba(37, 99, 235, 0.05); font-weight: 600;">
+                                    <option value="1C1B">1 × Charger + 1 × Battery (Standard Setup)</option>
+                                    <option value="2C1B">2 × FCBC Chargers + 1 × Battery (100% Charger Redundancy)</option>
+                                    <option value="2C2B" selected>2 × FCBC Chargers + 2 × Batteries (Full Dual-Redundant Float-Cum-Boost)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 15px 0 10px; font-size: 0.95rem; color: var(--secondary-color); border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">2. System & Base Load Profile</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="sys-voltage">System Voltage (V DC)</label>
+                                <select id="sys-voltage">
+                                    <option value="24">24V DC</option>
+                                    <option value="48">48V DC</option>
+                                    <option value="110">110V DC</option>
+                                    <option value="125" selected>125V DC</option>
+                                    <option value="220">220V DC</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="cont-load">Continuous Load (Amps)</label>
+                                <input type="number" id="cont-load" value="25" min="0" step="0.1">
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 15px 0 10px; font-size: 0.95rem; color: var(--secondary-color); border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">2a. Duty Cycle Profile (IEEE 946 Battery Discharge)</h4>
+                        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="duty-l1" style="font-size: 0.8rem; text-align: center;">L1 (1-min) A</label>
+                                <input type="number" id="duty-l1" value="100" min="0" step="1" style="padding: 10px; font-size: 0.9rem; text-align: center;">
+                            </div>
+                            <div class="form-group">
+                                <label for="duty-l2" style="font-size: 0.8rem; text-align: center;">L2 (1-hr) A</label>
+                                <input type="number" id="duty-l2" value="20" min="0" step="1" style="padding: 10px; font-size: 0.9rem; text-align: center;">
+                            </div>
+                            <div class="form-group">
+                                <label for="duty-l3" style="font-size: 0.8rem; text-align: center;">L3 (2-hr) A</label>
+                                <input type="number" id="duty-l3" value="15" min="0" step="1" style="padding: 10px; font-size: 0.9rem; text-align: center;">
+                            </div>
+                            <div class="form-group">
+                                <label for="duty-l4" style="font-size: 0.8rem; text-align: center;">L4 (4-hr) A</label>
+                                <input type="number" id="duty-l4" value="10" min="0" step="1" style="padding: 10px; font-size: 0.9rem; text-align: center;">
+                            </div>
+                            <div class="form-group">
+                                <label for="duty-l5" style="font-size: 0.8rem; text-align: center;">L5 (8-hr) A</label>
+                                <input type="number" id="duty-l5" value="10" min="0" step="1" style="padding: 10px; font-size: 0.9rem; text-align: center;">
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 20px 0 10px; font-size: 0.95rem; color: var(--secondary-color); border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">3. Battery & Electrical Parameters</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bat-type">Chemistry Type</label>
+                                <select id="bat-type">
+                                    <option value="Plante">Vented (Planté) Lead-Acid</option>
+                                    <option value="OPzV">Tubular Gel (OPzV)</option>
+                                    <option value="VRLA" selected>AGM VRLA</option>
+                                    <option value="NiCd">Nickel-Cadmium (Ni-Cd)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bat-cells">Number of Cells (N)</label>
+                                <input type="number" id="bat-cells" value="55" min="1" step="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="max-equip-v">Max Allowable Equip. Volts (V)</label>
+                                <input type="number" id="max-equip-v" value="140" min="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="min-equip-v">Min Allowable Equip. Volts (V)</label>
+                                <input type="number" id="min-equip-v" value="105" min="0" step="1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cable-res">DC Cable Loop Resistance (Ω)</label>
+                                <input type="number" id="cable-res" value="0.05" min="0" step="0.001">
+                            </div>
+                            <div class="form-group">
+                                <label for="ac-ripple">Max Allowable AC Ripple (%)</label>
+                                <input type="number" id="ac-ripple" value="1.0" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bat-ah">Installed Capacity (Ah per Bank)</label>
+                                <input type="number" id="bat-ah" value="200" min="1" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="recharge-hrs">Recharge Target (Hours) <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Time to reach 95% SoC. Industrial standard is 8-12 hours.</span></span></label>
+                                <input type="number" id="recharge-hrs" value="10" min="1" step="0.5">
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 20px 0 10px; font-size: 0.95rem; color: var(--secondary-color); border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">4. Environmental & Margins</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="amb-temp">Emergency Max Temp (°C) <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Worst-case ambient temp (e.g. HVAC failure)</span></span></label>
+                                <input type="number" id="amb-temp" value="45" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="altitude">Site Altitude (Meters)</label>
+                                <input type="number" id="altitude" value="1000" min="0" step="100">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="aging-factor">Aging Margin (%) <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Compensates for end-of-life battery degradation. Typically 20-25%.</span></span></label>
+                                <input type="number" id="aging-factor" value="25" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="margin">Design/Future Margin (%)</label>
+                                <input type="number" id="margin" value="10" min="0">
+                            </div>
+                        </div>
+
+                        <div class="btn-group" style="display: flex; gap: 15px; margin-top: 25px;">
+                            <button type="button" class="btn-calculate" style="flex: 2; margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="calculateCharger()"><i class="fas fa-bolt"></i> Execute FCBC Sizing</button>
+                            <button type="button" class="btn-reset" style="flex: 1; background: var(--border-color); color: var(--text-color); border-radius: 8px; border: none; cursor: pointer; font-weight: 600; transition: all 0.3s;" onclick="resetCalculator()"><i class="fas fa-undo"></i> Reset</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="results-card" class="results-card" style="border: none; background: transparent; padding: 0;">
+                    <div class="input-card" style="margin-bottom: 30px; border: 2px solid var(--primary-color);">
+                        <h3 style="color: var(--primary-color); border: none; margin-bottom: 10px;">Final Engineering Verdict</h3>
+                        
+                        <div style="background: rgba(37, 99, 235, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--primary-color);">
+                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--secondary-color); text-transform: uppercase; margin-bottom: 5px;">Required Base Rating (Per Charger)</div>
+                            <div style="display: flex; align-items: baseline; gap: 10px;">
+                                <div class="result-value" id="res-amps" style="margin: 0; font-size: 2.5rem;">0.0</div>
+                                <span style="font-size: 1.2rem; font-weight: 700; color: var(--text-color);">Amps</span>
+                            </div>
+                        </div>
+
+                        <p style="margin-top: 15px; font-weight: 600; font-size: 1.1rem;">Recommended IEC/IEEE Configuration:</p>
+                        <div id="res-std" style="color: #10B981; font-size: 1.6rem; font-weight: 800; font-family: 'Montserrat', sans-serif; margin: 10px 0;">0 A</div>
+                        
+                        <div id="res-arch-note" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-color); opacity: 0.9; margin-top: 10px; background: var(--bg-color); padding: 12px; border-radius: 6px; border: 1px dashed var(--border-color);">
+                            <!-- Architecture Note populated via JS -->
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                            <button type="button" class="btn-download" style="background: #10B981; color: white; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="downloadPDF()">
+                                <i class="fas fa-file-pdf"></i> Report
+                            </button>
+                            <div style="height: 100px; width: 100%;">
+                                <canvas id="loadChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="step-container" class="step-analysis">
+                        <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.4rem; margin-bottom: 20px; color: var(--heading-color);">8-Step Engineering Sizing Analysis</h3>
+                        <div id="steps-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="theory-section">
+                <h2 style="font-family: 'Montserrat', sans-serif; font-size: 2.8rem; margin-bottom: 60px; text-align: center; color: var(--heading-color); background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Advanced Engineering Compendium</h2>
+                
+                <div class="theory-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 40px;">
+                    <!-- Sizing Physics -->
+                    <div class="infographic-card">
+                        <div class="icon-box"><i class="fas fa-atom"></i></div>
+                        <h4>1. Sizing Physics: Energy Balance</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div style="background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 12px; border-left: 4px solid #EF4444;">
+                                <strong style="color: #EF4444; font-size: 0.8rem; text-transform: uppercase;">The Challenge</strong>
+                                <p style="font-size: 0.85rem; margin: 5px 0;">Undersized chargers lead to <strong>Partial State of Charge (PSoC)</strong>, triggering rapid plate sulfation.</p>
+                            </div>
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 12px; border-left: 4px solid #10B981;">
+                                <strong style="color: #10B981; font-size: 0.8rem; text-transform: uppercase;">Engineering Verdict</strong>
+                                <p style="font-size: 0.85rem; margin: 5px 0;">IEEE 946 mandates capacity to carry <strong>100% Load + Recharge Current</strong> simultaneously.</p>
+                            </div>
+                        </div>
+
+                        <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--primary-color); margin-right: 10px;"></i> <strong>Recharge Window:</strong> Strategic choice between 8-24 hours dictates rectifier frame size.</li>
+                            <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--primary-color); margin-right: 10px;"></i> <strong>Energy Conservation:</strong> Accounts for electrochemical losses (1.1x Lead Acid / 1.4x NiCd).</li>
+                            <li><i class="fas fa-check-circle" style="color: var(--primary-color); margin-right: 10px;"></i> <strong>Thermal Stability:</strong> Prevents electrolyte "boiling" via precise current density control.</li>
+                        </ul>
+                        
+                        <div class="visual-container">
+                            <div style="height: 250px;"><canvas id="efficiencyCurve"></canvas></div>
+                        </div>
+
+                        <div class="key-insight">
+                            <strong>Expert Note:</strong> Accuracy in "Charge Acceptance Factor" is the difference between a 10-year and a 2-year battery life.
+                        </div>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+                            <h5 style="color: var(--heading-color); margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-microscope" style="color: var(--primary-color); margin-right: 8px;"></i> Engineering Deep Dive</h5>
+                            <ul style="list-style-type: none; padding: 0; font-size: 0.85rem; line-height: 1.6; color: var(--text-color);">
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> The energy balance equation must meticulously account for both the steady-state continuous load and the aggressive recharge profile.</li>
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Failure to properly size the charger directly leads to prolonged, sluggish recharge windows, forcing heavily sulfated battery plates and drastically reduced overall operational life.</li>
+                                <li style="position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Modern Switch Mode Power Supply (SMPS) designs provide highly granular control over the charge acceptance phase, dramatically improving efficiency over legacy SCR topologies, especially when operating at partial loads.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Redundancy 2N -->
+                    <div class="infographic-card">
+                        <div class="icon-box"><i class="fas fa-network-wired"></i></div>
+                        <h4>2. Availability: 2N Redundancy</h4>
+
+                        <div style="margin-bottom: 25px;">
+                            <p style="font-size: 1rem; color: var(--primary-color); font-weight: 700; margin-bottom: 10px;">Eliminating Single Points of Failure (SPOF)</p>
+                            <p style="font-size: 0.9rem; opacity: 0.9;">In mission-critical zones, availability isn't an option—it's a requirement. 2N architecture ensures <strong>Tier IV compliance</strong>.</p>
+                        </div>
+
+                        <div class="visual-container">
+                            <svg viewBox="0 0 400 220" style="width: 100%; height: auto;">
+                                <defs>
+                                    <linearGradient id="busGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" style="stop-color:#EF4444;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="200" cy="30" r="15" fill="none" stroke="var(--primary-color)" stroke-width="2"/>
+                                <path d="M 190 30 Q 200 15 210 30 T 230 30" fill="none" stroke="var(--primary-color)" stroke-width="2" transform="translate(-10,0)"/>
+                                <line x1="200" y1="45" x2="100" y2="75" stroke="var(--border-color)" stroke-width="2"/>
+                                <line x1="200" y1="45" x2="300" y2="75" stroke="var(--border-color)" stroke-width="2"/>
+                                <rect x="70" y="75" width="60" height="45" rx="8" fill="var(--card-bg)" stroke="#2563EB" stroke-width="3"/>
+                                <rect x="270" y="75" width="60" height="45" rx="8" fill="var(--card-bg)" stroke="#2563EB" stroke-width="3"/>
+                                <text x="100" y="102" text-anchor="middle" font-size="9" font-weight="bold" fill="var(--text-color)">SYS A</text>
+                                <text x="300" y="102" text-anchor="middle" font-size="9" font-weight="bold" fill="var(--text-color)">SYS B</text>
+                                <rect x="40" y="150" width="320" height="8" rx="4" fill="url(#busGrad)"/>
+                                <text x="200" y="175" text-anchor="middle" font-size="10" font-weight="bold" fill="var(--text-color)">REDUNDANT DC BUS</text>
+                                <line x1="200" y1="158" x2="200" y2="185" stroke="#10B981" stroke-width="2"/>
+                                <rect x="170" y="185" width="60" height="30" rx="4" fill="var(--card-bg)" stroke="#10B981" stroke-width="2"/>
+                            </svg>
+                        </div>
+
+                        <div class="stats-grid" style="margin-bottom: 20px;">
+                            <div class="stat-item"><span class="stat-value">99.999%</span><span class="stat-label">Uptime</span></div>
+                            <div class="stat-item"><span class="stat-value">Active</span><span class="stat-label">Load Share</span></div>
+                        </div>
+
+                        <div style="background: var(--bg-color); padding: 15px; border-radius: 12px; font-size: 0.85rem;">
+                            <i class="fas fa-shield-alt" style="color: #10B981; margin-right: 10px;"></i> <strong>Failover:</strong> 0ms transfer via blocking diodes or active FET controllers.
+                        </div>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+                            <h5 style="color: var(--heading-color); margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-microscope" style="color: var(--primary-color); margin-right: 8px;"></i> Engineering Deep Dive</h5>
+                            <ul style="list-style-type: none; padding: 0; font-size: 0.85rem; line-height: 1.6; color: var(--text-color);">
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> In a fully redundant 2C2B topology, electrical load sharing is actively managed, actively reducing thermal stress on individual rectifiers and significantly extending Mean Time Between Failures (MTBF).</li>
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Heavy-duty blocking diodes mechanically prevent catastrophic backfeeding into a failed charger, ensuring the critical DC bus remains energized and safely isolated.</li>
+                                <li style="position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Standard hot-standby configurations (2C1B) still present a single point of failure at the solitary battery bank, necessitating highly rigorous predictive maintenance and condition monitoring protocols.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Thermal Impact -->
+                    <div class="infographic-card">
+                        <div class="icon-box"><i class="fas fa-thermometer-high"></i></div>
+                        <h4>3. Thermal: The 8-Degree Rule</h4>
+                        <p style="font-size: 0.95rem; margin-bottom: 20px;">Temperature is the **Silent Killer** of DC infrastructure. Chemistry follows the Arrhenius law.</p>
+                        
+                        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 25px;">
+                            <div style="font-size: 2rem; font-weight: 900; color: #EF4444; border-right: 3px solid var(--border-color); padding-right: 20px;">8°C</div>
+                            <div style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Rise in Temp = <br><span style="color: #EF4444;">50% Loss in Life</span></div>
+                        </div>
+
+                        <div class="visual-container">
+                            <div style="height: 250px;"><canvas id="tempDeratingChart"></canvas></div>
+                        </div>
+
+                        <div class="key-insight" style="background: rgba(245, 158, 11, 0.1); border-left-color: #F59E0B;">
+                            <strong>Strategic Defense:</strong> Temp-Compensated Charging (-3mV/cell/°C) is mandatory to prevent <strong>Thermal Runaway</strong> feedback loops.
+                        </div>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+                            <h5 style="color: var(--heading-color); margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-microscope" style="color: var(--primary-color); margin-right: 8px;"></i> Engineering Deep Dive</h5>
+                            <ul style="list-style-type: none; padding: 0; font-size: 0.85rem; line-height: 1.6; color: var(--text-color);">
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Consistently elevated ambient temperatures aggressively accelerate internal lead grid corrosion and prompt catastrophic electrolyte dry-out in Valve Regulated Lead-Acid (VRLA) cells.</li>
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Active temperature compensation dynamically adjusts the applied float voltage, deliberately lowering it during high heat to strictly prevent thermal runaway conditions and dangerous overcharging.</li>
+                                <li style="position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Room ventilation cooling calculations must safely assume maximum heat dissipation metrics from rectifiers running at absolute peak current during the heavy boost charge phase.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- THDi & Power Quality -->
+                    <div class="infographic-card">
+                        <div class="icon-box"><i class="fas fa-bolt"></i></div>
+                        <h4>4. Power Quality & Harmonics</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 20px;">Rectifiers are **Non-Linear Loads** that pollute upstream AC networks. THDi control is paramount.</p>
+                        
+                        <div class="visual-container" style="display: flex; justify-content: space-around; text-align: center; padding: 30px;">
+                            <div>
+                                <div style="width: 70px; height: 70px; border-radius: 50%; border: 4px solid #EF4444; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: #EF4444; margin: 0 auto 10px;">30%</div>
+                                <span class="stat-label">6-Pulse SCR</span>
+                            </div>
+                            <div style="border-left: 1px solid var(--border-color); height: 80px;"></div>
+                            <div>
+                                <div style="width: 70px; height: 70px; border-radius: 50%; border: 4px solid #10B981; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: #10B981; margin: 0 auto 10px;">&lt;3%</div>
+                                <span class="stat-label">IGBT PWM</span>
+                            </div>
+                        </div>
+
+                        <ul style="list-style: none; padding: 0; font-size: 0.85rem; margin-top: 20px;">
+                            <li style="margin-bottom: 8px;"><i class="fas fa-microchip" style="color: var(--primary-color);"></i> <strong>SCR Impact:</strong> High THDi causes generator governor "hunting".</li>
+                            <li><i class="fas fa-shield-virus" style="color: var(--primary-color);"></i> <strong>IGBT Benefit:</strong> Active Power Factor Correction (PFC) near unity.</li>
+                        </ul>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+                            <h5 style="color: var(--heading-color); margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-microscope" style="color: var(--primary-color); margin-right: 8px;"></i> Engineering Deep Dive</h5>
+                            <ul style="list-style-type: none; padding: 0; font-size: 0.85rem; line-height: 1.6; color: var(--text-color);">
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Legacy thyristor (SCR-based) rectifiers inherently generate severe input current harmonics, very often requiring bulky and extremely expensive isolation transformers or passive detuned filters.</li>
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Unmitigated high THDi can actively lead to premature degradation and overheating of vital upstream AC components, including main switchgear, supply cables, and emergency diesel generator alternators.</li>
+                                <li style="position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> High-frequency IGBT switching systems utilizing Active Front End (AFE) PWM fundamentally resolve this, achieving near-perfect sinusoidal input current waves and a power factor essentially at 0.99.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Earth Fault Localization -->
+                    <div class="infographic-card">
+                        <div class="icon-box"><i class="fas fa-search-location"></i></div>
+                        <h4>5. Earth Fault Engineering</h4>
+                        <p style="font-size: 0.95rem; font-weight: 700; color: var(--primary-color); margin-bottom: 15px;">The "Hidden Threat" of Floating Systems</p>
+                        
+                        <div style="background: var(--bg-color); padding: 20px; border-radius: 16px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
+                                <i class="fas fa-radiation" style="color: #F59E0B; font-size: 1.2rem;"></i>
+                                <span style="font-size: 0.85rem; font-weight: 600;">1st Fault: Hidden. 2nd Fault: CATASTROPHIC.</span>
+                            </div>
+                            <p style="font-size: 0.85rem; opacity: 0.8;">Active 20Hz Digital Pulse Injection pinpoint's faults in real-time without manual sectionalizing.</p>
+                        </div>
+
+                        <div class="key-insight" style="margin-top: 0;">
+                            <strong>Expert Tip:</strong> Persistent ground faults are the #1 cause of relay mal-operation in live substations.
+                        </div>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+                            <h5 style="color: var(--heading-color); margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-microscope" style="color: var(--primary-color); margin-right: 8px;"></i> Engineering Deep Dive</h5>
+                            <ul style="list-style-type: none; padding: 0; font-size: 0.85rem; line-height: 1.6; color: var(--text-color);">
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> A single, isolated earth fault on an ungrounded DC system does not typically disrupt immediate operations, but it drastically elevates the risk of a disastrous double-to-earth short circuit.</li>
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Symmetrical double faults can entirely bypass the main protective relays, potentially triggering unintended breaker operations or disastrously failing to clear a massive short circuit.</li>
+                                <li style="position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Modern intelligent earth fault relays actively inject low-frequency AC signals to safely trace minute leakage paths and precisely calculate specific feeder insulation resistance in real-time.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Hydrogen Gas Safety -->
+                    <div class="infographic-card">
+                        <div class="icon-box"><i class="fas fa-wind"></i></div>
+                        <h4>6. Gas Safety & Ventilation</h4>
+                        
+                        <div class="visual-container" style="text-align: center; background: linear-gradient(135deg, var(--bg-color), rgba(239, 68, 68, 0.05));">
+                            <div style="font-size: 3rem; font-weight: 900; color: #EF4444; margin-bottom: 5px;">1.0%</div>
+                            <span class="stat-label" style="display: block; letter-spacing: 2px;">CRITICAL CEILING</span>
+                            <div style="height: 4px; width: 60px; background: #EF4444; margin: 15px auto;"></div>
+                            <p style="font-size: 0.85rem; padding: 0 20px;">H₂ Lower Flammability Limit (LFL) is 4%. 1% threshold provides an <strong>Industrial 4x Safety Margin</strong>.</p>
+                        </div>
+
+                        <div class="key-insight" style="background: rgba(16, 185, 129, 0.1); border-left-color: #10B981;">
+                            <strong>Mandatory:</strong> Exhaust fan interlocks must trip "Boost Charge" instantly upon airflow loss.
+                        </div>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+                            <h5 style="color: var(--heading-color); margin-bottom: 12px; font-size: 1rem;"><i class="fas fa-microscope" style="color: var(--primary-color); margin-right: 8px;"></i> Engineering Deep Dive</h5>
+                            <ul style="list-style-type: none; padding: 0; font-size: 0.85rem; line-height: 1.6; color: var(--text-color);">
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Flammable hydrogen gas generation peaks significantly when a battery bank transitions from float into the high-voltage equalization or heavy boost charge state.</li>
+                                <li style="margin-bottom: 8px; position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Because hydrogen is roughly fourteen times lighter than air, extraction systems must be strategically positioned at the absolute highest point of the battery room ceiling to prevent dangerous pockets.</li>
+                                <li style="position: relative; padding-left: 15px;"><span style="position: absolute; left: 0; color: var(--primary-color);">•</span> Failsafe hardwired interlocks are strictly mandated by safety codes to automatically downgrade the charger back to float mode if the ventilation system detects a sudden loss of adequate airflow.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    
+    <!-- Related Tools Section (Auto-generated) -->
+    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+        <div class="container">
+            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
+                    <a href="/battery-sizing.html" class="silo-card" style="text-decoration:none;">
+                        <span>Battery Sizing</span>
+                    </a>
+                    <a href="/ups-sizing.html" class="silo-card" style="text-decoration:none;">
+                        <span>Ups Sizing</span>
+                    </a>
+                    <a href="/batterylife.html" class="silo-card" style="text-decoration:none;">
+                        <span>Batterylife</span>
+                    </a>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <a href="/" class="footer-logo">
+                        <img src="logo.png" alt="Design Calculators Logo" loading="lazy" decoding="async">
+                        <span class="footer-logo-text">Design Calculators</span>
+                    </a>
+                    <p class="footer-description">A comprehensive engineering calculator hub based on IEC, IEEE, and global standards.</p>
+                    <div class="social-buttons">
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn linkedin" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer" class="social-btn youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in&text=Check%20out%20this%20amazing%20engineering%20calculator%20hub!" target="_blank" rel="noopener noreferrer" class="social-btn twitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn facebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20resource:%20https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn whatsapp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="footer-col">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href='/indexele.html'>Electrical Tools</a></li>
+                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
+                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
+                            <li><a href='/about.html'>About Us</a></li>
+                            <li><a href='/faq.html'>FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Learn More</h4>
+                        <ul>
+                            <li><a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer">YouTube Channel</a></li>
+                            <li><a href='/contact.html'>Contact Us</a></li>
+                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
+                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
+                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Our Network</h4>
+                        <ul>
+                            <li style="margin-bottom: 12px;">
+                                <a href="https://reliabilitytools.co.in/" target="_blank" rel="noopener" style="font-weight: 600; display: block; margin-bottom: 2px;">Reliability Tools</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Reliability & maintenance engineering calculators.</span>
+                            </li>
+                            <li style="margin-bottom: 12px;">
+                                <a href="https://electrosafe.homes/" target="_blank" rel="noopener" style="font-weight: 600; display: block; margin-bottom: 2px;">ElectroSafe</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Dedicated to home electrical safety & protection.</span>
+                            </li>
+                            <li>
+                                <a href="https://knowyourname.co.in/" target="_blank" rel="noopener" style="font-weight: 600; display: block; margin-bottom: 2px;">KnowYourName</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Scientific name analysis: Phonetics & Acoustics.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-disclaimer">
+                <p>All tools are for guidance only and should not replace professional engineering judgment. Results must be verified by a qualified professional against project requirements and local codes.</p>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Design Calculators. Created by <span style="color: var(--secondary-color); font-weight: bold;">Anil Sharma</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let myChart = null;
+
+        function calculateCharger() {
+            // Inputs
+            const arch = document.getElementById('sys-arch').value;
+            const sysVoltage = parseFloat(document.getElementById('sys-voltage').value);
+            const load_cont = parseFloat(document.getElementById('cont-load').value);
+            
+            // Duty Cycle
+            const l1 = parseFloat(document.getElementById('duty-l1').value);
+            const l2 = parseFloat(document.getElementById('duty-l2').value);
+            const l3 = parseFloat(document.getElementById('duty-l3').value);
+            const l4 = parseFloat(document.getElementById('duty-l4').value);
+            const l5 = parseFloat(document.getElementById('duty-l5').value);
+            
+            // Battery & Electrical
+            const type = document.getElementById('bat-type').value;
+            const batCells = parseFloat(document.getElementById('bat-cells').value);
+            const maxEquipV = parseFloat(document.getElementById('max-equip-v').value);
+            const minEquipV = parseFloat(document.getElementById('min-equip-v').value);
+            const cableRes = parseFloat(document.getElementById('cable-res').value);
+            const acRipple = parseFloat(document.getElementById('ac-ripple').value);
+            
+            const ah = parseFloat(document.getElementById('bat-ah').value);
+            const time = parseFloat(document.getElementById('recharge-hrs').value);
+            
+            const temp = parseFloat(document.getElementById('amb-temp').value);
+            const alt = parseFloat(document.getElementById('altitude').value);
+            const aging = 1 + (parseFloat(document.getElementById('aging-factor').value) / 100);
+            const margin = 1 + (parseFloat(document.getElementById('margin').value) / 100);
+
+            // Calculations & Analysis
+            const steps = [];
+
+            // Step 1: Environmental Derating
+            let tempFactor = 1.0;
+            if (temp > 25) tempFactor = 1 + (temp - 25) * 0.01;
+            let altFactor = 1.0;
+            if (alt > 1000) altFactor = 1 + ((alt - 1000) / 1000) * 0.05;
+            const combinedEnv = tempFactor * altFactor;
+            
+            steps.push({
+                title: "Site & Environmental Derating",
+                body: "Industrial power electronics lose efficiency at high altitudes and elevated temperatures. Derating ensures thermal stability under worst-case emergency conditions.",
+                math: `\\[ K_{temp} = ${temp > 25 ? `1 + (${temp} - 25) \\times 0.01` : `1.0`} = ${tempFactor.toFixed(2)} \\]<br>\\[ K_{alt} = ${alt > 1000 ? `1 + \\frac{${alt} - 1000}{1000} \\times 0.05` : `1.0`} = ${altFactor.toFixed(2)} \\]<br>\\[ K_{env} = K_{temp} \\times K_{alt} = ${tempFactor.toFixed(2)} \\times ${altFactor.toFixed(2)} = ${combinedEnv.toFixed(2)} \\]`,
+                value: `T-Factor: ${tempFactor.toFixed(2)}, Alt-Factor: ${altFactor.toFixed(2)} (Combined: ${combinedEnv.toFixed(2)})`
+            });
+
+            // Step 2: Continuous Load Evaluation
+            const adjustedContLoad = load_cont * combinedEnv;
+            steps.push({
+                title: "Continuous Steady-State Load",
+                body: "The charger must supply all steady-state loads (Relays, SCADA) indefinitely without depleting the battery, adjusted for environment.",
+                math: `\\[ I_{cont\\_adj} = L_{cont} \\times K_{env} = ${load_cont} \\times ${combinedEnv.toFixed(2)} = ${adjustedContLoad.toFixed(2)} \\text{ A} \\]`,
+                value: `Current (L_cont): ${adjustedContLoad.toFixed(2)} A`
+            });
+
+            // Step 3: Battery Duty Cycle Profiling
+            const ah_duty = (l1 * (1/60)) + (l2 * (59/60)) + (l3 * 1) + (l4 * 2) + (l5 * 4);
+            steps.push({
+                title: "Dynamic Duty Cycle Profiling (IEEE 946)",
+                body: "Calculates the total Ah drained from the battery during an AC failure event based on the specified load profile (L1 to L5).",
+                math: `\\[ Ah_{duty} = \\sum (L_i \\times T_i) = (${l1} \\times \\frac{1}{60}) + (${l2} \\times \\frac{59}{60}) + (${l3} \\times 1) + (${l4} \\times 2) + (${l5} \\times 4) \\]<br>\\[ Ah_{duty} = ${ah_duty.toFixed(2)} \\text{ Ah} \\]`,
+                value: `Discharged Capacity: ${ah_duty.toFixed(2)} Ah`
+            });
+
+            // Step 4: Battery Recharge Component
+            const K = (type === 'NiCd') ? 1.4 : 1.1;
+            const rechargeCurrent = (ah_duty * K) / time;
+            const adjustedRecharge = rechargeCurrent * combinedEnv;
+            steps.push({
+                title: "Battery Recharge Component",
+                body: `Calculates current to recover the specific Ah lost during the documented duty cycle. Using K-factor of ${K} for the selected chemistry.`,
+                math: `\\[ I_{recharge} = \\frac{Ah_{duty} \\times K}{T_{recharge}} = \\frac{${ah_duty.toFixed(2)} \\times ${K}}{${time}} = ${rechargeCurrent.toFixed(2)} \\text{ A} \\]<br>\\[ I_{recharge\\_adj} = I_{recharge} \\times K_{env} = ${rechargeCurrent.toFixed(2)} \\times ${combinedEnv.toFixed(2)} = ${adjustedRecharge.toFixed(2)} \\text{ A} \\]`,
+                value: `Current (I_recharge): ${adjustedRecharge.toFixed(2)} A`
+            });
+
+            // Step 5: Float / Boost Voltage Validation
+            let v_boost_cell = 2.30;
+            let v_float_cell = 2.25;
+            if (type === 'Plante') { v_float_cell = 2.20; v_boost_cell = 2.33; }
+            else if (type === 'OPzV') { v_float_cell = 2.25; v_boost_cell = 2.35; }
+            else if (type === 'NiCd') { v_float_cell = 1.40; v_boost_cell = 1.55; }
+            
+            const boost_total = batCells * v_boost_cell;
+            const boostWarning = boost_total > maxEquipV ? `<span style="color:#EF4444;font-weight:bold;"><i class="fas fa-exclamation-triangle"></i> WARNING: Boost Voltage exceeds Max Equipment Voltage!</span>` : `<span style="color:#10B981;font-weight:bold;"><i class="fas fa-check-circle"></i> SAFE</span>`;
+            
+            steps.push({
+                title: "Chemistry & Boost Voltage Check",
+                body: "Verifies that the high equalization (boost) voltage required for the specific battery chemistry does not exceed the maximum allowable voltage of the connected load equipment.",
+                math: `\\[ V_{boost\\_total} = N \\times V_{boost/cell} = ${batCells} \\times ${v_boost_cell} = ${boost_total.toFixed(1)} \\text{ V} \\]<br>Max Equipment Voltage: ${maxEquipV} V`,
+                value: `${boost_total.toFixed(1)} V (Status: ${boostWarning})`
+            });
+
+            // Step 6: Voltage Drop Validation
+            const v_end_cell = (type === 'NiCd') ? 1.10 : 1.75;
+            const min_batt_v = batCells * v_end_cell;
+            const terminal_v = min_batt_v - (l1 * cableRes);
+            const dropWarning = terminal_v < minEquipV ? `<span style="color:#EF4444;font-weight:bold;"><i class="fas fa-exclamation-triangle"></i> WARNING: Terminal Voltage sags below Minimum Equipment Voltage!</span>` : `<span style="color:#10B981;font-weight:bold;"><i class="fas fa-check-circle"></i> SAFE</span>`;
+
+            steps.push({
+                title: "Transient Voltage Drop Check",
+                body: "Ensures that during the heaviest transient fault (L1 peak at end-of-discharge), the voltage at the switchgear remains above the absolute minimum pickup threshold.",
+                math: `\\[ V_{end} = (${batCells} \\times ${v_end_cell}) - (L1 \\times R_{cable}) = ${min_batt_v.toFixed(1)} - (${l1} \\times ${cableRes}) = ${terminal_v.toFixed(1)} \\text{ V} \\]<br>Min Equipment Voltage: ${minEquipV} V`,
+                value: `${terminal_v.toFixed(1)} V (Status: ${dropWarning})`
+            });
+
+            // Step 7: Base Current & Aging Compensation
+            const baseCurrent = Math.max(adjustedContLoad + adjustedRecharge, l1); // Ensure charger can at least handle L1 if necessary, though typical sizing is cont + recharge. We'll stick to cont + recharge per IEEE 946.
+            const totalBase = adjustedContLoad + adjustedRecharge;
+            const agingCurrent = totalBase * aging;
+            steps.push({
+                title: "End-of-Life (EoL) Aging Compensation",
+                body: `Accounts for increasing internal resistance as components degrade over a 15-20 year lifecycle. Applied ${((aging - 1)*100).toFixed(0)}% aging margin.`,
+                math: `\\[ I_{base} = I_{cont\\_adj} + I_{recharge\\_adj} = ${adjustedContLoad.toFixed(2)} + ${adjustedRecharge.toFixed(2)} = ${totalBase.toFixed(2)} \\text{ A} \\]<br>\\[ I_{aged} = I_{base} \\times Margin_{aging} = ${totalBase.toFixed(2)} \\times ${aging} = ${agingCurrent.toFixed(2)} \\text{ A} \\]`,
+                value: `Base: ${totalBase.toFixed(1)} A → Aged: ${agingCurrent.toFixed(2)} A`
+            });
+
+            // Step 8: Design Margin & Future Expansion
+            const finalRequired = agingCurrent * margin;
+            steps.push({
+                title: "Design & Future Growth Margin",
+                body: `Strategic allowance of ${((margin - 1)*100).toFixed(0)}% for uncharacterized loads and future expansions without requiring full infrastructure replacement.`,
+                math: `\\[ I_{final} = I_{aged} \\times Margin_{design} = ${agingCurrent.toFixed(2)} \\times ${margin} = ${finalRequired.toFixed(2)} \\text{ A} \\]`,
+                value: `Calculated Target: ${finalRequired.toFixed(2)} A`
+            });
+
+            // Step 9: FCBC Architecture Validation
+            let archPhilosophy = "";
+            let qty = 1;
+            let displayVerdict = "";
+
+            if (arch === '2C2B') {
+                qty = 2;
+                archPhilosophy = "Dual Float-Cum-Boost (2C2B) Setup: Charger 1 connects to the common DC bus to feed continuous plant load and float Battery 1. Simultaneously, Charger 2 isolates via blocking diodes/switches to inject the necessary boost current into Battery 2 at high voltage. Both chargers are sized at 100% capacity for full interchangeability.";
+                displayVerdict = `${qty} × FCBC Chargers`;
+            } else if (arch === '2C1B') {
+                qty = 2;
+                archPhilosophy = "Dual FCBC (2C1B) Setup: 100% Redundant configuration. One charger acts as the master feeding load and floating/boosting the single battery, while the second acts as a hot-standby.";
+                displayVerdict = `${qty} × FCBC Chargers`;
+            } else {
+                archPhilosophy = "Standard 1C1B Setup: Single charger must handle load and recharge simultaneously. Lacks hardware redundancy.";
+                displayVerdict = `1 × Standard Charger`;
+            }
+
+            steps.push({
+                title: "FCBC Operational Philosophy & Topology",
+                body: archPhilosophy,
+                value: `System Setup: ${displayVerdict}`
+            });
+
+            // Step 10: Standard Industrial Frame Recommendation
+            const standardRatings = [10, 16, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250];
+            let recSize = standardRatings.find(r => r >= finalRequired) || Math.ceil(finalRequired / 100) * 100;
+            steps.push({
+                title: "Standard Frame Size Selection",
+                body: `Maps the calculated continuous rating to the nearest standard industrial IEC/IEEE rectifier frame size. Ensures compliance with < ${acRipple}% AC Ripple constraint for sensitive relays.`,
+                math: `\\[ \\text{Selected } I_{frame} \\ge I_{final} \\Rightarrow ${recSize} \\text{ A} \\]`,
+                value: `Selected Frame (Per Unit): ${recSize} A`
+            });
+
+            // Render Steps
+            const stepsList = document.getElementById('steps-list');
+            stepsList.innerHTML = '';
+            steps.forEach((step, index) => {
+                const item = document.createElement('div');
+                item.className = 'step-item';
+                let mathHtml = step.math ? `<div class="step-math" style="background: var(--card-bg); padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto; font-size: 0.95rem; color: var(--text-color);">${step.math}</div>` : '';
+                item.innerHTML = `
+                    <div class="step-header">
+                        <div class="step-number">${index + 1}</div>
+                        <div class="step-title">${step.title}</div>
+                    </div>
+                    <div class="step-body">${step.body}</div>
+                    ${mathHtml}
+                    <div class="step-value">${step.value}</div>
+                `;
+                stepsList.appendChild(item);
+            });
+
+            // UI Update
+            document.getElementById('res-amps').innerText = finalRequired.toFixed(1);
+            
+            if (qty > 1) {
+                document.getElementById('res-std').innerText = `${qty} × ${recSize} A (FCBC)`;
+            } else {
+                document.getElementById('res-std').innerText = `${recSize} A`;
+            }
+            
+            // Set architecture note with an icon
+            document.getElementById('res-arch-note').innerHTML = `<strong><i class="fas fa-network-wired" style="color:var(--primary-color);"></i> Architecture Note:</strong> ${archPhilosophy}`;
+            document.getElementById('results-card').classList.add('active');
+
+            // Chart
+            updateChart(adjustedContLoad, adjustedRecharge, (finalRequired - (adjustedContLoad + adjustedRecharge)));
+            
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function resetCalculator() {
+            document.getElementById('charger-form').reset();
+            document.getElementById('results-card').classList.remove('active');
+            document.getElementById('steps-list').innerHTML = '';
+            if (myChart) { myChart.destroy(); myChart = null; }
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            
+            // Header
+            doc.setFontSize(20);
+            doc.setTextColor(37, 99, 235);
+            doc.text("Industrial Battery Charger Sizing Report", 14, 20);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text("Generated by: Design Calculators (designcalculators.co.in)", 14, 28);
+            doc.text(`Project ID: DC-SYS-${Date.now()}`, 14, 34);
+            doc.text(`Date: ${new Date().toLocaleString()}`, 14, 40);
+
+            // Fetch Inputs
+            const arch = document.getElementById('sys-arch').options[document.getElementById('sys-arch').selectedIndex].text;
+            const sysVoltage = document.getElementById('sys-voltage').value + 'V DC';
+            const load_cont = document.getElementById('cont-load').value + ' A';
+            const type = document.getElementById('bat-type').options[document.getElementById('bat-type').selectedIndex].text;
+            const ah = document.getElementById('bat-ah').value + ' Ah';
+            const rechargeTime = document.getElementById('recharge-hrs').value + ' Hrs';
+            const temp = document.getElementById('amb-temp').value + ' °C';
+            const alt = document.getElementById('altitude').value + ' m';
+            const aging = document.getElementById('aging-factor').value + '%';
+            const margin = document.getElementById('margin').value + '%';
+            
+            // New inputs
+            const duty = `L1:${document.getElementById('duty-l1').value}A, L2:${document.getElementById('duty-l2').value}A, L3:${document.getElementById('duty-l3').value}A, L4:${document.getElementById('duty-l4').value}A, L5:${document.getElementById('duty-l5').value}A`;
+            const batCells = document.getElementById('bat-cells').value;
+            const maxEquipV = document.getElementById('max-equip-v').value + ' V';
+            const minEquipV = document.getElementById('min-equip-v').value + ' V';
+            const cableRes = document.getElementById('cable-res').value + ' Ω';
+            const acRipple = document.getElementById('ac-ripple').value + ' %';
+
+            const inputBody = [
+                ['System Architecture', arch, 'System Voltage', sysVoltage],
+                ['Continuous Load', load_cont, 'Battery Chemistry', type],
+                ['Duty Cycle Profile', duty, 'Number of Cells (N)', batCells],
+                ['Max Equip. Volts', maxEquipV, 'Min Equip. Volts', minEquipV],
+                ['Cable Loop Resistance', cableRes, 'AC Ripple Limit', acRipple],
+                ['Installed Capacity', ah, 'Recharge Target', rechargeTime],
+                ['Emergency Max Temp', temp, 'Site Altitude', alt],
+                ['Aging Margin', aging, 'Design Margin', margin]
+            ];
+
+            doc.autoTable({
+                startY: 45,
+                head: [['Parameter', 'Value', 'Parameter', 'Value']],
+                body: inputBody,
+                theme: 'grid',
+                headStyles: { fillColor: [52, 73, 94] },
+                styles: { fontSize: 8, cellPadding: 2 }
+            });
+
+            // Results summary
+            const finalAmps = document.getElementById('res-amps').innerText + ' A';
+            const recStd = document.getElementById('res-std').innerText;
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 10,
+                head: [['Final Engineering Verdict', '']],
+                body: [
+                    ['Required Base Rating (Per Charger)', finalAmps],
+                    ['Recommended IEC/IEEE Configuration', recStd]
+                ],
+                theme: 'grid',
+                headStyles: { fillColor: [16, 185, 129] },
+                styles: { fontSize: 9, fontStyle: 'bold' }
+            });
+
+            // Steps
+            const stepBody = [];
+            const stepElements = document.querySelectorAll('.step-item');
+            stepElements.forEach((el, i) => {
+                const title = el.querySelector('.step-title').innerText;
+                const value = el.querySelector('.step-value').innerText;
+                stepBody.push([`Step ${i+1}: ${title}`, value]);
+            });
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 10,
+                head: [['Engineering Phase (8-Step Analysis)', 'Calculated Value / Result']],
+                body: stepBody,
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 8, cellPadding: 3 }
+            });
+
+            doc.save("FCBC_Charger_Sizing_Report.pdf");
+        }
+
+        function updateChart(load, recharge, margins) {
+            const ctx = document.getElementById('loadChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Amperage Distribution (Per Frame)'],
+                    datasets: [
+                        { label: 'Continuous Load (Adj.)', data: [load], backgroundColor: '#2563EB' },
+                        { label: 'Recharge Current (Adj.)', data: [recharge], backgroundColor: '#10B981' },
+                        { label: 'Calculated Margins (Aging/Int/Growth)', data: [margins], backgroundColor: '#F59E0B' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Amps' } }, x: { stacked: true } },
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // Mobile Menu
+        document.querySelector('.mobile-menu-toggle').addEventListener('click', () => {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Theme Switcher
+        const themeSwitch = document.getElementById('theme-switch');
+        themeSwitch.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        });
+
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeSwitch.checked = true;
+        }
+
+        // Theory Charts Initialization
+        function initTheoryCharts() {
+            // Efficiency Curve
+            new Chart(document.getElementById('efficiencyCurve'), {
+                type: 'line',
+                data: {
+                    labels: ['0%', '20%', '40%', '60%', '80%', '100%'],
+                    datasets: [{
+                        label: 'Modern SMPS (%)',
+                        data: [75, 88, 93, 94, 94, 93],
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Legacy SCR (%)',
+                        data: [60, 70, 78, 82, 85, 84],
+                        borderColor: '#94a3b8',
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Efficiency vs Load' } } }
+            });
+
+            // Temperature Derating
+            new Chart(document.getElementById('tempDeratingChart'), {
+                type: 'line',
+                data: {
+                    labels: ['20', '25', '30', '35', '40', '45', '50'],
+                    datasets: [{
+                        label: 'VRLA Life (Years)',
+                        data: [15, 10, 6.5, 4.2, 2.5, 1.6, 1.0],
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Design Life vs Temperature (°C)' } } }
+            });
+        }
+
+        window.addEventListener('load', initTheoryCharts);
+    </script>
+</body>
+</html>

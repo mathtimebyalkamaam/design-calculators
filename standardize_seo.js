@@ -66,12 +66,12 @@ async function processFiles() {
             "@context": "https://schema.org",
             "@graph": [
                 {
-                    "@type": "WebApplication",
+                    "@type": "SoftwareApplication",
                     "name": title,
                     "url": fullUrl,
                     "description": description,
-                    "applicationCategory": "EngineeringTool",
-                    "operatingSystem": "Any",
+                    "applicationCategory": "UtilityApplication",
+                    "operatingSystem": "Web",
                     "author": authorJson,
                     "offers": {
                         "@type": "Offer",
