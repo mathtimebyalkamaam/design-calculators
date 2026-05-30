@@ -29,6 +29,8 @@
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <!-- MathJax -->
     <script>
@@ -452,6 +454,411 @@
         @media (max-width: 768px) {
             .theory-grid { grid-template-columns: 1fr !important; }
         }
+
+        /* ========================================== */
+        /* FAQ & EMBED & LEVEL UP STYLES              */
+        /* ========================================== */
+        :root {
+            --info-bg: rgba(37, 99, 235, 0.1);
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --danger-bg: rgba(239, 68, 68, 0.1);
+        }
+        body.dark-mode {
+            --info-bg: rgba(59, 130, 246, 0.2);
+            --success-bg: rgba(52, 211, 153, 0.2);
+            --warning-bg: rgba(251, 191, 36, 0.2);
+            --danger-bg: rgba(248, 113, 113, 0.2);
+        }
+
+        .faq-section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: var(--heading, #111827);
+            margin: 50px 0 15px 0;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .faq-section-desc {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text, #4B5563);
+            max-width: 750px;
+            margin: 0 auto 40px auto;
+            line-height: 1.6;
+        }
+
+        .faq-accordion {
+            max-width: 1200px;
+            margin: 0 auto 50px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .faq-card {
+            background-color: var(--card, #FFFFFF);
+            border: 1px solid var(--border, #E2E8F0);
+            border-radius: 14px;
+            box-shadow: var(--shadow, 0 4px 8px rgba(0, 0, 0, 0.05));
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            border-color: var(--secondary, #2563EB);
+        }
+
+        .faq-trigger {
+            width: 100%;
+            padding: 22px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            outline: none;
+        }
+
+        .faq-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .faq-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background-color: var(--info-bg);
+            color: var(--primary, #1E3A8A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .faq-card:hover .faq-icon-box {
+            background-color: var(--primary, #1E3A8A);
+            color: white;
+        }
+
+        .faq-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--heading, #111827);
+            line-height: 1.4;
+        }
+
+        .faq-chevron {
+            color: var(--text, #4B5563);
+            transition: transform 0.3s ease, color 0.3s ease;
+            font-size: 1.2rem;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+
+        .faq-card.active .faq-chevron {
+            transform: rotate(180deg);
+            color: var(--primary, #1E3A8A);
+        }
+
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-content-inner {
+            padding: 0 28px 28px 28px;
+            border-top: 1px solid var(--border, #E2E8F0);
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .faq-content-inner {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        .faq-theory-side {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .faq-theory-side p {
+            line-height: 1.8;
+            color: var(--text, #4B5563);
+        }
+
+        .faq-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .faq-badge.sizing { background-color: var(--info-bg); color: var(--secondary, #2563EB); }
+        .faq-badge.derating { background-color: var(--warning-bg); color: var(--accent, #F59E0B); }
+        .faq-badge.voltage { background-color: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+        .faq-badge.safety { background-color: var(--danger-bg); color: var(--danger, #DC2626); }
+        .faq-badge.insulation { background-color: var(--success-bg); color: var(--success, #10B981); }
+
+        .faq-example-box {
+            background-color: var(--bg, #F8FAFC);
+            border-left: 4px solid var(--success, #10B981);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .faq-diagram-side {
+            background-color: var(--bg, #F8FAFC);
+            border: 1px solid var(--border, #E2E8F0);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            width: 100%;
+        }
+
+        .faq-diagram-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--heading, #111827);
+            margin-bottom: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .faq-svg-container {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .faq-svg-container svg {
+            width: 100%;
+            height: auto;
+            max-height: 280px;
+        }
+
+        /* Embed widget card styling */
+        .embed-card {
+            background: var(--grad-dark, linear-gradient(135deg, #0F172A, #1E293B));
+            border-radius: 16px;
+            padding: 35px;
+            margin: 60px auto 40px auto;
+            max-width: 1200px;
+            border: 1px solid var(--border, #E2E8F0);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .embed-card-glow {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Level Up Card grid styling */
+        .levelup-section {
+            padding: 70px 0;
+            background: linear-gradient(to bottom, var(--bg, #F8FAFC), var(--card, #FFFFFF));
+            border-top: 1px solid var(--border, #E2E8F0);
+        }
+
+        .levelup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .levelup-card {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card, #FFFFFF);
+            border: 1px solid var(--border, #E2E8F0);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow, 0 4px 8px rgba(0, 0, 0, 0.05));
+        }
+
+        .levelup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.08);
+            border-color: var(--secondary, #2563EB);
+        }
+
+        .levelup-icon-container {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .levelup-card:hover .levelup-icon-container {
+            transform: scale(1.1);
+        }
+        
+        .levelup-title {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--heading, #111827);
+            font-weight: 700;
+        }
+        
+        .levelup-desc {
+            margin: 10px 0 20px 0;
+            color: var(--text, #4B5563);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+        
+        .levelup-link {
+            font-weight: bold;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: gap 0.2s;
+        }
+        
+        .levelup-card:hover .levelup-link {
+            gap: 8px;
+        }
+
+        /* MathJax overflow safety */
+        mjx-container {
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* Responsive adjustments for FAQ, Embed Card and Level Up grid */
+        @media (max-width: 768px) {
+            .faq-section-title {
+                font-size: 1.6rem;
+                margin: 30px 0 10px 0;
+                gap: 8px;
+            }
+            
+            .faq-section-desc {
+                font-size: 0.95rem;
+                margin-bottom: 25px;
+                padding: 0 15px;
+            }
+
+            .faq-accordion {
+                gap: 12px;
+                padding: 0 10px;
+            }
+
+            .faq-trigger {
+                padding: 16px 18px;
+            }
+
+            .faq-title-wrapper {
+                gap: 12px;
+            }
+
+            .faq-icon-box {
+                width: 36px;
+                height: 36px;
+                font-size: 1.05rem;
+                border-radius: 8px;
+            }
+
+            .faq-title {
+                font-size: 1rem;
+            }
+
+            .faq-chevron {
+                font-size: 1rem;
+                margin-left: 8px;
+            }
+
+            .faq-content-inner {
+                padding: 0 18px 18px 18px;
+                gap: 20px;
+            }
+
+            .faq-diagram-side {
+                padding: 15px;
+            }
+
+            .embed-card {
+                padding: 24px 18px;
+                margin: 40px 10px;
+                gap: 16px;
+                border-radius: 12px;
+            }
+
+            .levelup-section {
+                padding: 40px 0;
+            }
+
+            .levelup-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 0 15px;
+            }
+            
+            .levelup-card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            
+            .levelup-icon-container {
+                margin-bottom: 12px;
+            }
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Industrial Cable Pulling Calculator - IEEE 1185 & NEC">
@@ -711,6 +1118,7 @@
 
                     <div class="button-wrapper">
                         <button type="button" class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print Report</button>
+                        <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Export PDF</button>
                         <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Pull</button>
                         <button type="button" id="reset-btn" class="btn btn-outline btn-danger hidden"><i class="fas fa-undo"></i> Reset Pull</button>
                     </div>
@@ -872,7 +1280,7 @@
                 </div>
                 <div class="theory-content">
                     <h3>2. Weight Correction Factor ($W_c$)</h3>
-                    <p>For multiple cables pulling in a single conduit, the weight is not evenly distributed. The **IEEE 1185** standard provides factors to account for the increased side-wall friction caused by "wedging" effects.</p>
+                    <p>For multiple cables pulling in a single conduit, the weight is not evenly distributed. The <strong>IEEE 1185</strong> standard provides factors to account for the increased side-wall friction caused by "wedging" effects.</p>
                     <ul>
                         <li><strong>Triangular</strong>: Cables wedge against each other, maximizing friction.</li>
                         <li><strong>Cradled</strong>: Cables lie flatter, slightly reducing the wedging effect compared to triangular.</li>
@@ -882,7 +1290,7 @@
 
             <div style="margin-top: 40px; height: 350px;">
                  <h3>3. Sidewall Pressure (SWP) Sensitivity</h3>
-                 <p>SWP is the radial force exerted by the cable on the conduit wall during a bend. Excessive SWP can crush the jacket and insulation. Typical limit is **1,000 lbs/ft** for power cables.</p>
+                 <p>SWP is the radial force exerted by the cable on the conduit wall during a bend. Excessive SWP can crush the jacket and insulation. Typical limit is <strong>1,000 lbs/ft</strong> for power cables.</p>
                  <div class="chart-container" style="height: 280px;">
                      <canvas id="swpSensitivityChart"></canvas>
                  </div>
@@ -911,64 +1319,761 @@
         </div>
     </section>
 
-    <!-- NEW: FAQ SECTION -->
-    <section class="container" style="margin-top: 40px; margin-bottom: 60px;">
-        <div class="card">
-            <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: What is the most critical factor in a cable pull?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: Sidewall Pressure (SWP) at the first or last bend is usually the limiting factor. Excessive SWP damage happens internally and isn't always visible.</p>
+    <!-- ============================================== -->
+    <!-- INTERACTIVE FAQ & DETAILED ENGINEERING GUIDE   -->
+    <!-- ============================================== -->
+    <div class="content-container">
+        <h2 class="faq-section-title">
+            <i class="fas fa-question-circle" style="color: var(--primary);"></i>
+            Cable Pulling & Tension: Top 10 FAQs
+        </h2>
+        <p class="faq-section-desc">
+            Explore detailed engineering explanations, standard formulas, step-by-step calculations, and interactive diagrams for the most critical cable pulling design challenges.
+        </p>
+
+        <div class="faq-accordion">
+            
+            <!-- FAQ 1 -->
+            <div class="faq-card" id="faq-1">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-arrows-alt-h"></i></span>
+                        <span class="faq-title">1. How is pulling tension calculated in straight horizontal runs?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge sizing">Straight Runs</span>
+                            <p>For straight horizontal conduit sections, the pulling tension is a linear function of cable weight, coefficient of friction, segment length, and the weight correction factor ($W_c$). The tension increases as the cable slides along the bottom of the conduit.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Horizontal Tension Formula:</strong>
+                                $$T_{out} = T_{in} + \mu \cdot W \cdot L \cdot W_c$$
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    Where $\mu$ is the friction coefficient, $W$ is the total cable weight (lbs/ft), $L$ is the length (ft), and $W_c$ is the weight correction factor.
+                                </p>
+                                <strong>Example Sizing Calculation:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    Calculate tension out for a <strong>200 ft</strong> horizontal run. Conductor weight = <strong>4.5 lbs/ft</strong>, friction coefficient $\mu = 0.35$, weight correction factor $W_c = 1.25$ (triangular), and incoming tension $T_{in} = 100 \text{ lbs}$.
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Identify variables: $T_{in} = 100$, $\mu = 0.35$, $W = 4.5$, $L = 200$, $W_c = 1.25$.</li>
+                                    <li>Apply the formula:
+                                        $$T_{out} = 100 + 0.35 \cdot 4.5 \cdot 200 \cdot 1.25$$
+                                        $$T_{out} = 100 + 393.75 = 493.75 \text{ lbs}$$
+                                    </li>
+                                    <li>Verdict: The horizontal run adds 393.75 lbs of friction tension to the pull.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-grip-lines"></i> Horizontal Conduit Forces</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Conduit Walls -->
+                                    <rect x="40" y="80" width="300" height="60" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+                                    <!-- Cable -->
+                                    <rect x="20" y="100" width="340" height="20" rx="3" fill="var(--primary)" opacity="0.85"/>
+                                    <!-- Tension Vectors -->
+                                    <line x1="300" y1="110" x2="350" y2="110" stroke="var(--success)" stroke-width="3" marker-end="url(#arrow-success)"/>
+                                    <text x="340" y="95" font-family="Inter" font-size="9" fill="var(--success)" font-weight="bold">T_out</text>
+                                    
+                                    <line x1="10" y1="110" x2="50" y2="110" stroke="var(--warning)" stroke-width="3" marker-end="url(#arrow-warning)"/>
+                                    <text x="15" y="95" font-family="Inter" font-size="9" fill="var(--warning)" font-weight="bold">T_in</text>
+                                    
+                                    <!-- Normal and Friction force labels -->
+                                    <line x1="190" y1="120" x2="190" y2="150" stroke="var(--danger)" stroke-width="2" marker-end="url(#arrow-danger)"/>
+                                    <text x="200" y="145" font-family="Inter" font-size="9.5" fill="var(--danger)" font-weight="bold">Weight (W)</text>
+                                    
+                                    <line x1="190" y1="120" x2="120" y2="120" stroke="var(--danger)" stroke-width="2" marker-end="url(#arrow-danger)"/>
+                                    <text x="130" y="135" font-family="Inter" font-size="8.5" fill="var(--danger)" font-weight="bold">Friction (μ·W·L)</text>
+                                    
+                                    <text x="190" y="185" font-family="Inter" font-size="9.5" fill="var(--text)" text-anchor="middle" font-weight="bold">Normal force is perpendicular to conduit bottom.</text>
+                                    
+                                    <!-- Arrow markers -->
+                                    <defs>
+                                        <marker id="arrow-success" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--success)"/>
+                                        </marker>
+                                        <marker id="arrow-warning" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--warning)"/>
+                                        </marker>
+                                        <marker id="arrow-danger" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--danger)"/>
+                                        </marker>
+                                    </defs>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: Why does the Jamming Ratio matter?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: If the ratio of Conduit ID to Cable OD is between 2.8 and 3.1, the cables can "wedge" or jam as they transition around a bend, potentially stopping the pull entirely.</p>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="faq-card" id="faq-2">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-redo"></i></span>
+                        <span class="faq-title">2. How does the Capstan Effect amplify tension in conduit bends?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge safety">Capstan Effect</span>
+                            <p>Conduit bends generate exponential tension growth because pulling tension forces the cable tight against the inner curve of the bend, which dramatically increases the contact pressure (normal force) and resulting friction.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>The Capstan Equation:</strong>
+                                $$T_{out} = T_{in} \cdot e^{\mu \cdot \theta \cdot W_c}$$
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    Where $\theta$ is the bend angle in radians ($\text{rad} = \text{deg} \cdot \frac{\pi}{180}$), $\mu$ is the friction coefficient, and $W_c$ is the weight correction factor.
+                                </p>
+                                <strong>Example Sizing Calculation:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    A cable enters a <strong>90° bend</strong> ($\theta = 1.571 \text{ rad}$) with incoming tension $T_{in} = 500 \text{ lbs}$. Sizing parameters: $\mu = 0.35$, $W_c = 1.0$ (single cable).
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Calculate the exponent:
+                                        $$\mu \cdot \theta \cdot W_c = 0.35 \cdot 1.571 \cdot 1.0 \approx 0.550$$
+                                    </li>
+                                    <li>Calculate multiplier ($e^{0.550}$):
+                                        $$e^{0.550} \approx 1.733$$
+                                    </li>
+                                    <li>Calculate output tension ($T_{out}$):
+                                        $$T_{out} = 500 \cdot 1.733 \approx 866.5 \text{ lbs}$$
+                                    </li>
+                                    <li>Verdict: The 90° bend amplifies incoming tension by 73.3%, adding 366.5 lbs of tension.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-sync-alt"></i> Capstan Force Magnification</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Bend Conduit Arc -->
+                                    <path d="M 60,180 A 120,120 0 0,1 180,60" fill="none" stroke="var(--border)" stroke-width="22" stroke-linecap="square"/>
+                                    <!-- Cable inside Bend -->
+                                    <path d="M 60,180 A 120,120 0 0,1 180,60" fill="none" stroke="var(--primary)" stroke-width="8" stroke-linecap="square"/>
+                                    
+                                    <!-- Incoming Tension vector -->
+                                    <line x1="60" y1="210" x2="60" y2="185" stroke="var(--warning)" stroke-width="3" marker-end="url(#arrow-warning)"/>
+                                    <text x="72" y="205" font-family="Inter" font-size="9" fill="var(--warning)" font-weight="bold">T_in</text>
+                                    
+                                    <!-- Outgoing Tension vector -->
+                                    <line x1="180" y1="60" x2="210" y2="60" stroke="var(--success)" stroke-width="3" marker-end="url(#arrow-success)"/>
+                                    <text x="200" y="48" font-family="Inter" font-size="9" fill="var(--success)" font-weight="bold">T_out</text>
+                                    
+                                    <!-- Radial normal forces -->
+                                    <line x1="104" y1="136" x2="74" y2="106" stroke="var(--danger)" stroke-width="2" marker-end="url(#arrow-danger)"/>
+                                    <line x1="136" y1="104" x2="106" y2="74" stroke="var(--danger)" stroke-width="2" marker-end="url(#arrow-danger)"/>
+                                    <text x="145" y="130" font-family="Inter" font-size="9" fill="var(--danger)" font-weight="bold" text-anchor="middle">Normal Force (Fn)</text>
+                                    
+                                    <text x="190" y="195" font-family="Inter" font-size="9.5" fill="var(--text)" text-anchor="middle" font-weight="bold">Tension pulls cable into the bend inner radius,</text>
+                                    <text x="190" y="210" font-family="Inter" font-size="9" fill="var(--danger)" text-anchor="middle" font-weight="bold">multiplying normal pressure and friction.</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: How much does lubricant help?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: Proper lubrication can reduce the coefficient of friction ($\mu$) from 0.5+ to 0.15-0.20, reducing total tension by 60% or more.</p>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="faq-card" id="faq-3">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-compress-arrows-alt"></i></span>
+                        <span class="faq-title">3. What is Sidewall Pressure (SWP) and why is its limit critical?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge safety">Sidewall Pressure</span>
+                            <p><strong>Sidewall Pressure (SWP)</strong> is the radial crushing force exerted by the cable on the conduit wall at a bend. If SWP exceeds insulation limits, the cable jacket and insulation can be permanently deformed or crushed, causing dielectric failure.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Sidewall Pressure Equations:</strong>
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    - <strong>Single or Cradled Cables (3 cables):</strong>
+                                    $$SWP = \frac{T_{out}}{R} \ [\text{lbs/ft}]$$
+                                    - <strong>Triangular Cables (3 cables):</strong>
+                                    $$SWP = \frac{(3 \cdot W_c - 2) \cdot T_{out}}{3 \cdot R} \ [\text{lbs/ft}]$$
+                                </p>
+                                <strong>Example Sizing Calculation:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    Sizing pull tension at bend exit: $T_{out} = 2400 \text{ lbs}$. Bend radius $R = 3 \text{ ft}$ (36 inches). Configuration is cradled, so weight factor $W_c = 1.15$.
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Identify equation: For cradled cables, we use the standard SWP equation:
+                                        $$SWP = \frac{T_{out}}{R} = \frac{2400 \text{ lbs}}{3 \text{ ft}} = 800 \text{ lbs/ft}$$
+                                    </li>
+                                    <li>Compare with safety limit: The industry standard limit for power cables is <strong>1,000 lbs/ft</strong> (500 lbs/ft for control cables).
+                                        $$800 \text{ lbs/ft} \le 1000 \text{ lbs/ft} \ (\text{SAFE})$$
+                                    </li>
+                                    <li>Verdict: The installation passes SWP safety checks.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-shield-alt"></i> Radial Crushing Stress</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Conduit outer boundary -->
+                                    <circle cx="190" cy="110" r="70" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+                                    <!-- Cable cross sections -->
+                                    <circle cx="190" cy="145" r="22" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+                                    <circle cx="190" cy="145" r="12" fill="var(--primary)"/>
+                                    
+                                    <!-- Radial force vectors -->
+                                    <line x1="190" y1="123" x2="190" y2="168" stroke="var(--danger)" stroke-width="2.5" marker-end="url(#arrow-danger)"/>
+                                    <line x1="172" y1="130" x2="172" y2="165" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-danger)"/>
+                                    <line x1="208" y1="130" x2="208" y2="165" stroke="var(--danger)" stroke-width="1.5" marker-end="url(#arrow-danger)"/>
+                                    
+                                    <text x="190" y="70" font-family="Inter" font-size="10" fill="var(--heading)" font-weight="bold" text-anchor="middle">Conduit Inner Surface</text>
+                                    <text x="190" y="102" font-family="Inter" font-size="9" fill="var(--danger)" font-weight="bold" text-anchor="middle">Crush Pressure (SWP)</text>
+                                    
+                                    <text x="190" y="195" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle">SWP concentrates normal force on the outer wall.</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: In which direction should I pull?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: Generally, pull from the end closest to the sharpest/most bends. This minimizes the exponential tension build-up over the longest run.</p>
+            </div>
+
+            <!-- FAQ 4 -->
+            <div class="faq-card" id="faq-4">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="faq-title">4. What is the Jamming Ratio and how is it calculated?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge safety">Jamming Risk</span>
+                            <p><strong>Jamming</strong> occurs when three single-conductor cables wedge side-by-side inside a conduit as they make a bend. This occurs if the ratio of conduit inside diameter ($D$) to the single cable outside diameter ($d$) falls into a specific danger zone.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Jamming Ratio Sizing:</strong>
+                                $$J = \frac{D}{d}$$
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    - <strong>Jamming Danger Range:</strong> $2.8 \le J \le 3.1$
+                                    <br>- <strong>Safety Margins (NEC):</strong> Multiplied by 1.05 for cable ovality: $2.8 \le \frac{D}{d \cdot 1.05} \le 3.1$
+                                </p>
+                                <strong>Example Sizing Analysis:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    Check jamming risk for 3 cables with outside diameter $d = 1.35 \text{ inches}$ inside a 4-inch conduit (actual inside diameter $D = 4.026 \text{ inches}$).
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Calculate basic ratio ($J$):
+                                        $$J = \frac{4.026}{1.35} \approx 2.98$$
+                                    </li>
+                                    <li>Check basic range: Since $2.98$ is between $2.8$ and $3.1$, this is a <strong>HIGH RISK</strong> of jamming.</li>
+                                    <li>Apply ovality margin ($1.05 \cdot d = 1.4175$):
+                                        $$J_{oval} = \frac{4.026}{1.4175} \approx 2.84$$
+                                        This also falls squarely in the danger zone ($2.84 \ge 2.8$).
+                                    </li>
+                                    <li>Verdict: Select a larger conduit size (e.g. 5-inch conduit, $D = 5.047 \text{ in}$, $J = 3.74$) to avoid jamming.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-border-style"></i> Conduit Jamming Wedging</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Conduit Circle -->
+                                    <circle cx="190" cy="100" r="75" fill="var(--bg)" stroke="var(--danger)" stroke-width="3"/>
+                                    <!-- Three jammed cables (side-by-side, touching) -->
+                                    <circle cx="132" cy="100" r="23" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+                                    <circle cx="190" cy="100" r="23" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+                                    <circle cx="248" cy="100" r="23" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+                                    
+                                    <!-- Jam arrows -->
+                                    <path d="M 109,100 L 98,100" stroke="var(--danger)" stroke-width="2" marker-end="url(#arrow-danger)"/>
+                                    <path d="M 271,100 L 282,100" stroke="var(--danger)" stroke-width="2" marker-end="url(#arrow-danger)"/>
+                                    
+                                    <text x="190" y="195" font-family="Inter" font-size="9.5" fill="var(--danger)" font-weight="bold" text-anchor="middle">Jammed state: 3 cables align horizontally</text>
+                                    <text x="190" y="210" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">Occurs when J = D/d is between 2.8 and 3.1</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: Is vertical pulling different?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: Yes. In vertical rises, you fight gravitational weight directly ($W \cdot L$). In vertical drops, weight actually assists the pull, though back-tension is required for control.</p>
+            </div>
+
+            <!-- FAQ 5 -->
+            <div class="faq-card" id="faq-5">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-layer-group"></i></span>
+                        <span class="faq-title">5. What is the Weight Correction Factor (Wc) and how does it change?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge derating">Weight Correction</span>
+                            <p>For multiple cables pulled together, they press against the conduit walls with a normal force greater than their combined weight. The <strong>Weight Correction Factor ($W_c$)</strong> mathematically adjusts for this increase in friction due to "wedging" actions inside the conduit.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Weight Correction Equations:</strong>
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    - <strong>Triangular Configuration (3 cables):</strong>
+                                    $$W_c = \frac{1}{\sqrt{1 - \left(\frac{d}{D - d}\right)^2}}$$
+                                    - <strong>Cradled Configuration (3 cables):</strong>
+                                    $$W_c = 1 + \frac{4}{3} \cdot \left(\frac{d}{D - d}\right)^2$$
+                                </p>
+                                <strong>Example Sizing Analysis:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    Find $W_c$ for 3 cables ($d = 1.15 \text{ in}$) inside a 4-inch conduit ($D = 4.026 \text{ in}$).
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Calculate clearance term:
+                                        $$D - d = 4.026 - 1.15 = 2.876 \text{ inches}$$
+                                        $$\frac{d}{D - d} = \frac{1.15}{2.876} \approx 0.400$$
+                                    </li>
+                                    <li>Calculate cradled $W_c$:
+                                        $$W_{c,cradled} = 1 + \frac{4}{3} \cdot (0.400)^2 = 1 + 1.333 \cdot 0.160 \approx 1.213$$
+                                    </li>
+                                    <li>Calculate triangular $W_c$:
+                                        $$W_{c,triangular} = \frac{1}{\sqrt{1 - (0.400)^2}} = \frac{1}{\sqrt{0.840}} \approx 1.091$$
+                                        *Note: Per IEEE 1185, triangular is only applicable if clearance is large enough to prevent flattening.*
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-shapes"></i> Wedging Normal Force Profiles</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Left Conduit Circle -->
+                                    <circle cx="100" cy="90" r="50" fill="none" stroke="var(--border)" stroke-width="2"/>
+                                    <!-- Triangular cables -->
+                                    <circle cx="100" cy="74" r="15" fill="var(--card)" stroke="var(--primary)" stroke-width="1.5"/>
+                                    <circle cx="86" cy="100" r="15" fill="var(--card)" stroke="var(--primary)" stroke-width="1.5"/>
+                                    <circle cx="114" cy="100" r="15" fill="var(--card)" stroke="var(--primary)" stroke-width="1.5"/>
+                                    <text x="100" y="165" font-family="Inter" font-size="10" fill="var(--primary)" font-weight="bold" text-anchor="middle">Triangular</text>
+                                    <text x="100" y="180" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle">Higher Wedging Force</text>
+                                    
+                                    <!-- Right Conduit Circle -->
+                                    <circle cx="280" cy="90" r="50" fill="none" stroke="var(--border)" stroke-width="2"/>
+                                    <!-- Cradled cables -->
+                                    <circle cx="280" cy="120" r="15" fill="var(--card)" stroke="var(--primary)" stroke-width="1.5"/>
+                                    <circle cx="253" cy="111" r="15" fill="var(--card)" stroke="var(--primary)" stroke-width="1.5"/>
+                                    <circle cx="307" cy="111" r="15" fill="var(--card)" stroke="var(--primary)" stroke-width="1.5"/>
+                                    <text x="280" y="165" font-family="Inter" font-size="10" fill="var(--primary)" font-weight="bold" text-anchor="middle">Cradled</text>
+                                    <text x="280" y="180" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle">Flatter Laying Pattern</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: What is a typical SWP limit?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: Standard power cables (XLPE/EPR) usually have an SWP limit of 1,000 lbs/ft. Some ruggedized cables can handle more, while others (like instrumentation) are much lower.</p>
+            </div>
+
+            <!-- FAQ 6 -->
+            <div class="faq-card" id="faq-6">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-long-arrow-alt-up"></i></span>
+                        <span class="faq-title">6. How is vertical riser pulling tension calculated?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge derating">Vertical Risers</span>
+                            <p>In vertical riser pulls, pulling tension must support the actual hanging weight of the cable in addition to frictional forces. For vertical drops, weight assists the pull but back-tension is required to control the descent.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Vertical Tension Equations:</strong>
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    - <strong>Vertical Upward Pull:</strong>
+                                    $$T_{out} = T_{in} + W \cdot L \cdot (\sin\alpha + \mu \cdot \cos\alpha \cdot W_c)$$
+                                    - <strong>Vertical Downward Pull:</strong>
+                                    $$T_{out} = T_{in} - W \cdot L \cdot (\sin\alpha - \mu \cdot \cos\alpha \cdot W_c)$$
+                                </p>
+                                <strong>Example Sizing Calculation:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    Calculate tension for a <strong>80 ft vertical rise</strong> (upward, $\alpha = 90^\circ$). Cable weight $W = 4.5 \text{ lbs/ft}$, incoming tension $T_{in} = 150 \text{ lbs}$. Friction is zero as the cable hangs vertically ($\cos(90^\circ) = 0$).
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Evaluate angles: $\sin(90^\circ) = 1.0$, $\cos(90^\circ) = 0.0$.</li>
+                                    <li>Apply the formula:
+                                        $$T_{out} = T_{in} + W \cdot L \cdot \sin(90^\circ)$$
+                                        $$T_{out} = 150 + 4.5 \cdot 80 \cdot 1.0 = 150 + 360 = 510 \text{ lbs}$$
+                                    </li>
+                                    <li>Verdict: The vertical rise adds 360 lbs of dead-weight tension.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-arrows-alt-v"></i> Vertical Gravity Pull Forces</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Pulley at top -->
+                                    <circle cx="190" cy="50" r="25" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+                                    <!-- Hanging Cable -->
+                                    <path d="M 120,200 V 50 A 25,25 0 0,1 190,25 H 240" fill="none" stroke="var(--primary)" stroke-width="6"/>
+                                    
+                                    <!-- Gravity Vector -->
+                                    <line x1="120" y1="120" x2="120" y2="165" stroke="var(--danger)" stroke-width="2.5" marker-end="url(#arrow-danger)"/>
+                                    <text x="105" y="145" font-family="Inter" font-size="9.5" fill="var(--danger)" font-weight="bold" text-anchor="middle">Weight (W·L)</text>
+                                    
+                                    <!-- Hoist Pulling Vector -->
+                                    <line x1="240" y1="25" x2="280" y2="25" stroke="var(--success)" stroke-width="2.5" marker-end="url(#arrow-success)"/>
+                                    <text x="270" y="15" font-family="Inter" font-size="9" fill="var(--success)" font-weight="bold">Pulling Force</text>
+                                    
+                                    <text x="190" y="195" font-family="Inter" font-size="9.5" fill="var(--text)" text-anchor="middle" font-weight="bold">Riser pulls fight gravity directly,</text>
+                                    <text x="190" y="210" font-family="Inter" font-size="9" fill="var(--danger)" text-anchor="middle" font-weight="bold">adding entire hanging weight to the tension.</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: Why does Weight Correction ($W_c$) matter?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: It accounts for the actual contact points. In triangular pulls, cables are squeezed together, increasing the normal force relative to a single cable, thus increasing friction.</p>
+            </div>
+
+            <!-- FAQ 7 -->
+            <div class="faq-card" id="faq-7">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-shield-alt"></i></span>
+                        <span class="faq-title">7. How is the maximum allowable pulling tension of a conductor calculated?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge safety">Tension Limits</span>
+                            <p>To avoid stretching or damaging the metallic core, pulling tension must not exceed the physical yield limits of the conductors. Sizing depends on the conductor material (Copper vs. Aluminum) and the cross-sectional area in circular mils (cmil).</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Maximum Allowable Tension Formulas:</strong>
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    - <strong>Copper (Cu) Conductors:</strong>
+                                    $$T_{allow} = 0.008 \cdot A_{cmil} \ [\text{lbs}]$$
+                                    - <strong>Aluminum (Al) Conductors:</strong>
+                                    $$T_{allow} = 0.006 \cdot A_{cmil} \ [\text{lbs}]$$
+                                </p>
+                                <strong>Example Sizing Calculation:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    Size maximum tension for a cable consisting of 3 single conductors of <strong>500 kcmil Copper</strong> (500,000 cmil each, total area = $3 \cdot 500,000 = 1,500,000 \text{ cmil}$). Sized using a pulling eye on the conductors.
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Sum total cmil area:
+                                        $$A_{cmil} = 3 \times 500,000 = 1,500,000 \text{ cmil}$$
+                                    </li>
+                                    <li>Apply Copper constant (0.008):
+                                        $$T_{allow} = 0.008 \times 1,500,000 = 12,000 \text{ lbs}$$
+                                    </li>
+                                    <li>Verdict: The pulling setup must not exceed 12,000 lbs under any segment.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-magnet"></i> Pulling Eye Stress</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 200">
+                                    <!-- Pulling Eye Wedge -->
+                                    <path d="M 60,100 L 120,60 H 180 V 140 H 120 Z" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+                                    <!-- Pulling Ring -->
+                                    <circle cx="40" cy="100" r="15" fill="none" stroke="var(--primary)" stroke-width="4"/>
+                                    <line x1="55" y1="100" x2="70" y2="100" stroke="var(--primary)" stroke-width="4"/>
+                                    
+                                    <!-- Conductors inside -->
+                                    <rect x="180" y="70" width="120" height="15" rx="3" fill="#B45309"/>
+                                    <rect x="180" y="92" width="120" height="15" rx="3" fill="#B45309"/>
+                                    <rect x="180" y="115" width="120" height="15" rx="3" fill="#B45309"/>
+                                    
+                                    <!-- Tension pull arrow -->
+                                    <line x1="25" y1="100" x2="1" y2="100" stroke="var(--success)" stroke-width="3" marker-end="url(#arrow-success)"/>
+                                    <text x="10" y="85" font-family="Inter" font-size="9.5" fill="var(--success)" font-weight="bold">Pull Force</text>
+                                    
+                                    <text x="190" y="175" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle">Pulling eyes distribute tension directly onto metallic strands.</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="faq-item" style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Q: How do I handle multiple bends?</h4>
-                    <p style="margin: 0; font-size: 0.95rem;">A: Total tension is cumulative. Each bend multiplies the incoming tension exponentially ($e^{\mu \theta}$). Avoid more than 360° of cumulative bends if possible.</p>
+            </div>
+
+            <!-- FAQ 8 -->
+            <div class="faq-card" id="faq-8">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-tint"></i></span>
+                        <span class="faq-title">8. How do friction coefficients and lubricants affect pulling tension?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge derating">Friction & Lube</span>
+                            <p>Lubrication reduces the coefficient of friction ($\mu$) between the cable outer sheath and the inner wall of the conduit. Because bends amplify tension exponentially, a small drop in friction leads to massive drops in final pulling tension.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Lubrication Reduction Impact:</strong>
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    Compare pulling tension through <strong>three 90° bends</strong> ($\theta_{total} = 3 \cdot 1.571 = 4.712 \text{ rad}$) with $T_{in} = 100 \text{ lbs}$:
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li><strong>Unlubricated (Dry PVC, $\mu = 0.50$):</strong>
+                                        $$T_{out} = 100 \cdot e^{0.50 \cdot 4.712} = 100 \cdot e^{2.356} \approx 1,055 \text{ lbs}$$
+                                    </li>
+                                    <li><strong>Lubricated (Standard Gel, $\mu = 0.15$):</strong>
+                                        $$T_{out} = 100 \cdot e^{0.15 \cdot 4.712} = 100 \cdot e^{0.707} \approx 203 \text{ lbs}$$
+                                    </li>
+                                    <li><strong>Conclusion:</strong>
+                                        Applying lubricant reduces the final pulling tension from 1,055 lbs to 203 lbs—a <strong>80.7% tension reduction</strong>!
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-water"></i> Lubricant Boundary Interface</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Conduit Surface (Top) -->
+                                    <rect x="20" y="30" width="340" height="25" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+                                    <text x="190" y="46" font-family="Inter" font-size="9" fill="var(--heading)" font-weight="bold" text-anchor="middle">Conduit Inner Wall</text>
+                                    
+                                    <!-- Lubricant layer (Gel) -->
+                                    <rect x="20" y="55" width="340" height="15" fill="var(--info-bg)" opacity="0.9"/>
+                                    <text x="190" y="66" font-family="Inter" font-size="8.5" fill="var(--secondary)" font-weight="bold" text-anchor="middle">High-Efficiency Gel Layer (μ = 0.15)</text>
+                                    
+                                    <!-- Cable Surface (Bottom) -->
+                                    <rect x="20" y="70" width="340" height="60" fill="var(--primary)" opacity="0.8"/>
+                                    <text x="190" y="105" font-family="Inter" font-size="12" fill="white" font-weight="bold" text-anchor="middle">Cable Outer Jacket</text>
+                                    
+                                    <!-- Friction shear arrows -->
+                                    <line x1="60" y1="58" x2="100" y2="58" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#arrow-secondary)"/>
+                                    <line x1="280" y1="58" x2="320" y2="58" stroke="var(--secondary)" stroke-width="1.5" marker-end="url(#arrow-secondary)"/>
+                                    <defs>
+                                        <marker id="arrow-secondary" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--secondary)"/>
+                                        </marker>
+                                    </defs>
+                                    
+                                    <text x="190" y="195" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle">Boundary shear layer absorbs the rubbing friction.</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 9 -->
+            <div class="faq-card" id="faq-9">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-compress"></i></span>
+                        <span class="faq-title">9. How do you size conduit clearance for multi-cable runs?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge sizing">Cable Clearance</span>
+                            <p><strong>Clearance ($C$)</strong> is the physical distance between the top of the cable bundle and the top inside surface of the conduit. Adequate clearance (minimum <strong>0.25 inches</strong>) is required to allow cables to pull smoothly around bends without binding or jamming.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Clearance Sizing Equations:</strong>
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    - <strong>Single Cable:</strong> $C = D - d$
+                                    <br>- <strong>Cradled Cables (3 cables):</strong>
+                                    $$C = D - 1.05 \cdot d - 1.36 \cdot d$$
+                                </p>
+                                <strong>Example Sizing Analysis:</strong>
+                                <p style="font-size: 0.92rem; margin-top: 8px;">
+                                    Size the clearance for 3 cables ($d = 1.2 \text{ in}$) inside a 4-inch conduit ($D = 4.026 \text{ in}$) in cradled configuration.
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li>Calculate cradled clearance height ($1.05 \cdot d + 1.36 \cdot d$):
+                                        $$Height_{cradled} = (1.05 + 1.36) \cdot 1.2 = 2.41 \cdot 1.2 \approx 2.892 \text{ inches}$$
+                                    </li>
+                                    <li>Calculate clearance ($C$):
+                                        $$C = D - Height_{cradled} = 4.026 - 2.892 = 1.134 \text{ inches}$$
+                                    </li>
+                                    <li>Verify against limit:
+                                        $$1.134 \text{ in} \ge 0.25 \text{ in} \ (\text{PASS})$$
+                                    </li>
+                                    <li>Verdict: The conduit is sized adequately to permit cradling clearance.</li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-ruler-horizontal"></i> Cradled clearance spacing</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Conduit circle -->
+                                    <circle cx="190" cy="100" r="70" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+                                    <!-- Cradled cables -->
+                                    <circle cx="190" cy="138" r="20" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+                                    <circle cx="152" cy="125" r="20" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+                                    <circle cx="228" cy="125" r="20" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+                                    
+                                    <!-- Clearance height arrow -->
+                                    <line x1="190" y1="30" x2="190" y2="118" stroke="var(--success)" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrow-success)"/>
+                                    <text x="215" y="70" font-family="Inter" font-size="9.5" fill="var(--success)" font-weight="bold" text-anchor="middle">Clearance (C)</text>
+                                    
+                                    <text x="190" y="195" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle">Sufficient clearance prevents mechanical binding.</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 10 -->
+            <div class="faq-card" id="faq-10">
+                <button class="faq-trigger" aria-expanded="false">
+                    <span class="faq-title-wrapper">
+                        <span class="faq-icon-box"><i class="fas fa-random"></i></span>
+                        <span class="faq-title">10. How is optimal pull direction determined (reverse pulling)?</span>
+                    </span>
+                    <i class="fas fa-chevron-down faq-chevron"></i>
+                </button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <div class="faq-theory-side">
+                            <span class="faq-badge safety">Pull Direction</span>
+                            <p>Because bends amplify tension exponentially, the order of segments makes a massive difference. Pulling from the end closest to the sharpest bends generally results in lower final tension at the pull anchor.</p>
+                            
+                            <div class="faq-example-box">
+                                <strong>Forward vs. Reverse Pull Analysis:</strong>
+                                <p style="margin-top: 5px; font-size: 0.92rem;">
+                                    A run consists of a <strong>300 ft straight</strong> followed by a <strong>90° bend</strong> ($\mu = 0.35$). $W \cdot L = 4.5 \cdot 300 = 1350$. $T_{in} = 100 \text{ lbs}$.
+                                </p>
+                                <ol style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 8px;">
+                                    <li><strong>Forward Pull (Straight then Bend):</strong>
+                                        <br>• Straight Tension: $T_1 = 100 + 0.35 \cdot 1350 = 572.5 \text{ lbs}$
+                                        <br>• Bend Tension: $T_{out} = 572.5 \cdot e^{0.35 \cdot 1.571} \approx 572.5 \cdot 1.733 \approx 992 \text{ lbs}$
+                                    </li>
+                                    <li><strong>Reverse Pull (Bend then Straight):</strong>
+                                        <br>• Bend Tension: $T_1 = 100 \cdot e^{0.35 \cdot 1.571} \approx 173 \text{ lbs}$
+                                        <br>• Straight Tension: $T_{out} = 173 + 0.35 \cdot 1350 = 173 + 472.5 \approx 645.5 \text{ lbs}$
+                                    </li>
+                                    <li><strong>Conclusion:</strong>
+                                        Reversing the pull direction reduces final tension from 992 lbs to 645.5 lbs—a <strong>35% reduction</strong> in structural stress!
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
+                        <div class="faq-diagram-side">
+                            <div class="faq-diagram-title"><i class="fas fa-arrows-alt-h"></i> Pull Orientation Optimization</div>
+                            <div class="faq-svg-container">
+                                <svg viewBox="0 0 380 220">
+                                    <!-- Left Pull representation (high tension) -->
+                                    <rect x="15" y="30" width="160" height="150" rx="8" fill="var(--bg)" stroke="var(--danger)" stroke-width="1.5"/>
+                                    <text x="95" y="48" font-family="Inter" font-size="10" fill="var(--danger)" font-weight="bold" text-anchor="middle">Forward (Straight → Bend)</text>
+                                    <path d="M 30,100 H 130 A 30,30 0 0,0 160,70" fill="none" stroke="var(--danger)" stroke-width="3"/>
+                                    <text x="95" y="145" font-family="Inter" font-size="9.5" fill="var(--danger)" font-weight="bold" text-anchor="middle">Final T: 992 lbs</text>
+                                    
+                                    <!-- Right Pull representation (low tension) -->
+                                    <rect x="205" y="30" width="160" height="150" rx="8" fill="var(--bg)" stroke="var(--success)" stroke-width="1.5"/>
+                                    <text x="285" y="48" font-family="Inter" font-size="10" fill="var(--success)" font-weight="bold" text-anchor="middle">Reverse (Bend → Straight)</text>
+                                    <path d="M 220,70 A 30,30 0 0,0 250,100 H 350" fill="none" stroke="var(--success)" stroke-width="3"/>
+                                    <text x="285" y="145" font-family="Inter" font-size="9.5" fill="var(--success)" font-weight="bold" text-anchor="middle">Final T: 645 lbs</text>
+                                    
+                                    <text x="190" y="200" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle">Always pull from the end closest to the sharpest bends.</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- EMPOWER YOUR ENGINEERING TEAM (EMBED CARD)     -->
+    <!-- ============================================== -->
+    <div class="embed-card">
+        <div class="embed-card-glow"></div>
+        <div style="display: flex; align-items: flex-start; gap: 20px; z-index: 1; flex-wrap: wrap;">
+            <div style="background: rgba(96, 165, 250, 0.1); padding: 14px; border-radius: 12px; border: 1px solid rgba(96, 165, 250, 0.2); flex-shrink: 0;">
+                <i class="fas fa-rocket" style="color: #60a5fa; font-size: 1.6rem;"></i>
+            </div>
+            <div style="flex: 1; min-width: 300px;">
+                <h3 style="margin-top: 0; font-size: 1.5rem; color: #f8fafc; margin-bottom: 8px; font-weight: 800; font-family: 'Montserrat', sans-serif;">Empower Your Engineering Team</h3>
+                <p style="color: #cbd5e1; font-size: 1rem; line-height: 1.6; margin-bottom: 0;">
+                    Embed this industrial-grade cable pulling calculator directly into your company's design portal or intranet.
+                    <strong>Standardize electrical sizing across project teams</strong>, comply with global design standards (IEEE/NEC), and automate calculation reporting.
+                </p>
+                <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap;">
+                    <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Zero Maintenance</span>
+                    <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>100% Free Forever</span>
                 </div>
             </div>
         </div>
-    </section>
 
+        <div style="background: #020617; padding: 14px; border-radius: 10px; border: 1px solid #334155; display: flex; align-items: center; gap: 12px; z-index: 1; flex-wrap: wrap;">
+            <div style="color: #94a3b8; font-family: monospace; font-size: 0.9rem; padding-left: 5px; white-space: nowrap;"><i class="fas fa-code"></i> Embed Code:</div>
+            <input type="text" id="embed-code-input" readonly value="<iframe src=&quot;https://designcalculators.co.in/cablepulling.html&quot; width=&quot;100%&quot; height=&quot;800&quot; style=&quot;border:none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);&quot;></iframe>" style="flex-grow: 1; min-width: 250px; padding: 10px 14px; border: 1px solid #475569; border-radius: 6px; font-family: 'Roboto Mono', monospace; font-size: 0.85rem; background: #0f172a; color: #a5b4fc; outline: none;" onclick="this.select();">
+            <button onclick="copyEmbedCode()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 700; white-space: nowrap; transition: background 0.2s;"><i class="fas fa-copy" style="margin-right: 6px;"></i>Copy Code</button>
+        </div>
+    </div>
 
-
-        
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <!-- ============================================== -->
+    <!-- LEVEL UP YOUR ENGINEERING (RELATED TOOLS)       -->
+    <!-- ============================================== -->
+    <section class="levelup-section">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/batterychargersizing.html" class="silo-card" style="text-decoration:none;">
-                        <span>Batterychargersizing</span>
-                    </a>
-                    <a href="/cable-thermal-rating.html" class="silo-card" style="text-decoration:none;">
-                        <span>Cable Thermal Rating</span>
-                    </a>
-                    <a href="/equipment-relay.html" class="silo-card" style="text-decoration:none;">
-                        <span>Equipment Relay</span>
-                    </a>
+            <div style="text-align: center; max-width: 750px; margin: 0 auto 50px auto;">
+                <h2 style="font-size: 2.2rem; color: var(--heading); margin-bottom: 15px; font-weight: 800; font-family: 'Montserrat', sans-serif;"><i class="fas fa-layer-group" style="color: var(--primary);"></i> Level Up Your Engineering</h2>
+                <p style="font-size: 1.1rem; color: var(--text); line-height: 1.6;">Don't stop at just pulling tension. Complete your entire power distribution design with our suite of specialized, high-accuracy electrical calculators.</p>
+            </div>
+            
+            <div class="levelup-grid">
+                
+                <!-- Card 1 -->
+                <a href="/conduit-fill.html" class="levelup-card">
+                    <div class="levelup-icon-container" style="background: rgba(245, 158, 11, 0.1); color: var(--accent);">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3 class="levelup-title">Conduit Fill Calculator</h3>
+                    <p class="levelup-desc">Verify conduit fill ratios for multiple conductors of different sizes in accordance with NEC Annex C sizing guidelines.</p>
+                    <div class="levelup-link" style="color: var(--accent);">
+                        Try Calculator <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Card 2 -->
+                <a href="/cable-sizing.html" class="levelup-card">
+                    <div class="levelup-icon-container" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3 class="levelup-title">Cable Sizing Calculator</h3>
+                    <p class="levelup-desc">Size conductors based on continuous load current, voltage drop limits, and short-circuit withstand checking per IEC/BS/NEC standards.</p>
+                    <div class="levelup-link" style="color: var(--primary);">
+                        Try Calculator <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Card 3 -->
+                <a href="/cable-thermal-rating.html" class="levelup-card">
+                    <div class="levelup-icon-container" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                        <i class="fas fa-temperature-high"></i>
+                    </div>
+                    <h3 class="levelup-title">Cable Thermal Rating</h3>
+                    <p class="levelup-desc">Analyze transient and steady-state thermal behavior of underground and in-conduit cables to prevent hot spot insulation degradation.</p>
+                    <div class="levelup-link" style="color: var(--success);">
+                        Try Calculator <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
             </div>
         </div>
     </section>
@@ -1076,7 +2181,11 @@
              document.getElementById('calculate-btn').click();
              // Sample theory chart
              updateSWPSensitivityChart(500, 3000, 3);
-             document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+             
+             const pdfBtn = document.getElementById('pdf-btn');
+             if (pdfBtn) pdfBtn.addEventListener('click', generatePDF);
+             
+             initFaqAccordion();
         });
         
         // Hide result container initially to prevent blank charts
@@ -1152,53 +2261,193 @@
             renderSegments();
         }
 
+        // Store last calculated steps for PDF export
+        let pdfAuditSteps = [];
+
         function generatePDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const pageWidth = doc.internal.pageSize.width;
+            const date = new Date().toLocaleDateString();
 
-            // Header
+            // --- Page 1: Header ---
             doc.setFillColor(30, 58, 138);
-            doc.rect(0, 0, pageWidth, 40, 'F');
+            doc.rect(0, 0, pageWidth, 38, 'F');
             doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.text("Cable Pulling Tension Report", 15, 25);
-            doc.setFontSize(10);
-            doc.text("Design Calculators - Industrial Engineering Analysis", 15, 32);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(17);
+            doc.text("Cable Pulling Tension Analysis Report", pageWidth / 2, 17, { align: 'center' });
+            doc.setFontSize(9);
+            doc.setFont("Helvetica", "normal");
+            doc.text("Generated by DesignCalculators.co.in  |  " + date, pageWidth / 2, 26, { align: 'center' });
+            doc.text("Per IEEE 1185 | ICEA S-79-647 | NEC NFPA 70", pageWidth / 2, 33, { align: 'center' });
 
-            let y = 50;
-            doc.setTextColor(0);
-            doc.setFontSize(14);
-            doc.text("Summary Results", 15, y);
-            y += 10;
+            let y = 46;
+
+            // Summary Results Table
+            doc.setTextColor(30, 30, 30);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("Summary Results", 12, y);
+            y += 4;
+
+            const finalTens = document.getElementById('res-tens').textContent;
+            const finalSWP  = document.getElementById('res-swp').textContent;
+            const finalJam  = document.getElementById('res-jam').textContent;
+            const finalWc   = document.getElementById('res-wc').textContent;
 
             const resTable = [
-                ["Final Tension", document.getElementById('res-tens').textContent + " lbs"],
-                ["Max SWP", document.getElementById('res-swp').textContent + " lbs/ft"],
-                ["Jam Ratio", document.getElementById('res-jam').textContent],
-                ["Weight Correction", document.getElementById('res-wc').textContent]
+                ["Final Pulling Tension", finalTens + " lbs", finalTens <= 0 ? "N/A" : (parseFloat(finalTens) > 10000 ? "HIGH" : "OK")],
+                ["Max Sidewall Pressure (SWP)", finalSWP + " lbs/ft", parseFloat(finalSWP) > 1000 ? "FAIL > 1000" : "PASS"],
+                ["Jam Ratio (D/d)", finalJam, finalJam.includes('DANGER') ? "DANGER" : "OK"],
+                ["Weight Correction Factor (Wc)", finalWc, "-"]
             ];
 
             doc.autoTable({
                 startY: y,
-                head: [["Metric", "Value"]],
+                head: [["Metric", "Value", "Status"]],
                 body: resTable,
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] }
+                theme: 'striped',
+                headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 9, cellPadding: 3.5 },
+                margin: { left: 12, right: 12 }
             });
 
-            y = doc.lastAutoTable.finalY + 15;
-            doc.text("Segmental Breakdown", 15, y);
-            y += 5;
+            y = doc.lastAutoTable.finalY + 10;
+            if (y > 240) { doc.addPage(); y = 20; }
+
+            // Segmental Breakdown Table
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(30, 30, 30);
+            doc.text("Segmental Breakdown Table", 12, y);
+            y += 4;
 
             doc.autoTable({
                 startY: y,
                 html: '#detail-table',
                 theme: 'striped',
-                headStyles: { fillColor: [59, 130, 246] }
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 9, cellPadding: 3 },
+                margin: { left: 12, right: 12 }
             });
 
+            y = doc.lastAutoTable.finalY + 10;
+            if (y > 240) { doc.addPage(); y = 20; }
+
+            // Standards
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(30, 30, 30);
+            doc.text("Applicable Standards & References:", 12, y);
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(8.5);
+            doc.setTextColor(75, 85, 99);
+            doc.text([
+                "\u2022 IEEE Std 1185 \u2014 Recommended Practice for Cable Installation in Existing Power Generating Stations.",
+                "\u2022 ICEA S-79-647 \u2014 Mechanical Characteristics of Cables; Sidewall Pressure limit = 1,000 lbs/ft.",
+                "\u2022 NEC NFPA 70, Art. 300 & Art. 310 \u2014 Installation of conductors in conduit.",
+                "\u2022 Capstan Equation (Euler-Eytelwein): T_out = T_in * exp(mu * theta * Wc) for bends.",
+                "\u2022 Jamming Probability check per AEIC standards for 3-cable configurations (D/d ratio 2.8\u20133.1)."
+            ], 12, y + 6);
+
+            // Page 1 footer
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text("\u00a9 2026 DesignCalculators.co.in | For engineering guidance only. All results must be verified by a qualified professional.", pageWidth / 2, 287, { align: 'center' });
+
+            // --- Page 2+: Step-by-Step Calculations ---
+            if (pdfAuditSteps.length > 0) {
+                doc.addPage();
+
+                const pageH = 282;
+                const marginL = 12;
+                const colW = 186;
+                let py = 8;
+
+                // Page 2 header
+                doc.setFillColor(30, 58, 138);
+                doc.rect(0, 0, 210, 18, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("Helvetica", "bold");
+                doc.setFontSize(11);
+                doc.text("10-Step Engineering Audit Trail (IEEE 1185 Compliance)", 12, 12);
+                doc.setFontSize(8);
+                doc.text("designcalculators.co.in", 198, 12, { align: 'right' });
+                py = 26;
+
+                pdfAuditSteps.forEach((step) => {
+                    const titleLines = doc.splitTextToSize(step.title, colW - 6);
+                    const titleH = titleLines.length * 5 + 6;
+
+                    if (py + titleH + 10 > pageH) {
+                        doc.addPage();
+                        doc.setFillColor(30, 58, 138);
+                        doc.rect(0, 0, 210, 18, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFont("Helvetica", "bold");
+                        doc.setFontSize(11);
+                        doc.text("Step-by-Step Calculations (cont.)", 12, 12);
+                        py = 26;
+                    }
+
+                    // Step title banner
+                    doc.setFillColor(30, 58, 138);
+                    doc.roundedRect(marginL, py, colW, titleH, 2, 2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont("Helvetica", "bold");
+                    doc.setFontSize(9);
+                    doc.text(titleLines, marginL + 3, py + 4);
+                    py += titleH + 2;
+
+                    // Detail lines
+                    doc.setTextColor(30, 30, 30);
+                    doc.setFont("Courier", "normal");
+                    doc.setFontSize(8);
+
+                    step.lines.forEach(line => {
+                        const wrappedLines = doc.splitTextToSize(line, colW - 4);
+                        const lineH = wrappedLines.length * 4.5 + 2;
+
+                        if (py + lineH > pageH) {
+                            doc.addPage();
+                            doc.setFillColor(30, 58, 138);
+                            doc.rect(0, 0, 210, 18, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFont("Helvetica", "bold");
+                            doc.setFontSize(11);
+                            doc.text("Step-by-Step Calculations (cont.)", 12, 12);
+                            py = 26;
+                            doc.setTextColor(30, 30, 30);
+                            doc.setFont("Courier", "normal");
+                            doc.setFontSize(8);
+                        }
+
+                        // Highlight formula/calculation lines
+                        if (line.includes(' = ') || line.includes('=>') || line.includes('exp(')) {
+                            doc.setFillColor(243, 244, 246);
+                            doc.roundedRect(marginL, py, colW, lineH, 1, 1, 'F');
+                            doc.setDrawColor(245, 158, 11);
+                            doc.line(marginL, py, marginL, py + lineH);
+                            doc.setDrawColor(200, 200, 200);
+                        }
+
+                        doc.setTextColor(30, 30, 30);
+                        doc.text(wrappedLines, marginL + 3, py + 3.5);
+                        py += lineH + 1;
+                    });
+
+                    py += 4;
+                });
+
+                // Footer last page
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text("\u00a9 2026 DesignCalculators.co.in | Cable Pulling Analysis | IEEE 1185 / ICEA S-79-647.", pageWidth / 2, 288, { align: 'center' });
+            }
+
             doc.save('Cable_Pulling_Analysis.pdf');
+            displayMessage("PDF Report Downloaded Successfully!", "success");
         }
         
         function loadPreset(key) {
@@ -1456,6 +2705,118 @@
                     "REJECTED: Mechanical limits exceeded. Risk of permanent cable damage or insulation failure. Mitigation required: Increase conduit bend radius, use additional lubricant, or reverse the pull direction."
             });
 
+            // Populate pdfAuditSteps (plain text for PDF, no LaTeX/MathJax)
+            // clearance = D - d (already computed above)
+            pdfAuditSteps = [
+                {
+                    title: 'Step 1: Physical Parameter Identification (IEEE 1185)',
+                    lines: [
+                        'Cable Weight (W): ' + W + ' lbs/ft',
+                        'Friction Coefficient (mu): ' + mu,
+                        'Cable Outer Diameter (d): ' + d + ' in',
+                        'Conduit Inner Diameter (D): ' + D + ' in',
+                        'Cable Configuration: ' + Config,
+                        'Initial Back-tension (T0): ' + startT + ' lbs',
+                        'Conductor Pull Limit (T_limit): ' + LimitT + ' lbs',
+                        'Inputs validated against mechanical pull constraints per IEEE 1185.'
+                    ]
+                },
+                {
+                    title: 'Step 2: Conduit Fill & Clearance Verification (NEC Art. 300)',
+                    lines: [
+                        'Formula: Clearance (C) = D - d',
+                        'C = ' + D + ' - ' + d + ' = ' + clearance.toFixed(3) + ' in',
+                        clearance > 0
+                            ? 'Clearance of ' + clearance.toFixed(3) + '" detected. Standards require >= 0.5" for large feeders to prevent jamming.'
+                            : 'CRITICAL ERROR: Cable OD > conduit ID. Installation is physically impossible.',
+                        'NEC 300.17 / ICEA S-79-647: Conduit fill ratio must allow cable to be pulled without damage.'
+                    ]
+                },
+                {
+                    title: 'Step 3: Weight Correction Factor (Wc) for Cable Configuration',
+                    lines: [
+                        Config === '3_tri'
+                            ? 'Formula (Triangular Config): Wc = 1 / sqrt(1 - (d/(D-d))^2)'
+                            : Config === '3_crad'
+                                ? 'Formula (Cradle Config): Wc = 1 + (4/3) * (d/(D-d))^2'
+                                : 'Single cable: Wc = 1.00 (No jamming correction needed)',
+                        Config === '3_tri' || Config === '3_crad'
+                            ? 'd/(D-d) = ' + d + ' / (' + D + ' - ' + d + ') = ' + (d / (D - d)).toFixed(4)
+                            : 'No wedging correction required for single cable.',
+                        'RESULT: Wc = ' + Wc.toFixed(4),
+                        'Wc accounts for wedging effects of multiple cables in conduit (per AEIC standards).'
+                    ]
+                },
+                {
+                    title: 'Step 4: Effective Linear Weight (Weff) Calculation',
+                    lines: [
+                        'Formula: Weff = W * Wc',
+                        'Weff = ' + W + ' * ' + Wc.toFixed(3) + ' = ' + Weff.toFixed(3) + ' lbs/ft',
+                        'Weff is used for all straight and vertical segment tension calculations.',
+                        'This accounts for increased normal force from cable-on-cable contact.'
+                    ]
+                },
+                {
+                    title: 'Step 5: Jamming Probability Check (AEIC / IEEE 1185)',
+                    lines: [
+                        'Formula: Jam Ratio (J) = D / d',
+                        'J = ' + D + ' / ' + d + ' = ' + jamRatio.toFixed(2),
+                        'Critical jamming zone for 3-cable config: D/d between 2.8 and 3.1.',
+                        'RESULT: ' + jamText,
+                        jamText.includes('DANGER') ? 'ACTION REQUIRED: Change conduit size or reduce cable OD to avoid dangerous jamming.' : 'No jamming risk at this D/d ratio.'
+                    ]
+                },
+                {
+                    title: 'Step 6: Initial Back-Tension (T0) at Reel',
+                    lines: [
+                        'Starting tension at the pulling eye before entering any segment:',
+                        'T0 = ' + startT + ' lbs',
+                        'This represents the reel back-tension or winch pre-load applied before the run.',
+                        'Accumulated tension at end of calculation will be compared against T_limit = ' + LimitT + ' lbs.'
+                    ]
+                },
+                {
+                    title: 'Step 7: Segmental Tension Accumulation',
+                    lines: [
+                        'Straight segment: T_out = T_in + (Weff * L * mu)   [Kinetic friction model]',
+                        'Vertical UP:      T_out = T_in + (W * L)             [Dead weight component]',
+                        'Vertical DOWN:    T_out = T_in - (W * L)             [Gravity relief]',
+                        'Bend (Capstan):   T_out = T_in * exp(mu * theta_rad * Wc)  [Euler-Eytelwein]',
+                        'Total segments processed: ' + segments.length,
+                        'Total route length: ' + distTotal.toFixed(0) + ' ft',
+                        'Final accumulated tension after all segments: T = ' + T.toFixed(0) + ' lbs'
+                    ]
+                },
+                {
+                    title: 'Step 8: Maximum Sidewall Pressure (SWP) Analysis - ICEA S-79-647',
+                    lines: [
+                        'Formula: SWP = T_out / R  (where R is bend radius in feet)',
+                        'SWP is the radial force per unit length squeezing cable against conduit wall.',
+                        'ICEA S-79-647 limit: SWP_max = 1,000 lbs/ft for standard power cables.',
+                        'Maximum SWP calculated across all bends: ' + maxSWP.toFixed(0) + ' lbs/ft',
+                        'SWP Status: ' + (maxSWP <= 1000 ? 'PASS - Within 1000 lbs/ft limit (' + ((maxSWP/1000)*100).toFixed(1) + '% of limit used)' : 'FAIL - Exceeds 1000 lbs/ft! Increase bend radii immediately.')
+                    ]
+                },
+                {
+                    title: 'Step 9: Conductor Tension Limit Verification (NEC 300.17 / IEEE 1185)',
+                    lines: [
+                        'Formula: T_final <= T_limit',
+                        'T_final = ' + T.toFixed(0) + ' lbs  |  T_limit = ' + LimitT + ' lbs',
+                        'T_final ' + (T <= LimitT ? '<=' : '>') + ' T_limit => ' + (T <= LimitT ? 'PASS' : 'FAIL'),
+                        T > LimitT ? 'ACTION: Tension exceeds allowable limit! Reduce segments, add lubricant, or split into two pulls.' : 'Safe to proceed. Tension is within allowable limits.'
+                    ]
+                },
+                {
+                    title: 'Step 10: Final Engineering Safety Verdict',
+                    lines: [
+                        'Tension Check:     T_final (' + T.toFixed(0) + ' lbs) ' + (T <= LimitT ? '<=' : '>') + ' T_limit (' + LimitT + ' lbs) => ' + (T <= LimitT ? 'PASS' : 'FAIL'),
+                        'SWP Check:         Max SWP (' + maxSWP.toFixed(0) + ' lbs/ft) ' + (maxSWP <= 1000 ? '<=' : '>') + ' 1000 lbs/ft => ' + (maxSWP <= 1000 ? 'PASS' : 'FAIL'),
+                        'Jamming Check:     D/d = ' + jamRatio.toFixed(2) + ' => ' + jamText,
+                        'OVERALL VERDICT: ' + (isSafe ? 'APPROVED - Pull is mechanically safe per IEEE 1185 & ICEA S-79-647.' : 'REJECTED - One or more mechanical limits exceeded. Redesign required.')
+                    ]
+                }
+            ];
+
             steps.forEach((s, idx) => {
                 const div = document.createElement('div');
                 div.className = 'audit-step';
@@ -1579,6 +2940,86 @@
             this.classList.add('hidden');
             displayMessage("Calculation reset. Please start a new pull.", "info");
         });
+
+        // ==========================================
+        // FAQ ACCORDION & EMBED WIDGET JS
+        // ==========================================
+        function initFaqAccordion() {
+            const triggers = document.querySelectorAll('.faq-trigger');
+            triggers.forEach(trigger => {
+                trigger.addEventListener('click', function() {
+                    const card = this.closest('.faq-card');
+                    const content = card.querySelector('.faq-content');
+                    const isOpen = card.classList.contains('active');
+                    
+                    // Close other cards
+                    document.querySelectorAll('.faq-card').forEach(otherCard => {
+                        if (otherCard !== card && otherCard.classList.contains('active')) {
+                            otherCard.classList.remove('active');
+                            otherCard.querySelector('.faq-trigger').setAttribute('aria-expanded', 'false');
+                            otherCard.querySelector('.faq-content').style.maxHeight = null;
+                        }
+                    });
+                    
+                    if (isOpen) {
+                        card.classList.remove('active');
+                        this.setAttribute('aria-expanded', 'false');
+                        content.style.maxHeight = null;
+                    } else {
+                        card.classList.add('active');
+                        this.setAttribute('aria-expanded', 'true');
+                        // Calculate height including MathJax dynamic rendering
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        
+                        // Readjust height when MathJax finishes any pending renders
+                        if (window.MathJax && window.MathJax.startup) {
+                            window.MathJax.startup.promise.then(() => {
+                                if (card.classList.contains('active')) {
+                                    content.style.maxHeight = content.scrollHeight + 'px';
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Make sure resizing window updates heights
+            window.addEventListener('resize', function() {
+                document.querySelectorAll('.faq-card.active .faq-content').forEach(content => {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                });
+            });
+        }
+
+        function copyEmbedCode() {
+            const embedInput = document.getElementById('embed-code-input');
+            if (!embedInput) return;
+            
+            embedInput.select();
+            embedInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                navigator.clipboard.writeText(embedInput.value)
+                    .then(() => {
+                        if (typeof displayMessage === 'function') {
+                            displayMessage('Embed code copied successfully!', 'success');
+                        } else {
+                            alert('Embed code copied successfully!');
+                        }
+                    })
+                    .catch(() => {
+                        document.execCommand('copy');
+                        if (typeof displayMessage === 'function') {
+                            displayMessage('Embed code copied successfully!', 'success');
+                        } else {
+                            alert('Embed code copied successfully!');
+                        }
+                    });
+            } catch (err) {
+                document.execCommand('copy');
+                alert('Embed code copied successfully!');
+            }
+        }
     </script>
 </body>
 </html>
