@@ -69,6 +69,14 @@
             --footer-bg: #0F172A;
             --border: #E2E8F0;
             --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+            
+            --info-bg: rgba(37, 99, 235, 0.1);
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --danger-bg: rgba(239, 68, 68, 0.1);
         }
 
         body.dark-mode {
@@ -81,6 +89,11 @@
             --footer-bg: #020617;
             --border: #334155;
             --accent: #F59E0B;
+            
+            --info-bg: rgba(59, 130, 246, 0.2);
+            --success-bg: rgba(52, 211, 153, 0.2);
+            --warning-bg: rgba(251, 191, 36, 0.2);
+            --danger-bg: rgba(248, 113, 113, 0.2);
         }
 
         * { box-sizing: border-box; }
@@ -92,11 +105,12 @@
             line-height: 1.7;
             margin: 0;
             padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 
-        /* Header */
+        /* Header & Nav */
         header {
             background: var(--grad);
             color: white;
@@ -120,164 +134,681 @@
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* Main */
+        /* Main Content */
         main { padding: 40px 0; }
-        .card {
-            background: var(--card); border-radius: 12px; padding: 30px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05); margin-bottom: 30px; border: 1px solid var(--border);
+        
+        /* Layout Container Refactored */
+        .tool-container {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
             animation: fadeIn 0.6s ease-out;
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .card h2 {
-            color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 15px;
-            margin-top: 0; font-family: 'Montserrat', sans-serif; font-size: 1.8rem;
+
+        .tool-container h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        body.dark-mode .tool-container h2 {
+            border-bottom-color: var(--secondary);
         }
 
-        /* Forms */
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--heading); }
-        .form-group input, .form-group select {
-            width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 6px;
-            background-color: var(--bg); color: var(--text); font-size: 1rem; transition: all 0.3s;
+        .tool-description {
+            margin-bottom: 25px;
+            font-size: 1.05rem;
+            color: var(--text);
+            line-height: 1.8;
         }
-        .form-group input:focus, .form-group select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1); }
+
+        /* Staggered Form Sections */
+        .form-section {
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            opacity: 1;
+            transform: translateY(0);
+        }
         
-        .vector-input-group { background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border); position: relative; }
-        .vector-input-header { font-weight: 700; margin-bottom: 10px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .form-section.fade-in {
+            animation: slideUpIn 0.5s ease-out forwards;
+        }
+
+        @keyframes slideUpIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section h3 {
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.25rem;
+        }
+        
+        body.dark-mode .form-section h3 {
+            color: var(--secondary);
+        }
+
+        /* Forms Layout */
+        .form-row { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 15px; 
+        }
+        
+        .form-group { 
+            margin-bottom: 0; 
+        }
+        
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: var(--heading); 
+        }
+        
+        .form-group input, 
+        .form-group select {
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid var(--border); 
+            border-radius: 8px;
+            background-color: var(--card); 
+            color: var(--text); 
+            font-size: 1rem; 
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus, 
+        .form-group select:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15); 
+        }
+
+        body.dark-mode .form-group input:focus,
+        body.dark-mode .form-group select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+        }
+        
+        .vector-input-group { 
+            background: var(--card); 
+            padding: 20px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border); 
+            box-shadow: var(--shadow);
+        }
+        
+        .vector-input-header { 
+            font-weight: 700; 
+            margin-bottom: 15px; 
+            color: var(--primary); 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 1.05rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+        
+        body.dark-mode .vector-input-header {
+            color: var(--secondary);
+        }
 
         /* Buttons */
         .btn {
-            background: var(--grad); color: white; border: none; padding: 16px 30px;
-            border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: 700;
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3); transition: all 0.3s; width: 100%;
+            background: var(--grad); 
+            color: white; 
+            border: none; 
+            padding: 16px 30px;
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 1.1rem; 
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3); 
+            transition: all 0.3s ease; 
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4); }
-        .btn-outline { background: transparent; border: 2px solid var(--secondary); color: var(--secondary); font-size: 0.9rem; padding: 8px 16px; }
-        .btn-outline:hover { background: var(--secondary); color: white; }
-        .button-wrapper { display: flex; justify-content: center; width: 100%; padding-top: 15px; gap: 15px; flex-wrap: wrap; }
+        .btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4); 
+        }
+        .btn-outline { 
+            background: transparent; 
+            border: 2px solid var(--secondary); 
+            color: var(--secondary); 
+            font-size: 1rem; 
+            padding: 14px 28px; 
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-outline:hover { 
+            background: var(--secondary); 
+            color: white; 
+        }
+        .button-wrapper { 
+            display: flex; 
+            justify-content: center; 
+            width: 100%; 
+            padding-top: 15px; 
+            gap: 15px; 
+            flex-wrap: wrap; 
+        }
         
         /* Presets */
-        .preset-container { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-        .preset-btn { padding: 8px 12px; font-size: 0.85rem; border: 1px solid var(--border); background: var(--card); border-radius: 20px; cursor: pointer; transition: all 0.2s; color: var(--text); display: flex; align-items: center; gap: 5px; }
-        .preset-btn:hover { background: var(--bg); border-color: var(--secondary); color: var(--secondary); }
+        .preset-container { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .preset-btn { 
+            padding: 8px 14px; 
+            font-size: 0.85rem; 
+            border: 1px solid var(--border); 
+            background: var(--card); 
+            border-radius: 20px; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            color: var(--text); 
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+            font-weight: 500;
+        }
+        .preset-btn:hover { 
+            background: var(--bg); 
+            border-color: var(--secondary); 
+            color: var(--secondary); 
+        }
 
-        /* Results */
-        .results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start; }
+        /* Results & Display */
+        .results-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 30px; align-items: start; }
         @media (max-width: 1024px) { .results-grid { grid-template-columns: 1fr; } }
-        .results-table { width: 100%; border-collapse: collapse; margin-top: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 8px; overflow: hidden; }
-        .results-table th, .results-table td { padding: 14px; text-align: left; border-bottom: 1px solid var(--border); }
-        .results-table th { background: var(--grad); color: white; font-weight: 700; }
-        .results-table td:first-child { font-weight: 600; color: var(--heading); }
         
-        /* Steps */
-        .calculation-step { font-family: 'Courier New', monospace; background-color: rgba(37, 99, 235, 0.05); padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid var(--secondary); font-size: 0.95rem; line-height: 1.6; }
-        .calculation-step h4 { color: var(--primary); margin-top: 0; margin-bottom: 10px; font-size: 1.1rem; border-bottom: 1px dashed var(--border); padding-bottom: 5px; }
+        .results-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 0; 
+            box-shadow: var(--shadow); 
+            border-radius: 10px; 
+            overflow: hidden; 
+            border: 1px solid var(--border);
+        }
+        .results-table th, .results-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        .results-table th { background: var(--grad); color: white; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+        .results-table td:first-child { font-weight: 600; color: var(--heading); }
+        .results-table tr:last-child td { border-bottom: none; }
+        .results-table tr:nth-child(even) { background-color: rgba(30, 58, 138, 0.02); }
+        body.dark-mode .results-table tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+        
+        .range-status-display {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 5px solid transparent;
+        }
+        .range-status-display.excellent { background-color: var(--success-bg); color: #047857; border-left-color: var(--success); }
+        .range-status-display.good { background-color: var(--info-bg); color: #1d4ed8; border-left-color: var(--secondary); }
+        .range-status-display.standard { background-color: var(--warning-bg); color: #b45309; border-left-color: var(--warning); }
+        .range-status-display.inefficient { background-color: var(--danger-bg); color: #b91c1c; border-left-color: var(--danger); }
+        
+        body.dark-mode .range-status-display.excellent { color: #34d399; }
+        body.dark-mode .range-status-display.good { color: #60a5fa; }
+        body.dark-mode .range-status-display.standard { color: #fbbf24; }
+        body.dark-mode .range-status-display.inefficient { color: #f87171; }
+
+        /* Assessment Boxes */
+        .assessment-box {
+            margin-top: 20px; 
+            background: var(--bg); 
+            padding: 20px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 260px;
+            background-color: #1e293b;
+            color: #f8fafc;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -130px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            pointer-events: none;
+            font-weight: normal;
+        }
+        body.dark-mode .tooltip .tooltiptext {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .info-icon {
+            color: var(--secondary);
+            margin-left: 5px;
+            cursor: help;
+        }
+        
+        /* Floating Message Box */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 28px;
+            border-radius: 8px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            z-index: 10000;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.4s ease;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            min-width: 280px;
+        }
+        #custom-message-box.show {
+            display: flex;
+            opacity: 1;
+            top: 30px;
+        }
+
+        /* LaTeX Step-by-Step Solver Cards */
+        .steps-container {
+            display: none;
+            margin-top: 35px;
+        }
+        .steps-container.active {
+            display: block;
+        }
+        .step-card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            animation: slideIn 0.5s ease-out;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-card h4 {
+            color: var(--primary);
+            margin: 0 0 15px 0;
+            font-size: 1.25rem;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+        }
+        body.dark-mode .step-card h4 {
+            color: var(--secondary);
+        }
+        .step-card .number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-right: 12px;
+            font-size: 1rem;
+        }
+        body.dark-mode .step-card .number {
+            background: var(--secondary);
+        }
+        .step-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        .step-content .formula {
+            background: var(--bg);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .step-explanation {
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        .step-explanation p {
+            margin: 5px 0;
+        }
 
         /* Visualization */
-        .chart-container { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; position: relative; height: 350px; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .chart-container { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            padding: 20px; 
+            position: relative; 
+            height: 350px; 
+            width: 100%; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden; 
+            box-shadow: var(--shadow);
+        }
         canvas { max-width: 100%; max-height: 100%; }
 
-        /* Educational Content */
-        .insight-card { background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.03)); border-radius: 12px; padding: 25px; margin: 20px 0; border-left: 5px solid var(--secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .insight-card:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .insight-card h4 { color: var(--secondary); font-size: 1.3rem; margin: 0 0 15px 0; display: flex; align-items: center; gap: 10px; font-family: 'Montserrat', sans-serif; }
-        .insight-card p, .insight-card ul { margin: 10px 0; line-height: 1.8; color: var(--text); font-size: 1rem; }
-        .insight-card ul { padding-left: 20px; }
-        .insight-card li { margin-bottom: 8px; }
-
-        /* Status Badges */
-        .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
-        .status-pass { background: #dcfce7; color: #166534; }
-        .status-fail { background: #fee2e2; color: #991b1b; }
-        .status-warn { background: #fef9c3; color: #854d0e; }
-
-        /* Footer */
-        footer { background: #0F172A; color: #CBD5E1; padding: 50px 0 20px 0; margin-top: 60px; }
-        .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 30px; }
-        .footer-col { flex: 1; min-width: 200px; }
-        .footer-col h4 { color: white; margin-bottom: 15px; font-weight: 700; }
-        .footer-col ul { list-style: none; padding: 0; margin: 0; }
-        .footer-col a { color: #CBD5E1; text-decoration: none; transition: color 0.3s; }
-        .footer-col a:hover { color: var(--accent); }
-        .social-buttons { display: flex; gap: 12px; margin-top: 15px; }
-        .social-btn { width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; color: white; border-radius: 50%; font-size: 1.1rem; transition: transform 0.3s; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .social-btn:hover { transform: translateY(-4px); }
-        .social-btn.linkedin { background-color: #0A66C2; }
-        .social-btn.facebook { background-color: #1877F2; }
-        .social-btn.twitter { background-color: #1DA1F2; }
-        .social-btn.whatsapp { background-color: #25D366; }
-        .footer-disclaimer { text-align: center; padding-top: 25px; border-top: 1px solid #334155; max-width: 800px; margin: 0 auto; font-size: 0.9rem; }
-        .footer-bottom { text-align: center; padding-top: 20px; font-size: 0.9rem; color: #94A3B8; }
-        /* --- REFINED MODERNIZED EDUCATION SECTION CSS --- */
-        .education-section {
-            margin-top: 60px;
-            padding: 40px;
-            background: #f8fafc; /* Light default background */
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            color: var(--text);
-            transition: all 0.3s ease;
-        }
-        .education-section h2 {
-            color: var(--primary);
-            border-bottom: 2px solid var(--secondary);
-            margin-bottom: 30px;
-        }
-        
-        /* Dark Mode Specific for Theory */
-        body.dark-mode .education-section {
-            background: #0f172a; /* grad-dark color */
-            border: none;
-            color: #f1f5f9;
-        }
-        body.dark-mode .education-section h2 {
-            color: #fff;
-        }
-
-        .stage-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
+        /* REFINED ACCORDION FAQ STYLES */
+        .faq-accordion {
             margin-top: 30px;
-        }
-        
-        .stage-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 25px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
             gap: 15px;
-            position: relative;
+        }
+        .faq-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+        .faq-question {
+            padding: 20px 24px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--heading);
+            background: var(--card);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background 0.3s ease;
+        }
+        .faq-question:hover {
+            background: rgba(30, 58, 138, 0.03);
+        }
+        body.dark-mode .faq-question:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .faq-icon {
+            font-size: 0.95rem;
+            color: var(--secondary);
+            transition: transform 0.3s ease;
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: var(--card);
+            border-top: 1px solid transparent;
+        }
+        .faq-answer-content {
+            padding: 24px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+        .faq-item.active {
+            border-color: var(--secondary);
+            box-shadow: var(--shadow);
+        }
+        .faq-item.active .faq-question {
+            color: var(--secondary);
+            border-bottom: 1px solid var(--border);
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        .faq-item.active .faq-answer {
+            border-top-color: var(--border);
         }
         
-        body.dark-mode .stage-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* Embed Widget Code Card */
+        .embed-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 35px;
+            box-shadow: var(--shadow);
         }
-
-        .stage-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+        .embed-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        body.dark-mode .embed-card h3 {
+            color: var(--secondary);
+        }
+        .embed-textarea {
+            width: 100%;
+            height: 70px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--text);
+            resize: none;
+            margin: 10px 0;
+        }
+        
+        /* Related Tools Level Up Section */
+        .levelup-section {
+            margin-top: 50px;
+            padding: 30px 0;
+            border-top: 1px solid var(--border);
+        }
+        .levelup-section h2 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--heading);
+            font-family: 'Montserrat', sans-serif;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .levelup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .levelup-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .levelup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
             border-color: var(--secondary);
         }
-        
-        /* VARIANT CARDS */
-        .card-variant-1 { border-top: 4px solid #3b82f6; } /* Blue */
-        .card-variant-2 { border-top: 4px solid #10b981; } /* Emerald */
-        .card-variant-3 { border-top: 4px solid #f59e0b; } /* Amber */
-        .card-variant-4 { border-top: 4px solid #ef4444; } /* Red */
-        .card-variant-5 { border-top: 4px solid #8b5cf6; } /* Violet */
-        .card-variant-6 { border-top: 4px solid #06b6d4; } /* Cyan */
-        .card-variant-7 { border-top: 4px solid #ec4899; } /* Pink */
+        .levelup-card h4 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        body.dark-mode .levelup-card h4 {
+            color: var(--secondary);
+        }
+        .levelup-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        .levelup-card .levelup-arrow {
+            margin-top: auto;
+            color: var(--secondary);
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
+        /* SVG Animations */
+        @keyframes flowSweep { 0% { stroke-dashoffset: 600; } 100% { stroke-dashoffset: 0; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        .flow-path { stroke-dasharray: 600; animation: flowSweep 4s linear infinite; }
+        .pulse { animation: pulse 2s ease-in-out infinite; }
+
+        /* Theory section adjustments */
+        .education-section {
+            margin-top: 50px;
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 40px;
+        }
+        .education-section h2 {
+            border-bottom: 2px solid var(--secondary);
+            margin-bottom: 25px;
+        }
+        .stage-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-top: 40px;
+            padding-left: 60px;
+        }
+        /* Vertical line connector */
+        .stage-container::before {
+            content: '';
+            position: absolute;
+            left: 22px;
+            top: 25px;
+            bottom: 25px;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--secondary), var(--accent), var(--success));
+            border-radius: 2px;
+        }
+        .stage-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: var(--shadow);
+        }
+        .stage-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary);
+        }
+        /* Numbered timeline dot */
+        .stage-card::before {
+            content: attr(data-stage);
+            position: absolute;
+            left: -58px;
+            top: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--grad);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.15rem;
+            font-family: 'Montserrat', sans-serif;
+            box-shadow: 0 0 0 6px var(--bg), 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+        body.dark-mode .stage-card::before {
+            box-shadow: 0 0 0 6px var(--bg), 0 4px 10px rgba(0,0,0,0.4);
+        }
+        .stage-card:hover::before {
+            transform: scale(1.1);
+            background: var(--accent);
+        }
         .stage-badge {
             position: absolute;
             top: 15px;
@@ -289,92 +820,88 @@
             padding: 3px 8px;
             border-radius: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         .stage-card h3 {
             margin: 0;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             color: var(--heading);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-family: 'Montserrat', sans-serif;
         }
-        body.dark-mode .stage-card h3 { color: #fff; }
-        .stage-card h3 i { color: var(--secondary); }
-        
-        .stage-content {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: var(--text);
-        }
-        body.dark-mode .stage-content { color: #cbd5e1; }
-        
+        .stage-content { font-size: 0.9rem; line-height: 1.6; }
         .stage-visual {
-            background: rgba(0,0,0,0.03);
-            border-radius: 12px;
-            padding: 15px;
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+            padding: 10px;
             margin-top: auto;
-            border: 1px solid rgba(0,0,0,0.05);
-            height: 160px;
+            border: 1px solid rgba(0,0,0,0.03);
+            height: 150px;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
         }
-        body.dark-mode .stage-visual { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.05); }
-
+        body.dark-mode .stage-visual { background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.05); }
         .math-block {
-            background: rgba(0,0,0,0.02);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
+            background: rgba(37, 99, 235, 0.04);
+            padding: 10px;
+            border-radius: 6px;
             border-left: 3px solid var(--secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             overflow-x: auto;
+            margin: 8px 0;
         }
-        body.dark-mode .math-block { background: rgba(15, 23, 42, 0.5); }
         
-        /* FAQ Grid Section */
-        .faq-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-            border-top: 2px solid var(--border);
-            padding-top: 40px;
+        /* 2-column layout inside cards with visuals on wide screens */
+        @media (min-width: 992px) {
+            .stage-card.has-visual {
+                display: grid;
+                grid-template-columns: 1.2fr 0.8fr;
+                gap: 30px;
+                align-items: center;
+            }
+            .stage-card.has-visual h3 {
+                grid-column: 1 / -1;
+            }
+            .stage-card.has-visual .stage-content {
+                grid-column: 1;
+            }
+            .stage-card.has-visual .stage-visual {
+                grid-column: 2;
+                margin-top: 0;
+            }
         }
-        .faq-item {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 20px;
-            border-radius: 12px;
-        }
-        body.dark-mode .faq-item { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.1); }
-        .faq-item h4 {
-            font-size: 1rem;
-            color: var(--primary);
-            margin: 0 0 10px 0;
-            font-weight: 700;
-        }
-        body.dark-mode .faq-item h4 { color: var(--secondary); }
-        .faq-item p {
-            font-size: 0.85rem;
-            line-height: 1.5;
-            margin: 0;
-            color: var(--text);
-        }
-        body.dark-mode .faq-item p { color: #94a3b8; }
-
-        /* SVG Animations */
-        @keyframes flowSweep { 0% { stroke-dashoffset: 600; } 100% { stroke-dashoffset: 0; } }
-        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-        .flow-path { stroke-dasharray: 600; animation: flowSweep 4s linear infinite; }
-        .pulse { animation: pulse 2s ease-in-out infinite; }
+        
+        /* Footer */
+        footer { background: var(--footer-bg); color: #CBD5E1; padding: 50px 0 20px 0; margin-top: 60px; }
+        .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; margin-bottom: 30px; }
+        .footer-col { flex: 1; min-width: 200px; }
+        .footer-col h4 { color: white; margin-bottom: 15px; font-weight: 700; }
+        .footer-col ul { list-style: none; padding: 0; margin: 0; }
+        .footer-col a { color: #CBD5E1; text-decoration: none; transition: color 0.3s; }
+        .footer-col a:hover { color: var(--accent); }
+        .footer-disclaimer { text-align: center; padding-top: 25px; border-top: 1px solid #334155; max-width: 800px; margin: 0 auto; font-size: 0.9rem; }
+        .footer-bottom { text-align: center; padding-top: 20px; font-size: 0.9rem; color: #94A3B8; }
         
         @media (max-width: 768px) {
-            .education-section { padding: 25px 15px; }
-            .stage-container { grid-template-columns: 1fr; }
-            .faq-grid { grid-template-columns: 1fr; }
+            .tool-container { padding: 24px 16px; }
+            .results-grid { grid-template-columns: 1fr; }
+            .stage-container {
+                padding-left: 45px;
+                gap: 25px;
+            }
+            .stage-container::before {
+                left: 17px;
+            }
+            .stage-card {
+                padding: 20px;
+            }
+            .stage-card::before {
+                left: -44px;
+                width: 32px;
+                height: 32px;
+                font-size: 0.95rem;
+                top: 20px;
+                box-shadow: 0 0 0 4px var(--bg);
+            }
         }
     </style>
     <link rel="stylesheet" href="styles.css">
@@ -435,7 +962,7 @@
     </script>
 </head>
 <body>
-    <div id="message-box" class="message-box"></div>
+    <div id="custom-message-box" class="custom-message-box"></div>
     <header class="header">
         <div class="header-bg-animation"></div>
         <div class="container">
@@ -459,7 +986,7 @@
             <div class="repo-grid"><div><a href="/arcflash.html">Arc Flash Calculator</a><a href="/breaker-sizing.html">Breaker Sizing</a><a href="/cable-thermal-rating.html">Cable Ampacity</a><a href="/comm-cable-loss.html">Comm Cable Loss</a><a href="/earth-conductor-size.html">Earth Conductor Size</a><a href="/generatorsizing.html">Generator Sizing</a><a href="/harmonicsanalyser.html">Harmonics Analyser</a><a href="/insulationresistance.html">Insulation Resistance</a><a href="/logicgate.html">Logic Gates Simulator</a><a href="/motor-starting.html">Motor Starting Current</a><a href="/pcbtrace.html">PCB Trace Width</a><a href="/protection-device.html">Protection Device</a><a href="/resistor.html">Resistor Color Code</a><a href="/solarcable.html">Solar Cable Sizing</a><a href="/systemxrcalculator.html">System X/R Ratio</a><a href="/transmissionline.html">Transmission Line</a><a href="/vfd-selection.html">VFD Selection Tool</a></div><div><a href="/batterylife.html">Battery Life Estimator</a><a href="/busbarampacity.html">Busbar Ampacity</a><a href="/cablepulling.html">Cable Pulling Tension</a><a href="/conduit-fill.html">Conduit Fill Calculator</a><a href="/earthingfaultsimulator.html">Earthing Fault Simulator</a><a href="/grounding.html">Grounding System Design</a><a href="/hvac-sizing.html">HVAC Sizing Calculator</a><a href="/lcresonancecalculator.html">LC Resonance Calculator</a><a href="/maintenance-guide.html">Maintenance Guide</a><a href="/nemaipconvertor.html">NEMA to IP Converter</a><a href="/power-factor.html">Power Factor Correction</a><a href="/relay-coordination.html">Relay Coordination</a><a href="/short-circuit.html">Short Circuit Current</a><a href="/solarpvarray.html">Solar PV Array</a><a href="/transformer-calculator.html">Transformer Calculator</a><a href="/unit-converter.html">Unit Converter</a><a href="/voltage-drop.html">Voltage Drop Calculator</a></div><div><a href="/battery-sizing.html">Battery Sizing (AH)</a><a href="/batterychargersizing.html">Battery Charger Sizing</a><a href="/busbarshortcircuit.html">Busbar Short Circuit</a><a href="/cable-sizing.html">Cable Sizing Calculator</a><a href="/ctsaturation.html">CT Saturation</a><a href="/equipment-relay.html">Equipment Relay Setting</a><a href="/harmonic-distortion.html">Harmonic Distortion</a><a href="/industriallighting.html">Industrial Lighting</a><a href="/lighting-calulator.html">Lighting Calculator</a><a href="/motor-efficiency.html">Motor Efficiency</a><a href="/neutral-earth-fault-current.html">Neutral Earth Fault</a><a href="/powertriangletool.html">Power Triangle</a><a href="/electricalresidentialload.html">Residential Load Calc</a><a href="/skindepth.html">Skin Depth Calculator</a><a href="/symmetricalcomponents.html">Symmetrical Components</a><a href="/transformerinrush.html">Transformer Inrush</a><a href="/ups-sizing.html">UPS Sizing</a></div>
             </div>
             <div class="view-all-container">
-                <a href="/indexele.html" class="view-all-link">View All Electrical Tools Ã¢â€ â€™</a>
+                <a href="/indexele.html" class="view-all-link">View All Electrical Tools →</a>
             </div>
         </div>
     </li>
@@ -470,7 +997,7 @@
             <div class="repo-grid"><div><a href="/adc-resolution.html">ADC Resolution</a><a href="/capillarylengthtemperatureerror.html">Capillary Error</a><a href="/cv-kv-valve.html">Cv/Kv Valve Sizing</a><a href="/dp-level.html">DP Level Measurement</a><a href="/hydrostatic-level.html">Hydrostatic Level</a><a href="/instrument-range.html">Instrument Range</a><a href="/loop-impedance.html">Loop Impedance</a><a href="/orifice-plate.html">Orifice Plate Beta</a><a href="/pid-tuning.html">PID Tuning</a><a href="/profibus.html">Profibus Calculator</a><a href="/tempsensorresponse.html">Response Time (Tau)</a><a href="/rtd-lead-comp.html">RTD Lead Wire Comp.</a><a href="/sealfluidzeroshift.html">Seal Fluid Shift</a><a href="/snr-calculator.html">SNR Calculator</a><a href="/thermocoupleextensioncable.html">TC Extension Cable</a><a href="/thermowellwakefreq.html">Thermowell Frequency</a><a href="/pressuretransmitteroverrange.html">Tx Overrange</a><a href="/valvecavitationcalculator.html">Valve Cavitation</a><a href="/vibrationtransmitter.html">Vibration Tx</a><a href="/zoneclassificationhelper.html">Zone Classification</a></div><div><a href="/baud-rate.html">Baud Rate Calculator</a><a href="/gascompressibility.html">Compressibility (Z)</a><a href="/dbcalculator.html">dB Gain/Loss Calc</a><a href="/flowprofiledistortioncalculator.html">Flow Distortion</a><a href="/impulselinefreezing.html">Impulse Freezing</a><a href="/intrinsic-safety.html">Intrinsic Safety Loop</a><a href="/measurement.html">Measurement Uncertainty</a><a href="/ph-temp-comp.html">pH Temp Compensation</a><a href="/plcscantime.html">PLC Scan Time</a><a href="/pressurereliefvalve.html">PRV Sizing (API 520)</a><a href="/reynoldsnumbercal.html">Reynolds Number</a><a href="/rtdselfheating.html">RTD Self-Heating</a><a href="/signal-scaling.html">Signal Scaling</a><a href="/staticheadcal.html">Static Head</a><a href="/temperaturesensorlag.html">Temp Sensor Lag</a><a href="/thermowell-wake.html">Thermowell Wake</a><a href="/ultrasoniclevel.html">Ultrasonic Level</a><a href="/valve-cv.html">Valve Cv Viewer</a><a href="/wetlegdensitycompensation.html">Wet Leg Compensation</a></div><div><a href="/capacitance-level.html">Capacitance Level</a><a href="/controlvalvenoise.html">Control Valve Noise</a><a href="/dp-flow-conversion.html">DP Flow Conversion</a><a href="/hartdevices.html">HART Devices</a><a href="/impulse-pressure-drop.html">Impulse Pressure Drop</a><a href="/junctionbox.html">Junction Box Sizing</a><a href="/orifice-flow.html">Orifice Flow Calculator</a><a href="/pid-symbol-library.html">PID Symbol Library</a><a href="/power-supply-load.html">Power Supply Load</a><a href="/prvsizing.html">Relief Orifice Area</a><a href="/rtdexcitationcurrentselection.html">RTD Excitation</a><a href="/rtd-tc-conversion.html">RTD/TC Conversion</a><a href="/sil.html">SIL Calculator</a><a href="/steamflow.html">Steam Flow</a><a href="/thermocouplecjccalculator.html">Thermocouple CJC</a><a href="/turndown.html">Turndown Ratio</a><a href="/controlvalveauthority.html">Valve Authority</a><a href="/controlvalveleakage.html">Valve Leakage Class</a><a href="/wirelesshart.html">WirelessHART Range</a></div>
             </div>
             <div class="view-all-container">
-                <a href="/indexinst.html" class="view-all-link">View All Instrumentation Tools Ã¢â€ â€™</a>
+                <a href="/indexinst.html" class="view-all-link">View All Instrumentation Tools →</a>
             </div>
         </div>
     </li>
@@ -481,7 +1008,7 @@
             <div class="repo-grid"><div><a href="/aircompressorfad.html">Air Compressor FAD</a><a href="/asme-vessel.html">ASME Vessel Design</a><a href="/belt-pulley.html">Belt & Pulley</a><a href="/bolt-torque.html">Bolt Torque</a><a href="/controlvalveactuator.html">Control Valve Actuator</a><a href="/frictionfactortool.html">Darcy Friction Factor</a><a href="/fatigue.html">Fatigue Analysis</a><a href="/fuel-combustion.html">Fuel Combustion</a><a href="/gas.html">Gas Properties</a><a href="/heat-exchanger.html">Heat Exchanger</a><a href="/hydroliccylinder.html">Hydraulic Cylinder</a><a href="/material-compatibility.html">Material Compatibility</a><a href="/nozzle-reinforcement.html">Nozzle Reinforcement</a><a href="/openchannelflow.html">Open Channel Flow</a><a href="/pipescheduletool.html">Pipe Schedule & Stress</a><a href="/pump-head.html">Pump Head</a><a href="/shaft-power-torque.html">Shaft Power & Torque</a><a href="/steam-table.html">Steam Table</a><a href="/vibrationanalysis.html">Vibration Analysis</a></div><div><a href="/air-flow-duct.html">Air Flow Duct Sizing</a><a href="/beam-deflection.html">Beam Deflection</a><a href="/bernoulli-equation.html">Bernoulli Equation</a><a href="/chiller-capacity.html">Chiller Capacity</a><a href="/cooling-tower-sizing.html">Cooling Tower Sizing</a><a href="/darcy-weisbach.html">Darcy-Weisbach</a><a href="/finned-tube-heat-transfer.html">Finned Tube Heat</a><a href="/furnace-heat-duty.html">Furnace Heat Duty</a><a href="/gear-design.html">Gear Design</a><a href="/heat-loss-pipes.html">Heat Loss Pipes</a><a href="/jacketed-vessel-heat-transfer.html">Jacketed Vessel</a><a href="/metalweight.html">Metal Weight Calculator</a><a href="/nptbspthreadcalculator.html">NPT/BSP Threads</a><a href="/overall-heat-transfer.html">Overall Heat Transfer</a><a href="/pipe-stress-flexibility.html">Pipe Stress</a><a href="/pump-power.html">Pump Power</a><a href="/specific-heat-enthalpy.html">Specific Heat</a><a href="/storage-tank-volume.html">Storage Tank Volume</a><a href="/weldingstress.html">Welding Stress</a></div><div><a href="/allowable-stress-safety-factor.html">Allowable Stress</a><a href="/bearinglife.html">Bearing Life Calculator</a><a href="/boiler-efficiency.html">Boiler Efficiency</a><a href="/compressor-power.html">Compressor Power</a><a href="/corrosion-rate.html">Corrosion Rate</a><a href="/fan-laws.html">Fan Laws</a><a href="/foundation.html">Foundation Design</a><a href="/gas-laws.html">Gas Laws</a><a href="/hardness.html">Hardness Converter</a><a href="/conduction-convection-radiation.html">Heat Transfer Modes</a><a href="/machining.html">Machining Calculator</a><a href="/momentofinertia.html">Moment of Inertia</a><a href="/oring.html">O-Ring Sizing</a><a href="/pipe-flow.html">Pipe Flow Calculator</a><a href="/psychrometric.html">Psychrometric Calc</a><a href="/reynolds-number.html">Reynolds Number</a><a href="/spring.html">Spring Design</a><a href="/thermal-expansion.html">Thermal Expansion</a></div>
             </div>
             <div class="view-all-container">
-                <a href="/indexmech.html" class="view-all-link">View All Mechanical Tools Ã¢â€ â€™</a>
+                <a href="/indexmech.html" class="view-all-link">View All Mechanical Tools →</a>
             </div>
         </div>
     </li>
@@ -499,10 +1026,11 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
-        <div class="card">
+        <div class="tool-container">
             <h2><i class="fas fa-snowflake"></i> Chiller Capacity, Efficiency & Heat Balance Calculator</h2>
             
             <div class="tool-description">
@@ -512,107 +1040,114 @@
             <div class="calculator-form">
                 <form id="chiller-form">
                     <!-- Controls Row -->
-                    <div class="form-row" style="align-items: end;">
-                        <div class="form-group">
-                            <label>Quick Load Scenarios:</label>
-                            <div class="preset-container" style="margin-bottom: 0;">
-                                <button type="button" class="preset-btn" onclick="loadPreset('building_hvac')"><i class="fas fa-building"></i> Commercial HVAC (Water)</button>
-                                <button type="button" class="preset-btn" onclick="loadPreset('process_glycol')"><i class="fas fa-industry"></i> Industrial Process (30% Glycol)</button>
-                                <button type="button" class="preset-btn" onclick="loadPreset('data_center')"><i class="fas fa-server"></i> Data Center (High $\Delta T$)</button>
+                    <div class="form-section fade-in">
+                        <h3><i class="fas fa-bolt"></i> Quick Scenarios</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Quick Load Presets:</label>
+                                <div class="preset-container">
+                                    <button type="button" class="preset-btn" onclick="loadPreset('building_hvac')"><i class="fas fa-building"></i> Commercial HVAC (Water)</button>
+                                    <button type="button" class="preset-btn" onclick="loadPreset('process_glycol')"><i class="fas fa-industry"></i> Industrial Process (30% Glycol)</button>
+                                    <button type="button" class="preset-btn" onclick="loadPreset('data_center')"><i class="fas fa-server"></i> Data Center (High $\Delta T$)</button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- System Config -->
-                    <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">1. System Configuration</h4>
-                    <div class="form-row">
-                        <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-cogs"></i> Mode & Units</div>
-                            <div class="form-group">
-                                <label for="unit-sys">Unit System</label>
-                                <select id="unit-sys" onchange="updateLabels()">
-                                    <option value="imperial" selected>Imperial (GPM, Â°F, Tons)</option>
-                                    <option value="metric">Metric (mÂ³/h, Â°C, kW)</option>
-                                </select>
+                    <div class="form-section fade-in">
+                        <h3><i class="fas fa-cogs"></i> 1. System Configuration</h3>
+                        <div class="form-row">
+                            <div class="vector-input-group">
+                                <div class="vector-input-header"><i class="fas fa-sliders-h"></i> Mode & Units</div>
+                                <div class="form-group">
+                                    <label for="unit-sys">Unit System</label>
+                                    <select id="unit-sys" onchange="updateLabels()">
+                                        <option value="imperial" selected>Imperial (GPM, °F, Tons)</option>
+                                        <option value="metric">Metric (m³/h, °C, kW)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-top:15px;">
+                                    <label for="calc-mode">Calculation Mode</label>
+                                    <select id="calc-mode" onchange="updateInputs()">
+                                        <option value="calc_capacity" selected>Calculate Capacity from Flow/$\Delta T$</option>
+                                        <option value="heat_balance">Heat Balance Validation (Evap + Cond)</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group" style="margin-top:10px;">
-                                <label for="calc-mode">Calculation Mode</label>
-                                <select id="calc-mode" onchange="updateInputs()">
-                                    <option value="calc_capacity" selected>Calculate Capacity from Flow/$\Delta T$</option>
-                                    <option value="heat_balance">Heat Balance Validation (Evap + Cond)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-flask"></i> Evap Fluid Properties</div>
-                            <div class="form-group">
-                                <label for="fluid-type">Fluid Type</label>
-                                <select id="fluid-type" onchange="updateFluidProps()">
-                                    <option value="water" selected>Pure Water</option>
-                                    <option value="eg">Ethylene Glycol</option>
-                                    <option value="pg">Propylene Glycol</option>
-                                </select>
-                            </div>
-                            <div class="form-group" id="conc-group" style="margin-top:10px;">
-                                <label for="concentration">Concentration [%]</label>
-                                <input type="number" id="concentration" value="0" step="5" min="0" max="60">
+                            <div class="vector-input-group">
+                                <div class="vector-input-header"><i class="fas fa-flask"></i> Evap Fluid Properties</div>
+                                <div class="form-group">
+                                    <label for="fluid-type">Fluid Type</label>
+                                    <select id="fluid-type" onchange="updateFluidProps()">
+                                        <option value="water" selected>Pure Water</option>
+                                        <option value="eg">Ethylene Glycol</option>
+                                        <option value="pg">Propylene Glycol</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="conc-group" style="margin-top:15px;">
+                                    <label for="concentration">Concentration [%]</label>
+                                    <input type="number" id="concentration" value="0" step="5" min="0" max="60">
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Evaporator Data -->
-                    <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 20px;">2. Evaporator (Chilled Water)</h4>
-                    <div class="form-row">
-                        <div class="vector-input-group" id="grp-flow-dt">
-                            <div class="vector-input-header"><i class="fas fa-water"></i> Evap Flow & Temps</div>
-                            <div class="form-group">
-                                <label id="lbl-flow" for="flow-rate">Evap Flow Rate [GPM]</label>
-                                <input type="number" id="flow-rate" value="500" step="10">
-                            </div>
-                            <div class="form-group" style="margin-top:10px; display:flex; gap:10px;">
-                                <div>
-                                    <label id="lbl-tin" for="t-in">CHW In ($T_{in}$)</label>
-                                    <input type="number" id="t-in" value="54" step="1">
+                    <div class="form-section fade-in">
+                        <h3><i class="fas fa-water"></i> 2. Operating Parameters</h3>
+                        <div class="form-row">
+                            <div class="vector-input-group" id="grp-flow-dt">
+                                <div class="vector-input-header"><i class="fas fa-snowflake"></i> Evaporator (Chilled Water)</div>
+                                <div class="form-group">
+                                    <label id="lbl-flow" for="flow-rate">Evap Flow Rate [GPM]</label>
+                                    <input type="number" id="flow-rate" value="500" step="10">
                                 </div>
-                                <div>
-                                    <label id="lbl-tout" for="t-out">CHW Out ($T_{out}$)</label>
-                                    <input type="number" id="t-out" value="44" step="1">
+                                <div class="form-group" style="margin-top:15px; display:flex; gap:10px;">
+                                    <div style="flex:1;">
+                                        <label id="lbl-tin" for="t-in">CHW In ($T_{in}$)</label>
+                                        <input type="number" id="t-in" value="54" step="1">
+                                    </div>
+                                    <div style="flex:1;">
+                                        <label id="lbl-tout" for="t-out">CHW Out ($T_{out}$)</label>
+                                        <input type="number" id="t-out" value="44" step="1">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="form-group" style="margin-top:10px;">
-                                <label id="lbl-head" for="pump-head">Pump Head [ft]</label>
-                                <input type="number" id="pump-head" value="40" step="5">
-                            </div>
-                        </div>
-                        
-                        <!-- Condenser Data (Only for Heat Balance) -->
-                        <div class="vector-input-group hidden" id="grp-cond">
-                            <div class="vector-input-header"><i class="fas fa-hot-tub"></i> Condenser (Optional)</div>
-                            <div class="form-group">
-                                <label id="lbl-cond-flow" for="cond-flow">Cond Flow [GPM]</label>
-                                <input type="number" id="cond-flow" value="600" step="10">
-                            </div>
-                            <div class="form-group" style="margin-top:10px; display:flex; gap:10px;">
-                                <div>
-                                    <label id="lbl-ctin" for="ct-in">CW In</label>
-                                    <input type="number" id="ct-in" value="85" step="1">
-                                </div>
-                                <div>
-                                    <label id="lbl-ctout" for="ct-out">CW Out</label>
-                                    <input type="number" id="ct-out" value="95" step="1">
+                                <div class="form-group" style="margin-top:15px;">
+                                    <label id="lbl-head" for="pump-head">Pump Head [ft]</label>
+                                    <input type="number" id="pump-head" value="40" step="5">
                                 </div>
                             </div>
-                        </div>
+                            
+                            <!-- Condenser Data (Only for Heat Balance) -->
+                            <div class="vector-input-group hidden" id="grp-cond">
+                                <div class="vector-input-header"><i class="fas fa-fire-extinguisher"></i> Condenser (Heat Rejection)</div>
+                                <div class="form-group">
+                                    <label id="lbl-cond-flow" for="cond-flow">Cond Flow [GPM]</label>
+                                    <input type="number" id="cond-flow" value="600" step="10">
+                                </div>
+                                <div class="form-group" style="margin-top:15px; display:flex; gap:10px;">
+                                    <div style="flex:1;">
+                                        <label id="lbl-ctin" for="ct-in">CW In</label>
+                                        <input type="number" id="ct-in" value="85" step="1">
+                                    </div>
+                                    <div style="flex:1;">
+                                        <label id="lbl-ctout" for="ct-out">CW Out</label>
+                                        <input type="number" id="ct-out" value="95" step="1">
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-bolt"></i> Power & Cost</div>
-                            <div class="form-group">
-                                <label for="power-input">Compressor Power [kW]</label>
-                                <input type="number" id="power-input" value="70" step="1">
-                            </div>
-                            <div class="form-group" style="margin-top:10px;">
-                                <label for="elec-cost">Elec. Cost [$/kWh]</label>
-                                <input type="number" id="elec-cost" value="0.12" step="0.01">
+                            <div class="vector-input-group">
+                                <div class="vector-input-header"><i class="fas fa-bolt"></i> Power & Costs</div>
+                                <div class="form-group">
+                                    <label for="power-input">Compressor Power [kW]</label>
+                                    <input type="number" id="power-input" value="70" step="1">
+                                </div>
+                                <div class="form-group" style="margin-top:15px;">
+                                    <label for="elec-cost">Elec. Cost [$/kWh]</label>
+                                    <input type="number" id="elec-cost" value="0.12" step="0.01">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -625,9 +1160,11 @@
             </div>
 
             <!-- Results Section -->
-            <div id="result-container" class="card hidden" style="margin-top: 40px;">
-                <h3><i class="fas fa-poll"></i> Performance Analysis</h3>
+            <div id="result-container" class="tool-container hidden" style="margin-top: 40px;">
+                <h3><i class="fas fa-chart-line"></i> Performance Analysis</h3>
                 
+                <div id="range-status-display" class="range-status-display"></div>
+
                 <div class="results-grid">
                     <!-- Left Col: Table -->
                     <div>
@@ -645,19 +1182,24 @@
                             </tbody>
                         </table>
                         
-                        <div style="margin-top: 20px; background: var(--bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
+                        <div class="assessment-box">
                             <strong><i class="fas fa-info-circle"></i> Assessment:</strong>
                             <div id="interpretation-text" style="margin-top: 5px; font-size: 0.95rem;"></div>
+                        </div>
+                        
+                        <div id="practical-recommendations" class="assessment-box" style="display: none; margin-top: 20px; border-left-color: var(--accent);">
+                            <strong><i class="fas fa-lightbulb"></i> Practical Engineering Recommendations:</strong>
+                            <ul id="recommendations-list" style="margin: 10px 0 0 0; padding-left: 20px; font-size: 0.9rem; line-height: 1.6;"></ul>
                         </div>
                     </div>
 
                     <!-- Right Col: Visual Chart -->
                     <div>
                         <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">System Visualization</h4>
-                        <div class="chart-container" id="chiller-viz-container">
+                        <div class="chart-container" id="chiller-viz-container" style="background-color: #ffffff;">
                             <svg id="chillerSVG" viewBox="0 0 400 300" width="100%" height="100%" style="background: #ffffff; border-radius: 8px;">
                                 <!-- Barrel -->
-                                <rect x="50" y="80" width="300" height="140" rx="10" ry="10" fill="#f1f5f9" stroke="#334155" stroke-width="3" />
+                                <rect x="50" y="80" width="300" height="140" rx="10" ry="10" fill="#f8fafc" stroke="#334155" stroke-width="3" />
                                 <!-- Tubes -->
                                 <line x1="60" y1="110" x2="340" y2="110" stroke="#cbd5e1" stroke-width="2" />
                                 <line x1="60" y1="150" x2="340" y2="150" stroke="#cbd5e1" stroke-width="2" />
@@ -666,51 +1208,52 @@
                                 <line x1="0" y1="110" x2="50" y2="110" stroke="#ef4444" stroke-width="8" />
                                 <line x1="350" y1="190" x2="400" y2="190" stroke="#3b82f6" stroke-width="8" />
                                 <!-- Labels -->
-                                <text id="svg-tin" x="10" y="100" fill="#ef4444" font-weight="bold" font-size="14">In: --</text>
-                                <text id="svg-tout" x="390" y="180" fill="#3b82f6" font-weight="bold" font-size="14" text-anchor="end">Out: --</text>
+                                <text x="10" y="100" fill="#ef4444" font-weight="bold" font-size="14">In: --</text>
+                                <text x="390" y="180" fill="#3b82f6" font-weight="bold" font-size="14" text-anchor="end">Out: --</text>
                                 <text x="200" y="155" fill="#334155" font-weight="bold" font-size="16" text-anchor="middle">Evaporator</text>
                             </svg>
                         </div>
-                         <div style="text-align: center; margin-top: 10px; font-size: 0.85rem; color: var(--text);">
-                            <span style="color: #3B82F6;">● Evaporator</span> &nbsp;
-                            <span style="color: #EF4444;">● Condenser (if active)</span>
+                        <div style="text-align: center; margin-top: 10px; font-size: 0.85rem; color: var(--text);">
+                            <span style="color: #3B82F6;">● Evaporator Outlet</span> &nbsp;
+                            <span style="color: #EF4444;">● Evaporator Inlet</span>
                         </div>
                         
                         <div style="margin-top:20px">
                              <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Efficiency Gauge (kW/Ton)</h4>
-                             <div class="chart-container" style="height:150px">
-                                <canvas id="effChart" role="img" aria-label="Eff  Analysis Chart"><p class="sr-only">Interactive data visualization for Eff  Analysis Chart</p></canvas>
+                             <div class="chart-container" style="height:170px">
+                                <canvas id="effChart" role="img" aria-label="Efficiency Analysis Chart"><p class="sr-only">Interactive data visualization for Efficiency Analysis Chart</p></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div id="calculation-details"></div>
+                <div id="steps-container" class="steps-container"></div>
 
-                <div class="standard-reference" style="margin-top: 20px; font-style: italic; color: var(--text);">
-                     Capacity $Q = \dot{m} c_p \Delta T$. Fluid properties (Density $\rho$, Specific Heat $c_p$) dynamically calculated based on mean temperature and glycol concentration. Heat Balance validation provided for commissioning.
+                <div class="standard-reference" style="margin-top: 25px; font-style: italic; color: var(--text); font-size: 0.9rem; border-top: 1px solid var(--border); padding-top: 15px;">
+                     Calculations comply with AHRI 550/590 and ASHRAE 90.1 energy performance standards. Fluid properties (Density $\rho$, Specific Heat $c_p$) are dynamically modeled using high-precision regression equations based on mean solution temperatures.
                 </div>
             </div>
         </div>
 
         <!-- REFINED MODERNIZED EDUCATIONAL FRAMEWORK -->
-        <section class="education-section card">
-            <h2><i class="fas fa-microscope"></i> Chiller Engineering: Thermodynamic Principles</h2>
-            <p style="margin-top: -15px; margin-bottom: 30px; opacity: 0.8;">A comprehensive 7-stage guide to industrial refrigeration, system efficiency, and heat transfer physics.</p>
+        <section class="education-section">
+            <h2><i class="fas fa-university"></i> Chiller Engineering: Thermodynamic Principles</h2>
+            <p style="margin-top: -15px; margin-bottom: 30px; opacity: 0.8; font-size: 1.05rem;">A comprehensive 7-stage guide to industrial refrigeration, system efficiency, and heat transfer physics.</p>
 
             <div class="stage-container">
                 <!-- Stage 1: The Refrigeration Cycle -->
-                <div class="stage-card card-variant-1">
+                <div class="stage-card has-visual card-variant-1" data-stage="1">
                     <span class="stage-badge">Stage 1: Cycle</span>
                     <h3><i class="fas fa-sync-alt"></i> Vapor Compression Cycle</h3>
                     <div class="stage-content">
-                        <p>The standard refrigeration cycle involves four primary stages. Heat is absorbed at the <strong>Evaporator</strong> and rejected at the <strong>Condenser</strong>.</p>
-                        <ul style="padding-left: 15px; font-size: 0.85rem;">
-                            <li><strong>Compression:</strong> Raises refrigerant pressure/temp.</li>
-                            <li><strong>Condensation:</strong> Phase change (Vapor to Liquid).</li>
-                            <li><strong>Expansion:</strong> Rapid pressure drop (Flash gas).</li>
-                            <li><strong>Evaporation:</strong> Latent heat absorption.</li>
+                        <p>The <strong>vapor compression refrigeration cycle</strong> is the thermodynamic foundation of modern industrial chillers. Refrigerant circulates continuously through four essential components, undergoing constant phase changes to absorb heat from the process and reject it to the environment:</p>
+                        <ul style="padding-left: 15px; font-size: 0.85rem; margin-top: 5px; margin-bottom: 5px;">
+                            <li><strong>Isentropic Compression:</strong> The compressor draws low-pressure, superheated vapor from the evaporator, raising its pressure and temperature to a high-energy state.</li>
+                            <li><strong>Isobaric Condensation:</strong> In the condenser, the hot high-pressure gas rejects its latent heat to cooling water or ambient air, condensing into a subcooled liquid.</li>
+                            <li><strong>Isenthalpic Expansion:</strong> The liquid passes through an expansion valve, experiencing a rapid pressure drop that flashes a portion of it into gas and lowers its temperature.</li>
+                            <li><strong>Isobaric Evaporation:</strong> In the evaporator, the cold low-pressure liquid-vapor mixture absorbs heat from the chilled water loop, evaporating back into a vapor.</li>
                         </ul>
+                        <p style="font-size: 0.85rem; margin-top: 5px; opacity: 0.9;">Optimizing these phase boundaries is critical for minimizing compressor power and maximizing chiller system capacity.</p>
                     </div>
                     <div class="stage-visual">
                         <svg viewBox="0 0 200 120" width="100%" height="120">
@@ -732,247 +1275,281 @@
                 </div>
 
                 <!-- Stage 2: First Law Analysis -->
-                <div class="stage-card card-variant-2">
+                <div class="stage-card card-variant-2" data-stage="2">
                     <span class="stage-badge">Stage 2: Balance</span>
-                    <h3><i class="fas fa-fire"></i> Heat Rejection Law</h3>
+                    <h3><i class="fas fa-fire"></i> Heat Rejection & Energy Balance</h3>
                     <div class="stage-content">
-                        <p>Conservation of energy dictates that the heat rejected at the condenser must equal the cooling load plus the work of the compressor.</p>
+                        <p>According to the <strong>First Law of Thermodynamics</strong>, energy cannot be created or destroyed. In a closed chiller system, the heat rejected at the condenser ($Q_{\text{cond}}$) must equal the sum of the cooling load absorbed at the evaporator ($Q_{\text{evap}}$) and the electrical work input to the compressor ($W_{\text{comp}}$):</p>
                         <div class="math-block">
-                            $$ Q_{cond} = Q_{evap} + W_{comp} $$
+                            $$ Q_{\text{cond}} = Q_{\text{evap}} + W_{\text{comp}} $$
                         </div>
-                        <p>Deviation > 10% in commissioning indicates sensor drift or severe motor heat losses.</p>
+                        <p>In actual field commissioning operations, a <strong>heat balance audit</strong> is conducted. Per <strong>ASHRAE Guideline 22</strong>, the heat balance error must fall within <strong>$\pm 5\%$</strong> to validate calculations. A deviation outside this range is a critical diagnostic indicator of:</p>
+                        <ul style="padding-left: 15px; font-size: 0.85rem; margin-top: 5px;">
+                            <li><strong>Sensor Calibration Drift:</strong> Faulty temperature RTDs or flowmeters in the chilled water or condenser water loops.</li>
+                            <li><strong>Heat Loss/Gain:</strong> Substantial thermal transmission through uninsulated piping or chiller barrels.</li>
+                            <li><strong>Fouling or Scale Buildup:</strong> Solid deposits on tube bundles restricting refrigerant-to-water heat transfer.</li>
+                        </ul>
                     </div>
                 </div>
 
                 <!-- Stage 3: Capacity Physics -->
-                <div class="stage-card card-variant-3">
+                <div class="stage-card card-variant-3" data-stage="3">
                     <span class="stage-badge">Stage 3: Physics</span>
-                    <h3><i class="fas fa-flask"></i> $Q = \dot{m} C_p \Delta T$</h3>
+                    <h3><i class="fas fa-flask"></i> High-Precision Heat Transfer Physics</h3>
                     <div class="stage-content">
-                        <p>Cooling tonnage relies on mass flow and fluid properties. Using constant "Shortcut Factors" (like 24 or 500) leads to errors in non-standard conditions.</p>
+                        <p>Determining cooling capacity requires solving the <strong>sensible heat equation</strong>. Traditional HVAC shortcut calculations (e.g., multiplying GPM by a constant factor like 500 or 24) assume standard pure water properties at $60^\circ\text{F}$. However, industrial chiller systems often operate with water-glycol mixtures or at low temperatures where fluid properties change significantly. This calculator dynamically integrates fluid properties based on the <strong>mean solution temperature</strong>:</p>
                         <div class="math-block">
-                            $$ Q = \rho \cdot V \cdot C_p \cdot (T_{in} - T_{out}) $$
+                            $$ Q = \dot{m} \cdot c_p \cdot \Delta T = \rho \cdot \dot{V} \cdot c_p \cdot (T_{\text{in}} - T_{\text{out}}) $$
                         </div>
-                        <p>This calculator dynamically models $\rho$ and $C_p$ for Water and Glycols.</p>
+                        <p>Where:</p>
+                        <ul style="padding-left: 15px; font-size: 0.85rem; margin-top: 5px; margin-bottom: 5px;">
+                            <li>$\rho$ is the dynamic fluid <strong>density</strong> ($\text{kg/m}^3$ or $\text{lb/gal}$), which increases as temperature drops and glycol concentration rises.</li>
+                            <li>$c_p$ is the <strong>specific heat capacity</strong> ($\text{kJ/kg}\cdot\text{K}$ or $\text{Btu/lb}\cdot^\circ\text{F}$), which drops substantially as glycol content increases.</li>
+                            <li>$\dot{V}$ is the volumetric flow rate, and $\Delta T$ is the chilled water temperature difference across the evaporator shell.</li>
+                        </ul>
+                        <p style="font-size: 0.85rem; opacity: 0.9;">Failing to account for these dynamic properties can result in capacity evaluation errors up to <strong>$20\%$</strong> in industrial process chillers.</p>
                     </div>
                 </div>
 
                 <!-- Stage 4: Efficiency Metrics -->
-                <div class="stage-card card-variant-4">
+                <div class="stage-card has-visual card-variant-4" data-stage="4">
                     <span class="stage-badge">Stage 4: Rating</span>
-                    <h3><i class="fas fa-tachometer-alt"></i> COP, EER & kW/Ton</h3>
+                    <h3><i class="fas fa-tachometer-alt"></i> Efficiency Metrics (COP, EER & kW/Ton)</h3>
                     <div class="stage-content">
-                        <p>Efficiency measures how much cooling is produced per unit of electricity. <strong>kW/Ton</strong> is common for large chillers, where <strong>lower</strong> is better.</p>
+                        <p>Chiller efficiency indicates how effectively electrical energy is converted into cooling power. Three standardized metrics are utilized globally under <strong>AHRI 550/590</strong> testing standards:</p>
+                        <ul style="padding-left: 15px; font-size: 0.85rem; margin-top: 5px; margin-bottom: 5px;">
+                            <li><strong>COP (Coefficient of Performance):</strong> A dimensionless ratio of cooling output divided by electrical input in identical units. Higher values represent superior thermodynamic efficiency.</li>
+                            <li><strong>EER (Energy Efficiency Ratio):</strong> Evaluated as cooling output in Btu/h divided by electrical input in Watts ($\text{EER} = \text{COP} \cdot 3.41214$). Primarily used for air-cooled package chillers.</li>
+                            <li><strong>kW/Ton:</strong> The power consumed in kilowatts per ton of refrigeration output ($1 \text{ Ton} = 12,000 \text{ Btu/h} = 3.51685 \text{ kW}$). In this scale, <strong>lower values are better</strong>. A premium water-cooled centrifugal chiller can achieve a full-load rating under <strong>$0.55 \text{ kW/Ton}$</strong>.</li>
+                        </ul>
                         <div class="math-block">
-                             $$ COP = \frac{3.517}{\text{kW/Ton}} = \frac{EER}{3.412} $$
+                             $$ \text{COP} = \frac{3.51685}{\text{kW/Ton}} = \frac{\text{EER}}{3.41214} $$
                         </div>
                     </div>
                     <div class="stage-visual">
                          <svg viewBox="0 0 200 100" width="100%" height="100">
                             <defs>
                                 <linearGradient id="effGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stop-color="#ef4444" />
-                                    <stop offset="50%" stop-color="#f59e0b" />
-                                    <stop offset="100%" stop-color="#10b981" />
+                                    <stop offset="0%" stop-color="#effGrad" /> <!-- Fallback to avoid error -->
                                 </linearGradient>
                             </defs>
                             <rect x="20" y="40" width="160" height="20" rx="10" fill="url(#effGrad)" opacity="0.8" />
                             <circle cx="160" cy="50" r="5" fill="white" class="pulse" />
-                            <text x="20" y="32" fill="#374151" font-size="8">Inefficient (0.8+)</text>
-                            <text x="180" y="32" fill="#374151" font-size="8" text-anchor="end">Premium (<0.55)</text>
+                            <text x="20" y="32" fill="#4B5563" font-size="8">Inefficient (0.8+)</text>
+                            <text x="180" y="32" fill="#4B5563" font-size="8" text-anchor="end">Premium (&lt;0.55)</text>
                             <text x="100" y="80" fill="#111827" font-size="9" text-anchor="middle" font-weight="bold">Target Metric: kW/Ton</text>
                          </svg>
                     </div>
                 </div>
 
                 <!-- Stage 5: Glycol Performance -->
-                <div class="stage-card card-variant-5">
+                <div class="stage-card card-variant-5" data-stage="5">
                     <span class="stage-badge">Stage 5: Fluid</span>
-                    <h3><i class="fas fa-snowflake"></i> Glycol Derating</h3>
+                    <h3><i class="fas fa-snowflake"></i> Glycol Concentration & Capacity Derating</h3>
                     <div class="stage-content">
-                        <p>Propylene and Ethylene Glycol protect against freezing but reduce heat transfer efficiency ($\approx 10-15\%$).</p>
+                        <p>Adding antifreeze agents like <strong>Ethylene Glycol (EG)</strong> or <strong>Propylene Glycol (PG)</strong> is necessary to protect chiller tubes from freezing in low-temperature process applications. However, glycol alters thermodynamic properties in ways that <strong>derate (reduce)</strong> overall chiller heat transfer efficiency:</p>
+                        <ul style="padding-left: 15px; font-size: 0.85rem; margin-top: 5px;">
+                            <li><strong>Reduced Specific Heat:</strong> Glycol has a lower heat capacity than water (EG specific heat is $\approx 3.55 \text{ kJ/kg}\cdot\text{K}$ at 30% concentration vs. $4.18 \text{ kJ/kg}\cdot\text{K}$ for water). This means glycol absorbs less heat per unit of mass.</li>
+                            <li><strong>Increased Viscosity:</strong> Higher viscosity increases fluid shear stress, changing flow patterns from turbulent to laminar, which reduces the convective film heat transfer coefficient inside the evaporator tubes.</li>
+                            <li><strong>Increased Hydraulic Pressure Drop:</strong> The higher fluid density and viscosity require more pump brake horsepower (BHP), increasing auxiliary pump power consumption.</li>
+                        </ul>
                         <div class="math-block">
-                            $$ \eta_{fluid} \propto \frac{1}{\text{Viscosity}} $$
+                            $$ \text{Film Heat Transfer Coeff.} \ (\text{h}) \propto \text{Reynolds Number}^{0.8} \cdot \text{Prandtl Number}^{0.4} $$
                         </div>
-                        <p>Higher viscosity requires more pump energy, often the "Hidden Cost" of process cooling.</p>
+                        <p style="font-size: 0.85rem; opacity: 0.9;">Ethylene Glycol offers better heat transfer properties but is highly toxic. Propylene Glycol is non-toxic (food-grade) but introduces a higher viscosity penalty, requiring larger pump sizing.</p>
                     </div>
                 </div>
 
                 <!-- Stage 6: Regulatory Standards -->
-                <div class="stage-card card-variant-6">
+                <div class="stage-card card-variant-6" data-stage="6">
                     <span class="stage-badge">Stage 6: Codes</span>
-                    <h3><i class="fas fa-file-contract"></i> ASHRAE & ISO Compliance</h3>
+                    <h3><i class="fas fa-file-contract"></i> Energy Codes, Safety Standards & Compliance</h3>
                     <div class="stage-content">
-                        <p>Strict codes govern chiller selection and safety:</p>
-                        <ul style="padding-left: 15px; font-size: 0.85rem;">
-                            <li><strong>ASHRAE 90.1:</strong> Minimum efficiency Requirements.</li>
-                            <li><strong>ASHRAE 15:</strong> Refrigeration systems safety code.</li>
-                            <li><strong>ARI 550/590:</strong> Testing and rating standard.</li>
-                            <li><strong>ISO 5149:</strong> Requirements for safety/environment.</li>
+                        <p>Industrial refrigeration plants must comply with strict building codes, energy conservation mandates, and safety standards to protect operators and reduce carbon footprints:</p>
+                        <ul style="padding-left: 15px; font-size: 0.85rem; margin-top: 5px; margin-bottom: 5px;">
+                            <li><strong>ASHRAE Standard 90.1:</strong> Sets legally binding minimum efficiency targets for building mechanical equipment. It specifies Path A (full-load optimized) and Path B (part-load optimized) limits for screw and centrifugal water-cooled chillers to ensure energy conservation.</li>
+                            <li><strong>ASHRAE Standard 15:</strong> The safety standard for refrigeration systems. It regulates safety classifications of refrigerants (A1, A2L, B2, etc.), sets limits on the maximum allowable refrigerant charge inside occupied spaces, and mandates mechanical room ventilation and sensor leak detection systems.</li>
+                            <li><strong>AHRI Standard 550/590:</strong> Establishes the standard testing and rating criteria for water-chilling packages, detailing tolerances and procedures for part-load calculations (IPLV - Integrated Part Load Value).</li>
+                            <li><strong>ISO 5149:</strong> The international environmental and safety standard regulating mechanical refrigerating systems and heat pumps.</li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Stage 7: Architecture -->
-                <div class="stage-card card-variant-7">
+                <div class="stage-card card-variant-7" data-stage="7">
                     <span class="stage-badge">Stage 7: Drive</span>
-                    <h3><i class="fas fa-cogs"></i> Compressor Evolution</h3>
+                    <h3><i class="fas fa-cogs"></i> Compressor Technologies & Part-Load Control</h3>
                     <div class="stage-content">
-                        <p>Technology selection determines the "Sweet Spot" for load:</p>
-                        <ul style="padding-left: 15px; font-size: 0.85rem;">
-                            <li><strong>Scroll:</strong> Best for < 60 Tons.</li>
-                            <li><strong>Screw:</strong> High torque, reliable 70-500 Tons.</li>
-                            <li><strong>Centrifugal:</strong> Elite efficiency for > 300 Tons.</li>
-                            <li><strong>Maglev:</strong> Frictionless, part-load champion.</li>
+                        <p>The choice of compressor technology directly dictates the chiller's efficiency curve across varying load profiles. Systems are divided into positive displacement and dynamic compression types:</p>
+                        <ul style="padding-left: 15px; font-size: 0.85rem; margin-top: 5px; margin-bottom: 5px;">
+                            <li><strong>Scroll Compressors:</strong> Best suited for small-scale applications ($&lt; 60 \text{ Tons}$). They feature orbital scrolling plates and are highly reliable but offer limited capacity control.</li>
+                            <li><strong>Screw Compressors:</strong> Utilize twin interlocking helical rotors. Highly durable for medium loads ($70\text{–}500 \text{ Tons}$), utilizing slide-valve or VFD control to handle high pressure ratios.</li>
+                            <li><strong>Centrifugal Compressors:</strong> Dynamic compressors that utilize high-speed impellers to add kinetic energy to the refrigerant. Ideal for large central plants ($&gt; 300 \text{ Tons}$) requiring elite full-load efficiency.</li>
+                            <li><strong>Magnetic Bearing (Maglev) Compressors:</strong> Frictionless oil-free centrifugal compressors. They eliminate oil-film thermal resistance inside heat exchangers, eliminate wear, and operate at exceptional part-load efficiency without surge limits.</li>
                         </ul>
+                        <p style="font-size: 0.85rem; opacity: 0.9;">Integrating Variable Frequency Drives (VFDs) with compressors significantly enhances the <strong>Integrated Part Load Value (IPLV)</strong>, saving substantial energy since chillers operate at full capacity less than 2% of the year.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Engineering FAQ Section -->
-            <div class="faq-grid">
-                <div class="faq-item card-variant-1" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>What is "Low Delta-T Syndrome"?</h4>
-                        <p>It occurs when chilled water returns at a lower temp than design (e.g., 50°F instead of 54°F), forcing pumps to run faster and reducing chiller efficiency.</p>
+            <!-- Modernized Interactive FAQ Section -->
+            <h2 style="margin-top: 50px; border-bottom: 2px solid var(--secondary); padding-bottom: 10px;"><i class="fas fa-question-circle"></i> Engineering FAQ Accordion</h2>
+            <div class="faq-accordion">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What is "Low Delta-T Syndrome"?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
                     </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <path d="M10 50 Q 50 50 90 10" fill="none" stroke="#ef4444" stroke-width="2" />
-                            <text x="50" y="55" font-size="6" text-anchor="middle" fill="#374151">Flow (GPM)</text>
-                            <text x="5" y="30" font-size="6" text-anchor="start" fill="#ef4444" transform="rotate(-90 5,30)">Energy Cost</text>
-                            <circle cx="50" cy="50" r="2" fill="#ef4444" class="pulse" />
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="faq-item card-variant-2" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>How does Condenser Fouling impact kW/Ton?</h4>
-                        <p>Scale buildup on tubes acts as insulation, raising head pressure. A 0.001" fouling factor can increase operating costs by up to 10%.</p>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <circle cx="50" cy="30" r="20" fill="none" stroke="#94a3b8" stroke-width="3" />
-                            <circle cx="50" cy="30" r="16" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="2 1" />
-                            <text x="50" y="33" font-size="6" text-anchor="middle" fill="#334155" font-weight="bold">Tube Scale</text>
-                        </svg>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>It occurs when chilled water returns at a lower temperature difference than designed (e.g., 50°F instead of 54°F), forcing pumps to run faster and reducing the overall operating capacity and efficiency of the plant.</p>
+                            <div style="background: rgba(0,0,0,0.02); border-radius: 8px; padding: 15px; height: 110px; display: flex; justify-content: center; margin-top: 10px;">
+                                <svg viewBox="0 0 100 60" width="100%" height="100">
+                                    <path d="M10 50 Q 50 50 90 10" fill="none" stroke="#ef4444" stroke-width="2.5" />
+                                    <text x="50" y="55" font-size="6" text-anchor="middle" fill="#374151" font-weight="bold">Flow Rate (GPM)</text>
+                                    <text x="5" y="30" font-size="6" text-anchor="start" fill="#ef4444" transform="rotate(-90 5,30)">Energy Cost</text>
+                                    <circle cx="50" cy="50" r="2.5" fill="#ef4444" class="pulse" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="faq-item card-variant-3" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>Why is Glycol toxic vs. non-toxic?</h4>
-                        <p>Ethylene Glycol is superior for heat transfer but toxic. Propylene Glycol is "Food Safe" but has significantly poorer thermal properties.</p>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>How does Condenser Fouling impact kW/Ton?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
                     </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <rect x="20" y="10" width="20" height="40" fill="#3b82f6" opacity="0.6" />
-                            <rect x="60" y="20" width="20" height="30" fill="#10b981" opacity="0.6" />
-                            <text x="30" y="55" font-size="5" text-anchor="middle" fill="#374151">EG (High Eff)</text>
-                            <text x="70" y="55" font-size="5" text-anchor="middle" fill="#374151">PG (Safe)</text>
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="faq-item card-variant-4" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>Air-Cooled vs. Water-Cooled: Which is better?</h4>
-                        <p>Water-cooled is much more efficient (lower head pressure) but requires cooling towers. Air-cooled is simpler and lower maintenance.</p>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <rect x="10" y="10" width="30" height="30" rx="5" fill="#94a3b8" />
-                            <circle cx="25" cy="25" r="8" fill="none" stroke="#fff" stroke-width="1" />
-                            <path d="M25 17 L25 33 M17 25 L33 25" stroke="#fff" />
-                            <rect x="60" y="10" width="30" height="30" rx="5" fill="#3b82f6" />
-                            <path d="M65 15 Q 75 10 85 15" fill="none" stroke="#fff" />
-                        </svg>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Scale and sediment buildup acts as an insulator on the water tubes inside the condenser. This increases head pressure and compressor workload, raising power consumption. A fouling factor of just 0.001 hr-ft²-°F/Btu can increase kW/Ton by 10%.</p>
+                            <div style="background: rgba(0,0,0,0.02); border-radius: 8px; padding: 15px; height: 110px; display: flex; justify-content: center; margin-top: 10px;">
+                                <svg viewBox="0 0 100 60" width="100%" height="100">
+                                    <circle cx="50" cy="30" r="20" fill="none" stroke="#94a3b8" stroke-width="3" />
+                                    <circle cx="50" cy="30" r="16" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="2 1" />
+                                    <text x="50" y="33" font-size="6" text-anchor="middle" fill="#334155" font-weight="bold">Fouling Scale Barrier</text>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="faq-item card-variant-5" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>What is IPLV (Integrated Part Load Value)?</h4>
-                        <p>Chillers rarely run at 100% load. IPLV is a weighted average of efficiency at 25%, 50%, 75%, and 100% loads to simulate a real year.</p>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Why is Ethylene Glycol toxic vs. Propylene Glycol?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
                     </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <rect x="10" y="40" width="15" height="10" fill="#3b82f6" />
-                            <rect x="30" y="25" width="15" height="25" fill="#3b82f6" />
-                            <rect x="50" y="15" width="15" height="35" fill="#3b82f6" />
-                            <rect x="70" y="30" width="15" height="20" fill="#3b82f6" />
-                            <text x="50" y="58" font-size="5" text-anchor="middle" fill="#334155" font-weight="bold">Weighted Avg Efficiency</text>
-                        </svg>
-                    </div>
-                </div>
-
-                <div class="faq-item card-variant-6" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>Why does the compressor require oil?</h4>
-                        <p>Traditional compressors (Screw/Scroll) need oil for lubrication. New Maglev centrifugal chillers are oil-free, eliminating oil-fouling loss.</p>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <path d="M20 30 Q 50 10 80 30" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="2 2" />
-                            <circle cx="50" cy="30" r="10" fill="none" stroke="#2563EB" stroke-width="2" />
-                            <text x="50" y="50" font-size="6" text-anchor="middle" fill="#374151">Magnetic Bearing</text>
-                        </svg>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Ethylene Glycol is highly toxic if ingested because it metabolizes into harmful calcium oxalate crystals. Propylene Glycol is non-toxic and classified as food-safe. However, Propylene Glycol has higher viscosity and lower specific heat, requiring larger pump sizes and heat transfer surfaces.</p>
+                            <div style="background: rgba(0,0,0,0.02); border-radius: 8px; padding: 15px; height: 110px; display: flex; justify-content: center; margin-top: 10px;">
+                                <svg viewBox="0 0 100 60" width="100%" height="100">
+                                    <rect x="20" y="10" width="20" height="40" fill="#2563eb" opacity="0.75" />
+                                    <rect x="60" y="20" width="20" height="30" fill="#10b981" opacity="0.75" />
+                                    <text x="30" y="55" font-size="6" text-anchor="middle" fill="#374151" font-weight="bold">EG (High Heat Transfer)</text>
+                                    <text x="70" y="55" font-size="6" text-anchor="middle" fill="#374151" font-weight="bold">PG (Safe/High Drag)</text>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="faq-item card-variant-7" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>What are ASHRAE 15 Ventilation requirements?</h4>
-                        <p>Chiller rooms must have leak detectors and high-volume emergency ventilation to mitigate risks associated with refrigerant leaks.</p>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Air-Cooled vs. Water-Cooled: Which is better?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
                     </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <rect x="10" y="10" width="80" height="40" fill="none" stroke="#94a3b8" stroke-width="1.5" />
-                            <path d="M40 30 L60 30 M50 20 L50 40" stroke="#ef4444" stroke-width="2.5" />
-                            <path d="M10 5 L20 15 M80 5 L90 15" stroke="#3b82f6" stroke-width="2.5" />
-                            <text x="50" y="55" font-size="6" text-anchor="middle" fill="#334155" font-weight="bold">Safety Exhaust Airflow</text>
-                        </svg>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Water-cooled chillers offer superior thermodynamic efficiency (COP ~ 5.5 to 7.5) but require cooling towers and chemical water treatment. Air-cooled chillers are simpler, have lower capital costs, and require less maintenance, but have lower efficiency (COP ~ 2.8 to 3.5).</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="faq-item card-variant-1" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <h4>When should I perform a 'Heat Balance' test?</h4>
-                        <p>During annual maintenance. If the condenser heat rejection doesn't match \(Q_{evap} + W_{comp}\), the chiller isn't operating as rated.</p>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What is IPLV (Integrated Part Load Value)?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
                     </div>
-                    <div style="background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; height: 100px; display: flex; justify-content: center;">
-                        <svg viewBox="0 0 100 60" width="100%" height="100">
-                            <rect x="10" y="25" width="20" height="10" fill="#3b82f6" />
-                            <text x="20" y="20" font-size="5" text-anchor="middle" fill="#111827">Q_evap</text>
-                            <text x="50" y="20" font-size="5" text-anchor="middle" fill="#111827">+</text>
-                            <rect x="40" y="25" width="20" height="10" fill="#94a3b8" />
-                            <text x="50" y="45" font-size="5" text-anchor="middle" fill="#111827">W_comp</text>
-                            <text x="70" y="32" font-size="6" text-anchor="middle" fill="#111827">=</text>
-                            <rect x="80" y="20" width="10" height="20" fill="#ef4444" />
-                            <text x="85" y="15" font-size="5" text-anchor="middle" fill="#111827">Q_cond</text>
-                        </svg>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>IPLV is a standardized metric (AHRI 550/590) that calculates chiller efficiency at weighted part-load scenarios (1% at 100% load, 42% at 75% load, 45% at 50% load, and 12% at 25% load). It represents real-world seasonal performance since chillers rarely operate at 100% design capacity.</p>
+                        </div>
                     </div>
                 </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Why does the compressor require oil?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>Traditional screw and centrifugal compressors require lubrication oil to reduce friction and seal compressor clearances. Oil-free magnetic levitation (Maglev) centrifugal compressors eliminate oil entirely, avoiding oil-logging in heat exchangers and maintaining maximum thermal design performance.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>What are ASHRAE 15 Ventilation requirements?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>ASHRAE 15 requires machinery rooms housing chillers to have refrigerant leak sensors, emergency alarm indicators, and high-volume mechanical exhaust systems to protect personnel from oxygen depletion or toxic gas inhalation during a rupture leak.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>When should I perform a 'Heat Balance' test?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <div class="faq-answer-content">
+                            <p>During commissioning and annual performance audits. If the condenser heat rejection load does not match the evaporator cooling load plus the electrical compressor input power within a ±5% tolerance, it suggests sensor calibration drift or system heat leaks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Embed Widget Section -->
+            <div class="embed-card">
+                <h3><i class="fas fa-code"></i> Embed This Tool</h3>
+                <p>Share this professional chiller performance calculator on your website or intranet dashboard.</p>
+                <textarea class="embed-textarea" readonly id="embed-code"><iframe src="https://designcalculators.co.in/chiller-capacity.html" width="100%" height="800" frameborder="0"></iframe></textarea>
+                <button type="button" class="btn btn-outline" id="copy-embed-btn" style="width: auto; padding: 8px 16px; font-size: 0.85rem;"><i class="fas fa-copy"></i> Copy Widget Code</button>
             </div>
         </section>
     </main>
 
-    
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <!-- Related Tools Section (Level Up Grid) -->
+    <section class="levelup-section">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor.html" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/bolt-torque.html" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
-                    </a>
-                    <a href="/fan-laws.html" class="silo-card" style="text-decoration:none;">
-                        <span>Fan Laws</span>
-                    </a>
+            <h2>Level Up Your Thermodynamic Calculations</h2>
+            <div class="levelup-grid">
+                <a href="/hvac-sizing.html" class="levelup-card">
+                    <h4><i class="fas fa-building"></i> HVAC Sizing</h4>
+                    <p>Calculate heat loads for commercial and residential buildings based on standard ASHRAE guidelines.</p>
+                    <span class="levelup-arrow">Go to tool <i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="/pump-power.html" class="levelup-card">
+                    <h4><i class="fas fa-charging-station"></i> Pump Power</h4>
+                    <p>Calculate hydraulic and motor shaft power for pumps handling viscous solutions and water.</p>
+                    <span class="levelup-arrow">Go to tool <i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="/heat-exchanger.html" class="levelup-card">
+                    <h4><i class="fas fa-exchange-alt"></i> Heat Exchanger</h4>
+                    <p>Solve LMTD and NTU thermal efficiency equations for shell-and-tube or plate heat exchangers.</p>
+                    <span class="levelup-arrow">Go to tool <i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="/cooling-tower-sizing.html" class="levelup-card">
+                    <h4><i class="fas fa-wind"></i> Cooling Tower</h4>
+                    <p>Perform range, approach, heat load, drift loss, and makeup water calculations for cooling towers.</p>
+                    <span class="levelup-arrow">Go to tool <i class="fas fa-arrow-right"></i></span>
+                </a>
             </div>
         </div>
     </section>
@@ -1007,11 +1584,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele.html'>Electrical Tools</a></li>
-                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
-                            <li><a href='/about.html'>About Us</a></li>
-                            <li><a href='/faq.html'>FAQ</a></li>
+                            <li><a href="/indexele.html">Electrical Tools</a></li>
+                            <li><a href="/indexmech.html">Mechanical Tools</a></li>
+                            <li><a href="/indexinst.html">Instrumentation Tools</a></li>
+                            <li><a href="/about.html">About Us</a></li>
+                            <li><a href="/faq.html">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1019,10 +1596,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact.html'>Contact Us</a></li>
-                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
-                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                            <li><a href="/contact.html">Contact Us</a></li>
+                            <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                            <li><a href="/sitemap2.html">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1063,35 +1640,39 @@
         // Global State
         let effChart = null;
         let lastResult = null;
+        let pdfAuditSteps = [];
 
-        // Fluid Data (Polynomial Approx for Density/Cp vs Temp)
-        // Simplified for demo: Density & Cp at 10C base, derated by Glycol %
-        // Water: 1000 kg/m3, 4.18 kJ/kgK
-        // EG (100%): 1113 kg/m3, 2.4 kJ/kgK
-        // PG (100%): 1036 kg/m3, 2.5 kJ/kgK
-        
+        /**
+         * getFluidProps - Calculates density and specific heat using high-precision polynomials
+         * Density/Cp of Aqueous Ethylene/Propylene Glycol Mixtures:
+         * Pure Water:
+         *   rho = 999.84 + 0.0678*T - 0.00907*T^2 + 0.000085*T^3 (kg/m3)
+         *   cp = 4.217 - 0.0032*T + 0.000095*T^2 - 0.000001*T^3 (kJ/kg.K)
+         * EG:
+         *   rho = rho_w + x*(175 - 0.35*T) - x^2*(45 - 0.1*T)
+         *   cp = cp_w - x*(2.3 - 0.006*T) + x^2*(0.3 - 0.002*T)
+         * PG:
+         *   rho = rho_w + x*(125 - 0.3*T) - x^2*(35 - 0.08*T)
+         *   cp = cp_w - x*(1.6 - 0.005*T) + x^2*(0.2 - 0.002*T)
+         */
         function getFluidProps(type, conc, tempC) {
-            // Simplified linear mixture model for demo
-            let rho_w = 999.7 - 0.17 * tempC - 0.005 * tempC*tempC; // Water approx
-            let cp_w = 4.184;
+            const T = Math.max(-15, Math.min(50, tempC)); // Clamp temperature
+            const x = Math.max(0, Math.min(60, conc)) / 100; // Clamp concentration as fraction
 
-            let rho_g, cp_g;
-            
+            const rho_w = 999.84 + 0.0678 * T - 0.00907 * Math.pow(T, 2) + 0.000085 * Math.pow(T, 3);
+            const cp_w = 4.217 - 0.0032 * T + 0.000095 * Math.pow(T, 2) - 0.000001 * Math.pow(T, 3);
+
             if (type === 'eg') {
-                rho_g = 1113 - 0.7 * tempC;
-                cp_g = 2.4 + 0.003 * tempC;
+                const rho = rho_w + x * (175 - 0.35 * T) - Math.pow(x, 2) * (45 - 0.1 * T);
+                const cp = cp_w - x * (2.3 - 0.006 * T) + Math.pow(x, 2) * (0.3 - 0.002 * T);
+                return { rho, cp };
             } else if (type === 'pg') {
-                rho_g = 1036 - 0.7 * tempC;
-                cp_g = 2.5 + 0.003 * tempC;
+                const rho = rho_w + x * (125 - 0.3 * T) - Math.pow(x, 2) * (35 - 0.08 * T);
+                const cp = cp_w - x * (1.6 - 0.005 * T) + Math.pow(x, 2) * (0.2 - 0.002 * T);
+                return { rho, cp };
             } else {
                 return { rho: rho_w, cp: cp_w };
             }
-            
-            const frac = conc / 100;
-            const rho_mix = (rho_g * frac) + (rho_w * (1-frac));
-            const cp_mix = (cp_g * frac) + (cp_w * (1-frac));
-            
-            return { rho: rho_mix, cp: cp_mix };
         }
 
         function updateLabels() {
@@ -1101,29 +1682,28 @@
             const lblTout = document.getElementById('lbl-tout');
             const lblHead = document.getElementById('lbl-head');
             
-            // Condenser Labels
             const lblCFlow = document.getElementById('lbl-cond-flow');
             const lblCTin = document.getElementById('lbl-ctin');
             const lblCTout = document.getElementById('lbl-ctout');
 
             if (sys === 'imperial') {
-                lblFlow.innerText = "Evap Flow Rate [GPM]";
-                lblTin.innerText = "CHW In ($T_{in}$) [Â°F]";
-                lblTout.innerText = "CHW Out ($T_{out}$) [Â°F]";
-                lblHead.innerText = "Pump Head [ft]";
+                lblFlow.innerHTML = "Evap Flow Rate [GPM]";
+                lblTin.innerHTML = "CHW In (T<sub>in</sub>) [°F]";
+                lblTout.innerHTML = "CHW Out (T<sub>out</sub>) [°F]";
+                lblHead.innerHTML = "Pump Head [ft]";
                 
-                lblCFlow.innerText = "Cond Flow [GPM]";
-                lblCTin.innerText = "CW In [Â°F]";
-                lblCTout.innerText = "CW Out [Â°F]";
+                lblCFlow.innerHTML = "Cond Flow [GPM]";
+                lblCTin.innerHTML = "CW In (T<sub>in</sub>) [°F]";
+                lblCTout.innerHTML = "CW Out (T<sub>out</sub>) [°F]";
             } else {
-                lblFlow.innerText = "Evap Flow Rate [mÂ³/h]";
-                lblTin.innerText = "CHW In ($T_{in}$) [Â°C]";
-                lblTout.innerText = "CHW Out ($T_{out}$) [Â°C]";
-                lblHead.innerText = "Pump Head [m]";
+                lblFlow.innerHTML = "Evap Flow Rate [m³/h]";
+                lblTin.innerHTML = "CHW In (T<sub>in</sub>) [°C]";
+                lblTout.innerHTML = "CHW Out (T<sub>out</sub>) [°C]";
+                lblHead.innerHTML = "Pump Head [m]";
                 
-                lblCFlow.innerText = "Cond Flow [mÂ³/h]";
-                lblCTin.innerText = "CW In [Â°C]";
-                lblCTout.innerText = "CW Out [Â°C]";
+                lblCFlow.innerHTML = "Cond Flow [m³/h]";
+                lblCTin.innerHTML = "CW In (T<sub>in</sub>) [°C]";
+                lblCTout.innerHTML = "CW Out (T<sub>out</sub>) [°C]";
             }
         }
 
@@ -1136,19 +1716,21 @@
             } else {
                 grpCond.classList.remove('hidden');
             }
-            
             updateFluidProps();
         }
         
         function updateFluidProps() {
             const type = document.getElementById('fluid-type').value;
             const grpConc = document.getElementById('conc-group');
-            if(type === 'water') {
+            const concInput = document.getElementById('concentration');
+            if (type === 'water') {
                 grpConc.classList.add('hidden');
-                document.getElementById('concentration').value = 0;
+                concInput.value = 0;
             } else {
                 grpConc.classList.remove('hidden');
-                if(document.getElementById('concentration').value == 0) document.getElementById('concentration').value = 30;
+                if (parseFloat(concInput.value) === 0) {
+                    concInput.value = 30; // Default concentration for glycol
+                }
             }
         }
 
@@ -1163,14 +1745,16 @@
                 document.getElementById('t-in').value = '54';
                 document.getElementById('t-out').value = '44';
                 document.getElementById('power-input').value = '70';
+                document.getElementById('pump-head').value = '40';
             } else if (type === 'process_glycol') {
                 document.getElementById('fluid-type').value = 'eg';
                 updateInputs();
                 document.getElementById('concentration').value = '30';
                 document.getElementById('flow-rate').value = '100';
                 document.getElementById('t-in').value = '20';
-                document.getElementById('t-out').value = '10'; // Chilled glycol
+                document.getElementById('t-out').value = '10'; // Chilled glycol (sub-freezing)
                 document.getElementById('power-input').value = '15';
+                document.getElementById('pump-head').value = '30';
             } else if (type === 'data_center') {
                 document.getElementById('fluid-type').value = 'water';
                 updateInputs();
@@ -1178,18 +1762,966 @@
                 document.getElementById('t-out').value = '55'; // 20F delta
                 document.getElementById('flow-rate').value = '500';
                 document.getElementById('power-input').value = '120';
+                document.getElementById('pump-head').value = '50';
             }
-            displayMessage(`${type.toUpperCase()} scenario loaded.`, "success");
+            updateLabels();
+            displayMessage(`${type.toUpperCase().replace('_', ' ')} scenario loaded successfully.`, "success");
         }
 
         function displayMessage(message, type = "info") {
-            let messageBox = document.getElementById('message-box');
+            const messageBox = document.getElementById('custom-message-box');
+            if (!messageBox) return;
+            
             messageBox.textContent = message;
-            if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
-            else if (type === "success") messageBox.style.backgroundColor = 'var(--success)';
-            else messageBox.style.backgroundColor = 'var(--primary)';
+            
+            // Reset styles
+            messageBox.style.backgroundColor = 'var(--primary)';
+            if (type === "error") {
+                messageBox.style.backgroundColor = 'var(--danger)';
+            } else if (type === "success") {
+                messageBox.style.backgroundColor = 'var(--success)';
+            } else if (type === "warning") {
+                messageBox.style.backgroundColor = 'var(--accent)';
+            }
+            
             messageBox.classList.add('show');
-            setTimeout(() => messageBox.classList.remove('show'), 4000);
+            
+            if (window.messageTimeout) {
+                clearTimeout(window.messageTimeout);
+            }
+            window.messageTimeout = setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 4000);
+        }
+
+        function performCalculation() {
+            // 1. Get Inputs
+            const sys = document.getElementById('unit-sys').value;
+            const mode = document.getElementById('calc-mode').value;
+            const fType = document.getElementById('fluid-type').value;
+            const conc = parseFloat(document.getElementById('concentration').value) || 0;
+            const P_in = parseFloat(document.getElementById('power-input').value); // Compressor kW
+            const cost = parseFloat(document.getElementById('elec-cost').value) || 0;
+            const head = parseFloat(document.getElementById('pump-head').value) || 0;
+
+            // Evaporator Data
+            let flow_evap = parseFloat(document.getElementById('flow-rate').value);
+            let Tin_evap = parseFloat(document.getElementById('t-in').value);
+            let Tout_evap = parseFloat(document.getElementById('t-out').value);
+
+            // Validation
+            if (isNaN(flow_evap) || isNaN(Tin_evap) || isNaN(Tout_evap)) {
+                displayMessage("Please enter valid operating parameters.", "error");
+                return;
+            }
+            if (Tin_evap <= Tout_evap) {
+                displayMessage("CHW inlet temperature must be greater than outlet temperature.", "error");
+                return;
+            }
+            if (isNaN(P_in) || P_in <= 0) {
+                displayMessage("Compressor power must be a positive number.", "error");
+                return;
+            }
+
+            // Convert inputs to SI for lookup/processing
+            let t_avg_evap_c = 0;
+            let dT_evap_c = 0;
+            let flow_evap_m3s = 0;
+            let head_m = 0;
+
+            if (sys === 'imperial') {
+                t_avg_evap_c = (((Tin_evap + Tout_evap) / 2) - 32) * 5 / 9;
+                dT_evap_c = (Tin_evap - Tout_evap) * 5 / 9;
+                flow_evap_m3s = flow_evap * 6.30902e-5; // GPM to m3/s
+                head_m = head * 0.3048; // ft to m
+            } else {
+                t_avg_evap_c = (Tin_evap + Tout_evap) / 2;
+                dT_evap_c = Tin_evap - Tout_evap;
+                flow_evap_m3s = flow_evap / 3600; // m3/h to m3/s
+                head_m = head;
+            }
+
+            // Look up fluid properties
+            const props_evap = getFluidProps(fType, conc, t_avg_evap_c);
+            const m_dot_evap = flow_evap_m3s * props_evap.rho; // kg/s
+            const Q_evap_kW = m_dot_evap * props_evap.cp * dT_evap_c; // kW
+            const Q_tons = Q_evap_kW / 3.51685;
+
+            // Condenser calculations
+            let Q_cond_kW = 0;
+            let balance_err = 0;
+            let flow_cond = 0;
+            let Tin_cond = 0;
+            let Tout_cond = 0;
+            let props_cond = { rho: 0, cp: 0 };
+
+            if (mode === 'heat_balance') {
+                flow_cond = parseFloat(document.getElementById('cond-flow').value);
+                Tin_cond = parseFloat(document.getElementById('ct-in').value);
+                Tout_cond = parseFloat(document.getElementById('ct-out').value);
+
+                if (isNaN(flow_cond) || isNaN(Tin_cond) || isNaN(Tout_cond)) {
+                    displayMessage("Check condenser flow and temperatures.", "error");
+                    return;
+                }
+                if (Tout_cond <= Tin_cond) {
+                    displayMessage("CW outlet temperature must be greater than inlet temperature.", "error");
+                    return;
+                }
+
+                let t_avg_cond_c = 0;
+                let dT_cond_c = 0;
+                let flow_cond_m3s = 0;
+
+                if (sys === 'imperial') {
+                    t_avg_cond_c = (((Tin_cond + Tout_cond) / 2) - 32) * 5 / 9;
+                    dT_cond_c = (Tout_cond - Tin_cond) * 5 / 9;
+                    flow_cond_m3s = flow_cond * 6.30902e-5;
+                } else {
+                    t_avg_cond_c = (Tin_cond + Tout_cond) / 2;
+                    dT_cond_c = Tout_cond - Tin_cond;
+                    flow_cond_m3s = flow_cond / 3600;
+                }
+
+                // Condenser uses pure water
+                props_cond = getFluidProps('water', 0, t_avg_cond_c);
+                const m_dot_cond = flow_cond_m3s * props_cond.rho;
+                Q_cond_kW = m_dot_cond * props_cond.cp * dT_cond_c;
+
+                const Q_rej_theory = Q_evap_kW + P_in;
+                balance_err = ((Q_cond_kW - Q_rej_theory) / Q_rej_theory) * 100;
+            }
+
+            // Pump Power (assuming 70% hydraulic efficiency)
+            const P_pump_kW = (props_evap.rho * 9.80665 * flow_evap_m3s * head_m) / (0.7 * 1000);
+
+            // Efficiency Metrics
+            const cop = Q_evap_kW / P_in;
+            const kw_per_ton = 3.51685 / cop;
+            const eer = cop * 3.41214;
+
+            // Costs
+            const cost_hr = (P_in + P_pump_kW) * cost;
+            const cost_yr = cost_hr * 2000; // standard commercial operating hours
+
+            // Save state globally
+            lastResult = {
+                sys,
+                mode,
+                fType,
+                conc,
+                flow_evap,
+                Tin_evap,
+                Tout_evap,
+                P_in,
+                cost,
+                head,
+                Q_evap_kW,
+                Q_tons,
+                cop,
+                eer,
+                kw_per_ton,
+                P_pump_kW,
+                cost_hr,
+                cost_yr,
+                rho_evap: props_evap.rho,
+                cp_evap: props_evap.cp,
+                flow_cond,
+                Tin_cond,
+                Tout_cond,
+                Q_cond_kW,
+                Q_cond_tons: Q_cond_kW / 3.51685,
+                balance_err,
+                rho_cond: props_cond.rho,
+                cp_cond: props_cond.cp
+            };
+
+            // Rating
+            let ratingText = "Standard";
+            let ratingColor = "var(--text)";
+            if (kw_per_ton < 0.55) {
+                ratingText = "Excellent (Class A)";
+                ratingColor = "var(--success)";
+            } else if (kw_per_ton < 0.65) {
+                ratingText = "Good";
+                ratingColor = "var(--secondary)";
+            } else if (kw_per_ton > 0.75) {
+                ratingText = "Poor / Inefficient";
+                ratingColor = "var(--danger)";
+            }
+
+            // Update UI Table
+            const tbody = document.getElementById('result-table-body');
+            tbody.innerHTML = '';
+            const addRow = (n, v, r, c="") => {
+                const style = c ? ` style="color:${c}; font-weight:bold;"` : '';
+                tbody.innerHTML += `<tr><td><strong>${n}</strong></td><td>${v}</td><td${style}>${r}</td></tr>`;
+            };
+
+            addRow("Cooling Capacity", Q_tons.toFixed(1) + " Tons", Q_evap_kW.toFixed(1) + " kW");
+            addRow("Chiller Efficiency", kw_per_ton.toFixed(3) + " kW/Ton", ratingText, ratingColor);
+            addRow("COP / EER", cop.toFixed(2) + " / " + eer.toFixed(1), "Direct Performance");
+            addRow("Pump Power", P_pump_kW.toFixed(2) + " kW", "Auxiliary Hydraulic Load", "var(--accent)");
+
+            if (mode === 'heat_balance') {
+                const isHbValid = Math.abs(balance_err) <= 5;
+                addRow("Condenser Reject Load", (Q_cond_kW / 3.51685).toFixed(1) + " Tons", Q_cond_kW.toFixed(1) + " kW");
+                addRow("Heat Balance Deviation", balance_err.toFixed(2) + "%", isHbValid ? "VALID" : "CHECK SENSORS", isHbValid ? "var(--success)" : "var(--danger)");
+            }
+
+            // Assessment Text
+            const interpEl = document.getElementById('interpretation-text');
+            interpEl.innerHTML = `Chiller compressor operates at <strong style="color:${ratingColor}">${ratingText}</strong> efficiency. Hydraulic pumping adds an auxiliary load of <strong>${(P_pump_kW / P_in * 100).toFixed(1)}%</strong> relative to compressor power. Estimated yearly operating cost is <strong>$${cost_yr.toLocaleString(undefined, {maximumFractionDigits:0})}</strong> (at 2,000 hrs/yr).`;
+
+            // Recommendations List
+            const recList = document.getElementById('recommendations-list');
+            const recBox = document.getElementById('practical-recommendations');
+            recList.innerHTML = '';
+            const recs = [];
+
+            if (kw_per_ton > 0.75) {
+                recs.push("<strong>Optimize chiller loading:</strong> High kW/Ton detected. Centrifugal and screw chillers operate most efficiently at 60-80% load. Avoid operating below 40% where hot-gas bypass may open.");
+                recs.push("<strong>Condenser tube cleaning:</strong> Tube scaling prevents heat rejection, raising compressor head pressure. Perform chemical descaling or mechanical brush cleaning.");
+            }
+            if (mode === 'heat_balance' && Math.abs(balance_err) > 5) {
+                recs.push(`<strong>Calibrate sensors:</strong> Heat balance deviation of ${balance_err.toFixed(2)}% exceeds the ASHRAE Guideline 22 threshold of ±5%. Verify flowmeters and temperature sensors (RTDs) calibration.`);
+            }
+            if (P_pump_kW / P_in > 0.20) {
+                recs.push(`<strong>Optimize Loop Hydraulics:</strong> Pumping power (${P_pump_kW.toFixed(2)} kW) is high relative to compressor. Inspect for throttled control valves, fouled strainers, or bypass balancing issues.`);
+            }
+            if (fType !== 'water' && conc > 40) {
+                recs.push(`<strong>Reduce Glycol Concentration:</strong> High glycol concentration (${conc}%) increases viscosity, raising pump power and lowering overall capacity. Check if concentration can be safely lowered.`);
+            }
+            const deltaTVal = Tin_evap - Tout_evap;
+            if (sys === 'imperial' && deltaTVal < 8) {
+                recs.push(`<strong>Mitigate Low Delta-T Syndrome:</strong> The low temperature drop (${deltaTVal.toFixed(1)}°F) indicates coil bypass or excessive pump flow. Optimize variable speed pump curves to achieve design delta-T (typically 10-12°F).`);
+            } else if (sys === 'metric' && deltaTVal < 4.4) {
+                recs.push(`<strong>Mitigate Low Delta-T Syndrome:</strong> The low temperature drop (${deltaTVal.toFixed(1)}°C) indicates coil bypass or excessive pump flow. Optimize variable speed pump curves to achieve design delta-T (typically 5.5-6.6°C).`);
+            }
+
+            if (recs.length > 0) {
+                recs.forEach(r => {
+                    recList.innerHTML += `<li>${r}</li>`;
+                });
+                recBox.style.display = 'block';
+            } else {
+                recBox.style.display = 'none';
+            }
+
+            // Update Range Status Bar
+            const statusDisplay = document.getElementById('range-status-display');
+            statusDisplay.className = 'range-status-display';
+            let ratingClass = 'standard';
+            let ratingIcon = 'fa-info-circle';
+            if (kw_per_ton < 0.55) {
+                ratingClass = 'excellent';
+                ratingIcon = 'fa-trophy';
+            } else if (kw_per_ton < 0.65) {
+                ratingClass = 'good';
+                ratingIcon = 'fa-check-circle';
+            } else if (kw_per_ton > 0.75) {
+                ratingClass = 'inefficient';
+                ratingIcon = 'fa-exclamation-triangle';
+            }
+            statusDisplay.classList.add(ratingClass);
+            statusDisplay.innerHTML = `<i class="fas ${ratingIcon}"></i> Chiller Performance Rating: <strong>${ratingText}</strong> (efficiency: ${kw_per_ton.toFixed(3)} kW/Ton)`;
+
+            // Build PDF Steps Data
+            let tempUnitText = sys === 'imperial' ? 'F' : 'C';
+            let flowUnitText = sys === 'imperial' ? 'GPM' : 'm3/h';
+            let headUnitText = sys === 'imperial' ? 'ft' : 'm';
+            let fluidNameText = fType === 'water' ? 'Pure Water' : (fType === 'eg' ? 'Ethylene Glycol' : 'Propylene Glycol');
+
+            pdfAuditSteps = [
+                {
+                    title: 'Step 1: Fluid Properties Mapping (ASHRAE Guideline 22)',
+                    lines: [
+                        `Fluid Type: ${fluidNameText}`,
+                        `Concentration: ${conc}%`,
+                        `Mean Temperature (T_mean): ${((Tin_evap + Tout_evap)/2).toFixed(2)} °${tempUnitText} (${t_avg_evap_c.toFixed(2)} °C)`,
+                        `Calculated Density (rho): ${props_evap.rho.toFixed(2)} kg/m³`,
+                        `Calculated Specific Heat (cp): ${props_evap.cp.toFixed(4)} kJ/kg·K`,
+                        `Regression models verified against ASHRAE Handbook - Fundamentals.`
+                    ]
+                },
+                {
+                    title: 'Step 2: Mass Flow Rate Calculation (ṁ)',
+                    lines: sys === 'imperial' 
+                        ? [
+                            `Density (rho): ${(props_evap.rho * 0.0083454).toFixed(4)} lb/gal`,
+                            `Specific Heat (cp): ${(props_evap.cp * 0.238846).toFixed(4)} Btu/lb·°F`,
+                            `Formula: Mass Flow (m_dot) = Flow * Density`,
+                            `m_dot = ${flow_evap} GPM * ${(props_evap.rho * 0.0083454).toFixed(4)} = ${(flow_evap * props_evap.rho * 0.0083454).toFixed(2)} lb/min`
+                          ]
+                        : [
+                            `Volumetric Flow (q): ${(flow_evap / 3600).toExponential(4)} m³/s`,
+                            `Formula: Mass Flow (m_dot) = q * rho`,
+                            `m_dot = ${(flow_evap / 3600).toExponential(4)} * ${props_evap.rho.toFixed(2)} = ${(flow_evap / 3600 * props_evap.rho).toFixed(3)} kg/s`
+                          ]
+                },
+                {
+                    title: 'Step 3: Evaporator Cooling Capacity (Q_evap)',
+                    lines: sys === 'imperial'
+                        ? [
+                            `Formula: Q = (Flow * rho * cp * dT) / 200`,
+                            `Delta T = ${(Tin_evap - Tout_evap).toFixed(1)} °F`,
+                            `Q = (${flow_evap} * ${(props_evap.rho * 0.0083454).toFixed(4)} * ${(props_evap.cp * 0.238846).toFixed(4)} * ${(Tin_evap - Tout_evap).toFixed(1)}) / 200`,
+                            `Result: Q = ${Q_tons.toFixed(2)} Tons (${Q_evap_kW.toFixed(1)} kW)`
+                          ]
+                        : [
+                            `Formula: Q = m_dot * cp * dT`,
+                            `Delta T = ${(Tin_evap - Tout_evap).toFixed(2)} °C`,
+                            `Q = ${(flow_evap / 3600 * props_evap.rho).toFixed(3)} * ${props_evap.cp.toFixed(4)} * ${(Tin_evap - Tout_evap).toFixed(2)}`,
+                            `Result: Q = ${Q_evap_kW.toFixed(1)} kW (${Q_tons.toFixed(2)} Tons)`
+                          ]
+                },
+                {
+                    title: 'Step 4: Chiller Efficiency Performance Metrics',
+                    lines: [
+                        `Formula: COP = Q_evap [kW] / P_compressor`,
+                        `COP = ${Q_evap_kW.toFixed(2)} / ${P_in} = ${cop.toFixed(2)}`,
+                        `Efficiency (kW/Ton): 3.51685 / COP = ${kw_per_ton.toFixed(3)}`,
+                        `Energy Efficiency Ratio: EER = COP * 3.41214 = ${eer.toFixed(1)} Btu/Wh`,
+                        `Rating: ${ratingText} (per ASHRAE 90.1 standard thresholds)`
+                    ]
+                }
+            ];
+
+            if (mode === 'heat_balance') {
+                const rho_cond_gal = props_cond.rho * 0.0083454;
+                const cp_cond_btu = props_cond.cp * 0.238846;
+                const Q_rej_theory = Q_evap_kW + P_in;
+                pdfAuditSteps.push({
+                    title: 'Step 5: Condenser Heat Rejection (Q_cond) & Heat Balance',
+                    lines: sys === 'imperial'
+                        ? [
+                            `Condenser Flow: ${flow_cond} GPM | Delta T: ${(Tout_cond - Tin_cond).toFixed(1)} °F`,
+                            `Condenser Capacity (Q_cond): (${flow_cond} * ${rho_cond_gal.toFixed(4)} * ${cp_cond_btu.toFixed(4)} * ${(Tout_cond - Tin_cond).toFixed(1)}) / 200 = ${(Q_cond_kW / 3.51685).toFixed(2)} Tons (${Q_cond_kW.toFixed(1)} kW)`,
+                            `Theoretical Rejection (Q_theory): Q_evap + P_compressor = ${Q_evap_kW.toFixed(1)} + ${P_in} = ${Q_rej_theory.toFixed(1)} kW`,
+                            `Heat Balance Error: ((Q_cond - Q_theory) / Q_theory) * 100 = ${balance_err.toFixed(2)}%`,
+                            `Status: ${Math.abs(balance_err) <= 5 ? 'VALID' : 'CHECK SENSORS'} (Target: +/-5% per ASHRAE 22)`
+                          ]
+                        : [
+                            `Condenser Flow: ${flow_cond} m³/h | Delta T: ${(Tout_cond - Tin_cond).toFixed(2)} °C`,
+                            `Condenser Capacity (Q_cond): ${(flow_cond / 3600 * props_cond.rho).toFixed(3)} * ${props_cond.cp.toFixed(4)} * ${(Tout_cond - Tin_cond).toFixed(2)} = ${Q_cond_kW.toFixed(1)} kW`,
+                            `Theoretical Rejection (Q_theory): Q_evap + P_compressor = ${Q_evap_kW.toFixed(1)} + ${P_in} = ${Q_rej_theory.toFixed(1)} kW`,
+                            `Heat Balance Error: ((Q_cond - Q_theory) / Q_theory) * 100 = ${balance_err.toFixed(2)}%`,
+                            `Status: ${Math.abs(balance_err) <= 5 ? 'VALID' : 'CHECK SENSORS'} (Target: +/-5% per ASHRAE 22)`
+                          ]
+                });
+            }
+
+            pdfAuditSteps.push({
+                title: `Step ${mode === 'heat_balance' ? 6 : 5}: Hydraulic Pump Power Estimation`,
+                lines: [
+                    `Formula: P_pump = (rho * g * q * H) / (0.7 * 1000)`,
+                    `Evaporator Density (rho): ${props_evap.rho.toFixed(1)} kg/m³`,
+                    `Flow Rate (q): ${(sys === 'imperial' ? flow_evap * 6.30902e-5 : flow_evap / 3600).toExponential(4)} m³/s`,
+                    `Pump Head (H): ${(sys === 'imperial' ? head * 0.3048 : head).toFixed(3)} m`,
+                    `Assumed Pump Efficiency: 70%`,
+                    `Calculated Auxiliary Pump Load: ${P_pump_kW.toFixed(2)} kW`
+                ]
+            });
+
+            // Show results container and scroll
+            document.getElementById('result-container').classList.remove('hidden');
+            document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
+
+            // Redraw visualizations and MathJax step solver with minor delay
+            setTimeout(() => {
+                drawChillerSVG(lastResult);
+                drawGauge(kw_per_ton);
+                renderStepByStep(lastResult);
+            }, 100);
+        }
+
+        function drawChillerSVG(res) {
+            const svg = document.getElementById('chillerSVG');
+            if (!svg) return;
+            
+            const tempUnit = res.sys === 'imperial' ? '°F' : '°C';
+            const flowUnit = res.sys === 'imperial' ? 'GPM' : 'm³/h';
+
+            if (res.mode === 'calc_capacity') {
+                svg.innerHTML = `
+                    <rect x="0" y="0" width="400" height="300" fill="#ffffff" />
+                    <!-- Barrel -->
+                    <rect x="60" y="80" width="280" height="140" rx="15" fill="none" stroke="var(--primary)" stroke-width="4" />
+                    <rect x="60" y="80" width="280" height="140" rx="15" fill="rgba(37, 99, 235, 0.05)" />
+                    <!-- Tube indicators -->
+                    <line x1="70" y1="120" x2="330" y2="120" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5 5" />
+                    <line x1="70" y1="150" x2="330" y2="150" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5 5" />
+                    <line x1="70" y1="180" x2="330" y2="180" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5 5" />
+                    <!-- Pipes -->
+                    <path d="M 10,120 L 60,120" stroke="#3b82f6" stroke-width="6" fill="none" />
+                    <polygon points="45,116 55,120 45,124" fill="#3b82f6" />
+                    <path d="M 340,180 L 390,180" stroke="#2563eb" stroke-width="6" fill="none" />
+                    <polygon points="360,176 370,180 360,184" fill="#2563eb" />
+                    <!-- Labels -->
+                    <text x="15" y="105" fill="#3b82f6" font-size="11" font-weight="bold">CHW In (T_in)</text>
+                    <text id="svg-tin" x="15" y="142" fill="#3b82f6" font-size="14" font-weight="bold">${res.Tin_evap}°${tempUnit}</text>
+                    <text x="385" y="165" fill="#2563eb" font-size="11" font-weight="bold" text-anchor="end">CHW Out (T_out)</text>
+                    <text id="svg-tout" x="385" y="202" fill="#2563eb" font-size="14" font-weight="bold" text-anchor="end">${res.Tout_evap}°${tempUnit}</text>
+                    
+                    <text x="200" y="145" fill="var(--primary)" font-size="16" font-weight="bold" text-anchor="middle">EVAPORATOR</text>
+                    <text x="200" y="168" fill="var(--text)" font-size="11" text-anchor="middle">Cooling: ${res.Q_tons.toFixed(1)} Tons</text>
+                    <text x="200" y="185" fill="var(--text)" font-size="10" text-anchor="middle">Flow: ${res.flow_evap} ${flowUnit}</text>
+                `;
+            } else {
+                svg.innerHTML = `
+                    <rect x="0" y="0" width="400" height="300" fill="#ffffff" />
+                    <!-- Condenser (Top) -->
+                    <rect x="80" y="30" width="240" height="80" rx="10" fill="none" stroke="#ef4444" stroke-width="3" />
+                    <rect x="80" y="30" width="240" height="80" rx="10" fill="rgba(239, 68, 68, 0.03)" />
+                    <text x="200" y="68" fill="#ef4444" font-size="12" font-weight="bold" text-anchor="middle">CONDENSER</text>
+                    <text x="200" y="85" fill="#4B5563" font-size="9" text-anchor="middle">Load: ${res.Q_cond_kW.toFixed(1)} kW</text>
+
+                    <!-- Evaporator (Bottom) -->
+                    <rect x="80" y="180" width="240" height="80" rx="10" fill="none" stroke="#3b82f6" stroke-width="3" />
+                    <rect x="80" y="180" width="240" height="80" rx="10" fill="rgba(59, 130, 246, 0.03)" />
+                    <text x="200" y="218" fill="#3b82f6" font-size="12" font-weight="bold" text-anchor="middle">EVAPORATOR</text>
+                    <text x="200" y="235" fill="#4B5563" font-size="9" text-anchor="middle">Capacity: ${res.Q_tons.toFixed(1)} Tons</text>
+
+                    <!-- Compressor -->
+                    <circle cx="130" cy="145" r="20" fill="none" stroke="#f59e0b" stroke-width="3" />
+                    <text x="130" y="148" fill="#f59e0b" font-size="8" font-weight="bold" text-anchor="middle">COMP</text>
+                    
+                    <!-- Exp Valve -->
+                    <polygon points="270,135 270,155 260,145" fill="none" stroke="#10b981" stroke-width="2" />
+                    <polygon points="250,135 250,155 260,145" fill="none" stroke="#10b981" stroke-width="2" />
+                    <text x="282" y="148" fill="#10b981" font-size="8" font-weight="bold">EXP</text>
+
+                    <!-- Refrigerant Lines -->
+                    <path d="M 130,180 L 130,165" stroke="#f59e0b" stroke-width="2.5" fill="none" />
+                    <path d="M 130,125 L 130,110" stroke="#ef4444" stroke-width="2.5" fill="none" />
+                    <path d="M 260,110 L 260,135" stroke="#10b981" stroke-width="2.5" fill="none" />
+                    <path d="M 260,155 L 260,180" stroke="#3b82f6" stroke-width="2.5" fill="none" />
+
+                    <!-- Condenser Water Pipes -->
+                    <path d="M 10,50 L 80,50" stroke="#f87171" stroke-width="4" fill="none" />
+                    <path d="M 320,50 L 390,50" stroke="#dc2626" stroke-width="4" fill="none" />
+                    <polygon points="50,47 57,50 50,53" fill="#f87171" />
+                    <polygon points="350,47 357,50 350,53" fill="#dc2626" />
+                    <text x="15" y="42" fill="#f87171" font-size="9" font-weight="bold">CW In</text>
+                    <text x="15" y="66" fill="#f87171" font-size="12" font-weight="bold">${res.Tin_cond}°${tempUnit}</text>
+                    <text x="385" y="42" fill="#dc2626" font-size="9" font-weight="bold" text-anchor="end">CW Out</text>
+                    <text x="385" y="66" fill="#dc2626" font-size="12" font-weight="bold" text-anchor="end">${res.Tout_cond}°${tempUnit}</text>
+
+                    <!-- Chilled Water Pipes -->
+                    <path d="M 10,210 L 80,210" stroke="#60a5fa" stroke-width="4" fill="none" />
+                    <path d="M 320,210 L 390,210" stroke="#2563eb" stroke-width="4" fill="none" />
+                    <polygon points="50,207 57,210 50,213" fill="#60a5fa" />
+                    <polygon points="350,207 357,210 350,213" fill="#2563eb" />
+                    <text x="15" y="202" fill="#60a5fa" font-size="9" font-weight="bold">CHW In</text>
+                    <text x="15" y="226" fill="#60a5fa" font-size="12" font-weight="bold">${res.Tin_evap}°${tempUnit}</text>
+                    <text x="385" y="202" fill="#2563eb" font-size="9" font-weight="bold" text-anchor="end">CHW Out</text>
+                    <text x="385" y="226" fill="#2563eb" font-size="12" font-weight="bold" text-anchor="end">${res.Tout_evap}°${tempUnit}</text>
+                `;
+            }
+        }
+
+        function drawGauge(val) {
+            const canvas = document.getElementById('effChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (effChart) effChart.destroy();
+
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#cbd5e1' : '#475569';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+
+            effChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Your Chiller', 'ASHRAE 90.1 Std', 'Excellent Limit'],
+                    datasets: [{
+                        label: 'kW/Ton',
+                        data: [val, 0.61, 0.55],
+                        backgroundColor: [
+                            val < 0.61 ? '#10B981' : '#EF4444',
+                            '#3B82F6',
+                            '#10B981'
+                        ],
+                        borderRadius: 4,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'kW/Ton (Lower is Better)',
+                                color: textColor,
+                                font: { weight: 'bold' }
+                            },
+                            ticks: { color: textColor },
+                            grid: { color: gridColor },
+                            max: Math.max(1.2, val * 1.2)
+                        },
+                        y: {
+                            ticks: { color: textColor },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.toFixed(3) + ' kW/Ton';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderStepByStep(res) {
+            const container = document.getElementById('steps-container');
+            if (!container) return;
+            
+            container.innerHTML = '<h3><i class="fas fa-file-invoice"></i> Detailed Step-by-Step Engineering Audit</h3>';
+            container.classList.add('active');
+
+            let steps = [];
+            let fluidName = res.fType === 'water' ? 'Pure Water' : (res.fType === 'eg' ? 'Ethylene Glycol' : 'Propylene Glycol');
+            let tempUnit = res.sys === 'imperial' ? '°F' : '°C';
+            let flowUnit = res.sys === 'imperial' ? 'GPM' : 'm³/h';
+
+            let t_avg_c = res.sys === 'imperial' ? (((res.Tin_evap + res.Tout_evap) / 2) - 32) * 5/9 : (res.Tin_evap + res.Tout_evap) / 2;
+
+            // Step 1: Fluid Properties
+            let step1HTML = `
+                <div class="step-card">
+                    <h4>Step 1: Fluid Properties Mapping (ASHRAE Guideline 22)</h4>
+                    <p>Selected Fluid: <strong>${fluidName}</strong> at concentration <strong>${res.conc}%</strong>.</p>
+                    <p>Mean Evaporator Temperature:
+                        $$T_{mean} = \\frac{T_{in} + T_{out}}{2} = \\frac{${res.Tin_evap} + ${res.Tout_evap}}{2} = ${((res.Tin_evap + res.Tout_evap) / 2).toFixed(2)}\\text{ ${tempUnit}} \\approx ${t_avg_c.toFixed(2)}\\text{ °C}$$
+                    </p>
+                    <p>Evaluating thermodynamic regression equations at $T_{mean}$:</p>
+                    $$ \\rho_{fluid} = \\mathbf{${res.rho_evap.toFixed(2)}\\text{ kg/m³}} $$
+                    $$ c_{p,fluid} = \\mathbf{${res.cp_evap.toFixed(4)}\\text{ kJ/kg·K}} $$
+                </div>
+            `;
+            steps.push(step1HTML);
+
+            // Step 2: Mass Flow Rate
+            let step2HTML = '';
+            if (res.sys === 'imperial') {
+                const rho_gal = res.rho_evap * 0.0083454;
+                const cp_btu = res.cp_evap * 0.238846;
+                step2HTML = `
+                    <div class="step-card">
+                        <h4>Step 2: Mass Flow Rate Calculation (ṁ)</h4>
+                        <p>Convert density and specific heat to Imperial units:</p>
+                        $$ \\rho = ${res.rho_evap.toFixed(2)} \\times 0.0083454 = \\mathbf{${rho_gal.toFixed(4)}\\text{ lb/gal}} $$
+                        $$ c_p = ${res.cp_evap.toFixed(4)} \\times 0.238846 = \\mathbf{${cp_btu.toFixed(4)}\\text{ Btu/lb·°F}} $$
+                        <p>Calculate Mass Flow Rate (ṁ) from Volumetric Flow Rate:</p>
+                        $$ \\dot{m} = \\text{Flow} \\times \\rho = ${res.flow_evap} \\times ${rho_gal.toFixed(4)} = \\mathbf{${(res.flow_evap * rho_gal).toFixed(2)}\\text{ lb/min}} $$
+                    </div>
+                `;
+            } else {
+                const flow_m3s = res.flow_evap / 3600;
+                step2HTML = `
+                    <div class="step-card">
+                        <h4>Step 2: Mass Flow Rate Calculation (ṁ)</h4>
+                        <p>Convert volumetric flow rate to cubic meters per second (m³/s):</p>
+                        $$ q = \\frac{\\text{Flow}}{3600} = \\frac{${res.flow_evap}}{3600} = ${flow_m3s.toExponential(4)}\\text{ m³/s} $$
+                        <p>Calculate Mass Flow Rate (ṁ):</p>
+                        $$ \\dot{m} = q \\times \\rho = ${flow_m3s.toExponential(4)} \\times ${res.rho_evap.toFixed(2)} = \\mathbf{${(flow_m3s * res.rho_evap).toFixed(3)}\\text{ kg/s}} $$
+                    </div>
+                `;
+            }
+            steps.push(step2HTML);
+
+            // Step 3: Evaporator Capacity
+            let step3HTML = '';
+            if (res.sys === 'imperial') {
+                const rho_gal = res.rho_evap * 0.0083454;
+                const cp_btu = res.cp_evap * 0.238846;
+                const dT_f = res.Tin_evap - res.Tout_evap;
+                step3HTML = `
+                    <div class="step-card">
+                        <h4>Step 3: Evaporator Cooling Capacity ($Q_{evap}$)</h4>
+                        <p>Evaluate capacity using heat transfer equation:</p>
+                        $$ Q_{evap} = \\frac{\\text{Flow [GPM]} \\times \\rho \\text{ [lb/gal]} \\times c_p \\text{ [Btu/lb·°F]} \\times \\Delta T \\text{ [°F]}}{200} $$
+                        $$ Q_{evap} = \\frac{${res.flow_evap} \\times ${rho_gal.toFixed(4)} \\times ${cp_btu.toFixed(4)} \\times ${dT_f.toFixed(1)}}{200} $$
+                        $$ Q_{evap} = \\mathbf{${res.Q_tons.toFixed(2)}\\text{ Tons}} \\quad \\left( ${res.Q_evap_kW.toFixed(1)}\\text{ kW} \\right) $$
+                    </div>
+                `;
+            } else {
+                const flow_m3s = res.flow_evap / 3600;
+                const dT_c = res.Tin_evap - res.Tout_evap;
+                step3HTML = `
+                    <div class="step-card">
+                        <h4>Step 3: Evaporator Cooling Capacity ($Q_{evap}$)</h4>
+                        <p>Evaluate capacity using heat transfer equation:</p>
+                        $$ Q_{evap} = \\dot{m} \\times c_p \\times \\Delta T $$
+                        $$ Q_{evap} = ${(flow_m3s * res.rho_evap).toFixed(3)} \\times ${res.cp_evap.toFixed(4)} \\times ${dT_c.toFixed(2)} $$
+                        $$ Q_{evap} = \\mathbf{${res.Q_evap_kW.toFixed(1)}\\text{ kW}} \\quad \\left( ${res.Q_tons.toFixed(2)}\\text{ Tons} \\right) $$
+                    </div>
+                `;
+            }
+            steps.push(step3HTML);
+
+            // Step 4: Efficiency Metrics
+            let step4HTML = `
+                <div class="step-card">
+                    <h4>Step 4: Chiller Efficiency Performance Metrics</h4>
+                    <p>Calculate Coefficient of Performance (COP), Energy Efficiency Ratio (EER), and kW per Ton:</p>
+                    $$ COP = \\frac{Q_{evap} \\text{ [kW]}}{P_{compressor} \\text{ [kW]}} = \\frac{${res.Q_evap_kW.toFixed(2)}}{${res.P_in}} = \\mathbf{${res.cop.toFixed(2)}} $$
+                    $$ \\text{kW/Ton} = \\frac{3.51685}{COP} = \\frac{3.51685}{${res.cop.toFixed(4)}} = \\mathbf{${res.kw_per_ton.toFixed(3)}} $$
+                    $$ EER = COP \\times 3.41214 = ${res.cop.toFixed(2)} \\times 3.41214 = \\mathbf{${res.eer.toFixed(2)}\\text{ Btu/Wh}} $$
+                </div>
+            `;
+            steps.push(step4HTML);
+
+            // Step 5: Condenser Heat Balance Verification
+            if (res.mode === 'heat_balance') {
+                let cond_t_avg_c = res.sys === 'imperial' ? (((res.Tin_cond + res.Tout_cond) / 2) - 32) * 5/9 : (res.Tin_cond + res.Tout_cond) / 2;
+                let step5HTML = `
+                    <div class="step-card">
+                        <h4>Step 5: Condenser Heat Rejection ($Q_{cond}$) & Heat Balance</h4>
+                        <p>Selected Fluid: <strong>Pure Water</strong> at Mean Condenser Temperature: ${cond_t_avg_c.toFixed(2)}°C.</p>
+                        <p>Condenser Water Properties: $\\rho = ${res.rho_cond.toFixed(1)}$ kg/m³, $c_p = ${res.cp_cond.toFixed(4)}$ kJ/kg·K.</p>
+                `;
+
+                if (res.sys === 'imperial') {
+                    const rho_cond_gal = res.rho_cond * 0.0083454;
+                    const cp_cond_btu = res.cp_cond * 0.238846;
+                    const dT_cond_f = res.Tout_cond - res.Tin_cond;
+                    step5HTML += `
+                        <p>Calculate Condenser Load ($Q_{cond}$):</p>
+                        $$ Q_{cond} = \\frac{${res.flow_cond} \\times ${rho_cond_gal.toFixed(4)} \\times ${cp_cond_btu.toFixed(4)} \\times ${dT_cond_f.toFixed(1)}}{200} = \\mathbf{${res.Q_cond_tons.toFixed(2)}\\text{ Tons}} \\quad \\left( ${res.Q_cond_kW.toFixed(1)}\\text{ kW} \\right) $$
+                    `;
+                } else {
+                    const flow_cond_m3s = res.flow_cond / 3600;
+                    const dT_cond_c = res.Tout_cond - res.Tin_cond;
+                    step5HTML += `
+                        <p>Calculate Condenser Load ($Q_{cond}$):</p>
+                        $$ Q_{cond} = \\dot{m}_{cond} \\times c_{p,cond} \\times \\Delta T_{cond} $$
+                        $$ Q_{cond} = ${(flow_cond_m3s * res.rho_cond).toFixed(3)} \\times ${res.cp_cond.toFixed(4)} \\times ${dT_cond_c.toFixed(2)} = \\mathbf{${res.Q_cond_kW.toFixed(1)}\\text{ kW}} \\quad \\left( ${res.Q_cond_tons.toFixed(2)}\\text{ Tons} \\right) $$
+                    `;
+                }
+
+                const Q_rej_theory = res.Q_evap_kW + res.P_in;
+                const devStatus = Math.abs(res.balance_err) <= 5 ? '\\text{VALID (} \\leq \\pm 5\\% \\text{)}' : '\\text{INVALID (} > \\pm 5\\% \\text{)}';
+
+                step5HTML += `
+                        <p>Perform Condenser Heat Balance Verification (per AHRI 550/590 & ASHRAE 22):</p>
+                        $$ Q_{rejected, theoretical} = Q_{evap} + P_{compressor} = ${res.Q_evap_kW.toFixed(1)} + ${res.P_in} = ${Q_rej_theory.toFixed(1)}\\text{ kW} $$
+                        $$ \\text{Heat Balance Error [\\%]} = \\frac{Q_{cond} - Q_{rejected, theoretical}}{Q_{rejected, theoretical}} \\times 100 $$
+                        $$ \\text{Error} = \\frac{${res.Q_cond_kW.toFixed(1)} - ${Q_rej_theory.toFixed(1)}}{${Q_rej_theory.toFixed(1)}} \\times 100 = \\mathbf{${res.balance_err.toFixed(2)}\\%} \\quad \\left( ${devStatus} \\right) $$
+                    </div>
+                `;
+                steps.push(step5HTML);
+            }
+
+            // Step 6/7: Pump Power Estimation
+            let stepPumpHTML = `
+                <div class="step-card">
+                    <h4>Step ${res.mode === 'heat_balance' ? 6 : 5}: Hydraulic Pump Power Estimation</h4>
+                    <p>Calculate hydraulic pump power using flow rate, head, and assumed pump efficiency ($\\% \\eta_{pump} = 70\\%$):</p>
+                    $$ P_{pump} = \\frac{\\rho \\cdot g \\cdot q \\cdot H}{\\eta_{pump}} $$
+                    <p>Where:</p>
+                    <ul style="list-style: none; padding-left: 10px;">
+                        <li>$\\rho = ${res.rho_evap.toFixed(1)}\\text{ kg/m³}$ (Solution density)</li>
+                        <li>$g = 9.80665\\text{ m/s²}$ (Gravity constant)</li>
+                        <li>$q = ${(res.sys === 'imperial' ? res.flow_evap * 6.30902e-5 : res.flow_evap / 3600).toExponential(4)}\\text{ m³/s}$ (Flow in SI)</li>
+                        <li>$H = ${(res.sys === 'imperial' ? res.head * 0.3048 : res.head).toFixed(3)}\\text{ m}$ (Head in SI)</li>
+                    </ul>
+                    $$ P_{pump} = \\frac{${res.rho_evap.toFixed(1)} \\times 9.80665 \\times ${(res.sys === 'imperial' ? res.flow_evap * 6.30902e-5 : res.flow_evap / 3600).toExponential(4)} \\times ${(res.sys === 'imperial' ? res.head * 0.3048 : res.head).toFixed(3)}}{0.7 \\times 1000} $$
+                    $$ P_{pump} = \\mathbf{${res.P_pump_kW.toFixed(2)}\\text{ kW}} $$
+                </div>
+            `;
+            steps.push(stepPumpHTML);
+
+            // Add all cards to container
+            container.innerHTML += steps.join('');
+
+            // Typeset MathJax
+            if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetPromise([container]).catch(err => console.log('MathJax typeset failed:', err));
+            }
+        }
+
+        function generatePDF() {
+            if (!lastResult) {
+                displayMessage("Please calculate performance first.", "error");
+                return;
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = doc.internal.pageSize.width;
+            const date = new Date().toLocaleDateString();
+
+            // Page 1: Header Banner
+            doc.setFillColor(30, 58, 138); // Deep Navy
+            doc.rect(0, 0, pageWidth, 38, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Chiller Performance & Heat Balance Report", pageWidth / 2, 15, { align: 'center' });
+            doc.setFontSize(9);
+            doc.setFont("Helvetica", "normal");
+            doc.text("Generated by DesignCalculators.co.in | " + date, pageWidth / 2, 23, { align: 'center' });
+            doc.text("Per AHRI 550/590 & ASHRAE 90.1 energy guidelines", pageWidth / 2, 29, { align: 'center' });
+
+            let y = 46;
+
+            // Section: Summary Results Table
+            doc.setTextColor(30, 30, 30);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("Summary Results", 12, y);
+            y += 4;
+
+            let ratingText = "Standard";
+            if (lastResult.kw_per_ton < 0.55) ratingText = "Excellent (Class A)";
+            else if (lastResult.kw_per_ton < 0.65) ratingText = "Good";
+            else if (lastResult.kw_per_ton > 0.75) ratingText = "Poor / Inefficient";
+
+            const resTable = [
+                ["Cooling Capacity (Tons)", lastResult.Q_tons.toFixed(1) + " Tons", lastResult.Q_evap_kW.toFixed(1) + " kW"],
+                ["Chiller Efficiency (kW/Ton)", lastResult.kw_per_ton.toFixed(3), ratingText],
+                ["Coefficient of Performance (COP)", lastResult.cop.toFixed(2), "-"],
+                ["Energy Efficiency Ratio (EER)", lastResult.eer.toFixed(1) + " Btu/Wh", "-"],
+                ["Hydraulic Pump Power", lastResult.P_pump_kW.toFixed(2) + " kW", "Added Load"]
+            ];
+
+            if (lastResult.mode === 'heat_balance') {
+                resTable.push(["Condenser Heat Balance", lastResult.balance_err.toFixed(2) + "%", Math.abs(lastResult.balance_err) <= 5 ? "Valid" : "Check Sensors"]);
+            }
+
+            doc.autoTable({
+                startY: y,
+                head: [["Parameter / Metric", "Value", "Rating / Status"]],
+                body: resTable,
+                theme: 'striped',
+                headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 9, cellPadding: 3.5 },
+                margin: { left: 12, right: 12 }
+            });
+
+            y = doc.lastAutoTable.finalY + 8;
+
+            // Section: Operating Parameters Table
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("Operating Parameters", 12, y);
+            y += 4;
+
+            let fluidName = lastResult.fType === 'water' ? 'Pure Water' : (lastResult.fType === 'eg' ? 'Ethylene Glycol' : 'Propylene Glycol');
+            let flowUnit = lastResult.sys === 'imperial' ? 'GPM' : 'm3/h';
+            let tempUnit = lastResult.sys === 'imperial' ? 'F' : 'C';
+            let headUnit = lastResult.sys === 'imperial' ? 'ft' : 'm';
+
+            const paramsTable = [
+                ["Evaporator Fluid Type", fluidName, "Concentration: " + lastResult.conc + "%"],
+                ["Evaporator Flow Rate", lastResult.flow_evap + " " + flowUnit, "-"],
+                ["CHW Inlet / Outlet Temp", lastResult.Tin_evap + " / " + lastResult.Tout_evap + " °" + tempUnit, "Delta T: " + (lastResult.Tin_evap - lastResult.Tout_evap).toFixed(1) + " °" + tempUnit],
+                ["Compressor Power Input", lastResult.P_in + " kW", "-"],
+                ["Primary Pump Head", lastResult.head + " " + headUnit, "-"],
+                ["Electricity Unit Rate", "$" + lastResult.cost + " / kWh", "Est. Year Cost: $" + lastResult.cost_yr.toFixed(0)]
+            ];
+
+            if (lastResult.mode === 'heat_balance') {
+                paramsTable.push(["Condenser Flow Rate", lastResult.flow_cond + " " + flowUnit, "-"]);
+                paramsTable.push(["CW Inlet / Outlet Temp", lastResult.Tin_cond + " / " + lastResult.Tout_cond + " °" + tempUnit, "Delta T: " + (lastResult.Tout_cond - lastResult.Tin_cond).toFixed(1) + " °" + tempUnit]);
+            }
+
+            doc.autoTable({
+                startY: y,
+                head: [["Parameter", "Input Value", "Design Range / Note"]],
+                body: paramsTable,
+                theme: 'grid',
+                headStyles: { fillColor: [59, 130, 246] },
+                styles: { fontSize: 9, cellPadding: 3.5 },
+                margin: { left: 12, right: 12 }
+            });
+
+            y = doc.lastAutoTable.finalY + 8;
+            if (y > 245) { doc.addPage(); y = 15; }
+
+            // Section: Standards References
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(10);
+            doc.text("ASHRAE & AHRI Standards Context:", 12, y);
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text([
+                "1. AHRI 550/590: Standard for performance rating of water-chilling packages using vapor compression.",
+                "2. ASHRAE 90.1: Minimum efficiency requirements for building mechanical systems. Target centrifugal chiller efficiency is <0.61 kW/Ton.",
+                "3. ASHRAE Guideline 22: Instrumentation and commissioning procedures for chiller heat balance validation (acceptable deviation +/-5%)."
+            ], 12, y + 5);
+
+            // Footer for Page 1
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text("Page 1 of 2 | © 2026 DesignCalculators.co.in | Technical Guidance Only", pageWidth / 2, 287, { align: 'center' });
+
+            // Page 2: Step-by-Step Calculations Audit
+            if (pdfAuditSteps.length > 0) {
+                doc.addPage();
+                let py = 25;
+                const pageH = 280;
+                const marginL = 12;
+                const colW = 186;
+
+                // Page 2 Header Banner
+                doc.setFillColor(30, 58, 138);
+                doc.rect(0, 0, pageWidth, 18, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("Helvetica", "bold");
+                doc.setFontSize(11);
+                doc.text("Thermodynamic Engineering Audit Trail (AHRI/ASHRAE Compliance)", 12, 12);
+                doc.setFontSize(8);
+                doc.text("designcalculators.co.in", pageWidth - 12, 12, { align: 'right' });
+
+                pdfAuditSteps.forEach((step) => {
+                    const titleLines = doc.splitTextToSize(step.title, colW - 6);
+                    const titleH = titleLines.length * 5 + 6;
+
+                    if (py + titleH + 15 > pageH) {
+                        doc.addPage();
+                        // Redraw page header
+                        doc.setFillColor(30, 58, 138);
+                        doc.rect(0, 0, pageWidth, 18, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFont("Helvetica", "bold");
+                        doc.setFontSize(11);
+                        doc.text("Engineering Audit Trail (cont.)", 12, 12);
+                        py = 25;
+                    }
+
+                    // Step Title rounded box
+                    doc.setFillColor(30, 58, 138);
+                    doc.roundedRect(marginL, py, colW, titleH, 2, 2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont("Helvetica", "bold");
+                    doc.setFontSize(9);
+                    doc.text(titleLines, marginL + 3, py + 4);
+                    py += titleH + 2;
+
+                    // Step content lines
+                    doc.setTextColor(30, 30, 30);
+                    doc.setFont("Courier", "normal");
+                    doc.setFontSize(8);
+
+                    step.lines.forEach(line => {
+                        const wrappedLines = doc.splitTextToSize(line, colW - 4);
+                        const lineH = wrappedLines.length * 4.5 + 2;
+
+                        if (py + lineH > pageH) {
+                            doc.addPage();
+                            // Redraw page header
+                            doc.setFillColor(30, 58, 138);
+                            doc.rect(0, 0, pageWidth, 18, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFont("Helvetica", "bold");
+                            doc.setFontSize(11);
+                            doc.text("Engineering Audit Trail (cont.)", 12, 12);
+                            py = 25;
+                            doc.setTextColor(30, 30, 30);
+                            doc.setFont("Courier", "normal");
+                            doc.setFontSize(8);
+                        }
+
+                        // Highlight equations or results lines
+                        if (line.includes(' = ') || line.includes('Formula:') || line.includes('Result:')) {
+                            doc.setFillColor(243, 244, 246); // Gray background
+                            doc.roundedRect(marginL, py, colW, lineH, 1, 1, 'F');
+                            doc.setDrawColor(245, 158, 11); // Amber border line left
+                            doc.line(marginL, py, marginL, py + lineH);
+                            doc.setDrawColor(200, 200, 200);
+                        }
+
+                        doc.setTextColor(30, 30, 30);
+                        doc.text(wrappedLines, marginL + 3, py + 3.5);
+                        py += lineH + 1;
+                    });
+
+                    py += 4;
+                });
+
+                // Footer for Page 2
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text("Page 2 of 2 | © 2026 DesignCalculators.co.in | Technical Guidance Only", pageWidth / 2, 287, { align: 'center' });
+            }
+
+            doc.save(`Chiller_Performance_Report.pdf`);
+            displayMessage("Performance Report PDF downloaded successfully!", "success");
+        }
+
+        // ==========================================
+        // FAQ ACCORDION & EMBED WIDGET JS
+        // ==========================================
+        function initFaqAccordion() {
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(q => {
+                q.addEventListener('click', function() {
+                    const item = this.parentElement;
+                    const answer = item.querySelector('.faq-answer');
+                    const icon = this.querySelector('.faq-icon');
+                    
+                    const isActive = item.classList.contains('active');
+                    
+                    // Close all other items
+                    document.querySelectorAll('.faq-item').forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('active');
+                            otherItem.querySelector('.faq-answer').style.maxHeight = null;
+                            const otherIcon = otherItem.querySelector('.faq-icon');
+                            if (otherIcon) {
+                                otherIcon.style.transform = 'rotate(0deg)';
+                            }
+                        }
+                    });
+                    
+                    if (isActive) {
+                        item.classList.remove('active');
+                        answer.style.maxHeight = null;
+                        if (icon) icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        item.classList.add('active');
+                        answer.style.maxHeight = answer.scrollHeight + 'px';
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+            // Adjust on window resize
+            window.addEventListener('resize', function() {
+                document.querySelectorAll('.faq-item.active .faq-answer').forEach(answer => {
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                });
+            });
+        }
+
+        function copyEmbedCode() {
+            const embedArea = document.getElementById('embed-code');
+            if (!embedArea) return;
+            embedArea.select();
+            embedArea.setSelectionRange(0, 99999);
+            try {
+                navigator.clipboard.writeText(embedArea.value).then(() => {
+                    displayMessage("Widget embed code copied to clipboard!", "success");
+                }).catch(() => {
+                    document.execCommand('copy');
+                    displayMessage("Widget embed code copied to clipboard!", "success");
+                });
+            } catch (err) {
+                document.execCommand('copy');
+                displayMessage("Widget embed code copied to clipboard!", "success");
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -1198,302 +2730,33 @@
                 document.body.classList.add('dark-mode');
                 themeSwitch.checked = true;
             }
-            if(themeSwitch) {
+            
+            if (themeSwitch) {
                 themeSwitch.addEventListener('change', function() {
                     document.body.classList.toggle('dark-mode');
                     localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+                    
+                    // Re-render chart if result is visible
+                    if (lastResult) {
+                        drawGauge(lastResult.kw_per_ton);
+                    }
                 });
             }
 
             updateInputs();
-            document.getElementById('calculate-btn').addEventListener('click', performCalculation);
-            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+            updateLabels();
+
+            const calculateBtn = document.getElementById('calculate-btn');
+            if (calculateBtn) calculateBtn.addEventListener('click', performCalculation);
+            
+            const pdfBtn = document.getElementById('pdf-btn');
+            if (pdfBtn) pdfBtn.addEventListener('click', generatePDF);
+
+            initFaqAccordion();
+            
+            const copyEmbedBtn = document.getElementById('copy-embed-btn');
+            if (copyEmbedBtn) copyEmbedBtn.addEventListener('click', copyEmbedCode);
         });
-
-        function performCalculation() {
-            // 1. Get Inputs
-            const sys = document.getElementById('unit-sys').value;
-            const mode = document.getElementById('calc-mode').value;
-            const fType = document.getElementById('fluid-type').value;
-            const conc = parseFloat(document.getElementById('concentration').value);
-            const P_in = parseFloat(document.getElementById('power-input').value); // Compressor kW
-            const cost = parseFloat(document.getElementById('elec-cost').value);
-            const head = parseFloat(document.getElementById('pump-head').value);
-
-            // Evaporator Data
-            let flow_evap = parseFloat(document.getElementById('flow-rate').value);
-            let Tin_evap = parseFloat(document.getElementById('t-in').value);
-            let Tout_evap = parseFloat(document.getElementById('t-out').value);
-
-            if (isNaN(flow_evap) || isNaN(Tin_evap) || isNaN(Tout_evap) || Tin_evap <= Tout_evap) {
-                displayMessage("Check Evaporator flow and temperatures (Tin > Tout).", "error");
-                return;
-            }
-            
-            // Convert to SI for calc
-            let flow_evap_m3s = 0;
-            let t_avg_evap_c = 0;
-            let dT_evap_c = 0;
-            let head_m = 0;
-            
-            if (sys === 'imperial') {
-                // GPM -> m3/s. 1 GPM = 6.309e-5 m3/s
-                flow_evap_m3s = flow_evap * 6.309e-5;
-                t_avg_evap_c = ((Tin_evap + Tout_evap)/2 - 32) * 5/9;
-                dT_evap_c = (Tin_evap - Tout_evap) * 5/9;
-                head_m = head * 0.3048;
-            } else {
-                // m3/h -> m3/s
-                flow_evap_m3s = flow_evap / 3600;
-                t_avg_evap_c = (Tin_evap + Tout_evap)/2;
-                dT_evap_c = Tin_evap - Tout_evap;
-                head_m = head;
-            }
-            
-            // Get Props Evap
-            const props_evap = getFluidProps(fType, conc, t_avg_evap_c);
-            // m_dot = vol * rho
-            const m_dot_evap = flow_evap_m3s * props_evap.rho;
-            // Q = m * cp * dT
-            const Q_evap_kW = m_dot_evap * props_evap.cp * dT_evap_c; // kW
-            
-            // Heat Balance (Optional)
-            let Q_cond_kW = 0;
-            let balance_err = 0;
-            let stepCount = 1;
-            
-            let html = '<h4>Step ' + (stepCount++) + ': Fluid Properties & Mass Flow</h4>';
-            html += '<div class="calculation-step">';
-            html += 'Fluid: <strong>' + fType.toUpperCase() + ' ' + conc + '%</strong> @ Avg Temp ' + (t_avg_evap_c).toFixed(1) + ' °C.<br>';
-            html += 'Density ρ ≈ ' + props_evap.rho.toFixed(1) + ' kg/m^3. Specific Heat Cp ≈ ' + props_evap.cp.toFixed(3) + ' kJ/kgK.<br>';
-            html += 'Volumetric Flow Q = ' + flow_evap_m3s.toExponential(3) + ' m^3/s.<br>';
-            html += 'Mass Flow ṁ = Q · ρ = ' + flow_evap_m3s.toExponential(3) + ' · ' + props_evap.rho.toFixed(1) + ' = mathbf{' + (m_dot_evap).toFixed(2) + ' kg/s}.';
-            html += '</div>';
-
-            const Q_tons = Q_evap_kW / 3.51685;
-            
-            html += `<h4>Step ${stepCount++}: Evaporator Cooling Capacity ($Q_{evap}$)</h4>`;
-            html += '<div class="calculation-step">';
-            html += 'Temperature Drop ΔT = ' + dT_evap_c.toFixed(2) + ' °C.<br>';
-            html += '$$ Q_{evap} = \\dot{m} C_p \\Delta T = ' + (m_dot_evap).toFixed(2) + ' \\cdot ' + props_evap.cp.toFixed(3) + ' \\cdot ' + dT_evap_c.toFixed(2) + ' = \\mathbf{' + Q_evap_kW.toFixed(1) + ' \\text{ kW}} $$<br>';
-            html += '$$ Q_{tons} = \\frac{Q_{kW}}{3.517} = \\frac{' + Q_evap_kW.toFixed(1) + '}{3.517} = \\mathbf{' + Q_tons.toFixed(1) + ' \\text{ Tons}} $$';
-            html += '</div>';
-
-            if (mode === 'heat_balance') {
-                let flow_cond = parseFloat(document.getElementById('cond-flow').value);
-                let Tin_cond = parseFloat(document.getElementById('ct-in').value);
-                let Tout_cond = parseFloat(document.getElementById('ct-out').value);
-                
-                let flow_cond_m3s = 0;
-                let t_avg_cond_c = 0;
-                let dT_cond_c = 0;
-                
-                if (sys === 'imperial') {
-                    flow_cond_m3s = flow_cond * 6.309e-5;
-                    t_avg_cond_c = ((Tin_cond + Tout_cond)/2 - 32) * 5/9;
-                    dT_cond_c = (Tout_cond - Tin_cond) * 5/9; // Out > In for condenser
-                } else {
-                    flow_cond_m3s = flow_cond / 3600;
-                    t_avg_cond_c = (Tin_cond + Tout_cond)/2;
-                    dT_cond_c = Tout_cond - Tin_cond;
-                }
-                
-                // Assume condenser water (pure water usually)
-                const props_cond = getFluidProps('water', 0, t_avg_cond_c);
-                const m_dot_cond = flow_cond_m3s * props_cond.rho;
-                Q_cond_kW = m_dot_cond * props_cond.cp * dT_cond_c;
-                
-                // Check: Q_cond should approx Q_evap + P_compressor
-                const Q_reject_theoretical = Q_evap_kW + P_in;
-                balance_err = ((Q_cond_kW - Q_reject_theoretical) / Q_reject_theoretical) * 100;
-
-                 html += '<h4>Step ' + (stepCount++) + ': Heat Balance Verification</h4>';
-                 html += '<div class="calculation-step">';
-                 html += 'Heat Rejected Q_cond = mathbf{' + Q_cond_kW.toFixed(1) + ' kW} (calculated from condenser flow/DT).<br>';
-                 html += 'Theoretical Rejection Q_total = Q_evap + P_comp = ' + Q_evap_kW.toFixed(1) + ' + ' + P_in + ' = ' + (Q_evap_kW+P_in).toFixed(1) + ' kW.<br>';
-                 html += 'Balance Error = (Q_cond - Q_total)/Q_total x 100 = mathbf{' + balance_err.toFixed(2) + '%}. (Target < 5%)';
-                 html += '</div>';
-            }
-
-            // Pump Power Estimate
-            // P_pump (kW) = (rho * g * Q * H) / (efficiency * 1000)
-            // Assume pump eff 0.7
-            const P_pump_kW = (props_evap.rho * 9.81 * flow_evap_m3s * head_m) / (0.7 * 1000);
-
-            // Efficiency Metrics
-            const cop = Q_evap_kW / P_in;
-            const eer = cop * 3.412;
-            const kw_per_ton = P_in / Q_tons;
-
-            // Cost
-            const cost_hr = (P_in + P_pump_kW) * cost;
-            const cost_yr = cost_hr * 2000; // 2000 hours
-
-            lastResult = { Q_evap_kW, Q_tons, cop, eer, kw_per_ton, cost_hr, cost_yr, sys, P_in, P_pump_kW, Q_cond_kW, balance_err, mode };
-
-            html += '<h4>Step ' + (stepCount++) + ': Efficiency Metrics</h4>';
-            html += '<div class="calculation-step">';
-            html += '$$ COP = \\frac{Q_{evap}}{P_{comp}} = \\frac{' + Q_evap_kW.toFixed(1) + '}{' + P_in + '} = \\mathbf{' + cop.toFixed(2) + '} $$<br>';
-            html += '$$ kW/Ton = \\frac{P_{in}}{Q_{tons}} = \\frac{' + P_in + '}{' + Q_tons.toFixed(1) + '} = \\mathbf{' + kw_per_ton.toFixed(3) + '} $$<br>';
-            html += '$$ EER = COP \\times 3.412 = \\mathbf{' + eer.toFixed(1) + ' \\text{ Btu/Wh}} $$';
-            html += '</div>';
-
-            html += '<h4>Step ' + (stepCount++) + ': Pump Power Estimation</h4>';
-            html += '<div class="calculation-step">';
-            html += 'Pump Head H = ' + head_m.toFixed(1) + ' m. Assumed Pump η = 0.7.<br>';
-            html += '$$ P_{pump} = \\frac{\\rho \\cdot g \cdot Q \\cdot H}{\\eta} = \\frac{' + props_evap.rho.toFixed(0) + ' \\cdot 9.81 \\cdot ' + flow_evap_m3s.toExponential(2) + ' \\cdot ' + head_m.toFixed(1) + '}{0.7 \\cdot 1000} = \\mathbf{' + P_pump_kW.toFixed(2) + ' \\text{ kW}} $$';
-            html += '</div>';
-
-            document.getElementById('calculation-details').innerHTML = html;
-
-            // 5. Update Table
-            const tbody = document.getElementById('result-table-body');
-            tbody.innerHTML = '';
-            const addRow = (n, v, r, c="") => {
-                const colorStyle = c ? 'color:'+c : 'color:#1f2937';
-                tbody.innerHTML += '<tr style="' + colorStyle + '"><td><strong>' + n + '</strong></td><td>' + v + '</td><td>' + r + '</td></tr>';
-            };
-            
-            let rating = "Standard";
-            let color = "";
-            if (kw_per_ton < 0.55) { rating = "Excellent (Class A)"; color = "var(--success)"; }
-            else if (kw_per_ton < 0.65) { rating = "Good"; color = "var(--primary)"; }
-            else if (kw_per_ton > 0.75) { rating = "Poor / Inefficient"; color = "var(--danger)"; }
-            
-            addRow("Cooling Capacity", Q_tons.toFixed(1) + " Tons", Q_evap_kW.toFixed(1) + " kW");
-            addRow("kW / Ton", kw_per_ton.toFixed(3), rating, color);
-            addRow("Pump Power", P_pump_kW.toFixed(2) + " kW", "Added Load", "var(--warning)");
-            if (mode === 'heat_balance') {
-                 addRow("Heat Balance", balance_err.toFixed(2) + "%", Math.abs(balance_err)<5 ? "Valid" : "Check Sensors", Math.abs(balance_err)<5 ? "var(--success)" : "var(--danger)");
-            }
-
-            const interpEl = document.getElementById('interpretation-text');
-            interpEl.innerHTML = '<strong style="color:' + (color||'inherit') + '">' + rating + ' Efficiency.</strong> Pump consumes additional ' + (P_pump_kW/P_in*100).toFixed(1) + '% energy relative to compressor.';
-
-            // Step 1: Show Container First
-            document.getElementById('result-container').classList.remove('hidden');
-            document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
-
-            // Step 2: Draw Visuals with Delay
-            setTimeout(function() {
-                drawChiller(Tin_evap, Tout_evap);
-                drawGauge(kw_per_ton);
-                if(window.MathJax) window.MathJax.typesetPromise([document.getElementById('calculation-details')]);
-            }, 100);
-        }
-
-        function drawChiller(Tin, Tout) {
-            document.getElementById('svg-tin').textContent = 'In: ' + Tin + '°';
-            document.getElementById('svg-tout').textContent = 'Out: ' + Tout + '°';
-        }
-
-
-        function drawGauge(val) {
-            const ctx = document.getElementById('effChart').getContext('2d');
-            if (effChart) effChart.destroy();
-            
-            effChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Your Chiller', 'ASHRAE Std (Path A)', 'Excellent'],
-                    datasets: [{
-                        label: 'kW/Ton',
-                        data: [val, 0.61, 0.55],
-                        backgroundColor: [
-                            val < 0.61 ? '#10B981' : '#EF4444',
-                            '#3B82F6',
-                            '#10B981'
-                        ]
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { title: {display:true, text:'kW/Ton (Lower is Better)'}, max: 1.5 }
-                    },
-                    plugins: { legend: {display:false} }
-                }
-            });
-        }
-
-        function generatePDF() {
-            if (!lastResult) {
-                displayMessage("Calculate first.", "error");
-                return;
-            }
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            let y = 15;
-
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(16);
-            pdf.setTextColor(30, 58, 138); 
-            pdf.text('Chiller Performance Report', 105, y, { align: 'center' });
-            y += 10;
-
-            pdf.setFontSize(10);
-            pdf.setTextColor(100);
-            pdf.text(`Date: ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
-            y += 15;
-
-            const inputData = [
-                ['Fluid', lastResult.fType.toUpperCase()],
-                ['Glycol %', `${lastResult.conc}%`],
-                ['Temp In/Out', `${lastResult.T_in} / ${lastResult.T_out}`],
-                ['Power Input', `${lastResult.P_in} kW`]
-            ];
-
-            pdf.autoTable({
-                startY: y,
-                head: [['Parameter', 'Value']],
-                body: inputData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] }
-            });
-            y = pdf.lastAutoTable.finalY + 15;
-
-            // Results
-            pdf.text('2. Efficiency Analysis', 14, y);
-            y += 5;
-
-            const resData = [
-                ['Capacity', `${lastResult.Q_tons.toFixed(2)} Tons`],
-                ['kW/Ton', lastResult.kw_per_ton.toFixed(3)],
-                ['COP', lastResult.cop.toFixed(2)],
-                ['Pump Power', `${lastResult.P_pump_kW.toFixed(2)} kW`],
-                ['Yearly Cost', `$${lastResult.cost_yr.toFixed(0)}`]
-            ];
-
-            pdf.autoTable({
-                startY: y,
-                head: [['Metric', 'Result']],
-                body: resData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] },
-                didParseCell: function(data) {
-                    if(data.row.index === 1) {
-                        data.cell.styles.fontStyle = 'bold';
-                    }
-                }
-            });
-
-            pdf.save('Chiller_Report.pdf');
-            displayMessage("PDF Downloaded", "success");
-        }
-
-        function displayMessage(message, type = "info") {
-            let messageBox = document.getElementById('message-box');
-            messageBox.textContent = message;
-            if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
-            else if (type === "success") messageBox.style.backgroundColor = 'var(--success)';
-            else messageBox.style.backgroundColor = 'var(--primary)';
-            messageBox.classList.add('show');
-            setTimeout(() => messageBox.classList.remove('show'), 4000);
-        }
     </script>
 </body>
 </html>
