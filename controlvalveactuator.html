@@ -1230,7 +1230,7 @@
                     </div>
 
                     <button type="button" onclick="calculate()" class="btn">Calculate Sizing</button>
-                    <button type="button" onclick="generatePDF()" class="btn btn-outline">Generate Sizing Sheet</button>
+                    <button type="button" onclick="generatePDF()" id="pdf-btn" class="btn btn-outline">Generate Sizing Sheet</button>
                 </form>
             </div>
 
@@ -2598,247 +2598,338 @@
             
             currentY += 13;
             
-            // Table 1: Inputs
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(17, 24, 39);
-            doc.text("1. Input Design Parameters", marginX, currentY);
-            currentY += 3;
-
-            let inputRows = [];
-            if (r.type === 'Linear') {
-                inputRows = [
-                    ['Valve Type & Plug', 'Linear Globe / ' + (r.plugBalance === 'balanced' ? 'Balanced' : 'Unbalanced'), 'Stem MAST Limit', r.stemMast + ' lbf'],
-                    ['Port / Stem Diameter', r.portDia + ' in / ' + r.stemDia + ' in', 'Packing / Fluid', r.packType.toUpperCase() + ' / ' + r.fluidService.toUpperCase()],
-                    ['Shutoff Press. Drop', r.dp + ' psi', 'Leakage Class', 'Class ' + r.leakClass],
-                    ['Actuator Sizing Type', r.actTypeLinear === 'spring' ? 'Spring-Diaphragm' : 'Double-Acting Piston', 'Actuator Area', r.actArea + ' in²'],
-                    ['Air Supply / Safety F.', r.airSupply + ' psi / ' + r.safety, 'Fail Action / Bench Set', r.failAction.toUpperCase() + (r.actTypeLinear === 'spring' ? ` (${r.springMin}-${r.springMax} psi)` : ' / N/A')]
-                ];
-            } else {
-                inputRows = [
-                    ['Valve Type', 'Rotary (Ball/Butterfly)', 'Shaft MAST Limit', r.shaftMast + ' in-lb'],
-                    ['Disc / Shaft Diameter', r.ballDia + ' in / ' + r.shaftDia + ' in', 'Offset / Bearing Coeff', r.offset + ' in / ' + r.bearingCoeff],
-                    ['Shutoff / Dynamic dP', r.dp + ' psi / ' + r.dynamicDp + ' psi', 'Fluid / Safety F.', r.fluidService.toUpperCase() + ' / ' + r.safety],
-                    ['Actuator Mode & Mech', (r.actTypeRotary === 'spring' ? 'Spring-Return' : 'Double-Acting') + ' / ' + (r.rotaryActType === 'rack' ? 'Rack & Pinion' : 'Scotch Yoke'), 'Fail Action', r.failAction.toUpperCase()],
-                    ['Torque Output Values', r.actTypeRotary === 'spring' ? `Start: ${r.tStart} / End: ${r.tEnd} in-lb` : `Piston Torque: ${r.tStart} in-lb`, '-', '-']
-                ];
+            const btn = document.getElementById('pdf-btn');
+            let originalText = "";
+            if (btn) {
+                originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                btn.disabled = true;
             }
 
-            doc.autoTable({
-                startY: currentY,
-                head: [['Design Parameter', 'Sizing Value', 'Associated Variable', 'Value']],
-                body: inputRows,
-                theme: 'grid',
-                headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
-                bodyStyles: { fontSize: 7.5, textColor: textColor },
-                margin: { left: marginX, right: marginX },
-                styles: { cellPadding: 2.5 }
-            });
-            
-            currentY = doc.lastAutoTable.finalY + 8;
-            
-            // Table 2: Calculated Sizing Results
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(17, 24, 39);
-            doc.text("2. Calculated Sizing Results", marginX, currentY);
-            currentY += 3;
-
-            let resultRows = [];
-            if (r.type === 'Linear') {
-                resultRows = [
-                    ['Seat Area (A_seat)', r.seatArea.toFixed(3) + ' in²', 'Effective closing seat area'],
-                    ['Unbalance Force (F_unbalance)', Math.round(r.fUnbalance) + ' lbf', 'SeatArea * dP (reduced 95% if balanced)'],
-                    ['Packing Friction (F_packing)', Math.round(r.fPacking) + ' lbf', 'Friction based on stem size & material'],
-                    ['Balance Seal Friction (F_bal)', Math.round(r.fBal) + ' lbf', 'Circumference * 30 lbf (if balanced)'],
-                    ['Seat Sealing Load (F_seat)', Math.round(r.fSeat) + ' lbf', 'ANSI/FCI 70-2 circumference load factor'],
-                    ['Total Required Thrust', Math.round(r.fReqTotal) + ' lbf', 'Sum(F_unb, F_pack, F_bal, F_seat) * SF'],
-                    ['Available Actuator Thrust', Math.round(r.fSeatAvail) + ' lbf', 'Actuator seating capability at seat travel'],
-                    ['Peak Actuator Thrust', Math.round(r.fPeak) + ' lbf', 'Maximum possible output at air supply'],
-                    ['Sizing Margin Ratio', r.margin.toFixed(2), 'Available / Required (Target >= 1.0)'],
-                    ['Stem MAST Assessment', r.fPeak > r.stemMast ? 'FAIL (Exceeds MAST)' : 'PASS (Safe)', 'Safety against stem shearing']
-                ];
-            } else {
-                resultRows = [
-                    ['Disc Projected Area (A_proj)', r.ballArea.toFixed(3) + ' in²', 'Effective projected disc area'],
-                    ['Packing Friction Torque (T_pack)', Math.round(r.tPacking) + ' in-lb', 'Stem sealing friction torque'],
-                    ['Static Bearing Torque (T_bearing)', Math.round(r.tBearing) + ' in-lb', 'Differential pressure load * shaftRadius * coeff'],
-                    ['Seat Sealing Torque (T_seat)', Math.round(r.tSeat) + ' in-lb', 'Breakout seal friction torque'],
-                    ['Dynamic Flow Torque (T_hydro)', Math.round(r.tHydro) + ' in-lb', 'Hydrodynamic torque at 60°-70° open position'],
-                    ['Total Required Torque', Math.round(r.tReqTotal) + ' in-lb', 'Max(Breakout, Dynamic) * Safety Factor'],
-                    ['Available Actuator Torque', Math.round(r.tAvail) + ' in-lb', 'Actuator torque output at seat travel'],
-                    ['Peak Actuator Torque', Math.round(r.tPeak) + ' in-lb', 'Maximum possible output at supply/spring start'],
-                    ['Sizing Margin Ratio', r.margin.toFixed(2), 'Available / Required (Target >= 1.0)'],
-                    ['Shaft MAST Assessment', r.tPeak > r.shaftMast ? 'FAIL (Exceeds MAST)' : 'PASS (Safe)', 'Safety against shaft shearing']
-                ];
-            }
-
-            doc.autoTable({
-                startY: currentY,
-                head: [['Calculated Parameter', 'Output Value', 'Formula / Reference Basis']],
-                body: resultRows,
-                theme: 'grid',
-                headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
-                bodyStyles: { fontSize: 7.5, textColor: textColor },
-                margin: { left: marginX, right: marginX },
-                styles: { cellPadding: 2.5 },
-                didParseCell: function(data) {
-                    if (data.section === 'body' && (data.row.index === 8 || data.row.index === 9)) {
-                        data.cell.styles.fontStyle = 'bold';
-                        if (data.row.index === 8) {
-                            data.cell.styles.textColor = r.margin < 1.0 ? dangerColor : successColor;
-                        }
-                        if (data.row.index === 9) {
-                            data.cell.styles.textColor = (r.fPeak > r.stemMast || r.tPeak > r.shaftMast) ? dangerColor : successColor;
-                        }
-                    }
+            if (!lastResult) { 
+                alert("Calculate first!"); 
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 }
-            });
-
-            // ADD PAGE BREAK FOR DENSE MATH & matrix
-            doc.addPage();
-            currentY = 20;
-
-            // PAGE 2: STANDARDS COMPLIANCE CHECKLIST & 8-STEP AUDITS
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(17, 24, 39);
-            doc.text("3. Governing Standards Compliance Matrix", marginX, currentY);
-            currentY += 3;
-
-            const complianceRows = [
-                ['ANSI/FCI 70-2 (Seat Leakage Class)', r.compFci ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Seat Force Net: ${Math.round(r.fSeatAvail - r.fUnbalance - r.fPacking - r.fBal)} lbf vs Req: ${Math.round(r.fSeat)} lbf` : `Avail: ${Math.round(r.tAvail)} vs Seat + Packing: ${Math.round(r.tSeat + r.tPacking)} in-lb`],
-                ['ANSI/ISA-75.25.01 (Actuator Sizing)', r.compIsa ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Margin: ${r.margin.toFixed(2)} (>=1.0) & Peak: ${Math.round(r.fPeak)} vs Stem MAST: ${r.stemMast} lbf` : `Margin: ${r.margin.toFixed(2)} (>=1.0) & Peak: ${Math.round(r.tPeak)} vs Shaft MAST: ${r.shaftMast} in-lb`],
-                ['API 6D / ISO 14313 (Valve Torques)', r.compApi ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Linear thrust safety margin verified` : `Avail: ${Math.round(r.tAvail)} vs Breakout * SF: ${Math.round(r.tBreakout * r.safety)} in-lb`],
-                ['IEC 60534-8-4 (Dynamic Flow Checks)', r.compIec ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Linear dynamic force margin verified` : `Avail: ${Math.round(r.tAvail)} vs Dynamic Run * SF: ${Math.round(r.tDynamicRun * r.safety)} in-lb`]
-            ];
-
-            doc.autoTable({
-                startY: currentY,
-                head: [['Standard Identifier', 'Assessment Status', 'Compliance Verification Detail']],
-                body: complianceRows,
-                theme: 'grid',
-                headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
-                bodyStyles: { fontSize: 7.5, textColor: textColor },
-                margin: { left: marginX, right: marginX },
-                styles: { cellPadding: 2.5 },
-                didParseCell: function(data) {
-                    if (data.column.index === 1 && data.section === 'body') {
-                        data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.textColor = data.cell.text[0] === 'COMPLIANT' ? successColor : dangerColor;
-                    }
-                }
-            });
-
-            currentY = doc.lastAutoTable.finalY + 8;
-
-            // Table 4: 8-Step Math Audit
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(17, 24, 39);
-            doc.text("4. Detailed 8-Step Verification Math Audit", marginX, currentY);
-            currentY += 3;
-
-            let auditRows = [];
-            if (r.type === 'Linear') {
-                auditRows = [
-                    ['1. Valve Geometry', `A_seat = ${r.seatArea.toFixed(3)} sq.in, C_seat = ${r.seatCirc.toFixed(2)} in, A_stem = ${r.stemArea.toFixed(4)} sq.in`],
-                    ['2. Unbalance Force (F_unb)', `F_unb = ${Math.round(r.fUnbalance)} lbf (${r.plugBalance === 'balanced' ? 'Balanced plug 95% reduction' : 'Full unbalance'})`],
-                    ['3. Packing Friction (F_pack)', `F_pack = ${Math.round(r.fPacking)} lbf (${r.packType.toUpperCase()} nominal ${PACKING_FRICTION[r.packType]} lbf/in * stemDia * fluidFactor ${r.fluidFactor})`],
-                    ['4. Balance Friction (F_bal)', `F_bal = ${Math.round(r.fBal)} lbf (${r.plugBalance === 'balanced' ? 'SeatCirc * 30 lbf/in' : 'Unbalanced plug = 0'})`],
-                    ['5. Seat Sealing Load (F_seat)', `F_seat = ${Math.round(r.fSeat)} lbf (Class ${r.leakClass} factor: ${SEAT_LOADS[r.leakClass]} lbf/in)`],
-                    ['6. Required Thrust (F_req)', `F_req = (F_unb + F_pack + F_bal + F_seat) * SF = ${Math.round(r.fReqTotal)} lbf`],
-                    ['7. Available Thrust (F_avail)', `F_avail = ${Math.round(r.fSeatAvail)} lbf (${r.actTypeLinear === 'spring' ? (r.failAction === 'fc' ? 'Spring preload' : 'Air force minus spring max') : 'Double-acting piston direct'})`],
-                    ['8. Stem MAST & Margin Verification', `Peak Force = ${Math.round(r.fPeak)} lbf vs MAST: ${r.stemMast} lbf. Margin Ratio = ${r.margin.toFixed(2)}`]
-                ];
-            } else {
-                auditRows = [
-                    ['1. Disc Geometry', `A_proj = ${r.ballArea.toFixed(3)} sq.in, R_shaft = ${r.shaftRadius.toFixed(3)} in, R_disc = ${r.discRadius.toFixed(3)} in`],
-                    ['2. Packing Friction Torque', `T_pack = ${Math.round(r.tPacking)} in-lb (200 in-lb/in * shaftDia * fluidFactor ${r.fluidFactor})`],
-                    ['3. Static Bearing Torque', `T_bearing = ${Math.round(r.tBearing)} in-lb (PressLoad ${Math.round(r.pressLoad)} lbf * R_shaft * bearingCoeff ${r.bearingCoeff} * fluidFactor)`],
-                    ['4. Seat Seal Breakout Torque', `T_seat = ${Math.round(r.tSeat)} in-lb (Seat breakout model: 0.05 * D_disc * dP * R_disc * fluidFactor)`],
-                    ['5. Hydrodynamic Torque (T_hydro)', `T_hydro = ${Math.round(r.tHydro)} in-lb (Dynamic torque at 60 deg open: Ct ${Ct} * D^3 * dynamicDp ${r.dynamicDp})`],
-                    ['6. Required Torque Sizing', `T_req = Max(Breakout, Dynamic) * SF = Max(${Math.round(r.tBreakout)}, ${Math.round(r.tDynamicRun)}) * ${r.safety} = ${Math.round(r.tReqTotal)} in-lb`],
-                    ['7. Available Torque (T_avail)', `T_avail = ${Math.round(r.tAvail)} in-lb (${r.actTypeRotary === 'spring' ? 'Spring end torque' : 'Double-acting piston torque'})`],
-                    ['8. Shaft MAST & Margin Verification', `Peak Torque = ${Math.round(r.tPeak)} in-lb vs MAST: ${r.shaftMast} in-lb. Margin Ratio = ${r.margin.toFixed(2)}`]
-                ];
+                return; 
             }
-
-            doc.autoTable({
-                startY: currentY,
-                head: [['Step', 'Calculation Sizing Formula & Values']],
-                body: auditRows,
-                theme: 'grid',
-                headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
-                bodyStyles: { fontSize: 7.5, textColor: textColor },
-                margin: { left: marginX, right: marginX },
-                styles: { cellPadding: 2.5 }
-            });
-
-            currentY = doc.lastAutoTable.finalY + 8;
-
-            // Suitability Verdict Banner
-            doc.setFont('Helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(17, 24, 39);
-            doc.text("5. Final Actuator Suitability Verdict", marginX, currentY);
-            currentY += 3;
-
-            const isPassed = r.margin >= 1.0;
-            const isMastOk = (r.type === 'Linear') ? (r.fPeak <= r.stemMast) : (r.tPeak <= r.shaftMast);
             
-            let verdictText = "";
-            if (isPassed && isMastOk) {
-                verdictText = `PASS: Actuator is suitable and fully standards-compliant. The sizing margin ratio is ${r.margin.toFixed(2)} (Target >= 1.0) and the peak output is safely below the structural MAST limit.`;
-            } else if (!isPassed && isMastOk) {
-                verdictText = `FAIL: Actuator is UNDERSIZED. Sizing margin ratio is ${r.margin.toFixed(2)} (Requires >= 1.0). Select a larger actuator size.`;
-            } else if (isPassed && !isMastOk) {
-                verdictText = `FAIL: MAST LIMIT EXCEEDED. Actuator generates excessive peak output force/torque that exceeds the valve stem/shaft MAST structural limit. Buckling or shearing hazard detected!`;
-            } else {
-                verdictText = `FAIL: Actuator is both UNDERSIZED and EXCEEDS the structural MAST limit. Immediate redesign of the sizing scenario is required.`;
-            }
-
-            const bannerColor = (isPassed && isMastOk) ? [240, 253, 250] : [254, 242, 242];
-            const borderBannerColor = (isPassed && isMastOk) ? successColor : dangerColor;
-            doc.setFillColor(bannerColor[0], bannerColor[1], bannerColor[2]);
-            doc.setDrawColor(borderBannerColor[0], borderBannerColor[1], borderBannerColor[2]);
-            doc.rect(marginX, currentY, 180, 14, 'DF');
-
-            doc.setTextColor(borderBannerColor[0], borderBannerColor[1], borderBannerColor[2]);
-            doc.setFontSize(8);
-            doc.setFont('Helvetica', 'bold');
-            doc.text(verdictText, marginX + 4, currentY + 8.5, { maxWidth: 172 });
-
-            currentY += 20;
-
-            // Disclaimers
-            doc.setTextColor(156, 163, 175);
-            doc.setFontSize(7);
-            doc.setFont('Helvetica', 'normal');
-            doc.text("Disclaimer: Sizing evaluations are based on governing standards ANSI/FCI 70-2, API 6D, ANSI/ISA-75.25.01, and IEC 60534-8-4. Field conditions (high temperatures, fluid contamination, wear, and regulator tolerances) can increase required breakout force/torque. final approvals must be signed off by a qualified design engineer.", marginX, currentY, { maxWidth: 180 });
-
-            // Apply Headers and Footers to all pages
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
+            try {
+                const { jsPDF } = window.jspdf;
                 
-                // Header line
-                doc.setFontSize(7.5);
-                doc.setTextColor(156, 163, 175);
+                // To ensure pdf stays small (under 40KB) and strictly 2 pages, we use standard Helvetica vector lines.
+                const doc = new jsPDF('p', 'mm', 'a4');
+                const r = lastResult;
+                
+                const primaryColor = [30, 58, 138]; 
+                const successColor = [16, 185, 129];
+                const dangerColor = [220, 38, 38];
+                const textColor = [75, 85, 99];
+                
+                // Grab the logo image element
+                const logoImg = document.querySelector('.logo') || document.querySelector('header img');
+                
+                // Layout margins
+                const marginX = 15;
+                let currentY = 15;
+                
+                // PAGE 1: HEADER & GENERAL DATA
+                doc.setFillColor(30, 58, 138);
+                doc.rect(marginX, currentY, 180, 20, 'F');
+                
+                if (logoImg) {
+                    try {
+                        doc.addImage(logoImg, 'PNG', marginX + 4, currentY + 3, 14, 14);
+                    } catch (e) {
+                        console.warn("Could not draw logo in PDF main title:", e);
+                    }
+                }
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(13);
+                doc.text("INDUSTRIAL CONTROL VALVE ACTUATOR SIZING REPORT", marginX + 22, currentY + 8);
+                
                 doc.setFont('Helvetica', 'normal');
-                doc.text("Design Calculators Sizing Suite", marginX, 10);
-                doc.text("https://designcalculators.co.in", 195 - marginX, 10, { align: 'right' });
-                doc.setDrawColor(229, 231, 235);
-                doc.line(marginX, 11, 195 - marginX, 11);
+                doc.setFontSize(8.5);
+                doc.text("Compliance Standards: ANSI/FCI 70-2, API 6D, ANSI/ISA-75.25.01, IEC 60534", marginX + 22, currentY + 14);
                 
-                // Footer line
-                doc.line(marginX, 282, 195 - marginX, 282);
-                doc.text("Sizing sheet generated by controlvalveactuator.html. Verification required by QP.", marginX, 287);
-                doc.text("Page " + i + " of " + pageCount, 195 - marginX, 287, { align: 'right' });
+                currentY += 25;
+                
+                // Metadata Block
+                doc.setTextColor(55, 65, 81);
+                doc.setFontSize(8);
+                doc.setFont('Helvetica', 'bold');
+                doc.text("Sizing Metadata:", marginX, currentY);
+                doc.setFont('Helvetica', 'normal');
+                doc.text(`Date & Time: ${new Date().toLocaleString()}`, marginX, currentY + 4);
+                doc.text(`Report ID: DC-ACT-${Math.floor(100000 + Math.random() * 900000)}`, marginX, currentY + 8);
+                doc.text(`Valve Type: ${r.type.toUpperCase()}`, marginX + 90, currentY + 4);
+                doc.text("Calculation Engine: Design Calculators (v2.6)", marginX + 90, currentY + 8);
+                
+                currentY += 13;
+                
+                // Table 1: Inputs
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(10);
+                doc.setTextColor(17, 24, 39);
+                doc.text("1. Input Design Parameters", marginX, currentY);
+                currentY += 3;
+
+                let inputRows = [];
+                if (r.type === 'Linear') {
+                    inputRows = [
+                        ['Valve Type & Plug', 'Linear Globe / ' + (r.plugBalance === 'balanced' ? 'Balanced' : 'Unbalanced'), 'Stem MAST Limit', r.stemMast + ' lbf'],
+                        ['Port / Stem Diameter', r.portDia + ' in / ' + r.stemDia + ' in', 'Packing / Fluid', r.packType.toUpperCase() + ' / ' + r.fluidService.toUpperCase()],
+                        ['Shutoff Press. Drop', r.dp + ' psi', 'Leakage Class', 'Class ' + r.leakClass],
+                        ['Actuator Sizing Type', r.actTypeLinear === 'spring' ? 'Spring-Diaphragm' : 'Double-Acting Piston', 'Actuator Area', r.actArea + ' in²'],
+                        ['Air Supply / Safety F.', r.airSupply + ' psi / ' + r.safety, 'Fail Action / Bench Set', r.failAction.toUpperCase() + (r.actTypeLinear === 'spring' ? ` (${r.springMin}-${r.springMax} psi)` : ' / N/A')]
+                    ];
+                } else {
+                    inputRows = [
+                        ['Valve Type', 'Rotary (Ball/Butterfly)', 'Shaft MAST Limit', r.shaftMast + ' in-lb'],
+                        ['Disc / Shaft Diameter', r.ballDia + ' in / ' + r.shaftDia + ' in', 'Offset / Bearing Coeff', r.offset + ' in / ' + r.bearingCoeff],
+                        ['Shutoff / Dynamic dP', r.dp + ' psi / ' + r.dynamicDp + ' psi', 'Fluid / Safety F.', r.fluidService.toUpperCase() + ' / ' + r.safety],
+                        ['Actuator Mode & Mech', (r.actTypeRotary === 'spring' ? 'Spring-Return' : 'Double-Acting') + ' / ' + (r.rotaryActType === 'rack' ? 'Rack & Pinion' : 'Scotch Yoke'), 'Fail Action', r.failAction.toUpperCase()],
+                        ['Torque Output Values', r.actTypeRotary === 'spring' ? `Start: ${r.tStart} / End: ${r.tEnd} in-lb` : `Piston Torque: ${r.tStart} in-lb`, '-', '-']
+                    ];
+                }
+
+                doc.autoTable({
+                    startY: currentY,
+                    head: [['Design Parameter', 'Sizing Value', 'Associated Variable', 'Value']],
+                    body: inputRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { fontSize: 7.5, textColor: textColor },
+                    margin: { left: marginX, right: marginX },
+                    styles: { cellPadding: 2.5 }
+                });
+                
+                currentY = doc.lastAutoTable.finalY + 8;
+                
+                // Table 2: Calculated Sizing Results
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(10);
+                doc.setTextColor(17, 24, 39);
+                doc.text("2. Calculated Sizing Results", marginX, currentY);
+                currentY += 3;
+
+                let resultRows = [];
+                if (r.type === 'Linear') {
+                    resultRows = [
+                        ['Seat Area (A_seat)', r.seatArea.toFixed(3) + ' in²', 'Effective closing seat area'],
+                        ['Unbalance Force (F_unbalance)', Math.round(r.fUnbalance) + ' lbf', 'SeatArea * dP (reduced 95% if balanced)'],
+                        ['Packing Friction (F_packing)', Math.round(r.fPacking) + ' lbf', 'Friction based on stem size & material'],
+                        ['Balance Seal Friction (F_bal)', Math.round(r.fBal) + ' lbf', 'Circumference * 30 lbf (if balanced)'],
+                        ['Seat Sealing Load (F_seat)', Math.round(r.fSeat) + ' lbf', 'ANSI/FCI 70-2 circumference load factor'],
+                        ['Total Required Thrust', Math.round(r.fReqTotal) + ' lbf', 'Sum(F_unb, F_pack, F_bal, F_seat) * SF'],
+                        ['Available Actuator Thrust', Math.round(r.fSeatAvail) + ' lbf', 'Actuator seating capability at seat travel'],
+                        ['Peak Actuator Thrust', Math.round(r.fPeak) + ' lbf', 'Maximum possible output at air supply'],
+                        ['Sizing Margin Ratio', r.margin.toFixed(2), 'Available / Required (Target >= 1.0)'],
+                        ['Stem MAST Assessment', r.fPeak > r.stemMast ? 'FAIL (Exceeds MAST)' : 'PASS (Safe)', 'Safety against stem shearing']
+                    ];
+                } else {
+                    resultRows = [
+                        ['Disc Projected Area (A_proj)', r.ballArea.toFixed(3) + ' in²', 'Effective projected disc area'],
+                        ['Packing Friction Torque (T_pack)', Math.round(r.tPacking) + ' in-lb', 'Stem sealing friction torque'],
+                        ['Static Bearing Torque (T_bearing)', Math.round(r.tBearing) + ' in-lb', 'Differential pressure load * shaftRadius * coeff'],
+                        ['Seat Sealing Torque (T_seat)', Math.round(r.tSeat) + ' in-lb', 'Breakout seal friction torque'],
+                        ['Dynamic Flow Torque (T_hydro)', Math.round(r.tHydro) + ' in-lb', 'Hydrodynamic torque at 60°-70° open position'],
+                        ['Total Required Torque', Math.round(r.tReqTotal) + ' in-lb', 'Max(Breakout, Dynamic) * Safety Factor'],
+                        ['Available Actuator Torque', Math.round(r.tAvail) + ' in-lb', 'Actuator torque output at seat travel'],
+                        ['Peak Actuator Torque', Math.round(r.tPeak) + ' in-lb', 'Maximum possible output at supply/spring start'],
+                        ['Sizing Margin Ratio', r.margin.toFixed(2), 'Available / Required (Target >= 1.0)'],
+                        ['Shaft MAST Assessment', r.tPeak > r.shaftMast ? 'FAIL (Exceeds MAST)' : 'PASS (Safe)', 'Safety against shaft shearing']
+                    ];
+                }
+
+                doc.autoTable({
+                    startY: currentY,
+                    head: [['Calculated Parameter', 'Output Value', 'Formula / Reference Basis']],
+                    body: resultRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { fontSize: 7.5, textColor: textColor },
+                    margin: { left: marginX, right: marginX },
+                    styles: { cellPadding: 2.5 },
+                    didParseCell: function(data) {
+                        if (data.section === 'body' && (data.row.index === 8 || data.row.index === 9)) {
+                            data.cell.styles.fontStyle = 'bold';
+                            if (data.row.index === 8) {
+                                data.cell.styles.textColor = r.margin < 1.0 ? dangerColor : successColor;
+                            }
+                            if (data.row.index === 9) {
+                                data.cell.styles.textColor = (r.fPeak > r.stemMast || r.tPeak > r.shaftMast) ? dangerColor : successColor;
+                            }
+                        }
+                    }
+                });
+
+                // ADD PAGE BREAK FOR DENSE MATH & matrix
+                doc.addPage();
+                currentY = 20;
+
+                // PAGE 2: STANDARDS COMPLIANCE CHECKLIST & 8-STEP AUDITS
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(10);
+                doc.setTextColor(17, 24, 39);
+                doc.text("3. Governing Standards Compliance Matrix", marginX, currentY);
+                currentY += 3;
+
+                const complianceRows = [
+                    ['ANSI/FCI 70-2 (Seat Leakage Class)', r.compFci ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Seat Force Net: ${Math.round(r.fSeatAvail - r.fUnbalance - r.fPacking - r.fBal)} lbf vs Req: ${Math.round(r.fSeat)} lbf` : `Avail: ${Math.round(r.tAvail)} vs Seat + Packing: ${Math.round(r.tSeat + r.tPacking)} in-lb`],
+                    ['ANSI/ISA-75.25.01 (Actuator Sizing)', r.compIsa ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Margin: ${r.margin.toFixed(2)} (>=1.0) & Peak: ${Math.round(r.fPeak)} vs Stem MAST: ${r.stemMast} lbf` : `Margin: ${r.margin.toFixed(2)} (>=1.0) & Peak: ${Math.round(r.tPeak)} vs Shaft MAST: ${r.shaftMast} in-lb`],
+                    ['API 6D / ISO 14313 (Valve Torques)', r.compApi ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Linear thrust safety margin verified` : `Avail: ${Math.round(r.tAvail)} vs Breakout * SF: ${Math.round(r.tBreakout * r.safety)} in-lb`],
+                    ['IEC 60534-8-4 (Dynamic Flow Checks)', r.compIec ? 'COMPLIANT' : 'NON-COMPLIANT', r.type === 'Linear' ? `Linear dynamic force margin verified` : `Avail: ${Math.round(r.tAvail)} vs Dynamic Run * SF: ${Math.round(r.tDynamicRun * r.safety)} in-lb`]
+                ];
+
+                doc.autoTable({
+                    startY: currentY,
+                    head: [['Standard Identifier', 'Assessment Status', 'Compliance Verification Detail']],
+                    body: complianceRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { fontSize: 7.5, textColor: textColor },
+                    margin: { left: marginX, right: marginX },
+                    styles: { cellPadding: 2.5 },
+                    didParseCell: function(data) {
+                        if (data.column.index === 1 && data.section === 'body') {
+                            data.cell.styles.fontStyle = 'bold';
+                            data.cell.styles.textColor = data.cell.text[0] === 'COMPLIANT' ? successColor : dangerColor;
+                        }
+                    }
+                });
+
+                currentY = doc.lastAutoTable.finalY + 8;
+
+                // Table 4: 8-Step Math Audit
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(10);
+                doc.setTextColor(17, 24, 39);
+                doc.text("4. Detailed 8-Step Verification Math Audit", marginX, currentY);
+                currentY += 3;
+
+                let CtValue = (r.offset > 0) ? 0.08 : 0.02;
+                let auditRows = [];
+                if (r.type === 'Linear') {
+                    auditRows = [
+                        ['1. Valve Geometry', `A_seat = ${r.seatArea.toFixed(3)} sq.in, C_seat = ${r.seatCirc.toFixed(2)} in, A_stem = ${r.stemArea.toFixed(4)} sq.in`],
+                        ['2. Unbalance Force (F_unb)', `F_unb = ${Math.round(r.fUnbalance)} lbf (${r.plugBalance === 'balanced' ? 'Balanced plug 95% reduction' : 'Full unbalance'})`],
+                        ['3. Packing Friction (F_pack)', `F_pack = ${Math.round(r.fPacking)} lbf (${r.packType.toUpperCase()} nominal ${PACKING_FRICTION[r.packType]} lbf/in * stemDia * fluidFactor ${r.fluidFactor})`],
+                        ['4. Balance Friction (F_bal)', `F_bal = ${Math.round(r.fBal)} lbf (${r.plugBalance === 'balanced' ? 'SeatCirc * 30 lbf/in' : 'Unbalanced plug = 0'})`],
+                        ['5. Seat Sealing Load (F_seat)', `F_seat = ${Math.round(r.fSeat)} lbf (Class ${r.leakClass} factor: ${SEAT_LOADS[r.leakClass]} lbf/in)`],
+                        ['6. Required Thrust (F_req)', `F_req = (F_unb + F_pack + F_bal + F_seat) * SF = ${Math.round(r.fReqTotal)} lbf`],
+                        ['7. Available Thrust (F_avail)', `F_avail = ${Math.round(r.fSeatAvail)} lbf (${r.actTypeLinear === 'spring' ? (r.failAction === 'fc' ? 'Spring preload' : 'Air force minus spring max') : 'Double-acting piston direct'})`],
+                        ['8. Stem MAST & Margin Verification', `Peak Force = ${Math.round(r.fPeak)} lbf vs MAST: ${r.stemMast} lbf. Margin Ratio = ${r.margin.toFixed(2)}`]
+                    ];
+                } else {
+                    auditRows = [
+                        ['1. Disc Geometry', `A_proj = ${r.ballArea.toFixed(3)} sq.in, R_shaft = ${r.shaftRadius.toFixed(3)} in, R_disc = ${r.discRadius.toFixed(3)} in`],
+                        ['2. Packing Friction Torque', `T_pack = ${Math.round(r.tPacking)} in-lb (200 in-lb/in * shaftDia * fluidFactor ${r.fluidFactor})`],
+                        ['3. Static Bearing Torque', `T_bearing = ${Math.round(r.tBearing)} in-lb (PressLoad ${Math.round(r.pressLoad)} lbf * R_shaft * bearingCoeff ${r.bearingCoeff} * fluidFactor)`],
+                        ['4. Seat Seal Breakout Torque', `T_seat = ${Math.round(r.tSeat)} in-lb (Seat breakout model: 0.05 * D_disc * dP * R_disc * fluidFactor)`],
+                        ['5. Hydrodynamic Torque (T_hydro)', `T_hydro = ${Math.round(r.tHydro)} in-lb (Dynamic torque at 60 deg open: Ct ${CtValue} * D^3 * dynamicDp ${r.dynamicDp})`],
+                        ['6. Required Torque Sizing', `T_req = Max(Breakout, Dynamic) * SF = Max(${Math.round(r.tBreakout)}, ${Math.round(r.tDynamicRun)}) * ${r.safety} = ${Math.round(r.tReqTotal)} in-lb`],
+                        ['7. Available Torque (T_avail)', `T_avail = ${Math.round(r.tAvail)} in-lb (${r.actTypeRotary === 'spring' ? 'Spring end torque' : 'Double-acting piston torque'})`],
+                        ['8. Shaft MAST & Margin Verification', `Peak Torque = ${Math.round(r.tPeak)} in-lb vs MAST: ${r.shaftMast} in-lb. Margin Ratio = ${r.margin.toFixed(2)}`]
+                    ];
+                }
+
+                doc.autoTable({
+                    startY: currentY,
+                    head: [['Step', 'Calculation Sizing Formula & Values']],
+                    body: auditRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: primaryColor, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { fontSize: 7.5, textColor: textColor },
+                    margin: { left: marginX, right: marginX },
+                    styles: { cellPadding: 2.5 }
+                });
+
+                currentY = doc.lastAutoTable.finalY + 8;
+
+                // Suitability Verdict Banner
+                doc.setFont('Helvetica', 'bold');
+                doc.setFontSize(10);
+                doc.setTextColor(17, 24, 39);
+                doc.text("5. Final Actuator Suitability Verdict", marginX, currentY);
+                currentY += 3;
+
+                const isPassed = r.margin >= 1.0;
+                const isMastOk = (r.type === 'Linear') ? (r.fPeak <= r.stemMast) : (r.tPeak <= r.shaftMast);
+                
+                let verdictText = "";
+                if (isPassed && isMastOk) {
+                    verdictText = `PASS: Actuator is suitable and fully standards-compliant. The sizing margin ratio is ${r.margin.toFixed(2)} (Target >= 1.0) and the peak output is safely below the structural MAST limit.`;
+                } else if (!isPassed && isMastOk) {
+                    verdictText = `FAIL: Actuator is UNDERSIZED. Sizing margin ratio is ${r.margin.toFixed(2)} (Requires >= 1.0). Select a larger actuator size.`;
+                } else if (isPassed && !isMastOk) {
+                    verdictText = `FAIL: MAST LIMIT EXCEEDED. Actuator generates excessive peak output force/torque that exceeds the valve stem/shaft MAST structural limit. Buckling or shearing hazard detected!`;
+                } else {
+                    verdictText = `FAIL: Actuator is both UNDERSIZED and EXCEEDS the structural MAST limit. Immediate redesign of the sizing scenario is required.`;
+                }
+
+                const bannerColor = (isPassed && isMastOk) ? [240, 253, 250] : [254, 242, 242];
+                const borderBannerColor = (isPassed && isMastOk) ? successColor : dangerColor;
+                doc.setFillColor(bannerColor[0], bannerColor[1], bannerColor[2]);
+                doc.setDrawColor(borderBannerColor[0], borderBannerColor[1], borderBannerColor[2]);
+                doc.rect(marginX, currentY, 180, 14, 'DF');
+
+                doc.setTextColor(borderBannerColor[0], borderBannerColor[1], borderBannerColor[2]);
+                doc.setFontSize(8);
+                doc.setFont('Helvetica', 'bold');
+                doc.text(verdictText, marginX + 4, currentY + 8.5, { maxWidth: 172 });
+
+                currentY += 20;
+
+                // Disclaimers
+                doc.setTextColor(156, 163, 175);
+                doc.setFontSize(7);
+                doc.setFont('Helvetica', 'normal');
+                doc.text("Disclaimer: Sizing evaluations are based on governing standards ANSI/FCI 70-2, API 6D, ANSI/ISA-75.25.01, and IEC 60534-8-4. Field conditions (high temperatures, fluid contamination, wear, and regulator tolerances) can increase required breakout force/torque. final approvals must be signed off by a qualified design engineer.", marginX, currentY, { maxWidth: 180 });
+
+                // Apply Headers and Footers to all pages
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    
+                    // Header line
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(156, 163, 175);
+                    doc.setFont('Helvetica', 'normal');
+                    
+                    if (logoImg) {
+                        try {
+                            doc.addImage(logoImg, 'PNG', marginX, 5, 5, 5);
+                        } catch (e) {
+                            console.warn("Could not draw logo in page header:", e);
+                        }
+                    }
+                    
+                    doc.text("Design Calculators Sizing Suite", marginX + 7, 8.5);
+                    doc.text("https://designcalculators.co.in/controlvalveactuator.html", 195 - marginX, 8.5, { align: 'right' });
+                    doc.setDrawColor(229, 231, 235);
+                    doc.line(marginX, 11, 195 - marginX, 11);
+                    
+                    // Footer line
+                    doc.line(marginX, 282, 195 - marginX, 282);
+                    doc.text("Design Calculators provides industrial-grade design tools for electrical, instrumentation, and mechanical engineering compliance.", marginX, 287);
+                    doc.text("Page " + i + " of " + pageCount, 195 - marginX, 287, { align: 'right' });
+                }
+                
+                doc.save("Control_Valve_Actuator_Sizing_Report.pdf");
+                showMessage('PDF Report Downloaded successfully!');
+            } catch (pdfError) {
+                console.error("PDF generation failed:", pdfError);
+                alert("An error occurred during PDF generation: " + pdfError.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             }
-            
-            doc.save("Control_Valve_Actuator_Sizing_Report.pdf");
-            showMessage('PDF Report Downloaded successfully!');
         }
 
         // Call toggleInputs on load to sync fields
