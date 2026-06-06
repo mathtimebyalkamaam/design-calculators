@@ -98,4 +98,6 @@ for (let i = 1; i < parts.length; i++) {
     });
 }
 
-console.log('window.TOOLS_DB = ' + JSON.stringify(allTools, null, 4) + ';');
+const outputContent = 'window.TOOLS_DB = ' + JSON.stringify(allTools, null, 4) + ';';
+fs.writeFileSync(path.join(__dirname, 'tools_db.js'), outputContent, 'utf8');
+console.log('Successfully regenerated tools_db.js in UTF-8 format.');

@@ -166,7 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Filter tools
             const filteredTools = allTools.filter(tool =>
-                tool.name.toLowerCase().includes(searchTerm)
+                tool.name.toLowerCase().includes(searchTerm) ||
+                tool.href.toLowerCase().includes(searchTerm)
             );
 
             if (filteredTools.length > 0) {

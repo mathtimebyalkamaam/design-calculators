@@ -29,8 +29,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- PDF Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- Chart.js for Visuals -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -39,6 +38,9 @@
     <!-- MathJax for Formulas -->
     <script>
         window.MathJax = {
+            options: {
+                enableAssistiveMml: false
+            },
             tex: {
                 inlineMath: [['\\(', '\\)'], ['$', '$']],
                 displayMath: [['\\[', '\\]'], ['$$', '$$']]
@@ -350,26 +352,79 @@
         .highlight { color: var(--success); font-weight: 700; }
         .danger-text { color: var(--danger); font-weight: 700; }
 
-        /* Calculation Steps Styling */
-        .calculation-step {
-            font-family: 'Courier New', monospace;
-            background-color: rgba(37, 99, 235, 0.05); /* Light Blue Tint */
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--secondary);
-            font-size: 0.95rem;
-            line-height: 1.6;
+        /* Calculation Details & Steps */
+        .calculation-details {
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 30px;
         }
-        body.dark-mode .calculation-step { background-color: rgba(37, 99, 235, 0.1); }
         
-        .calculation-step h4 {
-            color: var(--primary);
-            margin-top: 0;
+        .details-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--secondary);
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .calculation-step {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .step-header {
+            font-weight: 700;
+            color: var(--heading);
             margin-bottom: 10px;
+            font-size: 1.05rem;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .step-description {
+            color: var(--text);
+            margin-bottom: 8px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+        
+        .formula-box {
+            background-color: var(--bg);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            font-family: 'Roboto Mono', monospace;
+            overflow-x: auto;
+            text-align: center;
             font-size: 1.1rem;
-            border-bottom: 1px dashed var(--border);
-            padding-bottom: 5px;
+            color: var(--heading);
+        }
+
+        .calculation-value {
+            background-color: rgba(37, 99, 235, 0.05);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Roboto Mono', monospace;
+            margin: 8px 0;
+            border-left: 4px solid var(--accent);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--heading);
+        }
+        body.dark-mode .calculation-value {
+            background-color: rgba(37, 99, 235, 0.15);
         }
 
         /* Canvas Container */
@@ -455,7 +510,7 @@
         /* Print Styling */
         @media print {
             header, footer, .education-section, .theme-toggle, .button-wrapper, .preset-container { display: none !important; }
-            .card { border: none; shadow: none; padding: 0; }
+            .card { border: none; box-shadow: none; padding: 0; }
             .container { width: 100%; max-width: 100%; padding: 0; }
             .results-grid { grid-template-columns: 1fr 1fr; }
             .chart-container { height: 300px; page-break-inside: avoid; }
@@ -557,13 +612,488 @@
         .pulse-motor { animation: pulseMotor 2s infinite; transform-origin: center; }
 
         /* Responsive */
+
+        /* ========================================== */
+        /* FAQ & EMBED & LEVEL UP STYLES              */
+        /* ========================================== */
+        .faq-section-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: var(--heading);
+            margin: 50px 0 15px 0;
+            font-weight: 800;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .faq-section-desc {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text);
+            max-width: 750px;
+            margin: 0 auto 40px auto;
+            line-height: 1.6;
+        }
+
+        .faq-accordion {
+            max-width: 1200px;
+            margin: 0 auto 50px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .faq-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            border-color: var(--secondary);
+        }
+
+        .faq-trigger {
+            width: 100%;
+            padding: 22px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            outline: none;
+        }
+
+        .faq-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .faq-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background-color: rgba(37,99,235,0.05);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .faq-card:hover .faq-icon-box {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .faq-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--heading);
+            line-height: 1.4;
+        }
+
+        .faq-chevron {
+            color: var(--text);
+            transition: transform 0.3s ease, color 0.3s ease;
+            font-size: 1.2rem;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+
+        .faq-card.active .faq-chevron {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .faq-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-content-inner {
+            padding: 0 28px 28px 28px;
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .faq-content-inner {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+
+        .faq-theory-side {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .faq-theory-side p {
+            line-height: 1.8;
+            color: var(--text);
+        }
+
+        .faq-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: fit-content;
+        }
+
+        .faq-badge.sizing { background-color: rgba(37,99,235,0.05); color: var(--secondary); }
+        .faq-badge.derating { background-color: rgba(245,158,11,0.05); color: var(--accent); }
+        .faq-badge.voltage { background-color: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+        .faq-badge.safety { background-color: rgba(220,38,38,0.05); color: var(--danger); }
+        .faq-badge.insulation { background-color: rgba(16,185,129,0.05); color: var(--success); }
+
+        .faq-example-box {
+            background-color: var(--bg);
+            border-left: 4px solid var(--success);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .faq-diagram-side {
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            width: 100%;
+        }
+
+        .faq-diagram-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin-bottom: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .faq-svg-container {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .faq-svg-container svg {
+            width: 100%;
+            height: auto;
+            max-height: 280px;
+        }
+
+        /* Embed widget card styling */
+        .embed-card {
+            background: var(--grad-dark);
+            border-radius: 16px;
+            padding: 35px;
+            margin: 60px auto 40px auto;
+            max-width: 1200px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .embed-card-glow {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Level Up Card grid styling */
+        .levelup-section {
+            padding: 70px 0;
+            background: linear-gradient(to bottom, var(--bg), var(--card));
+            border-top: 1px solid var(--border);
+        }
+
+        .levelup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .levelup-card {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow);
+        }
+
+        .levelup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.08);
+            border-color: var(--secondary);
+        }
+
+        .levelup-icon-container {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .levelup-card:hover .levelup-icon-container {
+            transform: scale(1.1);
+        }
+        
+        .levelup-title {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--heading);
+            font-weight: 700;
+        }
+        
+        .levelup-desc {
+            margin: 10px 0 20px 0;
+            color: var(--text);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+        
+        .levelup-link {
+            font-weight: bold;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: gap 0.2s;
+        }
+        
+        .levelup-card:hover .levelup-link {
+            gap: 8px;
+        }
+
+        mjx-container {
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
         @media (max-width: 768px) {
-            .container { padding: 0 15px; }
-            .navbar { flex-direction: column; gap: 20px; }
-            .nav-links { flex-direction: column; gap: 12px; text-align: center; }
-            .form-row { grid-template-columns: 1fr; }
-            .card { padding: 20px; }
-            .footer-content { flex-direction: column; gap: 25px; }
+            .faq-section-title {
+                font-size: 1.6rem;
+                margin: 30px 0 10px 0;
+                gap: 8px;
+            }
+            
+            .faq-section-desc {
+                font-size: 0.95rem;
+                margin-bottom: 25px;
+                padding: 0 15px;
+            }
+
+            .faq-accordion {
+                gap: 12px;
+                padding: 0 10px;
+            }
+
+            .faq-trigger {
+                padding: 16px 18px;
+            }
+
+            .faq-title-wrapper {
+                gap: 12px;
+            }
+
+            .faq-icon-box {
+                width: 36px;
+                height: 36px;
+                font-size: 1.05rem;
+                border-radius: 8px;
+            }
+
+            .faq-title {
+                font-size: 1rem;
+            }
+
+            .faq-chevron {
+                font-size: 1rem;
+                margin-left: 8px;
+            }
+
+            .faq-content-inner {
+                padding: 0 18px 18px 18px;
+                gap: 20px;
+            }
+
+            .faq-diagram-side {
+                padding: 15px;
+            }
+
+            .embed-card {
+                padding: 24px 18px;
+                margin: 40px 10px;
+                gap: 16px;
+                border-radius: 12px;
+            }
+
+            .levelup-section {
+                padding: 40px 0;
+            }
+
+            .levelup-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 0 15px;
+            }
+            
+            .levelup-card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            .levelup-icon-container {
+                margin-bottom: 12px;
+            }
+        }
+        
+        /* PDF specific overrides and page-break rules */
+        .results-table {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .chart-container {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .calculation-step {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .html2pdf-container .calculation-step {
+            box-shadow: none !important;
+            margin-bottom: 15px !important;
+        }
+        .html2pdf-container {
+            padding: 25px !important;
+            background: var(--card) !important;
+        }
+        .html2pdf-container .button-wrapper {
+            display: none !important;
+        }
+        
+        /* PDF Report Elements (Hidden on screen, styled for print/PDF) */
+        .pdf-header, .pdf-meta-summary, .pdf-footer {
+            display: none;
+        }
+        .html2pdf-container .pdf-header {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+        .html2pdf-container .pdf-logo-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .html2pdf-container .pdf-url {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .html2pdf-container .pdf-report-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--heading);
+        }
+        .html2pdf-container .pdf-date {
+            font-size: 0.8rem;
+            color: var(--text);
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        .html2pdf-container .pdf-meta-summary {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            background: rgba(37, 99, 235, 0.04);
+            border: 1px solid var(--border);
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .html2pdf-container .pdf-meta-item strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 2px;
+        }
+        .html2pdf-container .pdf-footer {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: var(--text);
+            opacity: 0.8;
+            font-family: 'Inter', sans-serif;
         }
     </style>
     <link rel="stylesheet" href="styles.css">
@@ -645,10 +1175,10 @@
     <li class="dropdown">
         <a href="/indexele.html" class="dropdown-toggle">Electrical <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
         <div class="dropdown-menu">
-            <div class="repo-grid"><div><a href="/arcflash.html">Arc Flash Calculator</a><a href="/breaker-sizing.html">Breaker Sizing</a><a href="/cable-thermal-rating.html">Cable Ampacity</a><a href="/comm-cable-loss.html">Comm Cable Loss</a><a href="/earth-conductor-size.html">Earth Conductor Size</a><a href="/generatorsizing.html">Generator Sizing</a><a href="/harmonicsanalyser.html">Harmonics Analyser</a><a href="/insulationresistance.html">Insulation Resistance</a><a href="/logicgate.html">Logic Gates Simulator</a><a href="/motor-starting.html">Motor Starting Current</a><a href="/pcbtrace.html">PCB Trace Width</a><a href="/protection-device.html">Protection Device</a><a href="/resistor.html">Resistor Color Code</a><a href="/solarcable.html">Solar Cable Sizing</a><a href="/systemxrcalculator.html">System X/R Ratio</a><a href="/transmissionline.html">Transmission Line</a><a href="/vfd-selection.html">VFD Selection Tool</a></div><div><a href="/batterylife.html">Battery Life Estimator</a><a href="/busbarampacity.html">Busbar Ampacity</a><a href="/cablepulling.html">Cable Pulling Tension</a><a href="/conduit-fill.html">Conduit Fill Calculator</a><a href="/earthingfaultsimulator.html">Earthing Fault Simulator</a><a href="/grounding.html">Grounding System Design</a><a href="/hvac-sizing.html">HVAC Sizing Calculator</a><a href="/lcresonancecalculator.html">LC Resonance Calculator</a><a href="/maintenance-guide.html">Maintenance Guide</a><a href="/nemaipconvertor.html">NEMA to IP Converter</a><a href="/power-factor.html">Power Factor Correction</a><a href="/relay-coordination.html">Relay Coordination</a><a href="/short-circuit.html">Short Circuit Current</a><a href="/solarpvarray.html">Solar PV Array</a><a href="/transformer-calculator.html">Transformer Calculator</a><a href="/unit-converter.html">Unit Converter</a><a href="/voltage-drop.html">Voltage Drop Calculator</a></div><div><a href="/battery-sizing.html">Battery Sizing (AH)</a><a href="/batterychargersizing.html">Battery Charger Sizing</a><a href="/busbarshortcircuit.html">Busbar Short Circuit</a><a href="/cable-sizing.html">Cable Sizing Calculator</a><a href="/ctsaturation.html">CT Saturation</a><a href="/equipment-relay.html">Equipment Relay Setting</a><a href="/harmonic-distortion.html">Harmonic Distortion</a><a href="/industriallighting.html">Industrial Lighting</a><a href="/lighting-calulator.html">Lighting Calculator</a><a href="/motor-efficiency.html">Motor Efficiency</a><a href="/neutral-earth-fault-current.html">Neutral Earth Fault</a><a href="/powertriangletool.html">Power Triangle</a><a href="/electricalresidentialload.html">Residential Load Calc</a><a href="/skindepth.html">Skin Depth Calculator</a><a href="/symmetricalcomponents.html">Symmetrical Components</a><a href="/transformerinrush.html">Transformer Inrush</a><a href="/ups-sizing.html">UPS Sizing</a></div>
+            <div class="repo-grid"><div><a href="/arcflash.html">Arc Flash Calculator</a><a href="/batterylife.html">Battery Life Estimator</a><a href="/busbarampacity.html">Busbar Ampacity</a><a href="/cablepulling.html">Cable Pulling Tension</a><a href="/conduit-fill.html">Conduit Fill Calculator</a><a href="/earthingfaultsimulator.html">Earthing Fault Simulator</a><a href="/grounding.html">Grounding System Design</a><a href="/hvac-sizing.html">HVAC Sizing Calculator</a><a href="/lcresonancecalculator.html">LC Resonance Calculator</a><a href="/maintenance-guide.html">Maintenance Guide</a><a href="/nemaipconvertor.html">NEMA to IP Converter</a><a href="/pcbtrace.html">PCB Trace Width</a><a href="/protection-device.html">Protection Device</a><a href="/resistor.html">Resistor Color Code</a><a href="/solarcable.html">Solar Cable Sizing</a><a href="/systemxrcalculator.html">System X/R Ratio</a><a href="/transmissionline.html">Transmission Line</a><a href="/vfd-selection.html">VFD Selection Tool</a></div><div><a href="/batterychargersizing.html">Battery Charger Sizing</a><a href="/battery-sizing.html">Battery Sizing (AH)</a><a href="/busbarshortcircuit.html">Busbar Short Circuit</a><a href="/cable-sizing.html">Cable Sizing Calculator</a><a href="/ctsaturation.html">CT Saturation</a><a href="/equipment-relay.html">Equipment Relay Setting</a><a href="/harmonic-distortion.html">Harmonic Distortion</a><a href="/industriallighting.html">Industrial Lighting</a><a href="/lighting-calulator.html">Lighting Calculator</a><a href="/motor-efficiency.html">Motor Efficiency</a><a href="/neutral-earth-fault-current.html">Neutral Earth Fault</a><a href="/power-factor.html">Power Factor Correction</a><a href="/relay-coordination.html">Relay Coordination</a><a href="/short-circuit.html">Short Circuit Current</a><a href="/solarpvarray.html">Solar PV Array</a><a href="/transformer-calculator.html">Transformer Calculator</a><a href="/unit-converter.html">Unit Converter</a><a href="/voltage-drop.html">Voltage Drop Calculator</a></div><div><a href="/batterycharging.html">Battery Charging Time</a><a href="/breaker-sizing.html">Breaker Sizing</a><a href="/cable-thermal-rating.html">Cable Ampacity</a><a href="/comm-cable-loss.html">Comm Cable Loss</a><a href="/earth-conductor-size.html">Earth Conductor Size</a><a href="/generatorsizing.html">Generator Sizing</a><a href="/harmonicsanalyser.html">Harmonics Analyser</a><a href="/insulationresistance.html">Insulation Resistance</a><a href="/logicgate.html">Logic Gates Simulator</a><a href="/motor-starting.html">Motor Starting Current</a><a href="/ohms-law.html">Ohm's Law Calculator</a><a href="/powertriangletool.html">Power Triangle</a><a href="/electricalresidentialload.html">Residential Load Calc</a><a href="/skindepth.html">Skin Depth Calculator</a><a href="/symmetricalcomponents.html">Symmetrical Components</a><a href="/transformerinrush.html">Transformer Inrush</a><a href="/ups-sizing.html">UPS Sizing</a></div>
             </div>
             <div class="view-all-container">
-                <a href="/indexele.html" class="view-all-link">View All Electrical Tools Ã¢â€ â€™</a>
+                <a href="/indexele.html" class="view-all-link">View All Electrical Tools →</a>
             </div>
         </div>
     </li>
@@ -656,10 +1186,10 @@
     <li class="dropdown">
         <a href="/indexinst.html" class="dropdown-toggle">Instrumentation <i class="fas fa-chevron-down" style="font-size: 0.7em; margin-left: 4px;"></i></a>
         <div class="dropdown-menu">
-            <div class="repo-grid"><div><a href="/adc-resolution.html">ADC Resolution</a><a href="/capillarylengthtemperatureerror.html">Capillary Error</a><a href="/cv-kv-valve.html">Cv/Kv Valve Sizing</a><a href="/dp-level.html">DP Level Measurement</a><a href="/hydrostatic-level.html">Hydrostatic Level</a><a href="/instrument-range.html">Instrument Range</a><a href="/loop-impedance.html">Loop Impedance</a><a href="/orifice-plate.html">Orifice Plate Beta</a><a href="/pid-tuning.html">PID Tuning</a><a href="/profibus.html">Profibus Calculator</a><a href="/tempsensorresponse.html">Response Time (Tau)</a><a href="/rtd-lead-comp.html">RTD Lead Wire Comp.</a><a href="/sealfluidzeroshift.html">Seal Fluid Shift</a><a href="/snr-calculator.html">SNR Calculator</a><a href="/thermocoupleextensioncable.html">TC Extension Cable</a><a href="/thermowellwakefreq.html">Thermowell Frequency</a><a href="/pressuretransmitteroverrange.html">Tx Overrange</a><a href="/valvecavitationcalculator.html">Valve Cavitation</a><a href="/vibrationtransmitter.html">Vibration Tx</a><a href="/zoneclassificationhelper.html">Zone Classification</a></div><div><a href="/baud-rate.html">Baud Rate Calculator</a><a href="/gascompressibility.html">Compressibility (Z)</a><a href="/dbcalculator.html">dB Gain/Loss Calc</a><a href="/flowprofiledistortioncalculator.html">Flow Distortion</a><a href="/impulselinefreezing.html">Impulse Freezing</a><a href="/intrinsic-safety.html">Intrinsic Safety Loop</a><a href="/measurement.html">Measurement Uncertainty</a><a href="/ph-temp-comp.html">pH Temp Compensation</a><a href="/plcscantime.html">PLC Scan Time</a><a href="/pressurereliefvalve.html">PRV Sizing (API 520)</a><a href="/reynoldsnumbercal.html">Reynolds Number</a><a href="/rtdselfheating.html">RTD Self-Heating</a><a href="/signal-scaling.html">Signal Scaling</a><a href="/staticheadcal.html">Static Head</a><a href="/temperaturesensorlag.html">Temp Sensor Lag</a><a href="/thermowell-wake.html">Thermowell Wake</a><a href="/ultrasoniclevel.html">Ultrasonic Level</a><a href="/valve-cv.html">Valve Cv Viewer</a><a href="/wetlegdensitycompensation.html">Wet Leg Compensation</a></div><div><a href="/capacitance-level.html">Capacitance Level</a><a href="/controlvalvenoise.html">Control Valve Noise</a><a href="/dp-flow-conversion.html">DP Flow Conversion</a><a href="/hartdevices.html">HART Devices</a><a href="/impulse-pressure-drop.html">Impulse Pressure Drop</a><a href="/junctionbox.html">Junction Box Sizing</a><a href="/orifice-flow.html">Orifice Flow Calculator</a><a href="/pid-symbol-library.html">PID Symbol Library</a><a href="/power-supply-load.html">Power Supply Load</a><a href="/prvsizing.html">Relief Orifice Area</a><a href="/rtdexcitationcurrentselection.html">RTD Excitation</a><a href="/rtd-tc-conversion.html">RTD/TC Conversion</a><a href="/sil.html">SIL Calculator</a><a href="/steamflow.html">Steam Flow</a><a href="/thermocouplecjccalculator.html">Thermocouple CJC</a><a href="/turndown.html">Turndown Ratio</a><a href="/controlvalveauthority.html">Valve Authority</a><a href="/controlvalveleakage.html">Valve Leakage Class</a><a href="/wirelesshart.html">WirelessHART Range</a></div>
+            <div class="repo-grid"><div><a href="/adc-resolution.html">ADC Resolution</a><a href="/capillarylengthtemperatureerror.html">Capillary Error</a><a href="/cv-kv-valve.html">Cv/Kv Valve Sizing</a><a href="/dp-level.html">DP Level Measurement</a><a href="/hartdevices.html">HART Devices</a><a href="/impulse-pressure-drop.html">Impulse Pressure Drop</a><a href="/junctionbox.html">Junction Box Sizing</a><a href="/orifice-flow.html">Orifice Flow Calculator</a><a href="/pid-symbol-library.html">PID Symbol Library</a><a href="/power-supply-load.html">Power Supply Load</a><a href="/prvsizing.html">Relief Orifice Area</a><a href="/rtdexcitationcurrentselection.html">RTD Excitation</a><a href="/rtd-tc-conversion.html">RTD/TC Conversion</a><a href="/sil.html">SIL Calculator</a><a href="/steamflow.html">Steam Flow</a><a href="/thermocouplecjccalculator.html">Thermocouple CJC</a><a href="/thermowell-wake.html">Thermowell Wake</a><a href="/ultrasoniclevel.html">Ultrasonic Level</a><a href="/valve-cv.html">Valve Cv Viewer</a><a href="/wetlegdensitycompensation.html">Wet Leg Compensation</a></div><div><a href="/baud-rate.html">Baud Rate Calculator</a><a href="/gascompressibility.html">Compressibility (Z)</a><a href="/dbcalculator.html">dB Gain/Loss Calc</a><a href="/folink.html">Fiber Optic Link Budget</a><a href="/hydrostatic-level.html">Hydrostatic Level</a><a href="/instrument-range.html">Instrument Range</a><a href="/loop-impedance.html">Loop Impedance</a><a href="/orifice-plate.html">Orifice Plate Beta</a><a href="/pid-tuning.html">PID Tuning</a><a href="/profibus.html">Profibus Calculator</a><a href="/tempsensorresponse.html">Response Time (Tau)</a><a href="/rtd-lead-comp.html">RTD Lead Wire Comp.</a><a href="/sealfluidzeroshift.html">Seal Fluid Shift</a><a href="/snr-calculator.html">SNR Calculator</a><a href="/thermocoupleextensioncable.html">TC Extension Cable</a><a href="/thermocouplecolor.html">Thermocouple Colors</a><a href="/turndown.html">Turndown Ratio</a><a href="/controlvalveauthority.html">Valve Authority</a><a href="/controlvalveleakage.html">Valve Leakage Class</a><a href="/wirelesshart.html">WirelessHART Range</a></div><div><a href="/capacitance-level.html">Capacitance Level</a><a href="/controlvalvenoise.html">Control Valve Noise</a><a href="/dp-flow-conversion.html">DP Flow Conversion</a><a href="/flowprofiledistortioncalculator.html">Flow Distortion</a><a href="/impulselinefreezing.html">Impulse Freezing</a><a href="/intrinsic-safety.html">Intrinsic Safety Loop</a><a href="/measurement.html">Measurement Uncertainty</a><a href="/ph-temp-comp.html">pH Temp Compensation</a><a href="/plcscantime.html">PLC Scan Time</a><a href="/pressurereliefvalve.html">PRV Sizing (API 520)</a><a href="/reynoldsnumbercal.html">Reynolds Number</a><a href="/rtdselfheating.html">RTD Self-Heating</a><a href="/signal-scaling.html">Signal Scaling</a><a href="/staticheadcal.html">Static Head</a><a href="/temperaturesensorlag.html">Temp Sensor Lag</a><a href="/thermowellwakefreq.html">Thermowell Frequency</a><a href="/pressuretransmitteroverrange.html">Tx Overrange</a><a href="/valvecavitationcalculator.html">Valve Cavitation</a><a href="/vibrationtransmitter.html">Vibration Tx</a><a href="/zoneclassificationhelper.html">Zone Classification</a></div>
             </div>
             <div class="view-all-container">
-                <a href="/indexinst.html" class="view-all-link">View All Instrumentation Tools Ã¢â€ â€™</a>
+                <a href="/indexinst.html" class="view-all-link">View All Instrumentation Tools →</a>
             </div>
         </div>
     </li>
@@ -670,7 +1200,7 @@
             <div class="repo-grid"><div><a href="/aircompressorfad.html">Air Compressor FAD</a><a href="/asme-vessel.html">ASME Vessel Design</a><a href="/belt-pulley.html">Belt & Pulley</a><a href="/bolt-torque.html">Bolt Torque</a><a href="/controlvalveactuator.html">Control Valve Actuator</a><a href="/frictionfactortool.html">Darcy Friction Factor</a><a href="/fatigue.html">Fatigue Analysis</a><a href="/fuel-combustion.html">Fuel Combustion</a><a href="/gas.html">Gas Properties</a><a href="/heat-exchanger.html">Heat Exchanger</a><a href="/hydroliccylinder.html">Hydraulic Cylinder</a><a href="/material-compatibility.html">Material Compatibility</a><a href="/nozzle-reinforcement.html">Nozzle Reinforcement</a><a href="/openchannelflow.html">Open Channel Flow</a><a href="/pipescheduletool.html">Pipe Schedule & Stress</a><a href="/pump-head.html">Pump Head</a><a href="/shaft-power-torque.html">Shaft Power & Torque</a><a href="/steam-table.html">Steam Table</a><a href="/vibrationanalysis.html">Vibration Analysis</a></div><div><a href="/air-flow-duct.html">Air Flow Duct Sizing</a><a href="/beam-deflection.html">Beam Deflection</a><a href="/bernoulli-equation.html">Bernoulli Equation</a><a href="/chiller-capacity.html">Chiller Capacity</a><a href="/cooling-tower-sizing.html">Cooling Tower Sizing</a><a href="/darcy-weisbach.html">Darcy-Weisbach</a><a href="/finned-tube-heat-transfer.html">Finned Tube Heat</a><a href="/furnace-heat-duty.html">Furnace Heat Duty</a><a href="/gear-design.html">Gear Design</a><a href="/heat-loss-pipes.html">Heat Loss Pipes</a><a href="/jacketed-vessel-heat-transfer.html">Jacketed Vessel</a><a href="/metalweight.html">Metal Weight Calculator</a><a href="/nptbspthreadcalculator.html">NPT/BSP Threads</a><a href="/overall-heat-transfer.html">Overall Heat Transfer</a><a href="/pipe-stress-flexibility.html">Pipe Stress</a><a href="/pump-power.html">Pump Power</a><a href="/specific-heat-enthalpy.html">Specific Heat</a><a href="/storage-tank-volume.html">Storage Tank Volume</a><a href="/weldingstress.html">Welding Stress</a></div><div><a href="/allowable-stress-safety-factor.html">Allowable Stress</a><a href="/bearinglife.html">Bearing Life Calculator</a><a href="/boiler-efficiency.html">Boiler Efficiency</a><a href="/compressor-power.html">Compressor Power</a><a href="/corrosion-rate.html">Corrosion Rate</a><a href="/fan-laws.html">Fan Laws</a><a href="/foundation.html">Foundation Design</a><a href="/gas-laws.html">Gas Laws</a><a href="/hardness.html">Hardness Converter</a><a href="/conduction-convection-radiation.html">Heat Transfer Modes</a><a href="/machining.html">Machining Calculator</a><a href="/momentofinertia.html">Moment of Inertia</a><a href="/oring.html">O-Ring Sizing</a><a href="/pipe-flow.html">Pipe Flow Calculator</a><a href="/psychrometric.html">Psychrometric Calc</a><a href="/reynolds-number.html">Reynolds Number</a><a href="/spring.html">Spring Design</a><a href="/thermal-expansion.html">Thermal Expansion</a></div>
             </div>
             <div class="view-all-container">
-                <a href="/indexmech.html" class="view-all-link">View All Mechanical Tools Ã¢â€ â€™</a>
+                <a href="/indexmech.html" class="view-all-link">View All Mechanical Tools →</a>
             </div>
         </div>
     </li>
@@ -688,6 +1218,7 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
@@ -793,14 +1324,33 @@
 
                     <div class="button-wrapper">
                         <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Power</button>
-                        <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download Datasheet</button>
                     </div>
                 </form>
             </div>
 
             <!-- Results Section -->
             <div id="result-container" class="card hidden" style="margin-top: 40px;">
-                <h3><i class="fas fa-poll"></i> Performance Analysis</h3>
+                <!-- PDF Report Header -->
+                <div class="pdf-header">
+                    <div>
+                        <div class="pdf-logo-text"><i class="fas fa-calculator" style="color: var(--secondary);"></i> Design Calculators</div>
+                        <div class="pdf-url">designcalculators.co.in</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="pdf-report-title">Compressor Sizing Report</div>
+                        <div class="pdf-date" id="pdf-report-date"></div>
+                    </div>
+                </div>
+
+                <!-- PDF Metadata Summary -->
+                <div class="pdf-meta-summary">
+                    <div class="pdf-meta-item"><strong>Gas Selection</strong><span id="pdf-meta-gas"></span></div>
+                    <div class="pdf-meta-item"><strong>Pressure Range</strong><span id="pdf-meta-ratio"></span></div>
+                    <div class="pdf-meta-item"><strong>Inlet Flow</strong><span id="pdf-meta-flow"></span></div>
+                    <div class="pdf-meta-item"><strong>Shaft Brake Power</strong><span id="pdf-meta-power"></span></div>
+                </div>
+
+                <h3 class="no-print"><i class="fas fa-poll"></i> Performance Analysis</h3>
                 
                 <div class="results-grid">
                     <!-- Left Col: Table -->
@@ -838,13 +1388,23 @@
                     </div>
                 </div>
 
-                <h4 style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">Step-by-Step Engineering Calculation</h4>
+                <div class="details-title" style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;"><i class="fas fa-calculator"></i> Step-by-Step Engineering Calculations</div>
                 <div id="calculation-details">
                     <!-- Dynamic math steps -->
                 </div>
 
                 <div class="standard-reference" style="margin-top: 20px; font-style: italic; color: var(--text);">
                      Head calculation using GPSA Engineering Data Book method. $Power = \dot{m} \times Head / \eta$.
+                </div>
+
+                <!-- PDF Report Footer -->
+                <div class="pdf-footer">
+                    <div>Generated dynamically via designcalculators.co.in</div>
+                    <div>&copy; 2026 Design Calculators. All rights reserved.</div>
+                </div>
+
+                <div class="button-wrapper no-print" style="margin-top: 30px; justify-content: center;">
+                    <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download Results</button>
                 </div>
             </div>
         </div>
@@ -862,7 +1422,7 @@
                 <p>Compression introduces immense kinetic energy into the gas molecules, which manifests directly as heat and pressure. Choosing the correct predictive thermodynamic model determines how accurately we can size the driver motor and the downstream piping.</p>
                 <ul>
                     <li><strong>Adiabatic (Isentropic, k):</strong> This idealized model assumes perfect thermal insulation (zero heat loss to the casing) and a fully mathematically reversible compression process ($PV^k = Constant$). It is universally used as the absolute theoretical baseline to calculate "Isentropic Efficiency". In reality, real-world industrial compressors are never purely adiabatic because inherent mechanical friction and extreme gas turbulence disrupt the reversibility.</li>
-                    <li><strong>Polytropic (n):</strong> The pragmatic, real-world engine model. It mathematically accounts for unavoidable heat transfer into the cylinder walls and internal fluid friction ($PV^n = Constant$). The exponent $n$ is always determined empirically through rigorous testing (e.g. $1.35$ for standard air). Usually, if the compressor is heavily water-jacket cooled, $1 < n < k$. If irreversible friction dominates over cooling, $n > k$.</li>
+                    <li><strong>Polytropic (n):</strong> The pragmatic, real-world engine model. It mathematically accounts for unavoidable heat transfer into the cylinder walls and internal fluid friction ($PV^n = Constant$). The exponent $n$ is always determined empirically through rigorous testing (e.g. $1.35$ for standard air). Usually, if the compressor is heavily water-jacket cooled, $1 &lt; n &lt; k$. If irreversible friction dominates over cooling, $n &gt; k$.</li>
                 </ul>
             </div>
 
@@ -888,7 +1448,7 @@
                         <!-- Spark / Warning -->
                         <path d="M 100,40 L 95,30 L 105,30 Z" fill="#FFF"/>
                         <circle cx="100" cy="40" r="10" fill="none" stroke="var(--danger)" stroke-width="2" stroke-dasharray="3" class="pulse-motor"/>
-                        <text x="140" y="42" fill="var(--danger)" font-size="8" font-weight="bold">> 150°C</text>
+                        <text x="140" y="42" fill="var(--danger)" font-size="8" font-weight="bold">&gt; 150°C</text>
                         <text x="140" y="52" fill="var(--text-color)" font-size="6">Oil Breakdown Risk</text>
                     </svg>
                 </div>
@@ -960,55 +1520,679 @@
             </div>
         </div>
 
-        <div class="tool-container" style="margin-top: 40px; border-top: 4px solid var(--secondary); padding-top: 20px;">
-            <h2 class="math-content"><i class="fas fa-question-circle"></i> FAQ: Industrial Compressor Sizing</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: stretch; margin-top: 20px;">
-                <div class="insight-card" style="margin: 0;">
-                    <h4 style="margin-top: 0;">1. What is the Compressibility Factor (Z)?</h4>
-                    <p>The Ideal Gas Law ($PV = nRT$) naively assumes molecules are zero-volume dots that never physically interact. For deep industrial high pressures, molecules crowd together intensely and intermolecular atomic forces (Van der Waals forces) take over. The Compressibility Factor (Z) corrects this severe theoretical deviation ($PV = ZnRT$) based on the gas's Critical Pressure ($P_c$) and Critical Temperature ($T_c$). Using a generic ideal Z=1.0 at 100 bar pressure can hallucinate a massive 20-30% error in compressor power sizing!</p>
-                </div>
-                <div class="insight-card" style="margin: 0;">
-                    <h4 style="margin-top: 0;">2. Why use intercoolers in multi-stage setups?</h4>
-                    <p>Intercoolers actively strip the brutal heat of compression out of the gas stream between stages. This drastically shrinks the physical volume of the gas before it enters the next cylinder. Since mechanical compression work is mathematically bound to starting volume ($W = \int V dP$), intercooling acts as an emergency brake on total plant BHP power consumption. <strong>Crucially:</strong> Cooling gas often drops it below its dew point. Heavy condensation requires a liquid moisture separator after every intercooler to prevent the next stage from ingesting water.</p>
-                </div>
-                <div class="insight-card" style="margin: 0;">
-                    <h4 style="margin-top: 0;">3. Can I run liquid through a compressor?</h4>
-                    <p><strong>Absolutely Not.</strong> Unlike pumps, compressors violently attack gas pockets at high speeds. Gases compress; liquids are fundamentally incompressible. If rogue liquid droplets inject into a high-RPM centrifugal impeller, extreme mechanical shockwaves are generated. In reciprocating compressors, "liquid slugging" will instantly bend the steel connecting rods, blow out the cylinder head gaskets, or shatter the casing. This is precisely why automated Suction Knockout Drums (KOD) are a mandatory safety feature.</p>
-                </div>
-                <div class="insight-card" style="margin: 0;">
-                    <h4 style="margin-top: 0;">4. Centrifugal vs Reciprocating?</h4>
-                    <div style="text-align: center; margin: 15px 0;">
-                        <svg viewBox="0 0 100 40" style="max-height: 40px; width: auto; overflow: visible;">
-                            <!-- Centrifugal (Smooth) -->
-                            <path d="M 10,25 Q 30,15 50,25" fill="none" stroke="var(--primary)" stroke-width="2"/>
-                            <!-- Reciprocating (Pulsing) -->
-                            <path d="M 60,25 L 70,5 L 80,25 L 90,5" fill="none" stroke="var(--danger)" stroke-width="2"/>
-                            <text x="30" y="38" fill="var(--text-color)" font-size="5" text-anchor="middle">Continuous Flow (Centrifugal)</text>
-                            <text x="75" y="38" fill="var(--text-color)" font-size="5" text-anchor="middle">Pulsating Flow (Reciprocating)</text>
-                        </svg>
+    <!-- ============================================== -->
+    <!-- FAQ ACCORDION SECTION                          -->
+    <!-- ============================================== -->
+    <h2 class="faq-section-title"><i class="fas fa-question-circle" style="color: var(--primary);"></i> Compressor Sizing FAQs</h2>
+    <p class="faq-section-desc">Get authoritative, step-by-step engineering answers to the most common questions regarding gas compressibility, multi-stage compression, and volumetric density calculations.</p>
+    
+    <div class="faq-accordion">
+        <!-- FAQ 1 -->
+        <div class="faq-card" id="faq-1">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-compress-arrows-alt"></i></span>
+                    <span class="faq-title">1. What is the Compressibility Factor (Z) and why is it critical in sizing?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge sizing">Real Gas Law</span>
+                        <p>The Ideal Gas Law ($PV = nRT$) assumes gas molecules occupy zero volume and have no intermolecular interactions. For real gases, especially under industrial high pressures, molecules are forced close together. Intermolecular forces take over, causing significant deviation from ideal behavior. The <strong>Compressibility Factor ($Z$)</strong> corrects this deviation ($PV = ZnRT$). Sizing a high-pressure compressor assuming $Z = 1.0$ can result in a 20-30% power rating error!</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>Ideal vs. Real Gas Power Difference:</strong>
+                            <p style="margin-top: 5px; font-size: 0.92rem;">
+                                If a compressor processes natural gas at 100 bar(a) with $Z_{\text{avg}} = 0.82$, the required head and power shrink proportionally. Sizing for $Z = 1.0$ would overestimate the work required:
+                                $$Head_{\text{actual}} = Z_{\text{avg}} \times Head_{\text{ideal}} = 0.82 \times Head_{\text{ideal}}$$
+                                This reduces required Brake Horsepower by 18%.
+                            </p>
+                        </div>
                     </div>
-                    <p><strong>Centrifugals:</strong> Dynamic, high-speed aerodynamic machines. They dominate mass-scale refining because they provide smooth, continuous workflows. However, they struggle to create extreme pressure ratios per stage and are highly susceptible to aerodynamic "Surge" (flow reversal).<br><strong>Reciprocating:</strong> Brute-force positive displacement pistons. They are the undisputed kings of pushing extreme ultra-high injection pressures (up to 3000+ bar) but inherently generate violent, destructive flow pulsations requiring acoustic dampeners.</p>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-atom"></i> Molecular Packing under Pressure</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Ideal Gas Box -->
+                                <rect x="30" y="40" width="140" height="110" rx="6" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5"/>
+                                <text x="100" y="30" font-family="Inter" font-size="10" fill="var(--primary)" font-weight="bold" text-anchor="middle">Ideal Gas (Z = 1.0)</text>
+                                <circle cx="50" cy="60" r="3" fill="var(--primary)"/> <circle cx="80" cy="70" r="3" fill="var(--primary)"/> <circle cx="120" cy="55" r="3" fill="var(--primary)"/>
+                                <circle cx="60" cy="110" r="3" fill="var(--primary)"/> <circle cx="100" cy="120" r="3" fill="var(--primary)"/> <circle cx="140" cy="100" r="3" fill="var(--primary)"/>
+                                <text x="100" y="140" font-family="Inter" font-size="8" fill="var(--text)" text-anchor="middle">Widely spaced molecules</text>
+
+                                <!-- Real Gas Box -->
+                                <rect x="210" y="40" width="140" height="110" rx="6" fill="var(--bg)" stroke="var(--border)" stroke-width="1.5"/>
+                                <text x="280" y="30" font-family="Inter" font-size="10" fill="var(--accent)" font-weight="bold" text-anchor="middle">Real Gas (Z &lt; 1.0)</text>
+                                <!-- Tightly packed molecules with interaction fields -->
+                                <circle cx="250" cy="70" r="4" fill="var(--accent)"/> <circle cx="262" cy="75" r="4" fill="var(--accent)"/>
+                                <circle cx="290" cy="65" r="4" fill="var(--accent)"/> <circle cx="278" cy="85" r="4" fill="var(--accent)"/>
+                                <circle cx="310" cy="110" r="4" fill="var(--accent)"/> <circle cx="320" cy="100" r="4" fill="var(--accent)"/>
+                                <circle cx="260" cy="115" r="4" fill="var(--accent)"/> <circle cx="285" cy="110" r="4" fill="var(--accent)"/>
+                                <text x="280" y="140" font-family="Inter" font-size="8" fill="var(--text)" text-anchor="middle">Intermolecular attraction</text>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- FAQ 2 -->
+        <div class="faq-card" id="faq-2">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-tachometer-alt"></i></span>
+                    <span class="faq-title">2. Why use intercoolers in multi-stage setups, and how do they save power?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge safety">Multi-Stage</span>
+                        <p>Compression work is proportional to the starting volume ($W = \int V dP$). Because gas expands when heated during compression, single-stage compression to high pressures becomes thermally and mechanically inefficient. Sizing multi-stages with intercoolers cools the gas between stages, resetting the temperature and reducing its specific volume, which directly translates to massive power savings.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>Intercooling Savings Example:</strong>
+                            <p style="margin-top: 5px; font-size: 0.92rem;">
+                                Compressing air from 1 bar(a) to 9 bar(a) (Compression Ratio = 9):
+                            </p>
+                            <ul style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6;">
+                                <li><strong>Single-Stage:</strong> Discharge Temp $T_2 \approx 280^\circ\text{C}$ (extremely high, oil carbonizes, dangerous!).</li>
+                                <li><strong>Two-Stage with Intercooling (3:1 per stage):</strong> Discharge Temp $T_2 \approx 120^\circ\text{C}$ at both stages. Saves up to <strong>15% total BHP</strong>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-project-diagram"></i> Two-Stage Compressor Loop</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Stage 1 -->
+                                <rect x="20" y="60" width="80" height="60" rx="4" fill="var(--bg)" stroke="var(--primary)" stroke-width="1.5"/>
+                                <text x="60" y="95" font-family="Inter" font-size="9" fill="var(--primary)" font-weight="bold" text-anchor="middle">Stage 1 Cyl</text>
+                                
+                                <!-- Intercooler -->
+                                <rect x="150" y="60" width="80" height="60" rx="4" fill="var(--bg)" stroke="var(--success)" stroke-width="1.5"/>
+                                <text x="190" y="90" font-family="Inter" font-size="9" fill="var(--success)" font-weight="bold" text-anchor="middle">Intercooler</text>
+                                <path d="M 170,110 C 180,100 190,120 210,110" fill="none" stroke="var(--success)" stroke-width="1.5"/>
+                                
+                                <!-- Stage 2 -->
+                                <rect x="280" y="60" width="80" height="60" rx="4" fill="var(--bg)" stroke="var(--primary)" stroke-width="1.5"/>
+                                <text x="320" y="95" font-family="Inter" font-size="9" fill="var(--primary)" font-weight="bold" text-anchor="middle">Stage 2 Cyl</text>
+                                
+                                <!-- Pipes -->
+                                <line x1="100" y1="90" x2="150" y2="90" stroke="var(--text)" stroke-width="2"/>
+                                <line x1="230" y1="90" x2="280" y2="90" stroke="var(--text)" stroke-width="2"/>
+                                
+                                <text x="190" y="160" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle" font-weight="bold">Cooling reduces specific volume, shrinking Work Area.</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-card" id="faq-3">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-thermometer-half"></i></span>
+                    <span class="faq-title">3. How does ambient inlet temperature affect mass throughput?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge derating">Volumetric vs. Mass</span>
+                        <p>Compressor casings are physically sized for a fixed volumetric flow ($Q_1$ in $\text{m}^3/\text{h}$). However, process chemistry and mass transport are driven entirely by mass flow ($\dot{m}$ in $\text{kg}/h$). Since density is inversely proportional to temperature ($\rho_1 = \frac{P_1 \cdot MW}{Z \cdot R \cdot T_1}$), warmer inlet temperatures expand the gas, resulting in a lower mass throughput at the same volumetric speed.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>Density Shift Example (Air at 1 bar(a)):</strong>
+                            <ul style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6;">
+                                <li><strong>Winter Day ($0^\circ\text{C}$):</strong> density = $1.29\text{ kg/m}^3$. A $1000\text{ m}^3/\text{h}$ flow rates at $\mathbf{1290\text{ kg/h}}$.</li>
+                                <li><strong>Summer Day ($40^\circ\text{C}$):</strong> density = $1.12\text{ kg/m}^3$. The same volume rates at $\mathbf{1120\text{ kg/h}}$ (a 13% throughput bottleneck).</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-snowflake"></i> Density Change with Temperature</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Cold side -->
+                                <rect x="30" y="40" width="140" height="110" rx="6" fill="var(--bg)" stroke="var(--secondary)" stroke-width="1.5"/>
+                                <text x="100" y="30" font-family="Inter" font-size="10" fill="var(--secondary)" font-weight="bold" text-anchor="middle">Cold (0°C): Dense</text>
+                                <circle cx="50" cy="60" r="3.5" fill="var(--secondary)"/> <circle cx="65" cy="70" r="3.5" fill="var(--secondary)"/>
+                                <circle cx="80" cy="55" r="3.5" fill="var(--secondary)"/> <circle cx="95" cy="65" r="3.5" fill="var(--secondary)"/>
+                                <circle cx="110" cy="75" r="3.5" fill="var(--secondary)"/> <circle cx="125" cy="80" r="3.5" fill="var(--secondary)"/>
+                                <circle cx="60" cy="100" r="3.5" fill="var(--secondary)"/> <circle cx="85" cy="115" r="3.5" fill="var(--secondary)"/>
+                                <circle cx="110" cy="105" r="3.5" fill="var(--secondary)"/> <circle cx="130" cy="120" r="3.5" fill="var(--secondary)"/>
+                                <text x="100" y="140" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">Mass Flow: 100%</text>
+
+                                <!-- Hot side -->
+                                <rect x="210" y="40" width="140" height="110" rx="6" fill="var(--bg)" stroke="var(--danger)" stroke-width="1.5"/>
+                                <text x="280" y="30" font-family="Inter" font-size="10" fill="var(--danger)" font-weight="bold" text-anchor="middle">Hot (40°C): Expended</text>
+                                <circle cx="240" cy="60" r="3.5" fill="var(--danger)"/>
+                                <circle cx="280" cy="80" r="3.5" fill="var(--danger)"/>
+                                <circle cx="320" cy="65" r="3.5" fill="var(--danger)"/>
+                                <circle cx="260" cy="115" r="3.5" fill="var(--danger)"/>
+                                <circle cx="300" cy="110" r="3.5" fill="var(--danger)"/>
+                                <text x="280" y="140" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">Mass Flow: 87%</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-card" id="faq-4">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-wave-square"></i></span>
+                    <span class="faq-title">4. What is the difference between Polytropic and Adiabatic models?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge insulation">Thermodynamics</span>
+                        <p><strong>Adiabatic (Isentropic) model</strong> assumes zero heat transfer to the environment and perfect thermodynamic reversibility ($PV^k = \text{Constant}$). It is a pure theoretical limit. <strong>Polytropic model</strong> is the real-world standard ($PV^n = \text{Constant}$), reflecting actual casing heat exchange and internal aerodynamic friction losses.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>Exponent Comparison:</strong>
+                            <p style="margin-top: 5px; font-size: 0.92rem;">
+                                The ratio $k = C_p/C_v$ is a pure molecular property (e.g. 1.4 for air). The polytropic exponent $n$ is empirically verified from shop performance tests.
+                                <br>
+                                • $n &lt; k$: Compressor is water-jacket cooled, removing heat.
+                                <br>
+                                • $n &gt; k$: Friction dominates (often in small, high-speed uncooled stages).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-chart-line"></i> P-V Curve Comparisons</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Chart lines -->
+                                <line x1="50" y1="160" x2="330" y2="160" stroke="var(--text)" stroke-width="1.5"/>
+                                <line x1="50" y1="20" x2="50" y2="160" stroke="var(--text)" stroke-width="1.5"/>
+                                
+                                <!-- Curves -->
+                                <!-- Isothermal (n=1) -->
+                                <path d="M 60,30 Q 140,110 320,150" fill="none" stroke="var(--success)" stroke-width="2"/>
+                                <!-- Polytropic (n=1.3) -->
+                                <path d="M 60,30 Q 120,95 320,150" fill="none" stroke="var(--secondary)" stroke-width="2"/>
+                                <!-- Adiabatic (k=1.4) -->
+                                <path d="M 60,30 Q 100,85 320,150" fill="none" stroke="var(--danger)" stroke-width="2"/>
+                                
+                                <text x="120" y="55" font-family="Inter" font-size="8.5" fill="var(--danger)" font-weight="bold">Adiabatic (k=1.4)</text>
+                                <text x="150" y="85" font-family="Inter" font-size="8.5" fill="var(--secondary)" font-weight="bold">Polytropic (n=1.3)</text>
+                                <text x="180" y="115" font-family="Inter" font-size="8.5" fill="var(--success)" font-weight="bold">Isothermal (n=1)</text>
+                                
+                                <text x="190" y="180" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">Specific Volume (V)</text>
+                                <text x="25" y="90" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle" transform="rotate(-90 25 90)">Pressure (P)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 5 -->
+        <div class="faq-card" id="faq-5">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-cogs"></i></span>
+                    <span class="faq-title">5. What is volumetric efficiency in reciprocating compressors, and what causes it to decrease?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge sizing">Reciprocating</span>
+                        <p><strong>Volumetric efficiency ($\eta_v$)</strong> represents the ratio of the actual volume of gas drawn into the cylinder to the physical displacement volume of the piston. Because a tiny space called the clearance volume ($V_c$) must remain at the top of the stroke to prevent the piston from hitting the cylinder head, pressurized gas is trapped there. As the piston retracts, this high-pressure gas expands first, blocking the suction valve from opening until its pressure drops below suction pressure.</p>
+                        <p>The efficiency equation is given by:</p>
+                        <div class="formula-box">$$ \eta_v = 1 - C \left[ \left(\frac{P_2}{P_1}\right)^{1/n} - 1 \right] $$</div>
+                        <p>Where $C$ is the clearance ratio ($V_c / V_d$) and $n$ is the polytropic exponent of expansion.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>Clearance & Pressure Ratio Impact:</strong>
+                            <p style="margin-top: 5px; font-size: 0.92rem;">
+                                For a cylinder with $C = 10\%$ ($0.10$) compressing air ($n = 1.3$):
+                                <br>
+                                • At $r_p = 2$: $\eta_v = 1 - 0.10(2^{1/1.3} - 1) \approx 93\%$
+                                <br>
+                                • At $r_p = 5$: $\eta_v = 1 - 0.10(5^{1/1.3} - 1) \approx 76\%$
+                                <br>
+                                Lower suction pressures or higher discharge targets degrade throughput.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-sliders-h"></i> Cylinder Clearance Volume</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Define marker arrow -->
+                                <defs>
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text)"/>
+                                    </marker>
+                                    <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--primary)"/>
+                                    </marker>
+                                    <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--success)"/>
+                                    </marker>
+                                </defs>
+                                <!-- Cylinder outline -->
+                                <rect x="50" y="40" width="280" height="110" rx="8" fill="var(--bg)" stroke="var(--text)" stroke-width="2"/>
+                                <!-- Piston body -->
+                                <rect x="190" y="42" width="138" height="106" rx="4" fill="var(--secondary)" opacity="0.3" stroke="var(--secondary)" stroke-width="1.5"/>
+                                <!-- Piston shaft -->
+                                <line x1="328" y1="95" x2="370" y2="95" stroke="var(--secondary)" stroke-width="4"/>
+                                
+                                <!-- Zones -->
+                                <!-- Clearance volume space (left side) -->
+                                <rect x="52" y="42" width="40" height="106" fill="var(--danger)" opacity="0.15"/>
+                                <!-- Stroke volume space -->
+                                <rect x="92" y="42" width="98" height="106" fill="var(--success)" opacity="0.1"/>
+                                
+                                <!-- Dimension markers -->
+                                <line x1="92" y1="35" x2="92" y2="155" stroke="var(--text)" stroke-dasharray="3,3" stroke-width="1"/>
+                                <line x1="190" y1="35" x2="190" y2="155" stroke="var(--text)" stroke-dasharray="3,3" stroke-width="1"/>
+                                
+                                <!-- Clearance dimension -->
+                                <path d="M 52,165 L 92,165" fill="none" stroke="var(--danger)" stroke-width="1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                                <text x="72" y="180" font-family="Inter" font-size="8.5" fill="var(--danger)" text-anchor="middle" font-weight="bold">Clearance (Vc)</text>
+                                
+                                <!-- Stroke dimension -->
+                                <path d="M 92,165 L 190,165" fill="none" stroke="var(--success)" stroke-width="1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                                <text x="141" y="180" font-family="Inter" font-size="8.5" fill="var(--success)" text-anchor="middle" font-weight="bold">Stroke (Vd)</text>
+                                
+                                <!-- Valve tags -->
+                                <circle cx="52" cy="70" r="5" fill="var(--primary)"/>
+                                <text x="62" y="73" font-family="Inter" font-size="8.5" fill="var(--primary)" font-weight="bold">Inlet</text>
+                                <circle cx="52" cy="120" r="5" fill="var(--danger)"/>
+                                <text x="62" y="123" font-family="Inter" font-size="8.5" fill="var(--danger)" font-weight="bold">Disch.</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 6 -->
+        <div class="faq-card" id="faq-6">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-shield-alt"></i></span>
+                    <span class="faq-title">6. What is compressor surge, and how does anti-surge control work?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge safety">Protection</span>
+                        <p><strong>Compressor surge</strong> is a violent aerodynamic instability that occurs in dynamic (centrifugal and axial) compressors when the volumetric flow rate falls below a critical minimum limit. At low flows, the pressure downstream exceeds the discharge pressure developed by the rotating impeller, causing gas to flow backward through the compressor. This flow reversal instantly drops the back-pressure, allowing the impeller to temporarily re-establish forward flow, repeating the cycle in high-frequency, damaging pressure oscillations.</p>
+                        <p><strong>Anti-Surge Control</strong> prevents this by continuously measuring the flow rate and pressure rise, and using a fast-acting <strong>Anti-Surge Valve (ASV)</strong> to recycle a portion of the discharge gas back to the suction line through a dedicated recycle cooler, maintaining flow above the surge limit.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>Anti-Surge Loop Condition:</strong>
+                            <ul style="padding-left: 20px; font-size: 0.9rem; line-height: 1.6; margin-top: 5px;">
+                                <li><strong>Surge Limit Line (SLL):</strong> The absolute boundary of aerodynamic flow breakdown.</li>
+                                <li><strong>Surge Control Line (SCL):</strong> Programmed with a safety margin (typically $10\%$ to $15\%$ higher flow than the SLL). When flow drops to the SCL, the ASV modulates open.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-random"></i> Performance Curve & Recycle Loop</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Chart lines -->
+                                <line x1="50" y1="160" x2="330" y2="160" stroke="var(--text)" stroke-width="1.5"/>
+                                <line x1="50" y1="20" x2="50" y2="160" stroke="var(--text)" stroke-width="1.5"/>
+                                
+                                <!-- Surge Line (Red) -->
+                                <path d="M 80,30 Q 120,100 170,160" fill="none" stroke="var(--danger)" stroke-width="2.5"/>
+                                <text x="85" y="55" font-family="Inter" font-size="8.5" fill="var(--danger)" font-weight="bold" transform="rotate(-50 85 55)">Surge Line (SLL)</text>
+                                
+                                <!-- Control Line (Warning yellow) -->
+                                <path d="M 110,30 Q 150,100 200,160" fill="none" stroke="var(--warning)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                                <text x="125" y="50" font-family="Inter" font-size="8" fill="var(--warning)" font-weight="bold" transform="rotate(-50 125 50)">Control Line (SCL)</text>
+                                
+                                <!-- Normal operation curve -->
+                                <path d="M 90,90 Q 200,100 310,120" fill="none" stroke="var(--secondary)" stroke-width="2"/>
+                                
+                                <!-- Operating Point -->
+                                <circle cx="230" cy="105" r="5" fill="var(--success)"/>
+                                <text x="240" y="102" font-family="Inter" font-size="8.5" fill="var(--success)" font-weight="bold">Operating Point</text>
+                                
+                                <text x="190" y="180" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">Inlet Flow (Q)</text>
+                                <text x="25" y="90" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle" transform="rotate(-90 25 90)">Head or Press.</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 7 -->
+        <div class="faq-card" id="faq-7">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-balance-scale"></i></span>
+                    <span class="faq-title">7. How does gas molecular weight (MW) affect centrifugal compressor performance?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge sizing">Gas Dynamics</span>
+                        <p>A centrifugal compressor is fundamentally a constant head machine; at a given speed and volumetric flow, it produces the exact same amount of polytropic head ($H_p$ in $\text{kJ/kg}$), regardless of the gas type. However, the resulting <strong>discharge pressure ratio ($r_p$)</strong> is highly dependent on the gas density, which is directly dictated by its molecular weight (MW):</p>
+                        <div class="formula-box">$$ r_p = \frac{P_2}{P_1} = \left[ 1 + \frac{\sigma \cdot H_p}{Z_{\text{avg}} \cdot R_{\text{specific}} \cdot T_1} \right]^{1/\sigma} $$</div>
+                        <p>Where $R_{\text{specific}} = R_u / MW$. Because $R_{\text{specific}}$ is in the denominator, a heavier gas (higher MW) results in a much higher compression ratio for the same developed head.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>MW Pressure Ratio Comparison (Same Head):</strong>
+                            <p style="margin-top: 5px; font-size: 0.92rem;">
+                                Under equivalent head ($H_p = 100\text{ kJ/kg}$) and suction conditions ($25^\circ\text{C}$):
+                                <br>
+                                • <strong>Hydrogen (MW = 2.0):</strong> $r_p \approx 1.05$. Extremely low pressure rise per stage.
+                                <br>
+                                • <strong>Carbon Dioxide (MW = 44.0):</strong> $r_p \approx 2.90$. High pressure rise.
+                                <br>
+                                Lighter gases require significantly more impeller stages to achieve high pressures.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-compress-arrows-alt"></i> Molecular Weight vs Pressure Rise</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Gas Box 1 (Light Gas) -->
+                                <rect x="30" y="40" width="140" height="110" rx="6" fill="var(--bg)" stroke="var(--primary)" stroke-width="1.5"/>
+                                <text x="100" y="30" font-family="Inter" font-size="10" fill="var(--primary)" font-weight="bold" text-anchor="middle">Hydrogen (MW = 2.0)</text>
+                                
+                                <path d="M 60,110 L 140,110" fill="none" stroke="var(--text)" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 100,130 L 100,90" fill="none" stroke="var(--primary)" stroke-width="3" marker-end="url(#arrow-blue)"/>
+                                <text x="100" y="145" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">Low Press. Rise (rp = 1.05)</text>
+                                
+                                <!-- Gas Box 2 (Heavy Gas) -->
+                                <rect x="210" y="40" width="140" height="110" rx="6" fill="var(--bg)" stroke="var(--success)" stroke-width="1.5"/>
+                                <text x="280" y="30" font-family="Inter" font-size="10" fill="var(--success)" font-weight="bold" text-anchor="middle">CO₂ (MW = 44.0)</text>
+                                
+                                <path d="M 240,110 L 320,110" fill="none" stroke="var(--text)" stroke-width="1" stroke-dasharray="2,2"/>
+                                <path d="M 280,130 L 280,60" fill="none" stroke="var(--success)" stroke-width="3" marker-end="url(#arrow-green)"/>
+                                <text x="280" y="145" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">High Press. Rise (rp = 2.90)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 8 -->
+        <div class="faq-card" id="faq-8">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-compass"></i></span>
+                    <span class="faq-title">8. What is the significance of the "Specific Speed" (Ns) in compressor selection?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge design">Impeller Design</span>
+                        <p><strong>Specific Speed ($N_s$)</strong> is a dimensionless design index used to determine the ideal geometric configuration of a compressor impeller to achieve optimal aerodynamic efficiency. It relates the rotational speed ($N$ in $\text{rpm}$), inlet volumetric flow rate ($Q$ in $\text{m}^3/\text{s}$), and polytropic head ($H$ in $\text{m}$ of fluid):</p>
+                        <div class="formula-box">$$ N_s = \frac{N \sqrt{Q}}{H^{0.75}} $$</div>
+                        <p>By matching specific speed ranges to empirical curves, engineers select the correct rotor type: radial (centrifugal), mixed-flow, or axial flow.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>Specific Speed Guidelines:</strong>
+                            <p style="margin-top: 5px; font-size: 0.92rem;">
+                                • <strong>Radial Flow (Centrifugal):</strong> $N_s &lt; 0.5$. Suited for low-flow, high-head tasks.
+                                <br>
+                                • <strong>Mixed Flow:</strong> $0.5 \le N_s \le 1.5$. Medium head and flow ranges.
+                                <br>
+                                • <strong>Axial Flow:</strong> $N_s &gt; 1.5$. High-flow, low-head applications (e.g. gas turbines).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-bezier-curve"></i> Impeller Type vs Ns Range</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Specific speed timeline -->
+                                <line x1="40" y1="130" x2="340" y2="130" stroke="var(--text)" stroke-width="2" marker-end="url(#arrow)"/>
+                                
+                                <!-- Vertical markers -->
+                                <line x1="120" y1="110" x2="120" y2="140" stroke="var(--text)" stroke-width="1"/>
+                                <line x1="240" y1="110" x2="240" y2="140" stroke="var(--text)" stroke-width="1"/>
+                                
+                                <!-- Vanes drawings representation -->
+                                <!-- Radial Centrifugal (narrow flow) -->
+                                <path d="M 50,60 Q 60,95 80,95 L 80,105 Q 50,105 40,60 Z" fill="var(--primary)" opacity="0.4" stroke="var(--primary)"/>
+                                <text x="80" y="50" font-family="Inter" font-size="8.5" fill="var(--primary)" font-weight="bold" text-anchor="middle">Radial Flow</text>
+                                <text x="80" y="150" font-family="Inter" font-size="8" fill="var(--text)" text-anchor="middle">Ns &lt; 0.5</text>
+                                
+                                <!-- Mixed flow -->
+                                <path d="M 160,60 Q 180,85 200,95 L 195,105 Q 170,95 150,60 Z" fill="var(--warning)" opacity="0.4" stroke="var(--warning)"/>
+                                <text x="180" y="50" font-family="Inter" font-size="8.5" fill="var(--warning)" font-weight="bold" text-anchor="middle">Mixed Flow</text>
+                                <text x="180" y="150" font-family="Inter" font-size="8" fill="var(--text)" text-anchor="middle">0.5 to 1.5</text>
+                                
+                                <!-- Axial -->
+                                <path d="M 270,60 L 310,60 L 290,105 L 250,105 Z" fill="var(--danger)" opacity="0.4" stroke="var(--danger)"/>
+                                <text x="290" y="50" font-family="Inter" font-size="8.5" fill="var(--danger)" font-weight="bold" text-anchor="middle">Axial Flow</text>
+                                <text x="290" y="150" font-family="Inter" font-size="8" fill="var(--text)" text-anchor="middle">Ns &gt; 1.5</text>
+                                
+                                <text x="190" y="175" font-family="Inter" font-size="9" fill="var(--text)" text-anchor="middle" font-weight="bold">Specific Speed Index (Ns) →</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 9 -->
+        <div class="faq-card" id="faq-9">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-tint-slash"></i></span>
+                    <span class="faq-title">9. Why does gas wetness (moisture/liquids) damage compressors, and how is it prevented?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge protection">Reliability</span>
+                        <p>Unlike gases, liquids are virtually incompressible. When entrained liquid droplets enter a compression chamber, they cause severe damage:</p>
+                        <ul style="padding-left: 20px; font-size: 0.92rem; line-height: 1.6;">
+                            <li><strong>Reciprocating Compressors:</strong> Liquid occupying the clearance space causes hydraulic locking (liquid slugging). When the piston hits the liquid, it shatters valves, breaks cylinder heads, and bends connecting rods.</li>
+                            <li><strong>Centrifugal Compressors:</strong> High-velocity liquid droplets act like solid projectiles, causing impeller blade erosion, rotor unbalance, and major thrust bearing wear.</li>
+                        </ul>
+                        <p>To prevent this, process designers place a <strong>Suction Knock-Out Drum (KOD)</strong> upstream of the compressor to drop out entrained liquids.</p>
+                        
+                        <div class="faq-example-box">
+                            <strong>KOD Sizing Principle:</strong>
+                            <p style="margin-top: 5px; font-size: 0.92rem;">
+                                Gas velocity inside the drum must be lower than the liquid droplet terminal settling velocity:
+                                $$ V_g \le K \sqrt{\frac{\rho_l - \rho_g}{\rho_g}} $$
+                                Under high pressure, the vapor density $\rho_g$ increases, reducing settling velocity and requiring a larger drum.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-tint"></i> Suction Knock-Out Drum (KOD)</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Drum -->
+                                <rect x="140" y="30" width="100" height="130" rx="15" fill="var(--bg)" stroke="var(--text)" stroke-width="2"/>
+                                <!-- Inlet pipe -->
+                                <rect x="80" y="70" width="60" height="20" fill="var(--bg)" stroke="var(--text)" stroke-width="1.5"/>
+                                <text x="110" y="65" font-family="Inter" font-size="8" fill="var(--text)" text-anchor="middle" font-weight="bold">Wet Gas In</text>
+                                
+                                <!-- Outlet pipe -->
+                                <rect x="180" y="10" width="20" height="20" fill="var(--bg)" stroke="var(--text)" stroke-width="1.5"/>
+                                <text x="230" y="22" font-family="Inter" font-size="8" fill="var(--success)" font-weight="bold">Dry Gas Out</text>
+                                
+                                <!-- Mesh demister pad -->
+                                <rect x="142" y="55" width="96" height="15" fill="var(--text)" opacity="0.3" stroke="var(--text)" stroke-dasharray="2,2"/>
+                                <text x="190" y="52" font-family="Inter" font-size="7" fill="var(--text)" text-anchor="middle">Demister Pad</text>
+                                
+                                <!-- Flow indicator arrows -->
+                                <path d="M 90,80 L 135,80" fill="none" stroke="var(--primary)" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+                                <path d="M 190,45 L 190,20" fill="none" stroke="var(--success)" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+                                
+                                <!-- Droplets falling -->
+                                <circle cx="160" cy="110" r="3" fill="var(--primary)"/>
+                                <circle cx="180" cy="100" r="2" fill="var(--primary)"/>
+                                <circle cx="210" cy="120" r="4" fill="var(--primary)"/>
+                                <circle cx="190" cy="130" r="3" fill="var(--primary)"/>
+                                
+                                <!-- Liquid Level -->
+                                <rect x="142" y="140" width="96" height="18" fill="var(--primary)" opacity="0.3" rx="2"/>
+                                <text x="190" y="152" font-family="Inter" font-size="8" fill="var(--primary)" font-weight="bold" text-anchor="middle">Liquid Level</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ 10 -->
+        <div class="faq-card" id="faq-10">
+            <button class="faq-trigger" aria-expanded="false">
+                <span class="faq-title-wrapper">
+                    <span class="faq-icon-box"><i class="fas fa-ruler-combined"></i></span>
+                    <span class="faq-title">10. How do ISO and standard reference conditions affect compressor capacity ratings?</span>
+                </span>
+                <i class="fas fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-content">
+                <div class="faq-content-inner">
+                    <div class="faq-theory-side">
+                        <span class="faq-badge sizing">Standards</span>
+                        <p>Gas volume shrinks dramatically under pressure and expands with temperature, making absolute volumetric flow rates ($\text{m}^3/\text{h}$ or $\text{cfm}$) ambiguous unless the exact pressure and temperature conditions are stated. To standardize commercial capacity, flow is usually reported at standard reference conditions (e.g. Normal $\text{Nm}^3/\text{h}$ or Standard $\text{SCFM}$):</p>
+                        <ul style="padding-left: 20px; font-size: 0.92rem; line-height: 1.6;">
+                            <li><strong>Normal (Nm³/h):</strong> Measured at $0^\circ\text{C}$ and $1.01325\text{ bar(a)}$ (European/ISO).</li>
+                            <li><strong>Standard (SCFM):</strong> Measured at $60^\circ\text{F}$ ($15.56^\circ\text{C}$) and $14.696\text{ psia}$ (US standard).</li>
+                        </ul>
+                        <p>Engineers must convert these standard volumes to <strong>Actual Inlet Volumetric Flow ($Q_1$ or ACFM)</strong> at the compressor suction flange to size the machine:</p>
+                        <div class="formula-box">$$ Q_1 = Q_{\text{std}} \cdot \left( \frac{P_{\text{std}}}{P_1} \right) \cdot \left( \frac{T_1}{T_{\text{std}}} \right) \cdot \left( \frac{Z_1}{Z_{\text{std}}} \right) $$</div>
+                    </div>
+                    <div class="faq-diagram-side">
+                        <div class="faq-diagram-title"><i class="fas fa-compress"></i> Standard vs. Actual Volume</div>
+                        <div class="faq-svg-container">
+                            <svg viewBox="0 0 380 200">
+                                <!-- Standard Conditions Box (Large) -->
+                                <rect x="30" y="40" width="130" height="110" rx="6" fill="var(--bg)" stroke="var(--primary)" stroke-width="1.5"/>
+                                <text x="95" y="30" font-family="Inter" font-size="9" fill="var(--primary)" font-weight="bold" text-anchor="middle">Standard / Normal Vol.</text>
+                                <text x="95" y="75" font-family="Inter" font-size="12" fill="var(--text)" font-weight="bold" text-anchor="middle">1000 Nm³/h</text>
+                                <text x="95" y="105" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">P = 1.013 bar(a)</text>
+                                <text x="95" y="125" font-family="Inter" font-size="8.5" fill="var(--text)" text-anchor="middle">T = 0°C</text>
+                                
+                                <!-- Compressor transition arrow -->
+                                <path d="M 175,95 L 215,95" fill="none" stroke="var(--text)" stroke-width="2" marker-end="url(#arrow)"/>
+                                <text x="195" y="85" font-family="Inter" font-size="7.5" fill="var(--text)" text-anchor="middle" font-weight="bold">Compressed</text>
+                                
+                                <!-- Actual volume Box (Small) -->
+                                <rect x="230" y="65" width="120" height="60" rx="6" fill="var(--bg)" stroke="var(--success)" stroke-width="1.5"/>
+                                <text x="290" y="30" font-family="Inter" font-size="9" fill="var(--success)" font-weight="bold" text-anchor="middle">Actual Inlet Vol. (Q1)</text>
+                                <text x="290" y="85" font-family="Inter" font-size="11" fill="var(--text)" font-weight="bold" text-anchor="middle">118.3 m³/h</text>
+                                <text x="290" y="105" font-family="Inter" font-size="8" fill="var(--text)" text-anchor="middle">At 10 bar(a) & 50°C</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </main>
 
-        
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <!-- ============================================== -->
+    <!-- EMPOWER YOUR ENGINEERING TEAM (EMBED CARD)     -->
+    <!-- ============================================== -->
+    <div class="embed-card">
+        <div class="embed-card-glow"></div>
+        <div style="display: flex; align-items: flex-start; gap: 20px; z-index: 1; flex-wrap: wrap;">
+            <div style="background: rgba(96, 165, 250, 0.1); padding: 14px; border-radius: 12px; border: 1px solid rgba(96, 165, 250, 0.2); flex-shrink: 0;">
+                <i class="fas fa-rocket" style="color: #60a5fa; font-size: 1.6rem;"></i>
+            </div>
+            <div style="flex: 1; min-width: 300px;">
+                <h3 style="margin-top: 0; font-size: 1.5rem; color: #f8fafc; margin-bottom: 8px; font-weight: 800; font-family: 'Montserrat', sans-serif;">Empower Your Engineering Team</h3>
+                <p style="color: #cbd5e1; font-size: 1rem; line-height: 1.6; margin-bottom: 0;">
+                    Embed this industrial-grade compressor power sizing calculator directly into your company's design portal or intranet.
+                    <strong>Standardize mechanical design across project teams</strong>, comply with global process engineering standards (GPSA/ASME/API), and automate datasheet generation.
+                </p>
+                <div style="display: flex; gap: 12px; margin-top: 15px; flex-wrap: wrap;">
+                    <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>Zero Maintenance</span>
+                    <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 5px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fas fa-check-circle" style="margin-right: 4px;"></i>100% Free Forever</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #020617; padding: 14px; border-radius: 10px; border: 1px solid #334155; display: flex; align-items: center; gap: 12px; z-index: 1; flex-wrap: wrap;">
+            <div style="color: #94a3b8; font-family: monospace; font-size: 0.9rem; padding-left: 5px; white-space: nowrap;"><i class="fas fa-code"></i> Embed Code:</div>
+            <input type="text" id="embed-code-input" readonly value="&lt;iframe src=&quot;https://designcalculators.co.in/compressor-power.html&quot; width=&quot;100%&quot; height=&quot;850&quot; style=&quot;border:none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);&quot;&gt;&lt;/iframe&gt;" style="flex-grow: 1; min-width: 250px; padding: 10px 14px; border: 1px solid #475569; border-radius: 6px; font-family: 'Roboto Mono', monospace; font-size: 0.85rem; background: #0f172a; color: #a5b4fc; outline: none;" onclick="this.select();">
+            <button onclick="copyEmbedCode()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 700; white-space: nowrap; transition: background 0.2s;"><i class="fas fa-copy" style="margin-right: 6px;"></i>Copy Code</button>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- LEVEL UP YOUR ENGINEERING (RELATED TOOLS)       -->
+    <!-- ============================================== -->
+    <section class="levelup-section">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor.html" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/bolt-torque.html" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
-                    </a>
-                    <a href="/fan-laws.html" class="silo-card" style="text-decoration:none;">
-                        <span>Fan Laws</span>
-                    </a>
+            <div style="text-align: center; max-width: 750px; margin: 0 auto 50px auto;">
+                <h2 style="font-size: 2.2rem; color: var(--heading); margin-bottom: 15px; font-weight: 800; font-family: 'Montserrat', sans-serif;"><i class="fas fa-layer-group" style="color: var(--primary);"></i> Level Up Your Engineering</h2>
+                <p style="font-size: 1.1rem; color: var(--text); line-height: 1.6;">Combine your compressor power calculations with other thermodynamic, mechanical, and safety analyses from our specialized engineering tools.</p>
+            </div>
+            
+            <div class="levelup-grid">
+                <!-- Card 1 -->
+                <a href="/aircompressorfad.html" class="levelup-card">
+                    <div class="levelup-icon-container" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <h3 class="levelup-title">Air Compressor FAD</h3>
+                    <p class="levelup-desc">Calculate Free Air Delivery (FAD) flow rates and volumetric efficiencies of industrial air compressor packages under standard site conditions.</p>
+                    <div class="levelup-link" style="color: var(--primary);">
+                        Try Calculator <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Card 2 -->
+                <a href="/gascompressibility.html" class="levelup-card">
+                    <div class="levelup-icon-container" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                        <i class="fas fa-atom"></i>
+                    </div>
+                    <h3 class="levelup-title">Gas Compressibility (Z)</h3>
+                    <p class="levelup-desc">Determine the compressibility factor (Z) of pure gases or mixtures across wide pressure and temperature ranges using the Redlich-Kwong equation of state.</p>
+                    <div class="levelup-link" style="color: var(--success);">
+                        Try Calculator <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Card 3 -->
+                <a href="/pump-power.html" class="levelup-card">
+                    <div class="levelup-icon-container" style="background: rgba(245, 158, 11, 0.1); color: var(--accent);">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3 class="levelup-title">Pump Power & Efficiency</h3>
+                    <p class="levelup-desc">Size driver motors and evaluate hydronic pump performance for incompressible fluids, calculating net positive suction head (NPSH).</p>
+                    <div class="levelup-link" style="color: var(--accent);">
+                        Try Calculator <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
             </div>
         </div>
     </section>
@@ -1043,11 +2227,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele.html'>Electrical Tools</a></li>
-                            <li><a href='/indexmech.html'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst.html'>Instrumentation Tools</a></li>
-                            <li><a href='/about.html'>About Us</a></li>
-                            <li><a href='/faq.html'>FAQ</a></li>
+                            <li><a href="/indexele.html">Electrical Tools</a></li>
+                            <li><a href="/indexmech.html">Mechanical Tools</a></li>
+                            <li><a href="/indexinst.html">Instrumentation Tools</a></li>
+                            <li><a href="/about.html">About Us</a></li>
+                            <li><a href="/faq.html">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1055,10 +2239,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact.html'>Contact Us</a></li>
-                            <li><a href='/privacy-policy.html'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service.html'>Terms of Service</a></li>
-                            <li><a href='/sitemap2.html'>Sitemap</a></li>
+                            <li><a href="/contact.html">Contact Us</a></li>
+                            <li><a href="/privacy-policy.html">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service.html">Terms of Service</a></li>
+                            <li><a href="/sitemap2.html">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1174,6 +2358,7 @@
 
             document.getElementById('calculate-btn').addEventListener('click', performCalculation);
             document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+            initFaqAccordion();
         });
 
         function performCalculation() {
@@ -1230,24 +2415,75 @@
 
             lastResult = { p_brake, t2_c, head_j_kg, rho1, m_dot, r_p, exponent, mode, p1, p2, t1_k };
 
-            // 4. Render Step-by-Step
-            let html = `<h4>Step 1: Gas Properties & Mass Flow</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Density $\\rho_1 = \\frac{P_1}{Z R_{sp} T_1} = \\frac{${p1_kpa} \\cdot 10^3}{${z_avg} \\cdot ${R_specific.toFixed(1)} \\cdot ${t1_k.toFixed(1)}} = \\mathbf{${rho1.toFixed(3)} \\text{ kg/m}^3}$<br>`;
-            html += `Mass Flow $\\dot{m} = Q_1 \\cdot \\rho_1 = \\frac{${q1_m3h}}{3600} \\cdot ${rho1.toFixed(3)} = \\mathbf{${m_dot.toFixed(3)} \\text{ kg/s}}$`;
+            // 4. Render Step-by-Step (10 Steps)
+            let html = `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 1: Specific Gas Constant ($R_{\\text{specific}}$)</div>`;
+            html += `<p class="step-description">Calculate the specific gas constant based on the universal gas constant ($R_u = 8314.46\\text{ J}/(\\text{kmol}\\cdot\\text{K})$) and the molecular weight of the gas ($MW = ${mw.toFixed(2)}\\text{ g/mol}$):</p>`;
+            html += `<div class="formula-box">$$ R_{\\text{specific}} = \\frac{R_u}{MW} = \\frac{8314.46}{${mw.toFixed(2)}} $$</div>`;
+            html += `<div class="calculation-value">$$ R_{\\text{specific}} = \\mathbf{${R_specific.toFixed(2)}\\text{ J}/(\\text{kg}\\cdot\\text{K})} $$</div>`;
             html += `</div>`;
 
-            html += `<h4>Step 2: Discharge Temperature ($T_2$)</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Pressure Ratio $r_p = ${r_p.toFixed(2)}$. Exponent $\\frac{n-1}{n} = ${m_exp.toFixed(3)}$.<br>`;
-            html += `$$ T_2 = T_1 (r_p)^{\\frac{n-1}{n}} = ${t1_k.toFixed(1)} (${r_p.toFixed(2)})^{${m_exp.toFixed(3)}} = \\mathbf{${t2_k.toFixed(1)} \\text{ K}} \\; (${t2_c.toFixed(1)} ^\\circ\\text{C}) $$`;
+            html += `<div class="step-header">Step 2: Suction Absolute Temperature ($T_1$)</div>`;
+            html += `<p class="step-description">Convert the suction temperature from Celsius to absolute Kelvin:</p>`;
+            html += `<div class="formula-box">$$ T_1 = T_{1(^{\\circ}\\text{C})} + 273.15 $$</div>`;
+            html += `<div class="calculation-value">$$ T_1 = ${t1_c}^{\\circ}\\text{C} + 273.15 = \\mathbf{${t1_k.toFixed(2)}\\text{ K}} $$</div>`;
             html += `</div>`;
 
-            html += `<h4>Step 3: Head & Power</h4>`;
             html += `<div class="calculation-step">`;
-            html += `$$ \\text{Head} = \\frac{Z R T_1}{\\sigma} [r_p^\\sigma - 1] = \\mathbf{${(head_j_kg/1000).toFixed(2)} \\text{ kJ/kg}} $$<br>`;
-            html += `Gas Power $P_{gas} = \\frac{\\dot{m} \\cdot \\text{Head}}{\\eta_{poly}} = \\frac{${m_dot.toFixed(2)} \\cdot ${(head_j_kg/1000).toFixed(2)}}{${eta_isen}} = ${p_gas.toFixed(1)} \\text{ kW}$<br>`;
-            html += `$$ P_{brake} = \\frac{P_{gas}}{\\eta_{mech}} = \\mathbf{${p_brake.toFixed(1)} \\text{ kW}} $$`;
+            html += `<div class="step-header">Step 3: Pressures Conversion ($P_1, P_2$)</div>`;
+            html += `<p class="step-description">Convert the suction pressure ($P_1$) and discharge pressure ($P_2$) to kPa absolute:</p>`;
+            html += `<div class="formula-box">$$ P_{\\text{kPa}} = P_{\\text{bar(a)}} \\times 100 $$</div>`;
+            html += `<div class="calculation-value">$$ P_1 = ${p1.toFixed(2)}\\text{ bar(a)} \\times 100 = \\mathbf{${p1_kpa.toFixed(0)}\\text{ kPa(a)}} $$<br>$$ P_2 = ${p2.toFixed(2)}\\text{ bar(a)} \\times 100 = \\mathbf{${p2_kpa.toFixed(0)}\\text{ kPa(a)}} $$</div>`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 4: Suction Gas Density ($\\rho_1$)</div>`;
+            html += `<p class="step-description">Calculate the density of the gas at suction conditions using the real gas equation of state incorporating the compressibility factor ($Z_{\\text{avg}} = ${z_avg.toFixed(2)}$):</p>`;
+            html += `<div class="formula-box">$$ \\rho_1 = \\frac{P_1 \\times 10^3}{Z \\cdot R_{\\text{specific}} \\cdot T_1} $$</div>`;
+            html += `<div class="calculation-value">$$ \\rho_1 = \\frac{${p1_kpa.toFixed(0)} \\times 10^3}{${z_avg.toFixed(2)} \\cdot ${R_specific.toFixed(2)} \\cdot ${t1_k.toFixed(2)}} = \\mathbf{${rho1.toFixed(4)}\\text{ kg/m}^3} $$</div>`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 5: Suction Mass Flow Rate ($\\dot{m}$)</div>`;
+            html += `<p class="step-description">Convert the inlet volumetric flow ($Q_1 = ${q1_m3h}\\text{ m}^3/\\text{h}$) to mass flow rate in kg/s and kg/h:</p>`;
+            html += `<div class="formula-box">$$ \\dot{m} = \\frac{Q_1 \\cdot \\rho_1}{3600} $$</div>`;
+            html += `<div class="calculation-value">$$ \\dot{m} = \\frac{${q1_m3h} \\cdot ${rho1.toFixed(4)}}{3600} = \\mathbf{${m_dot.toFixed(4)}\\text{ kg/s}} \\quad \\left(\\mathbf{${(m_dot*3600).toFixed(1)}\\text{ kg/h}}\\right) $$</div>`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 6: Compression Ratio & Exponent Coefficient ($r_p, \\sigma$)</div>`;
+            html += `<p class="step-description">Calculate the pressure ratio ($r_p$) and the thermodynamic exponent coefficient ($\\sigma$ = $\\frac{x - 1}{x}$, where $x$ is $k$ or $n$):</p>`;
+            html += `<div class="formula-box">$$ r_p = \\frac{P_2}{P_1} \\quad \\text{and} \\quad \\sigma = \\frac{x-1}{x} $$</div>`;
+            html += `<div class="calculation-value">$$ r_p = \\frac{${p2_kpa.toFixed(0)}}{${p1_kpa.toFixed(0)}} = \\mathbf{${r_p.toFixed(3)}} $$<br>$$ \\sigma = \\frac{${exponent.toFixed(2)} - 1}{${exponent.toFixed(2)}} = \\mathbf{${m_exp.toFixed(4)}} $$</div>`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 7: Discharge Temperature ($T_2$)</div>`;
+            html += `<p class="step-description">Calculate the theoretical discharge temperature ($T_2$) under adiabatic or polytropic conditions:</p>`;
+            html += `<div class="formula-box">$$ T_2 = T_1 \\cdot (r_p)^{\\sigma} $$</div>`;
+            html += `<div class="calculation-value">$$ T_2 = ${t1_k.toFixed(2)} \\cdot (${r_p.toFixed(3)})^{${m_exp.toFixed(4)}} = \\mathbf{${t2_k.toFixed(2)}\\text{ K}} \\quad \\left(\\mathbf{${t2_c.toFixed(1)}^{\\circ}\\text{C}}\\right) $$</div>`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 8: Thermodynamic Head ($H$)</div>`;
+            html += `<p class="step-description">Compute the thermodynamic head ($H$), representing the fluid energy change per unit mass:</p>`;
+            html += `<div class="formula-box">$$ H = \\frac{Z \\cdot R_{\\text{specific}} \\cdot T_1}{\\sigma} \\cdot \\left[ (r_p)^{\\sigma} - 1 \\right] $$</div>`;
+            html += `<div class="calculation-value">$$ H = \\frac{${z_avg.toFixed(2)} \\cdot ${R_specific.toFixed(2)} \\cdot ${t1_k.toFixed(2)}}{${m_exp.toFixed(4)}} \\cdot \\left[ (${r_p.toFixed(3)})^{${m_exp.toFixed(4)}} - 1 \\right] = \\mathbf{${(head_j_kg/1000).toFixed(2)}\\text{ kJ/kg}} $$</div>`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 9: Gas Power ($P_{\\text{gas}}$)</div>`;
+            html += `<p class="step-description">Calculate the aerodynamic gas power ($P_{\\text{gas}}$) required to compress the mass flow using the efficiency ($\\eta_{\\text{aero}} = ${(eta_isen*100).toFixed(0)}\\%$):</p>`;
+            html += `<div class="formula-box">$$ P_{\\text{gas}} = \\frac{\\dot{m} \\cdot H}{\\eta_{\\text{aero}}} $$</div>`;
+            html += `<div class="calculation-value">$$ P_{\\text{gas}} = \\frac{${m_dot.toFixed(4)}\\text{ kg/s} \\cdot ${(head_j_kg/1000).toFixed(2)}\\text{ kJ/kg}}{${eta_isen.toFixed(2)}} = \\mathbf{${p_gas.toFixed(2)}\\text{ kW}} $$</div>`;
+            html += `</div>`;
+
+            html += `<div class="calculation-step">`;
+            html += `<div class="step-header">Step 10: Shaft Brake Power ($P_{\\text{brake}}$)</div>`;
+            html += `<p class="step-description">Calculate the total power input required at the shaft ($P_{\\text{brake}}$) incorporating the mechanical efficiency ($\\eta_m = ${(eta_mech*100).toFixed(0)}\\%$):</p>`;
+            html += `<div class="formula-box">$$ P_{\\text{brake}} = \\frac{P_{\\text{gas}}}{\\eta_m} $$</div>`;
+            html += `<div class="calculation-value">$$ P_{\\text{brake}} = \\frac{${p_gas.toFixed(2)}\\text{ kW}}{${eta_mech.toFixed(2)}} = \\mathbf{${p_brake.toFixed(2)}\\text{ kW}} \\quad \\left(\\mathbf{${(p_brake/0.7457).toFixed(1)}\\text{ BHP}}\\right) $$</div>`;
             html += `</div>`;
 
             document.getElementById('calculation-details').innerHTML = html;
@@ -1321,77 +2557,79 @@
         }
 
         function generatePDF() {
-            if (!lastResult) {
-                displayMessage("Calculate first.", "error");
+            const element = document.getElementById('result-container');
+            if (!element || element.classList.contains('hidden')) {
+                displayMessage("Please calculate the performance first to generate results.", "error");
                 return;
             }
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            let y = 15;
+            displayMessage('Generating PDF...', 'info');
+            
+            // Populate PDF Header Metadata dynamically
+            if (lastResult) {
+                const gasType = document.getElementById('gas-type').value;
+                const customMW = parseFloat(document.getElementById('mol-weight').value);
+                let gasStr = gasType.charAt(0).toUpperCase() + gasType.slice(1);
+                if (gasType === 'custom') gasStr += ` (MW: ${customMW.toFixed(2)})`;
+                
+                document.getElementById('pdf-meta-gas').textContent = gasStr;
+                document.getElementById('pdf-meta-ratio').textContent = `${parseFloat(lastResult.p1).toFixed(2)} to ${parseFloat(lastResult.p2).toFixed(2)} bar(a)`;
+                document.getElementById('pdf-meta-flow').textContent = `${document.getElementById('flow-rate').value} m³/h`;
+                
+                const bhp = lastResult.p_brake * 1.34102;
+                document.getElementById('pdf-meta-power').textContent = `${lastResult.p_brake.toFixed(2)} kW (${bhp.toFixed(1)} BHP)`;
+            }
+            
+            // Set the current date and time
+            const now = new Date();
+            document.getElementById('pdf-report-date').textContent = now.toLocaleString();
+            
+            // Check if dark mode is active and temporarily disable it for clean printing
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            if (isDarkMode) {
+                document.body.classList.remove('dark-mode');
+            }
 
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(16);
-            pdf.setTextColor(30, 58, 138); 
-            pdf.text('Compressor Power Report', 105, y, { align: 'center' });
-            y += 10;
+            // Force fixed width on the container to ensure grid columns and SVGs align perfectly in A4/Letter format
+            const originalWidth = element.style.width;
+            const originalMaxWidth = element.style.maxWidth;
+            element.style.width = '740px';
+            element.style.maxWidth = '740px';
+            element.classList.add('html2pdf-container');
+            
+            // Setup options with CSS pagebreak mode
+            const opt = {
+              margin:       [0.4, 0.4, 0.4, 0.4],
+              filename:     'Compressor-Power-Report.pdf',
+              image:        { type: 'jpeg', quality: 0.95 },
+              html2canvas:  { 
+                scale: 2, 
+                useCORS: true,
+                logging: false,
+                scrollX: 0,
+                scrollY: 0
+              },
+              jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+              pagebreak:    { mode: ['css'] }
+            };
 
-            pdf.setFontSize(10);
-            pdf.setTextColor(100);
-            pdf.text(`Date: ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
-            y += 15;
-
-            // Inputs
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            pdf.text('1. Design Inputs', 14, y);
-            y += 5;
-
-            const inputData = [
-                ['Inlet Pressure', `${lastResult.p1} bar(a)`],
-                ['Discharge Pressure', `${lastResult.p2} bar(a)`],
-                ['Inlet Temp', `${(lastResult.t1_k-273.15).toFixed(1)} Â°C`],
-                ['Ratio (Cp/Cv or n)', `${lastResult.exponent}`]
-            ];
-
-            pdf.autoTable({
-                startY: y,
-                head: [['Parameter', 'Value']],
-                body: inputData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] }
-            });
-            y = pdf.lastAutoTable.finalY + 15;
-
-            // Results
-            pdf.text('2. Performance Data', 14, y);
-            y += 5;
-
-            const resData = [
-                ['Brake Power', `${lastResult.p_brake.toFixed(2)} kW`],
-                ['Discharge Temp', `${lastResult.t2_c.toFixed(1)} Â°C`],
-                ['Polytropic Head', `${(lastResult.head_j_kg/1000).toFixed(2)} kJ/kg`],
-                ['Pressure Ratio', `${lastResult.r_p.toFixed(2)}`]
-            ];
-
-            pdf.autoTable({
-                startY: y,
-                head: [['Metric', 'Result']],
-                body: resData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] },
-                didParseCell: function(data) {
-                    if(data.row.index === 0) {
-                        data.cell.styles.fontStyle = 'bold';
-                    }
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore original styling and theme
+                element.style.width = originalWidth;
+                element.style.maxWidth = originalMaxWidth;
+                element.classList.remove('html2pdf-container');
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                }
+            }).catch((err) => {
+                console.error('PDF Generation Error:', err);
+                element.style.width = originalWidth;
+                element.style.maxWidth = originalMaxWidth;
+                element.classList.remove('html2pdf-container');
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
                 }
             });
-
-            pdf.save('Compressor_Report.pdf');
-            displayMessage("PDF Downloaded", "success");
         }
-
         function displayMessage(message, type = "info") {
             let messageBox = document.getElementById('message-box');
             messageBox.textContent = message;
@@ -1440,9 +2678,74 @@
 
         // Init theory graphics independently
         window.addEventListener('load', initTheoryCharts);
+
+        function initFaqAccordion() {
+            const triggers = document.querySelectorAll('.faq-trigger');
+            triggers.forEach(trigger => {
+                trigger.addEventListener('click', function() {
+                    const card = this.closest('.faq-card');
+                    const content = card.querySelector('.faq-content');
+                    const isOpen = card.classList.contains('active');
+                    
+                    // Close other cards
+                    document.querySelectorAll('.faq-card').forEach(otherCard => {
+                        if (otherCard !== card && otherCard.classList.contains('active')) {
+                            otherCard.classList.remove('active');
+                            otherCard.querySelector('.faq-trigger').setAttribute('aria-expanded', 'false');
+                            otherCard.querySelector('.faq-content').style.maxHeight = null;
+                        }
+                    });
+                    
+                    if (isOpen) {
+                        card.classList.remove('active');
+                        this.setAttribute('aria-expanded', 'false');
+                        content.style.maxHeight = null;
+                    } else {
+                        card.classList.add('active');
+                        this.setAttribute('aria-expanded', 'true');
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        
+                        // Readjust height when MathJax finishes any pending renders
+                        if (window.MathJax && window.MathJax.startup) {
+                            window.MathJax.startup.promise.then(() => {
+                                if (card.classList.contains('active')) {
+                                    content.style.maxHeight = content.scrollHeight + 'px';
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
+            // Make sure resizing window updates heights
+            window.addEventListener('resize', function() {
+                document.querySelectorAll('.faq-card.active .faq-content').forEach(content => {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                });
+            });
+        }
+
+        function copyEmbedCode() {
+            const embedInput = document.getElementById('embed-code-input');
+            if (!embedInput) return;
+            
+            embedInput.select();
+            embedInput.setSelectionRange(0, 99999);
+            
+            try {
+                navigator.clipboard.writeText(embedInput.value)
+                    .then(() => {
+                        displayMessage('Embed code copied successfully!', 'success');
+                    })
+                    .catch(() => {
+                        document.execCommand('copy');
+                        displayMessage('Embed code copied successfully!', 'success');
+                    });
+            } catch (err) {
+                document.execCommand('copy');
+                displayMessage('Embed code copied successfully!', 'success');
+            }
+        }
     </script>
 </body>
 </html>
-
-
-

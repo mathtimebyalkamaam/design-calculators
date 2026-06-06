@@ -1,4 +1,4 @@
-﻿window.TOOLS_DB = [
+window.TOOLS_DB = [
     {
         "name": "Residential Load Calc",
         "href": "electricalresidentialload.html",
@@ -198,6 +198,12 @@
         "icon": "fas fa-shield-alt"
     },
     {
+        "name": "Ohm's Law Calculator",
+        "href": "ohms-law.html",
+        "category": "electrical",
+        "icon": "fas fa-bolt"
+    },
+    {
         "name": "Neutral Earth Fault",
         "href": "neutral-earth-fault-current.html",
         "category": "electrical",
@@ -388,6 +394,12 @@
         "href": "flowprofiledistortioncalculator.html",
         "category": "instrumentation",
         "icon": "fas fa-wind"
+    },
+    {
+        "name": "Fiber Optic Link Budget",
+        "href": "folink.html",
+        "category": "instrumentation",
+        "icon": "fas fa-network-wired"
     },
     {
         "name": "Gas Compressibility (Z)",
@@ -1117,9 +1129,8 @@
     },
     {
         "name": "Engineering Blog",
-        "href": "blog.html",
+        "href": "articles.html",
         "category": "articles",
         "icon": "fas fa-blog"
     }
 ];
-
