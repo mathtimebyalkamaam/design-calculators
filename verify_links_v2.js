@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const rootDir = "e:\\GOOGLE AI STUDIO\\design-calculators";
+const rootDir = __dirname;
 const excludedFiles = ['sitemap.html.html'];
 
 // strict mode flag

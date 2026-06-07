@@ -207,7 +207,7 @@ window.TOOLS_DB = [
         "name": "Neutral Earth Fault",
         "href": "neutral-earth-fault-current.html",
         "category": "electrical",
-        "icon": "fas fa-faucet-drip"
+        "icon": "fas fa-faucet"
     },
     {
         "name": "PCB Trace Width",
@@ -633,7 +633,7 @@ window.TOOLS_DB = [
         "name": "Thermowell Wake Freq (Adv)",
         "href": "thermowellwakefreq.html",
         "category": "instrumentation",
-        "icon": "fas fa-vibrate"
+        "icon": "fas fa-wave-square"
     },
     {
         "name": "Turndown Ratio",
@@ -678,6 +678,12 @@ window.TOOLS_DB = [
         "icon": "fas fa-exclamation-circle"
     },
     {
+        "name": "Unit Converter",
+        "href": "unit-converter-instrumentation.html",
+        "category": "instrumentation",
+        "icon": "fas fa-exchange-alt"
+    },
+    {
         "name": "Darcy Friction Factor",
         "href": "frictionfactortool.html",
         "category": "mechanical",
@@ -687,7 +693,7 @@ window.TOOLS_DB = [
         "name": "NPT/BSP Thread Sizes",
         "href": "nptbspthreadcalculator.html",
         "category": "mechanical",
-        "icon": "fas fa-screw"
+        "icon": "fas fa-screwdriver-wrench"
     },
     {
         "name": "Pipe Schedule & Stress",
@@ -789,7 +795,7 @@ window.TOOLS_DB = [
         "name": "Corrosion Rate",
         "href": "corrosion-rate.html",
         "category": "mechanical",
-        "icon": "fas fa-rust"
+        "icon": "fas fa-shield-halved"
     },
     {
         "name": "Darcy-Weisbach",
@@ -1014,6 +1020,12 @@ window.TOOLS_DB = [
         "icon": "fas fa-fire"
     },
     {
+        "name": "Unit Converter",
+        "href": "unit-converter-mechanical.html",
+        "category": "mechanical",
+        "icon": "fas fa-exchange-alt"
+    },
+    {
         "name": "All Articles Hub",
         "href": "articles.html",
         "category": "articles",
@@ -1132,5 +1144,11 @@ window.TOOLS_DB = [
         "href": "articles.html",
         "category": "articles",
         "icon": "fas fa-blog"
+    },
+    {
+        "name": "Engineering Glossary",
+        "href": "engineering-glossary.html",
+        "category": "articles",
+        "icon": "fas fa-book"
     }
 ];
