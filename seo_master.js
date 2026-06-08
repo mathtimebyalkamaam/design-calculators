@@ -32,10 +32,10 @@ const relatedMap = {
 
 function getCat(f) {
     const lf = f.toLowerCase();
-    if (electricalFiles.includes(lf)) return { name: 'Electrical Tools', url: baseUrl + '/indexele.html' };
-    if (instrumentationFiles.includes(lf)) return { name: 'Instrumentation Tools', url: baseUrl + '/indexInst.html' };
-    if (mechanicalFiles.includes(lf)) return { name: 'Mechanical Tools', url: baseUrl + '/indexmech.html' };
-    if (lf.startsWith('article')) return { name: 'Articles', url: baseUrl + '/index.html#articles' };
+    if (electricalFiles.includes(lf)) return { name: 'Electrical Tools', url: baseUrl + '/indexele' };
+    if (instrumentationFiles.includes(lf)) return { name: 'Instrumentation Tools', url: baseUrl + '/indexinst' };
+    if (mechanicalFiles.includes(lf)) return { name: 'Mechanical Tools', url: baseUrl + '/indexmech' };
+    if (lf.startsWith('article')) return { name: 'Articles', url: baseUrl + '/#articles' };
     return null;
 }
 
@@ -84,7 +84,8 @@ function processFile(file) {
     
     const title = getTitle(content);
     const desc = getDesc(content);
-    const fullUrl = baseUrl + '/' + file;
+    const cleanName = file.replace('.html', '');
+    const fullUrl = baseUrl + '/' + cleanName;
     let changed = false;
 
     // === TASK 1: Schema Injection (SoftwareApplication) ===

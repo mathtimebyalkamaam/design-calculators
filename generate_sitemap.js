@@ -27,7 +27,8 @@ async function generateSitemap() {
         if (file.startsWith('index')) priority = '0.9';
         if (file.startsWith('article')) priority = '0.7';
 
-        xml += `  <url>\n    <loc>${baseUrl}/${file}</loc>\n    <lastmod>${lastMod}</lastmod>\n    <priority>${priority}</priority>\n  </url>\n`;
+        const cleanName = file.replace('.html', '');
+        xml += `  <url>\n    <loc>${baseUrl}/${cleanName}</loc>\n    <lastmod>${lastMod}</lastmod>\n    <priority>${priority}</priority>\n  </url>\n`;
     }
 
     xml += `</urlset>`;

@@ -48,6 +48,13 @@ function checkLink(link, sourceFile) {
     // Remove query strings
     targetPath = targetPath.split('?')[0];
     
+    // Netlify pretty URL resolution: append .html if no extension
+    if (targetPath !== '' && !path.extname(targetPath) && targetPath !== '/') {
+        targetPath += '.html';
+    } else if (targetPath === '/') {
+        targetPath = 'index.html';
+    }
+    
     // Build full path
     const fullPath = path.join(DIR, targetPath);
     
