@@ -789,6 +789,156 @@
             }
         }
         .hidden { display: none; }
+        .result-header-row td {
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        .faq-answer ul {
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .faq-card {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 0px !important;
+            border-left: 5px solid var(--primary-color);
+        }
+        .faq-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        .faq-header {
+            margin: 0 !important;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            cursor: pointer;
+            user-select: none;
+        }
+        .faq-header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+        .faq-toggle-icon {
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+            color: var(--text-color);
+            opacity: 0.6;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+        .faq-card.active .faq-toggle-icon {
+            transform: rotate(180deg);
+            color: var(--secondary-color);
+            opacity: 1;
+        }
+        .faq-answer-wrapper {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
+        }
+        .faq-card.active .faq-answer-wrapper {
+            max-height: 2000px;
+            opacity: 1;
+        }
+        .faq-answer-wrapper .faq-answer {
+            max-height: none !important;
+            overflow: visible !important;
+        }
+        .faq-answer-content {
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+            margin-top: 15px;
+        }
+        .var-cap { color: #10b981; font-weight: 600; }
+        .var-time { color: #3b82f6; font-weight: 600; }
+        .var-factor { color: #f59e0b; font-weight: 600; }
+        .var-volt { color: #ef4444; font-weight: 600; }
+        .var-power { color: #8b5cf6; font-weight: 600; }
+        .calculation-card {
+            background: linear-gradient(135deg, rgba(30,58,138,0.02), rgba(30,58,138,0.05));
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        body.dark-mode .calculation-card {
+            background: linear-gradient(135deg, rgba(16,185,129,0.02), rgba(16,185,129,0.05));
+        }
+        .math-content {
+            overflow-x: auto;
+        }
+        
+        /* Responsive Table Wrapper */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+
+        /* MathJax & Courier text overflow fixes */
+        .faq-answer p, .formula-block, .formula, .math-content {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        mjx-container, .mjx-container {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+        }
+        #calculation-details p.calculation-step {
+            overflow-x: auto;
+        }
+
+        /* Button group layout */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Responsive columns inside the guide content */
+        .guide-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+            margin-top: 15px;
+        }
+        .guide-col-large {
+            flex: 1.2;
+            min-width: 280px;
+        }
+        .guide-col-small {
+            flex: 1;
+            min-width: 280px;
+        }
+        @media (max-width: 768px) {
+            .guide-col-large, .guide-col-small {
+                flex: 1 1 100%;
+                min-width: 0;
+            }
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Industrial UPS Sizing Calculator - Design Calculators - Electrical">
@@ -994,14 +1144,14 @@
                 <p>Calculate the appropriate UPS (Uninterruptible Power Supply) kVA capacity and battery (Ah) size for industrial applications. This tool accounts for multiple load types (kW, kVA, HP, Amps), power factors, inrush currents, future expansion, and battery derating factors to provide a robust sizing recommendation based on industry best practices and principles from standards like the IEEE Emerald Book.</p>
             </div>
             
-            <div class="calculator-form">
-                <form id="ups-sizing-form">
+            <div class="calculator-form math-content">
+                <form id="ups-sizing-form" class="math-content">
                     <h3>1. System Parameters</h3>
-                    
-                    <div class="form-row">
+                                   <div class="form-row">
                         <div class="form-group">
-                            <label for="system-voltage">System Voltage (V) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Nominal voltage of the system</span></span></label>
+                            <label for="system-voltage">Nominal AC Output Voltage (\(V_{\text{out}}\), V) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Nominal output voltage of the AC system</span></span></label>
                             <select id="system-voltage" required>
+                                <option value="115">115V (Single Phase)</option>
                                 <option value="220">220V (Single Phase)</option>
                                 <option value="230">230V (Single Phase)</option>
                                 <option value="240">240V (Single Phase)</option>
@@ -1014,52 +1164,52 @@
                             </select>
                         </div>
                         <div class="form-group" id="custom-voltage-group" style="display: none;">
-                            <label for="custom-voltage">Custom Voltage (V)</label>
+                            <label for="custom-voltage">Custom Output Voltage (\(V_{\text{out, custom}}\), V)</label>
                             <input type="number" id="custom-voltage" min="1" step="1">
                         </div>
                         <div class="form-group">
-                            <label for="phase-type">System Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Single-phase or three-phase system</span></span></label>
+                            <label for="phase-type">System Phase Configuration (\(\Phi_{\text{out}}\)) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Single-phase or three-phase output system</span></span></label>
                             <select id="phase-type" required>
-                                <option value="single">Single-Phase</option>
-                                <option value="three" selected>Three-Phase</option>
+                                <option value="single">Single-Phase (1Φ)</option>
+                                <option value="three" selected>Three-Phase (3Φ)</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="backup-time">Required Backup Time (minutes) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">How long the UPS should provide power during an outage</span></span></label>
+                            <label for="backup-time">Required Autonomy Duration (\(t_{\text{autonomy}}\), min) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">How long the battery bank must sustain the full load</span></span></label>
                             <input type="number" id="backup-time" min="1" step="1" value="30" required>
                         </div>
                         <div class="form-group">
-                            <label for="future-expansion">Future Expansion Factor (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Additional capacity for future growth</span></span></label>
+                            <label for="future-expansion">Growth Margin Factor (\(k_{\text{growth}}\), %) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Additional capacity for future load expansions</span></span></label>
                             <input type="number" id="future-expansion" min="0" max="100" step="5" value="25" required>
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="ups-efficiency">UPS Efficiency (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Efficiency of the UPS inverter (e.g., 92%).</span></span></label>
+                            <label for="ups-efficiency">UPS Inverter Efficiency (\(\eta_{\text{inv}}\), %) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Electrical efficiency of the UPS inverter under rated load</span></span></label>
                             <input type="number" id="ups-efficiency" min="70" max="99" step="1" value="92" required>
                         </div>
                         <div class="form-group">
-                            <label for="ups-type">UPS Technology <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Type of UPS technology</span></span></label>
+                            <label for="ups-type">UPS Operating Topology <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Type of UPS electrical topology</span></span></label>
                             <select id="ups-type" required>
-                                <option value="online">Online/Double Conversion</option>
-                                <option value="line-interactive">Line Interactive</option>
-                                <option value="standby">Standby/Offline</option>
+                                <option value="online">Online Double-Conversion (VFI)</option>
+                                <option value="line-interactive">Line Interactive (VI)</option>
+                                <option value="standby">Standby/Offline (VFD)</option>
                             </select>
                         </div>
                     </div>
-
+ 
                     <h3>2. Battery System</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="dc-bus-voltage">UPS DC Bus Voltage (V) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The nominal DC voltage of the UPS internal battery bus (e.g., 240V, 384V, 480V)</span></span></label>
+                            <label for="dc-bus-voltage">Nominal DC Link Voltage (\(V_{\text{dc}}\), V) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The nominal DC voltage of the UPS internal battery bus (e.g., 240V, 384V, 480V)</span></span></label>
                             <input type="number" id="dc-bus-voltage" min="12" step="12" value="384" required>
                         </div>
                          <div class="form-group">
-                            <label for="battery-type">Battery Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Chemistry of the batteries. Affects unit voltage, efficiency, and depth of discharge.</span></span></label>
+                            <label for="battery-type">Energy Storage Battery Chemistry <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Chemistry of the battery system. Affects cell voltage, efficiency, and depth of discharge.</span></span></label>
                             <select id="battery-type" required>
                                 <option value="VRLA/LA">VRLA/LA (2V Cells)</option>
                                 <option value="Ni-Cd">Ni-Cd (1.2V Cells)</option>
@@ -1068,10 +1218,10 @@
                             </select>
                         </div>
                     </div>
-
+ 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="eodv-per-cell">EODV per Cell (V) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">End of Discharge Voltage per 2V cell. 1.75V extracts max energy but shortens battery life. 1.80V is the recommended industry standard per IEEE 485.</span></span></label>
+                            <label for="eodv-per-cell">Cell End-of-Discharge Voltage (\(V_{\text{EOD}}\), V/cell) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Minimum voltage to which a cell is allowed to discharge. 1.80V is the standard industry recommendation.</span></span></label>
                             <select id="eodv-per-cell" required>
                                 <option value="1.75">1.75 V/cell (Standard — Max Energy)</option>
                                 <option value="1.80" selected>1.80 V/cell (Moderate — Recommended)</option>
@@ -1091,11 +1241,11 @@
                             
                             <div class="form-row">
                                 <div class="form-group" style="flex: 2; min-width: 200px;">
-                                    <label>Description</label>
+                                    <label>Load Description</label>
                                     <input type="text" id="load-name-1" placeholder="e.g., Servers, Motors">
                                 </div>
                                 <div class="form-group" style="flex: 1.5; min-width: 150px;">
-                                    <label>Load Type</label>
+                                    <label>Load Characteristics Type</label>
                                     <select id="load-type-1">
                                         <option value="resistive">Resistive</option>
                                         <option value="motor">Motors</option>
@@ -1105,18 +1255,18 @@
                                     </select>
                                 </div>
                                 <div class="form-group" style="flex: 0.8; min-width: 80px;">
-                                    <label>Qty</label>
+                                    <label>Quantity (\(N_{\text{qty}}\))</label>
                                     <input type="number" id="quantity-1" min="1" step="1" value="1" required>
                                 </div>
                             </div>
                             
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Power</label>
+                                    <label>Active/Apparent Power (\(P_{\text{load}}\) / \(S_{\text{load}}\))</label>
                                     <input type="number" id="load-power-1" min="0" step="0.1" value="10" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Unit</label>
+                                    <label>Power Unit</label>
                                     <select id="power-unit-1">
                                         <option value="kW" selected>kW</option>
                                         <option value="kVA">kVA</option>
@@ -1127,22 +1277,22 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>PF</label>
+                                    <label>Load Power Factor (\(\cos\phi_{\text{load}}\))</label>
                                     <input type="number" id="power-factor-1" min="0.1" max="1" step="0.01" value="0.8" required>
                                 </div>
                             </div>
                             
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Start Fctr</label>
+                                    <label>Inrush Multiplier (\(k_{\text{start}}\))</label>
                                     <input type="number" id="starting-factor-1" min="1" max="10" step="0.1" value="1" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Crest Fctr</label>
+                                    <label>Crest Factor (\(CF_{\text{load}}\))</label>
                                     <input type="number" id="crest-factor-1" min="1" max="5" step="0.01" value="1.41" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Duty %</label>
+                                    <label>Duty Cycle (\(DF_{\text{load}}\), %)</label>
                                     <input type="number" id="duty-cycle-1" min="1" max="100" step="1" value="100" required>
                                 </div>
                             </div>
@@ -1155,38 +1305,92 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="ambient-temp">Ambient Temperature (°C) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Operating temperature of the environment. High temps derate batteries and UPS.</span></span></label>
-                            <input type="number" id="ambient-temp" min="0" max="50" step="1" value="25" required>
+                            <label for="ambient-temp">Ambient Operating Temperature (\(T_{\text{amb}}\), °C) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Operating temperature of the environment. High temps derate batteries and UPS.</span></span></label>
+                            <input type="number" id="ambient-temp" min="-20" max="55" step="1" value="25" required>
                         </div>
                         <div class="form-group">
-                            <label for="altitude">Altitude (meters) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Installation altitude above sea level. High altitude derates UPS cooling.</span></span></label>
+                            <label for="altitude">Installation Altitude (\(H_{\text{alt}}\), m) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Installation altitude above sea level. High altitude derates UPS cooling per IEC 62040-3.</span></span></label>
                             <input type="number" id="altitude" min="0" step="100" value="0" required>
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="environment-type">Environment Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Type of installation environment</span></span></label>
+                            <label for="environment-type">Operating Environment Class <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Type of installation environment. Determines IP rating, cooling method, and derating.</span></span></label>
                             <select id="environment-type" required>
-                                <option value="clean">Clean/Office Environment</option>
-                                <option value="industrial">Industrial Environment</option>
-                                <option value="harsh">Harsh Environment (Dust/Humidity)</option>
-                                <option value="outdoor">Outdoor Installation</option>
+                                <option value="clean">Clean/Office Environment (IP20)</option>
+                                <option value="industrial">Industrial Environment (IP31/IP42)</option>
+                                <option value="harsh">Harsh Environment — Dust/Humidity (IP54)</option>
+                                <option value="outdoor">Outdoor Installation (IP55/IP65)</option>
+                                <option value="marine">Marine/Offshore (IP56, Salt Spray)</option>
+                                <option value="explosive">Hazardous/Explosive Zone (Ex-rated)</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="redundancy">Redundancy Configuration <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Redundancy level for critical applications</span></span></label>
+                            <label for="redundancy">System Redundancy Configuration (\(N+X\)) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Redundancy level for critical applications per Uptime Institute Tier standards.</span></span></label>
                             <select id="redundancy" required>
-                                <option value="n">N (Single UPS)</option>
-                                <option value="n+1">N+1 Redundancy</option>
-                                <option value="2n">2N Redundancy</option>
-                                <option value="2n+1">2N+1 Redundancy</option>
+                                <option value="n">N (Single UPS — Tier I/II)</option>
+                                <option value="n+1">N+1 Redundancy (Tier III)</option>
+                                <option value="2n">2N Redundancy (Tier IV)</option>
+                                <option value="2n+1">2N+1 Redundancy (Tier IV+)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="industry-type">Industry / Application Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Industry-specific standards and safety margins. Affects minimum design factors and recommended topology.</span></span></label>
+                            <select id="industry-type" required>
+                                <option value="general">General Industrial</option>
+                                <option value="datacenter">Data Center / IT / Telecom</option>
+                                <option value="oil-gas">Oil & Gas / Petrochemical</option>
+                                <option value="mining">Mining & Metals</option>
+                                <option value="pharma">Pharmaceutical / Biotech (cGMP)</option>
+                                <option value="hospital">Hospital / Healthcare (IEC 60364-7-710)</option>
+                                <option value="semiconductor">Semiconductor / Electronics Fab</option>
+                                <option value="water">Water & Wastewater Treatment</option>
+                                <option value="power-gen">Power Generation / Utility</option>
+                                <option value="railway">Railway / Transportation (EN 50121)</option>
+                                <option value="marine">Marine / Offshore (DNV-GL)</option>
+                                <option value="military">Military / Defense (MIL-STD)</option>
+                                <option value="food">Food & Beverage Processing</option>
+                                <option value="cement">Cement / Heavy Manufacturing</option>
+                                <option value="textile">Textile & Apparel</option>
+                                <option value="automotive">Automotive Manufacturing</option>
+                                <option value="airport">Airport / Aviation</option>
+                                <option value="broadcast">Broadcasting / Media</option>
+                                <option value="nuclear">Nuclear (Safety Class 1E)</option>
+                                <option value="renewable">Renewable Energy / Solar-Wind</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="seismic-zone">Seismic Zone / Qualification <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Seismic qualification per IEEE 693 or IBC. Affects equipment anchoring and structural derating.</span></span></label>
+                            <select id="seismic-zone" required>
+                                <option value="none" selected>None / Zone 0 (Low Risk)</option>
+                                <option value="zone1">Zone 1 — Moderate (0.1g–0.25g)</option>
+                                <option value="zone2">Zone 2 — High (0.25g–0.5g)</option>
+                                <option value="zone3">Zone 3 — Very High (&gt;0.5g, IEEE 693)</option>
+                                <option value="zone4">Zone 4 — Nuclear/Critical (1.0g+)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-frequency">Input Supply Frequency (Hz) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mains supply frequency. 50Hz (IEC regions) or 60Hz (ANSI/NEMA regions). Affects transformer and filter design.</span></span></label>
+                            <select id="input-frequency" required>
+                                <option value="50" selected>50 Hz (IEC — Europe, Asia, Africa, Oceania)</option>
+                                <option value="60">60 Hz (ANSI — Americas, Japan 60Hz, Korea)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="battery-aging-factor">Battery Aging/Design Margin Factor (\(k_{\text{age}}\)) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">IEEE 485 recommends 1.25 (25% margin) to account for end-of-life capacity degradation to 80%.</span></span></label>
+                            <input type="number" id="battery-aging-factor" min="1" max="1.5" step="0.05" value="1.25" required>
                         </div>
                     </div>
                     
                     <!-- NEW Button Group -->
-                    <div class="form-row" style="gap: 10px; margin-top: 25px;">
+                    <div class="button-group">
                         <button type="button" id="calculate-btn" class="calculate-btn" style="flex: 2;">
                             <i class="fas fa-calculator" style="margin-right: 8px;"></i>Calculate UPS Size
                             <span class="spinner" id="calculate-spinner" style="display:none;"></span>
@@ -1206,16 +1410,18 @@
                 <div id="load-details-summary">
                     <!-- Load details summary will be inserted here -->
                 </div>
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody id="result-table-body">
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-table-body">
+                        </tbody>
+                    </table>
+                </div>
                 
                 <div id="calculation-details" class="math-content">
                     <!-- Calculation steps will be inserted here -->
@@ -1235,15 +1441,15 @@
 
     <!-- NEW CONTENT BLOCK for AdSense -->
     <div class="container">
-        <div id="ups-guide-content" style="margin-top: 40px; animation: fadeInUp 0.8s ease;">
+        <div id="ups-guide-content" class="content-block show math-content" style="margin-top: 40px; animation: fadeInUp 0.8s ease; display: block; opacity: 1; transform: translateY(0);">
             
             <h2 class="math-content"><i class="fas fa-microchip"></i> Senior Engineer's Guide to UPS Architecture</h2>
             
             <!-- 1. The What (Topologies) -->
             <div class="insight-card" style="border-left-color: var(--secondary); background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.03));">
                 <h4><i class="fas fa-project-diagram"></i> 1. Topology Comparison & Selection Criteria</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
-                    <div style="flex: 1.2; min-width: 300px;">
+                <div class="guide-layout">
+                    <div class="guide-col-large">
                         <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem;">
                             <thead>
                                 <tr style="background-color: var(--secondary); color: white; text-align: left;">
@@ -1278,7 +1484,7 @@
                             <strong>Engineering Note:</strong> Line-interactive systems rely on mechanical relays for transfer. The resulting 4-8ms dead-bus state is sufficient to cause high-speed Programmable Logic Controllers (PLCs) or Variable Frequency Drives (VFDs) to drop out, leading to process shutdown. <strong>Online Double-Conversion (VFI) is mandatory for continuous industrial processes.</strong>
                         </div>
                     </div>
-                    <div style="flex: 1; min-width: 300px; text-align: center;">
+                    <div class="guide-col-small" style="text-anchor: center;">
                         <!-- SLD Online Double Conversion -->
                         <div style="background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid #334155;">
                             <h5 style="margin-top: 0; color: var(--text-color);">Single Line Diagram: Double-Conversion UPS</h5>
@@ -1375,15 +1581,15 @@
             <!-- 2. The Why (kVA vs kW and Inrush) -->
             <div class="insight-card" style="border-left-color: #f59e0b; background: linear-gradient(135deg, var(--card-bg), rgba(245,158,11,0.03));">
                 <h4><i class="fas fa-bolt"></i> 2. Design Criteria: Loading & Inrush Transients</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                    <div style="flex: 1.2; min-width: 300px;">
+                <div class="guide-layout">
+                    <div class="guide-col-large">
                         <ul style="padding-left: 20px;">
                             <li><strong>Apparent Power (kVA) vs. Real Power (kW):</strong> The UPS inverter must be physically sized to handle the $I^2R$ thermal limits of the Apparent Power, while the DC bus and batteries must supply the Real Power. Modern industrial loads feature Power Factors (PF) approaching Unity (1.0).</li>
                             <li><strong>Inrush Multipliers (Crest Factor):</strong> IT server SMPS loads can generate Crest Factors of 3:1, distorting the output voltage waveform ($THD_v$). Direct-On-Line (DOL) motors demand <strong>6x to 8x Locked Rotor Amps (LRA)</strong> for 1-3 seconds. If the UPS inverter cannot supply this instantaneous current, the Static Bypass Switch (SBS) will force a transfer to raw utility power to clear the transient, exposing the load to grid anomalies.</li>
                             <li><strong>Battery Recharge Sizing:</strong> A critical design trap. The UPS input rectifier must be sized large enough to support 100% of the critical load <em>while simultaneously</em> supplying 10-25% extra capacity to recharge a fully depleted battery bank within 8 hours.</li>
                         </ul>
                     </div>
-                    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px;">
+                    <div class="guide-col-small" style="display: flex; flex-direction: column; gap: 20px;">
                         <!-- Power Triangle Chart -->
                         <div style="background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid #334155;">
                             <p style="text-align: center; font-size: 0.9rem; font-weight: bold; margin-top: 0;">The Power Triangle (0.8 PF Load)</p>
@@ -1405,8 +1611,8 @@
             <!-- 3. The How (Redundancy & Reliability) -->
             <div class="insight-card" style="border-left-color: #10b981; background: linear-gradient(135deg, var(--card-bg), rgba(16,185,129,0.03));">
                 <h4><i class="fas fa-server"></i> 3. Tier IV Redundancy: 2N Dual-Bus Architecture</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
-                    <div style="flex: 1.2; min-width: 300px;">
+                <div class="guide-layout" style="align-items: center;">
+                    <div class="guide-col-large">
                         <p>While N+1 Parallel Redundancy protects against a single UPS module failure, it still relies on a single paralleling board and a single downstream critical bus. A fault on the output bus brings down the entire facility.</p>
                         <p><strong>System + System (2N) Architecture</strong> is the mandatory standard for Uptime Institute Tier IV Data Centers and high-risk petrochemical applications. It provides two completely independent electrical paths (A and B) from the utility to the load.</p>
                         <ul style="padding-left: 20px;">
@@ -1417,7 +1623,7 @@
                             <strong>Fault Clearing:</strong> The most critical aspect of 2N design is ensuring that a catastrophic short-circuit on Bus A does not pull down the voltage on Bus B through back-feed or shared ground loops.
                         </div>
                     </div>
-                    <div style="flex: 1; min-width: 300px; text-align: center;">
+                    <div class="guide-col-small" style="text-anchor: center;">
                         <!-- SLD 2N Redundancy -->
                         <div style="background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid #334155;">
                             <h5 style="margin-top: 0; color: var(--text-color);">SLD: 2N (System + System) Architecture</h5>
@@ -1466,8 +1672,8 @@
             <!-- 4. The Where (Battery Chemistries & Derating) -->
             <div class="insight-card" style="border-left-color: #ef4444; background: linear-gradient(135deg, var(--card-bg), rgba(239,68,68,0.03));">
                 <h4><i class="fas fa-temperature-high"></i> 4. Energy Storage: VRLA vs Li-Ion Thermal Derating</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
-                    <div style="flex: 1.2; min-width: 300px;">
+                <div class="guide-layout" style="align-items: center;">
+                    <div class="guide-col-large">
                         <ul style="padding-left: 20px;">
                             <li><strong>VRLA (Valve-Regulated Lead-Acid):</strong> The legacy standard. High weight-to-power ratio. Highly susceptible to thermal degradation.</li>
                             <li><strong>Li-Ion (Lithium-Ion):</strong> Modern standard. 40-60% weight reduction, 3x cycle life, superior recharge rates, and high thermal tolerance. Requires sophisticated integrated Battery Management Systems (BMS) for thermal runaway protection.</li>
@@ -1475,7 +1681,7 @@
                         <p><strong>Arrhenius Equation & The 8 Degree Rule:</strong></p>
                         <p>Standard VRLA design life is strictly rated at 25&deg;C (77&deg;F). The Arrhenius equation dictates that the rate of chemical reaction roughly doubles for every 10&deg;C rise. In UPS sizing, this is codified as the "8 Degree Rule": <strong>For every 8&deg;C rise in ambient temperature above 25&deg;C, the operational lifespan of a VRLA battery is slashed by 50%.</strong></p>
                     </div>
-                    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px;">
+                    <div class="guide-col-small" style="display: flex; flex-direction: column; gap: 20px;">
                         <div style="background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid #334155;">
                             <p style="text-align: center; font-size: 0.9rem; font-weight: bold; margin-top: 0;">VRLA Battery Design Life vs. Ambient Temperature</p>
                             <div style="position: relative; height: 180px; width: 100%;">
@@ -1484,26 +1690,886 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- 5. Grounded vs. Floating UPS Systems -->
+            <div class="insight-card" style="border-left-color: var(--primary-color); background: linear-gradient(135deg, var(--card-bg), rgba(30,58,138,0.03));">
+                <h4><i class="fas fa-plug"></i> 5. Earthing Topologies: Grounded vs. Floating UPS Systems</h4>
+                <div class="guide-layout">
+                    <div class="guide-col-large" style="width: 100%;">
+                        <p>Electrical earthing defines how the UPS output neutral and phase conductors reference Local Earth (PE). The choice between Grounded and Floating systems has major safety, reliability, and application consequences.</p>
+                        
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; margin-bottom: 20px;">
+                            <thead>
+                                <tr style="background-color: var(--primary-color); color: #ffffff !important; text-align: left;">
+                                    <th style="padding: 10px; border: 1px solid var(--border-color); width: 20%; color: #ffffff !important;">Feature</th>
+                                    <th style="padding: 10px; border: 1px solid var(--border-color); width: 40%; color: #ffffff !important;">Grounded UPS (TN-S / TT)</th>
+                                    <th style="padding: 10px; border: 1px solid var(--border-color); width: 40%; color: #ffffff !important;">Floating UPS (IT System)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background-color: rgba(30,58,138,0.02);">
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Neutral-to-Earth</strong></td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);">Output neutral is solidly bonded to Ground at the source.</td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);">Completely isolated; no galvanic path to ground.</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>First Ground Fault</strong></td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color); color: var(--danger); font-weight: bold;">Immediate Trip (Breaker opens)</td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color); color: var(--success-color); font-weight: bold;">No Trip (System continues running)</td>
+                                </tr>
+                                <tr style="background-color: rgba(30,58,138,0.02);">
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Benefits</strong></td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);">
+                                        <ul style="margin: 0; padding-left: 15px;">
+                                            <li>Fast fault clearance via standard overcurrent breakers.</li>
+                                            <li>Stable voltage references across all phases.</li>
+                                            <li>Out-of-the-box compatibility with all standard commercial/IT loads.</li>
+                                        </ul>
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);">
+                                        <ul style="margin: 0; padding-left: 15px;">
+                                            <li>High uptime (single-fault tolerance).</li>
+                                            <li>No sudden process interruption on a phase-to-ground fault.</li>
+                                            <li>Excellent electrical noise isolation for PLCs and sensors.</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Drawbacks</strong></td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);">
+                                        <ul style="margin: 0; padding-left: 15px;">
+                                            <li>Zero tolerance for insulation faults.</li>
+                                            <li>Higher arc flash energy during ground fault events.</li>
+                                            <li>Circulating ground currents can introduce noise.</li>
+                                        </ul>
+                                    </td>
+                                    <td style="padding: 10px; border: 1px solid var(--border-color);">
+                                        <ul style="margin: 0; padding-left: 15px;">
+                                            <li>Requires continuous active insulation monitors (IMD).</li>
+                                            <li>A second fault on a different phase triggers a high-current short-circuit.</li>
+                                            <li>Requires cables and loads rated for higher line-to-line stress.</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            
-        </div>
 
-    
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+            <!-- 6. International Approved Standards -->
+            <div class="insight-card" style="border-left-color: var(--success-color); background: linear-gradient(135deg, var(--card-bg), rgba(16,185,129,0.03));">
+                <h4><i class="fas fa-globe"></i> 6. International Standards & Compliance</h4>
+                <div class="guide-layout">
+                    <div class="guide-col-large" style="width: 100%;">
+                        <p>Industrial UPS design, battery autonomy calculations, and switchgear interfaces must comply with international codes to ensure safety, electromagnetic compatibility, and structural integrity under dynamic conditions:</p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 15px;">
+                            <div style="background: rgba(16,185,129,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+                                <h5 style="margin: 0 0 10px 0; color: var(--success-color); font-weight: bold;"><i class="fas fa-file-contract"></i> IEC 62040 (Global Standard)</h5>
+                                <ul style="margin: 0; padding-left: 18px; font-size: 0.88rem; line-height: 1.5; color: var(--text-color);">
+                                    <li><strong>IEC 62040-1:</strong> General and safety requirements (essential for shock protection and backfeed isolation).</li>
+                                    <li><strong>IEC 62040-2:</strong> Electromagnetic compatibility (EMC) standards defining emission and immunity limits.</li>
+                                    <li><strong>IEC 62040-3:</strong> Performance measurement method and classification (VFI vs. VI vs. VFD).</li>
+                                </ul>
+                            </div>
+                            <div style="background: rgba(16,185,129,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+                                <h5 style="margin: 0 0 10px 0; color: var(--success-color); font-weight: bold;"><i class="fas fa-car-battery"></i> IEEE Standards (Battery Sizing)</h5>
+                                <ul style="margin: 0; padding-left: 18px; font-size: 0.88rem; line-height: 1.5; color: var(--text-color);">
+                                    <li><strong>IEEE 485:</strong> Sizing lead-acid batteries for stationary applications.</li>
+                                    <li><strong>IEEE 1115:</strong> Sizing Nickel-Cadmium batteries.</li>
+                                    <li><strong>IEEE 1184:</strong> Guide for UPS battery system design and management.</li>
+                                    <li><strong>IEEE 1100:</strong> Emerald Book for powering sensitive electronic equipment.</li>
+                                </ul>
+                            </div>
+                            <div style="background: rgba(16,185,129,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+                                <h5 style="margin: 0 0 10px 0; color: var(--success-color); font-weight: bold;"><i class="fas fa-shield-alt"></i> Local Codes & Safety Regulations</h5>
+                                <ul style="margin: 0; padding-left: 18px; font-size: 0.88rem; line-height: 1.5; color: var(--text-color);">
+                                    <li><strong>UL 1778:</strong> North American standard for safety of UPS equipment.</li>
+                                    <li><strong>NEC Article 645 & 700:</strong> National Electrical Code guidelines for emergency power systems and critical IT infrastructure.</li>
+                                    <li><strong>NEMA PE 1:</strong> Standards defining performance criteria for industrial installations.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- UPS Interview FAQ Section -->
+    <section class="container" style="margin-top: 40px; margin-bottom: 40px;">
+        <div class="content-block show" style="display: block; opacity: 1; transform: translateY(0);">
+            <h2><i class="fas fa-question-circle"></i> 10 Most Common UPS Sizing Interview Questions (With Math)</h2>
+            <p class="tool-description">These comprehensive technical questions and detailed answers are highly relevant for electrical design engineering interviews, covering principles from <strong>IEEE 485</strong>, <strong>IEEE 1100</strong>, and <strong>IEC 62040</strong>.</p>
+            
+                     <!-- Question 1 -->
+                <div class="faq-card insight-card" style="border-left-color: var(--primary-color); background: linear-gradient(135deg, var(--card-bg), rgba(30,58,138,0.03));">
+                    <h4 class="faq-header" style="color: var(--primary-color); font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: var(--primary-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q1</span>
+                            How do you size the charger for a UPS battery bank? What is the mathematical relationship between battery capacity (Ah) and charging power?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> Sizing a UPS rectifier/charger requires calculating the active power necessary to recharge a fully discharged battery bank within a specified time limit while simultaneously supporting the inverter running at full load.</p>
+                            <p>The charger current <span class="var-power">$I_{\text{charge}}$</span> is modeled as:</p>
+                            <div class="formula-block" style="border: 1px dashed var(--primary-color); padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$I_{\text{charge}} = \frac{C_{\text{Ah}} \times f_{\text{recharge}}}{t_{\text{recharge}}} + I_{\text{continuous\_dc}}$$
+                            </div>
+                            <p>Where:</p>
+                            <ul>
+                                <li><span class="var-cap">$C_{\text{Ah}}$</span> is the nominal battery capacity in Ampere-hours.</li>
+                                <li><span class="var-time">$t_{\text{recharge}}$</span> is the target recharge time in hours (typically 8 to 24 hours).</li>
+                                <li><span class="var-factor">$f_{\text{recharge}}$</span> is the recharge efficiency factor (1.15 to 1.20 for lead-acid, representing a 15-20% chemical loss; 1.05 to 1.10 for Lithium-Ion).</li>
+                                <li><span class="var-volt">$I_{\text{continuous\_dc}}$</span> is the continuous DC load drawn by inverter control circuits (usually small and neglected).</li>
+                            </ul>
+                            
+                            <p>The DC charging power is <span class="var-power">$P_{\text{charge, DC}} = I_{\text{charge}} \times V_{\text{dc}}$</span>, where <span class="var-volt">$V_{\text{dc}}$</span> is the nominal DC bus voltage. The corresponding AC input capacity required by the charger is:</p>
+                            <div class="formula-block" style="border: 1px dashed var(--primary-color); padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$S_{\text{charger, AC}} = \frac{P_{\text{charge, DC}}}{\eta_{\text{charger}} \times PF_{\text{charger}}} = \frac{\left( \frac{C_{\text{Ah}} \times f_{\text{recharge}}}{t_{\text{recharge}}} \right) \times V_{\text{dc}}}{\eta_{\text{charger}} \times PF_{\text{charger}}} \quad [\text{kVA}]$$
+                            </div>
+
+                            <div class="calculation-card">
+                                <h5 style="color: var(--primary-color); font-weight: bold; margin-top: 0; margin-bottom: 8px;">Step-by-Step Design Example:</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    For a battery bank with capacity <span class="var-cap">$C_{\text{Ah}} = 300\text{ Ah}$</span>, nominal voltage <span class="var-volt">$V_{\text{dc}} = 480\text{ V}$</span>, recharge time <span class="var-time">$t_{\text{recharge}} = 10\text{ h}$</span>, recharge factor <span class="var-factor">$f_{\text{recharge}} = 1.15$</span>, charger efficiency <span class="var-factor">$\eta = 0.92$</span>, and power factor <span class="var-factor">$PF = 0.95$</span>:
+                                </p>
+                                <ol style="margin-top: 10px; margin-bottom: 0; font-size: 0.95rem;">
+                                    <li>Calculate charging current: $$I_{\text{charge}} = \frac{300 \times 1.15}{10} = 34.5\text{ A}$$</li>
+                                    <li>Calculate DC charging power: $$P_{\text{charge, DC}} = 34.5\text{ A} \times 480\text{ V} = 16.56\text{ kW}$$</li>
+                                    <li>Calculate AC input kVA: $$S_{\text{charger, AC}} = \frac{16.56}{0.92 \times 0.95} = 18.95\text{ kVA}$$</li>
+                                </ol>
+                            </div>
+
+                            <h5 style="color: var(--primary-color); font-weight: bold; margin-top: 20px;">Charger Power Flow Diagram:</h5>
+                            <svg viewBox="0 0 600 140" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Grid Input -->
+                                <rect x="20" y="45" width="80" height="50" rx="6" fill="var(--primary-color)" opacity="0.1" stroke="var(--primary-color)" stroke-width="2"/>
+                                <text x="60" y="75" text-anchor="middle" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="var(--heading-color)">Grid Input</text>
+                                
+                                <!-- Arrow 1 -->
+                                <path d="M 100 70 L 140 70" stroke="var(--text-color)" stroke-width="2" fill="none"/>
+                                <polygon points="140,70 132,66 132,74" fill="var(--text-color)"/>
+                                <text x="120" y="60" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">AC Power</text>
+
+                                <!-- Rectifier / Charger -->
+                                <rect x="150" y="30" width="120" height="80" rx="8" fill="var(--secondary-color)" opacity="0.15" stroke="var(--secondary-color)" stroke-width="2"/>
+                                <text x="210" y="65" text-anchor="middle" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="var(--heading-color)">Rectifier/Charger</text>
+                                <text x="210" y="85" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" fill="var(--text-color)">AC &rarr; DC ($S_{\text{charger}}$)</text>
+
+                                <!-- Arrow 2 -->
+                                <path d="M 270 70 L 330 70" stroke="var(--text-color)" stroke-width="2" fill="none"/>
+                                <polygon points="330,70 322,66 322,74" fill="var(--text-color)"/>
+                                <text x="300" y="60" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">DC charging</text>
+
+                                <!-- DC Link -->
+                                <circle cx="340" cy="70" r="10" fill="var(--accent-color)" opacity="0.2" stroke="var(--accent-color)" stroke-width="2"/>
+                                <text x="340" y="74" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">DC</text>
+                                
+                                <!-- Arrow to Battery -->
+                                <path d="M 340 80 L 340 100" stroke="var(--text-color)" stroke-width="2" fill="none"/>
+                                <polygon points="340,100 336,92 344,92" fill="var(--text-color)"/>
+
+                                <!-- Battery Bank -->
+                                <rect x="290" y="105" width="100" height="30" rx="4" fill="var(--success-color)" opacity="0.15" stroke="var(--success-color)" stroke-width="2"/>
+                                <text x="340" y="124" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">Battery Bank ($C_{\text{Ah}}$)</text>
+
+                                <!-- Arrow to Inverter -->
+                                <path d="M 350 70 L 410 70" stroke="var(--text-color)" stroke-width="2" fill="none"/>
+                                <polygon points="410,70 402,66 402,74" fill="var(--text-color)"/>
+
+                                <!-- Inverter -->
+                                <rect x="420" y="30" width="80" height="80" rx="8" fill="var(--primary-color)" opacity="0.15" stroke="var(--primary-color)" stroke-width="2"/>
+                                <text x="460" y="65" text-anchor="middle" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="var(--heading-color)">Inverter</text>
+                                <text x="460" y="85" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" fill="var(--text-color)">DC &rarr; AC</text>
+
+                                <!-- Arrow to Load -->
+                                <path d="M 500 70 L 535 70" stroke="var(--text-color)" stroke-width="2" fill="none"/>
+                                <polygon points="535,70 527,66 527,74" fill="var(--text-color)"/>
+
+                                <!-- Critical Load -->
+                                <rect x="540" y="45" width="50" height="50" rx="6" fill="#ef4444" opacity="0.15" stroke="#ef4444" stroke-width="2"/>
+                                <text x="565" y="74" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">Load</text>
+                            </svg>
+
+                            <p><strong>Interviewer Tip:</strong> Sizing a charger too small extends battery recharge time, leaving the system vulnerable if a second grid failure occurs shortly after. In lead-acid batteries, sizing it too large can cause overheating, grid corrosion, and battery bulging.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="faq-card insight-card" style="border-left-color: var(--secondary-color); background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.03));">
+                    <h4 class="faq-header" style="color: var(--secondary-color); font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: var(--secondary-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q2</span>
+                            Why is the End-of-Discharge Voltage (EODV) critical, and why do we use 1.80 V/cell as the standard rather than 1.75 V/cell?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> The End-of-Discharge Voltage (EODV or <span class="var-volt">$V_{\text{EOD}}$</span>) is the cell voltage at which battery discharge must terminate. It marks the "knee" of the chemical discharge curve. Below this point, voltage drops precipitously, and the rate of battery degradation spikes exponentially.</p>
+                            <p>During discharge, a cell's terminal voltage is modeled by the polarization equation:</p>
+                            <div class="formula-block" style="border: 1px dashed var(--secondary-color); padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$V_{\text{terminal}}(t) = E_0 - I \cdot R_{\text{int}}(t) - \eta_{\text{act}} - \eta_{\text{conc}}$$
+                            </div>
+                            <p>Where:</p>
+                            <ul>
+                                <li><span class="var-volt">$E_0$</span> is the open-circuit cell voltage.</li>
+                                <li><span class="var-power">$I \cdot R_{\text{int}}(t)$</span> is the internal ohmic resistance voltage drop.</li>
+                                <li><span class="var-factor">$\eta_{\text{act}}$</span> and <span class="var-factor">$\eta_{\text{conc}}$</span> are activation and concentration polarization overpotentials.</li>
+                            </ul>
+                            <p>As the active materials of the battery plates (lead dioxide and sponge lead) convert fully to lead sulfate ($\text{PbSO}_4$) near the end of discharge, the internal resistance <span class="var-volt">$R_{\text{int}}$</span> surges. This causes the terminal voltage to plunge rapidly, as shown on the curve below.</p>
+
+                            <h5 style="color: var(--secondary-color); font-weight: bold; margin-top: 20px;">Battery Discharge Curve (Cell Voltage vs. Time):</h5>
+                            <svg viewBox="0 0 600 220" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Axes -->
+                                <path d="M 50 20 L 50 180 L 550 180" stroke="var(--text-color)" stroke-width="2" fill="none"/>
+                                <text x="50" y="15" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Cell Volts</text>
+                                <text x="550" y="195" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Time / Ah Discharge</text>
+                                
+                                <!-- Curve -->
+                                <path d="M 50 40 C 150 45, 300 55, 420 75 C 470 85, 490 100, 500 135 C 505 150, 510 170, 515 180" stroke="var(--secondary-color)" stroke-width="3" fill="none"/>
+                                
+                                <!-- EODV 1.80V Line -->
+                                <line x1="50" y1="100" x2="500" y2="100" stroke="var(--success-color)" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                <text x="505" y="103" text-anchor="start" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--success-color)">1.80 V/cell (Recommended Cutoff)</text>
+                                
+                                <!-- EODV 1.60V Line -->
+                                <line x1="50" y1="135" x2="500" y2="135" stroke="#ef4444" stroke-dasharray="4,4" stroke-width="1.5"/>
+                                <text x="505" y="138" text-anchor="start" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="#ef4444">1.60 V/cell (Danger - Deep Discharge)</text>
+
+                                <!-- Shaded Danger Zone -->
+                                <rect x="50" y="135" width="450" height="45" fill="#ef4444" opacity="0.08"/>
+                                <text x="250" y="160" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="#ef4444" opacity="0.8">Sulfation & Cell Reversal Danger Zone</text>
+                            </svg>
+
+                            <div class="calculation-card">
+                                <h5 style="color: var(--secondary-color); font-weight: bold; margin-top: 0; margin-bottom: 8px;">Why 1.80 V/cell over 1.75 V/cell?</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    Discharging to <span class="var-volt">1.75 V/cell</span> extracts about <span class="var-factor">3-5%</span> more energy but drastically accelerates grid corrosion and lead sulfate crystallization. Sizing for <span class="var-volt">1.80 V/cell</span> (IEEE 485 standard) ensures a safety margin preventing:
+                                </p>
+                                <ul style="margin-top: 8px; margin-bottom: 0; font-size: 0.95rem; padding-left: 20px;">
+                                    <li><strong>Sulfation:</strong> Formation of hard, insoluble lead sulfate crystals that render the battery incapable of holding charge.</li>
+                                    <li><strong>Cell Reversal:</strong> If one cell in a 240-cell string is slightly weaker, discharging to a low limit can force its voltage below 0V, causing permanent cell inversion.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="faq-card insight-card" style="border-left-color: var(--accent-color); background: linear-gradient(135deg, var(--card-bg), rgba(245,158,11,0.03));">
+                    <h4 class="faq-header" style="color: var(--accent-color); font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: var(--accent-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q3</span>
+                            What is the difference between kVA and kW, and how does the UPS load power factor affect the sizing of both the inverter and the DC link?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> Active Power (<span class="var-power">$P$</span>, in kW) is the real power that does mechanical or thermal work. Apparent Power (<span class="var-power">$S$</span>, in kVA) represents the total vector sum of active power and reactive power (<span class="var-power">$Q$</span>, in kVAR):</p>
+                            <div class="formula-block" style="border: 1px dashed var(--accent-color); padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$S = P + jQ \implies S = \sqrt{P^2 + Q^2} \quad [\text{kVA}]$$
+                                $$P = S \times \cos\phi = S \times PF \quad [\text{kW}]$$
+                            </div>
+                            <p>The distinction dictates sizing constraints for two completely separate parts of the UPS system:</p>
+                            <ul>
+                                <li><strong>AC Inverter (kVA-limited):</strong> The inverter's IGBT switches are current-limited devices. Their thermal limit depends on the total current magnitude, corresponding to the apparent power ($S = \sqrt{3} V_L I_L$). Lower power factor increases kVA load and heats the inverter switches, necessitating a larger inverter even if the kW rating remains constant.</li>
+                                <li><strong>DC Battery & DC Bus (kW-limited):</strong> The battery bank only stores and supplies active energy. The reactive current ($Q$) simply oscillates between the load and the inverter's capacitors without exhausting the battery. Thus, battery sizing is governed strictly by the active power:
+                                    $$P_{\text{dc}} = \frac{P_{\text{load, kW}}}{\eta_{\text{inverter}}}$$
+                                </li>
+                            </ul>
+
+                            <div class="calculation-card">
+                                <h5 style="color: var(--accent-color); font-weight: bold; margin-top: 0; margin-bottom: 8px;">Comparative Sizing Example:</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    Suppose a critical load requires <span class="var-power">$80\text{ kW}$</span> at <span class="var-factor">$0.8\text{ PF}$</span> lagging. The inverter efficiency is <span class="var-factor">$\eta = 0.95$</span>:
+                                </p>
+                                <ol style="margin-top: 10px; margin-bottom: 0; font-size: 0.95rem;">
+                                    <li><strong>Inverter kVA capacity required:</strong> $$S_{\text{inv}} = \frac{80\text{ kW}}{0.8\text{ PF}} = 100\text{ kVA}$$</li>
+                                    <li><strong>Battery DC power capacity required:</strong> $$P_{\text{dc}} = \frac{80\text{ kW}}{0.95} = 84.21\text{ kW}$$</li>
+                                </ol>
+                                <p style="margin: 10px 0 0 0; font-size: 0.9rem; font-style: italic;">
+                                    Note: If the power factor improves to 1.0 (unity), the inverter sizing drops to 80 kVA, but the battery sizing remains at 84.21 kW!
+                                </p>
+                            </div>
+
+                            <h5 style="color: var(--accent-color); font-weight: bold; margin-top: 20px;">AC Power Vector Triangle:</h5>
+                            <svg viewBox="0 0 400 180" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Triangle path -->
+                                <path d="M 60 140 L 320 140 L 320 30 Z" stroke="var(--text-color)" stroke-width="2.5" fill="none"/>
+                                
+                                <!-- Labels -->
+                                <text x="190" y="155" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--success-color)">Active Power P = S * cos(&theta;) [kW]</text>
+                                <text x="335" y="85" text-anchor="start" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--accent-color)">Reactive Power Q [kVAR]</text>
+                                <text x="170" y="70" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--primary-color)" transform="rotate(-21, 170, 70)">Apparent Power S = &radic;(P&sup2; + Q&sup2;) [kVA]</text>
+                                
+                                <!-- Theta Angle -->
+                                <path d="M 100 140 A 40 40 0 0 0 97 125" fill="none" stroke="var(--text-color)" stroke-width="1.5"/>
+                                <text x="110" y="133" font-family="'Inter', sans-serif" font-size="12" font-weight="bold" fill="var(--text-color)">&theta;</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="faq-card insight-card" style="border-left-color: var(--success-color); background: linear-gradient(135deg, var(--card-bg), rgba(16,185,129,0.03));">
+                    <h4 class="faq-header" style="color: var(--success-color); font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: var(--success-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q4</span>
+                            How do you mathematically calculate the starting transient (inrush) of an induction motor on a UPS system? Why is DOL motor starting problematic for UPS inverters?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> When an induction motor is started Direct-On-Line (DOL), it lacks back-EMF, behaving like a short-circuited transformer. The starting current is limited only by stator and rotor leakage reactances:</p>
+                            <div class="formula-block" style="border: 1px dashed var(--success-color); padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$I_{\text{start}} = \text{LRA} = \frac{V_{\text{phase}}}{X_{\text{stator}} + X_{\text{rotor}}'} \approx 6\text{ to }8 \times I_{\text{rated}}$$
+                            </div>
+                            <p>The starting apparent power transient is computed as:</p>
+                            <div class="formula-block" style="border: 1px dashed var(--success-color); padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$S_{\text{start}} = \sqrt{3} \times V_{\text{line}} \times I_{\text{start}} \quad [\text{kVA}]$$
+                            </div>
+                            <p>UPS inverters typically possess an overload rating of only $150\%$ for 1 minute and $200\%$ for 100 milliseconds. A DOL motor starting will exceed these thresholds easily. If the transient exceeds the inverter capacity, the UPS static bypass switch will immediately transfer the motor load directly to grid utility power. If grid power is unavailable during this startup transient, the inverter will enter voltage-limit mode, causing the output voltage to sag severely and causing other electronic loads to drop offline.</p>
+
+                            <div class="calculation-card">
+                                <h5 style="color: var(--success-color); font-weight: bold; margin-top: 0; margin-bottom: 8px;">Sizing Example for 20 HP Motor:</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    A $15\text{ kW}$ ($20\text{ HP}$) motor, $400\text{ V}$, $3$-phase, $\eta = 0.90$, $PF = 0.85$.
+                                </p>
+                                <ol style="margin-top: 10px; margin-bottom: 0; font-size: 0.95rem;">
+                                    <li>Calculate rated current: $$I_{\text{rated}} = \frac{15000}{\sqrt{3} \times 400 \times 0.85 \times 0.90} = 28.3\text{ A}$$</li>
+                                    <li>Calculate starting current (assuming $6\times$ inrush): $$I_{\text{start}} = 6 \times 28.3\text{ A} = 169.8\text{ A}$$</li>
+                                    <li>Calculate transient kVA: $$S_{\text{start}} = \sqrt{3} \times 400 \times 169.8\text{ A} = 117.6\text{ kVA}$$</li>
+                                </ol>
+                                <p style="margin: 10px 0 0 0; font-size: 0.9rem; font-style: italic;">
+                                    This means starting this motor DOL requires a 120 kVA UPS unit, even though the motor running load is only 19.6 kVA. Using a Variable Frequency Drive (VFD) limits starting current to 1.0-1.5x and reduces UPS sizing to ~25 kVA.
+                                </p>
+                            </div>
+
+                            <h5 style="color: var(--success-color); font-weight: bold; margin-top: 20px;">Motor Startup Current vs. UPS Overload Capacity:</h5>
+                            <svg viewBox="0 0 600 200" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Grid lines -->
+                                <line x1="50" y1="160" x2="550" y2="160" stroke="var(--border-color)" stroke-width="1"/>
+                                <line x1="50" y1="100" x2="550" y2="100" stroke="var(--border-color)" stroke-width="1"/>
+                                
+                                <!-- Axes -->
+                                <path d="M 50 20 L 50 170 L 550 170" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+                                <text x="50" y="15" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Current %</text>
+                                
+                                <!-- Motor Inrush Curve -->
+                                <path d="M 50 30 C 80 30, 90 40, 100 130 C 110 160, 200 160, 500 160" stroke="#ef4444" stroke-width="3" fill="none"/>
+                                <text x="95" y="25" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="#ef4444">DOL Inrush Spike (600%)</text>
+                                
+                                <!-- UPS Continuous Limit (100%) -->
+                                <line x1="50" y1="160" x2="550" y2="160" stroke="var(--success-color)" stroke-width="2"/>
+                                <text x="450" y="152" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="var(--success-color)">UPS Full Load Limit (100%)</text>
+
+                                <!-- UPS Overload Limit (150%) -->
+                                <path d="M 50 100 L 150 100 L 150 160 L 550 160" stroke="var(--accent-color)" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                                <text x="160" y="96" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="var(--accent-color)">UPS 150% Overload Limit (60s)</text>
+                                
+                                <!-- Bypass Region -->
+                                <rect x="50" y="30" width="70" height="70" fill="#ef4444" opacity="0.1"/>
+                                <text x="85" y="65" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="#ef4444">Bypass Trip Area</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="faq-card insight-card" style="border-left-color: #ef4444; background: linear-gradient(135deg, var(--card-bg), rgba(239,68,68,0.03));">
+                    <h4 class="faq-header" style="color: #ef4444; font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q5</span>
+                            How does temperature affect battery lifespan and capacity? What is the mathematical relation using the Arrhenius rate law?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> High ambient operating temperatures accelerate chemical reaction rates inside the battery. This leads to accelerated positive plate grid corrosion, active material shedding, and water loss. Sizing calculations must apply deratings for elevated temperatures, which are governed by the **Arrhenius Rate Law**:</p>
+                            <div class="formula-block" style="border: 1px dashed #ef4444; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$k = A \cdot e^{-\frac{E_a}{R \cdot T}}$$
+                            </div>
+                            <p>Where:</p>
+                            <ul>
+                                <li><span class="var-power">$k$</span> is the chemical reaction rate.</li>
+                                <li><span class="var-factor">$E_a$</span> is the activation energy of the corrosion reaction (approx. 70-80 kJ/mol).</li>
+                                <li><span class="var-volt">$T$</span> is the absolute temperature in Kelvin.</li>
+                            </ul>
+                            <p>For lead-acid battery design, this chemical relation simplifies to the **8 Degree Rule**: **For every $8^\circ\text{C}$ rise in continuous operating temperature above the nominal $25^\circ\text{C}$, the grid corrosion rate doubles, and the expected operational life of the battery is cut in half:**</p>
+                            <div class="formula-block" style="border: 1px dashed #ef4444; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$\text{Expected Life}(T) = \text{Design Life}(25^\circ\text{C}) \times 2^{-\left( \frac{T - 25}{8} \right)}$$
+                            </div>
+                            
+                            <div class="calculation-card">
+                                <h5 style="color: #ef4444; font-weight: bold; margin-top: 0; margin-bottom: 8px;">Arrhenius Sizing Impact:</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    If a premium VRLA battery cell is rated for a 10-year design life at $25^\circ\text{C}$ ($298\text{ K}$):
+                                </p>
+                                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: var(--text-color);">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+                                            <th style="padding: 5px;">Temperature</th>
+                                            <th style="padding: 5px;">Corrosion Speed</th>
+                                            <th style="padding: 5px;">Expected Lifespan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="border-bottom: 1px solid var(--border-color);">
+                                            <td style="padding: 5px;">$25^\circ\text{C}$ ($77^\circ\text{F}$)</td>
+                                            <td style="padding: 5px;">$1.0\times$ (Nominal)</td>
+                                            <td style="padding: 5px; color: var(--success-color); font-weight: bold;">10.0 Years</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid var(--border-color);">
+                                            <td style="padding: 5px;">$33^\circ\text{C}$ ($91^\circ\text{F}$)</td>
+                                            <td style="padding: 5px;">$2.0\times$</td>
+                                            <td style="padding: 5px; color: var(--accent-color); font-weight: bold;">5.0 Years</td>
+                                        </tr>
+                                        <tr style="border-bottom: 1px solid var(--border-color);">
+                                            <td style="padding: 5px;">$41^\circ\text{C}$ ($106^\circ\text{F}$)</td>
+                                            <td style="padding: 5px;">$4.0\times$</td>
+                                            <td style="padding: 5px; color: #ef4444; font-weight: bold;">2.5 Years</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="margin: 10px 0 0 0; font-size: 0.85rem; font-style: italic;">
+                                    Conversely, low temperatures (e.g. $0^\circ\text{C}$) increase electrolyte viscosity and retard chemical activity, reducing effective Ah capacity by 20% to 25%, requiring a temperature correction sizing multiplier.
+                                </p>
+                            </div>
+
+                            <h5 style="color: #ef4444; font-weight: bold; margin-top: 20px;">VRLA Design Life vs. Ambient Temperature (Arrhenius Plot):</h5>
+                            <svg viewBox="0 0 600 200" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Curve -->
+                                <path d="M 50 30 C 100 30, 250 85, 300 120 C 350 155, 450 178, 550 180" stroke="#ef4444" stroke-width="3" fill="none"/>
+                                
+                                <!-- Axes -->
+                                <path d="M 50 15 L 50 180 L 550 180" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+                                <text x="50" y="10" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Lifespan (Yrs)</text>
+                                
+                                <!-- Dots -->
+                                <circle cx="150" cy="50" r="5" fill="#ef4444"/>
+                                <text x="160" y="45" font-family="'Inter', sans-serif" font-size="10" fill="var(--heading-color)">10 Yrs @ 25°C</text>
+
+                                <circle cx="280" cy="110" r="5" fill="#ef4444"/>
+                                <text x="290" y="105" font-family="'Inter', sans-serif" font-size="10" fill="var(--heading-color)">5 Yrs @ 33°C</text>
+
+                                <circle cx="410" cy="150" r="5" fill="#ef4444"/>
+                                <text x="420" y="145" font-family="'Inter', sans-serif" font-size="10" fill="var(--heading-color)">2.5 Yrs @ 41°C</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 6 -->
+                <div class="faq-card insight-card" style="border-left-color: #8b5cf6; background: linear-gradient(135deg, var(--card-bg), rgba(139,92,246,0.03));">
+                    <h4 class="faq-header" style="color: #8b5cf6; font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: #8b5cf6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q6</span>
+                            Explain the IEEE 485 sizing methodology. How do you size a battery bank using duty cycle profiles and Watts/Cell values?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> The **IEEE 485** standard describes the recommended practice for sizing large lead-acid batteries for stationary systems. Instead of sizing a battery bank using an average load current, IEEE 485 divides a complex multi-period load profile (duty cycle) into individual segments and calculates the cumulative cell size required to handle the worst-case step sequences.</p>
+                            <p>The cell capacity is calculated as a summation of incremental changes in discharge current (<span class="var-volt">$\Delta I_p$</span>) divided by capacity rating factors (<span class="var-factor">$C_t$</span>):</p>
+                            <div class="formula-block" style="border: 1px dashed #8b5cf6; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$R = \sum_{p=1}^{N} \frac{I_p - I_{p-1}}{C_{t_N - t_{p-1}}}$$
+                            </div>
+                            <p>Where:</p>
+                            <ul>
+                                <li><span class="var-volt">$I_p$</span> is the load current in period $p$.</li>
+                                <li><span class="var-factor">$C_{t_N - t_{p-1}}$</span> is the capacity rating factor (Amps/cell) for a cell discharged for the remaining duration.</li>
+                            </ul>
+                            <p>Finally, standard correction multiplier margins are applied to calculate the final required capacity:</p>
+                            <div class="formula-block" style="border: 1px dashed #8b5cf6; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$\text{Final Size} = R \times K_{\text{temp}} \times K_{\text{age}} \times K_{\text{design}}$$
+                            </div>
+                            <p>Where <span class="var-factor">$K_{\text{age}} = 1.25$</span> (accounts for capacity drop to 80% at end of life), <span class="var-factor">$K_{\text{temp}}$</span> is the temperature factor, and <span class="var-factor">$K_{\text{design}} \approx 1.10\text{ to }1.15$</span> is the design/growth margin.</p>
+
+                            <div class="calculation-card">
+                                <h5 style="color: #8b5cf6; font-weight: bold; margin-top: 0; margin-bottom: 8px;">Step-by-Step Profile Sizing Example:</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    Assume a 60-minute battery duty cycle has three periods:
+                                </p>
+                                <ul style="margin-top: 5px; margin-bottom: 5px; font-size: 0.9rem; padding-left: 20px;">
+                                    <li><strong>Period 1 (0 to 1 min):</strong> Transient start load of <span class="var-volt">100 A</span></li>
+                                    <li><strong>Period 2 (1 to 59 min):</strong> Continuous load of <span class="var-volt">40 A</span></li>
+                                    <li><strong>Period 3 (59 to 60 min):</strong> End-of-cycle peak breaker trip load of <span class="var-volt">80 A</span></li>
+                                </ul>
+                                <p style="margin: 5px 0; font-size: 0.95rem;">
+                                    The calculation accumulates three overlapping sections:
+                                </p>
+                                <ol style="margin-top: 5px; margin-bottom: 0; font-size: 0.95rem;">
+                                    <li>Section 1: Discharging 100A for 1 min. Size = $100 / C_{1\text{min}}$</li>
+                                    <li>Section 2: Adjusting for the drop to 40A for 60 min. Size adjustment = $(40 - 100) / C_{60\text{min}}$</li>
+                                    <li>Section 3: Sizing for the end step increase of +40A (from 40 to 80) for 1 min. Size adjustment = $(80 - 40) / C_{1\text{min}}$</li>
+                                </ol>
+                            </div>
+
+                            <h5 style="color: #8b5cf6; font-weight: bold; margin-top: 20px;">IEEE 485 Duty Cycle Load Profile (Amps vs. Time):</h5>
+                            <svg viewBox="0 0 600 180" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Grid -->
+                                <line x1="50" y1="140" x2="550" y2="140" stroke="var(--border-color)" stroke-width="1"/>
+                                <line x1="50" y1="40" x2="550" y2="40" stroke="var(--border-color)" stroke-width="1"/>
+                                
+                                <!-- Profile line -->
+                                <path d="M 50 40 L 70 40 L 70 110 L 520 110 L 520 65 L 540 65 L 540 140" stroke="#8b5cf6" stroke-width="3" fill="none"/>
+                                
+                                <!-- Axes -->
+                                <path d="M 50 20 L 50 140 L 550 140" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+                                <text x="50" y="15" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Amps</text>
+                                <text x="540" y="155" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Time</text>
+                                
+                                <!-- Text labels -->
+                                <text x="75" y="35" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="var(--heading-color)">100A (Transient)</text>
+                                <text x="250" y="100" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="var(--heading-color)">40A (Continuous)</text>
+                                <text x="480" y="60" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="var(--heading-color)">80A (Trip)</text>
+                                
+                                <!-- Brackets -->
+                                <text x="60" y="155" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">1 min</text>
+                                <text x="290" y="155" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">58 min</text>
+                                <text x="530" y="155" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">1 min</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 7 -->
+                <div class="faq-card insight-card" style="border-left-color: #ec4899; background: linear-gradient(135deg, var(--card-bg), rgba(236,72,153,0.03));">
+                    <h4 class="faq-header" style="color: #ec4899; font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: #ec4899; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q7</span>
+                            What is the Crest Factor, and why does a non-linear load with a high Crest Factor degrade UPS output voltage quality?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> The **Crest Factor** ($CF$) is the ratio of the peak current value ($I_{\text{peak}}$) to the root-mean-square current value ($I_{\text{rms}}$) of an AC current waveform:</p>
+                            <div class="formula-block" style="border: 1px dashed #ec4899; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$CF = \frac{I_{\text{peak}}}{I_{\text{rms}}}$$
+                            </div>
+                            <p>For a clean, sinusoidal load current, $CF = \sqrt{2} \approx 1.414$. Modern switched-mode power supplies (SMPS) in servers draw current in short, high-amplitude spikes, resulting in a Crest Factor of $3.0$ or $4.0$.</p>
+                            <p>These pulsed current spikes interact with the internal source impedance ($Z_{\text{inv}}$) of the UPS inverter. The voltage drop across the impedance flat-tops the output voltage wave. This results in severe Total Harmonic Distortion ($THD_V$), modeled as:</p>
+                            <div class="formula-block" style="border: 1px dashed #ec4899; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$\text{THD}_V = \frac{\sqrt{\sum_{h=2}^{\infty} V_h^2}}{V_1}$$
+                            </div>
+                            <p>Where $V_1$ is the fundamental voltage component ($50/60\text{ Hz}$), and $V_h$ represents the harmonic components ($150\text{ Hz}$, $250\text{ Hz}$, etc.). High voltage harmonics lead to motor overheating, sensor noise, and neutral wire failures.</p>
+
+                            <h5 style="color: #ec4899; font-weight: bold; margin-top: 20px;">Linear vs. Non-Linear Current Waveforms:</h5>
+                            <svg viewBox="0 0 600 180" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Left side (Linear) -->
+                                <line x1="150" y1="20" x2="150" y2="160" stroke="var(--border-color)" stroke-width="1"/>
+                                <text x="150" y="15" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">Linear Load (CF = 1.414)</text>
+                                <!-- Sine waves -->
+                                <path d="M 30 90 Q 60 20, 90 90 Q 120 160, 150 90 Q 180 20, 210 90 Q 240 160, 270 90" stroke="var(--success-color)" stroke-width="2.5" fill="none"/>
+                                <text x="100" y="45" font-family="'Inter', sans-serif" font-size="9" fill="var(--success-color)" font-weight="bold">Sinusoidal Current</text>
+
+                                <!-- Right side (Non-Linear) -->
+                                <text x="450" y="15" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">Non-Linear Load (CF = 3.0)</text>
+                                <!-- Pulsed wave -->
+                                <path d="M 330 90 L 375 90 Q 380 90, 390 30 Q 395 30, 400 90 L 495 90 Q 500 90, 510 30 Q 515 30, 520 90 L 570 90" stroke="#ef4444" stroke-width="2.5" fill="none"/>
+                                <text x="410" y="45" font-family="'Inter', sans-serif" font-size="9" fill="#ef4444" font-weight="bold">Pulsed Current Spike</text>
+                                
+                                <!-- Flat-topped voltage line -->
+                                <path d="M 330 90 Q 360 45, 385 45 L 415 45 Q 440 45, 470 135 L 500 135" stroke="var(--primary-color)" stroke-width="2" stroke-dasharray="3,3" fill="none"/>
+                                <text x="420" y="120" font-family="'Inter', sans-serif" font-size="9" fill="var(--primary-color)">Flat-topped Voltage</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 8 -->
+                <div class="faq-card insight-card" style="border-left-color: #06b6d4; background: linear-gradient(135deg, var(--card-bg), rgba(6,182,212,0.03));">
+                    <h4 class="faq-header" style="color: #06b6d4; font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: #06b6d4; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q8</span>
+                            Why does installation altitude (altitude derating) affect a UPS's rating? Explain the physics of heat dissipation at high altitudes.
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> Sizing a UPS for installations above 1000 meters requires applying an **altitude derating factor**. This is due to the lower atmospheric pressure, which decreases the density ($\rho$) of the ambient air.</p>
+                            <p>The rate of convective heat transfer from the heatsinks of the inverter IGBTs is modeled as:</p>
+                            <div class="formula-block" style="border: 1px dashed #06b6d4; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$q_{\text{conv}} = h \cdot A \cdot (T_{\text{junction}} - T_{\text{ambient}})$$
+                            </div>
+                            <p>Where $h$ is the convective heat transfer coefficient. The coefficient $h$ depends on the mass flow rate of the cooling fans, which is directly proportional to air density ($\rho$). As altitude increases, density drops exponentially according to the barometric formula:</p>
+                            <div class="formula-block" style="border: 1px dashed #06b6d4; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$\rho(H) = \rho_0 \left( 1 - \frac{L \cdot H}{T_0} \right)^{\frac{g \cdot M}{R \cdot L}}$$
+                            </div>
+                            <p>Thinner air decreases the cooling capacity. Consequently, solid-state switches heat up faster, risking thermal runaway if they run at full nominal sea-level rating.</p>
+
+                            <div class="calculation-card">
+                                <h5 style="color: #06b6d4; font-weight: bold; margin-top: 0; margin-bottom: 8px;">Altitude Sizing Example:</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    If a UPS is installed at <span class="var-time">$3000\text{ m}$</span> altitude, a typical derating factor is <span class="var-factor">$1\%$</span> capacity reduction per <span class="var-time">$100\text{ m}$</span> above the initial threshold of <span class="var-time">$1000\text{ m}$</span>:
+                                </p>
+                                <ol style="margin-top: 10px; margin-bottom: 0; font-size: 0.95rem;">
+                                    <li>Calculate excess altitude: $$H_{\text{excess}} = 3000\text{ m} - 1000\text{ m} = 2000\text{ m}$$</li>
+                                    <li>Calculate derating percentage: $$\text{Derating} = \frac{2000\text{ m}}{100\text{ m}} \times 1\% = 20\%$$</li>
+                                    <li>Calculate safe operational load for a nominal $100\text{ kVA}$ UPS: $$S_{\text{safe}} = 100\text{ kVA} \times (1 - 0.20) = 80\text{ kVA}$$</li>
+                                </ol>
+                            </div>
+
+                            <h5 style="color: #06b6d4; font-weight: bold; margin-top: 20px;">Sea Level vs. High Altitude Heat Dissipation:</h5>
+                            <svg viewBox="0 0 600 160" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Left side (Sea level) -->
+                                <rect x="30" y="30" width="100" height="80" rx="4" fill="var(--border-color)" stroke="var(--text-color)" stroke-width="1.5"/>
+                                <text x="80" y="75" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--heading-color)">IGBT (Sea Level)</text>
+                                <!-- Cooling molecules -->
+                                <circle cx="150" cy="40" r="4" fill="var(--primary-color)"/>
+                                <circle cx="165" cy="55" r="4" fill="var(--primary-color)"/>
+                                <circle cx="150" cy="70" r="4" fill="var(--primary-color)"/>
+                                <circle cx="170" cy="85" r="4" fill="var(--primary-color)"/>
+                                <circle cx="155" cy="100" r="4" fill="var(--primary-color)"/>
+                                <circle cx="168" cy="115" r="4" fill="var(--primary-color)"/>
+                                <text x="180" y="75" font-family="'Inter', sans-serif" font-size="9" fill="var(--primary-color)" font-weight="bold">Dense Air Molecules (High cooling)</text>
+
+                                <!-- Divider -->
+                                <line x1="300" y1="15" x2="300" y2="145" stroke="var(--border-color)" stroke-width="2"/>
+
+                                <!-- Right side (Altitude) -->
+                                <rect x="330" y="30" width="100" height="80" rx="4" fill="var(--border-color)" stroke="var(--text-color)" stroke-width="1.5"/>
+                                <text x="380" y="70" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--heading-color)">IGBT (3000m)</text>
+                                <text x="380" y="90" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="#ef4444">HEATING UP</text>
+                                <!-- Sparse cooling molecules -->
+                                <circle cx="460" cy="50" r="4" fill="var(--primary-color)"/>
+                                <circle cx="475" cy="85" r="4" fill="var(--primary-color)"/>
+                                <circle cx="465" cy="110" r="4" fill="var(--primary-color)"/>
+                                <text x="490" y="75" font-family="'Inter', sans-serif" font-size="9" fill="#ef4444" font-weight="bold">Thin Air (Poor cooling)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 9 -->
+                <div class="faq-card insight-card" style="border-left-color: #f59e0b; background: linear-gradient(135deg, var(--card-bg), rgba(245,158,11,0.03));">
+                    <h4 class="faq-header" style="color: #f59e0b; font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: #f59e0b; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q9</span>
+                            Compare Tier-III (N+1) and Tier-IV (2N) UPS architectures. What is the mathematical impact on system availability (MTBF and MTTR)?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> Reliability engineering quantifies availability ($A$) using Mean Time Between Failures ($MTBF$) and Mean Time To Repair ($MTTR$):</p>
+                            <div class="formula-block" style="border: 1px dashed #f59e0b; padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$A = \frac{\text{MTBF}}{\text{MTBF} + \text{MTTR}}$$
+                            </div>
+                            <p>Let's assume a single UPS module availability is $A_1 = 0.999$, corresponding to an unavailability of $U_1 = 1 - A_1 = 0.001$ (approx. 8.76 hours of downtime per year).</p>
+                            <ul>
+                                <li><strong>N+1 Parallel Redundant Architecture:</strong> If two modules run in parallel to support a load requiring one module ($N=1$), the system only fails if both modules fail. The system unavailability is:
+                                    $$U_{\text{sys}} = (U_1)^2 = (0.001)^2 = 0.000001 \implies A_{\text{sys}} = 0.999999$$
+                                    This improves availability to "six nines" (~31.5 seconds downtime/year). However, parallel systems share single points of failure (SPOFs) like a common bypass line, output distribution board, and paralleling controller.</li>
+                                <li><strong>2N Dual-Bus (System+System) Architecture:</strong> Two completely isolated parallel paths feed dual-corded loads. Since there is zero shared active componentry downstream, the system availability is calculated as:
+                                    $$A_{\text{sys, 2N}} = 1 - (1 - A_{\text{path A}}) \times (1 - A_{\text{path B}}) \approx 0.99999999$$
+                                    This completely isolates faults, leading to Tier IV standard compliance ($99.995\%$ site-level availability).</li>
+                            </ul>
+
+                            <h5 style="color: #f59e0b; font-weight: bold; margin-top: 20px;">Tier-III (N+1) vs. Tier-IV (2N) Structural Reliability:</h5>
+                            <svg viewBox="0 0 600 240" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Tier III Header -->
+                                <text x="20" y="30" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--heading-color)">Tier-III (N+1 Parallel Redundant - Common Bus SPOF)</text>
+                                
+                                <!-- UPS Modules (Parallel) -->
+                                <rect x="30" y="45" width="80" height="40" rx="4" fill="var(--primary-color)" opacity="0.15" stroke="var(--primary-color)" stroke-width="1.5"/>
+                                <text x="70" y="69" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">UPS Mod 1</text>
+
+                                <rect x="130" y="45" width="80" height="40" rx="4" fill="var(--primary-color)" opacity="0.15" stroke="var(--primary-color)" stroke-width="1.5"/>
+                                <text x="170" y="69" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">UPS Mod 2</text>
+
+                                <path d="M 110 65 L 230 65" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+                                <path d="M 210 65 L 230 65" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+                                
+                                <!-- Output Switchboard (SPOF) -->
+                                <rect x="230" y="40" width="100" height="50" rx="4" fill="#ef4444" opacity="0.15" stroke="#ef4444" stroke-width="1.5"/>
+                                <text x="280" y="65" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">Common Bus (SPOF)</text>
+                                
+                                <path d="M 330 65 L 360 65" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+                                <text x="390" y="69" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">&rarr; Critical Load</text>
+
+                                <!-- Divider -->
+                                <line x1="10" y1="110" x2="590" y2="110" stroke="var(--border-color)" stroke-width="1"/>
+
+                                <!-- Tier IV Header -->
+                                <text x="20" y="130" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--heading-color)">Tier-IV (2N Double System - Zero Common Points)</text>
+                                
+                                <!-- Path A -->
+                                <rect x="30" y="145" width="100" height="35" rx="4" fill="var(--success-color)" opacity="0.15" stroke="var(--success-color)" stroke-width="1.5"/>
+                                <text x="80" y="167" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">UPS System A</text>
+                                <path d="M 130 162 L 230 162" stroke="var(--success-color)" stroke-width="1.5" fill="none"/>
+                                <text x="240" y="166" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="var(--success-color)">Path A Feed</text>
+                                
+                                <!-- Path B -->
+                                <rect x="30" y="195" width="100" height="35" rx="4" fill="var(--secondary-color)" opacity="0.15" stroke="var(--secondary-color)" stroke-width="1.5"/>
+                                <text x="80" y="217" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">UPS System B</text>
+                                <path d="M 130 212 L 230 212" stroke="var(--secondary-color)" stroke-width="1.5" fill="none"/>
+                                <text x="240" y="216" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="var(--secondary-color)">Path B Feed</text>
+
+                                <!-- Load -->
+                                <rect x="360" y="160" width="120" height="55" rx="6" fill="var(--accent-color)" opacity="0.15" stroke="var(--accent-color)" stroke-width="1.5"/>
+                                <text x="420" y="185" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="bold" fill="var(--heading-color)">Dual-Corded Server</text>
+                                <text x="420" y="200" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Redundant Power Supplies</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question 10 -->
+                <div class="faq-card insight-card" style="border-left-color: #10b981; background: linear-gradient(135deg, var(--card-bg), rgba(16,185,129,0.03));">
+                    <h4 class="faq-header" style="color: var(--success-color); font-weight: bold; margin-bottom: 12px;">
+                        <span class="faq-header-content">
+                            <span style="background: var(--success-color); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;">Q10</span>
+                            What is backfeed protection in a UPS, and why is it a critical safety standard under IEC 62040-1?
+                        </span>
+                        <i class="fas fa-chevron-down faq-toggle-icon"></i>
+                    </h4>
+                    <div class="faq-answer-wrapper">
+                        <div class="faq-answer-content faq-answer">
+                            <p><strong>Answer:</strong> Backfeed is a hazardous condition where voltage from the UPS inverter/battery propagates backward through the input terminals onto the incoming AC utility mains during a power failure. This creates a severe electrocution risk for utility engineers working downstream on lines they assume are de-energized.</p>
+                            <p>The **IEC 62040-1** and **UL 1778** safety standards dictate that the UPS must prevent backfeed voltage from exceeding safe limits ($30\text{ V}_{\text{RMS}}$ AC or $60\text{ V}_{\text{DC}}$) within **1 second** (double-conversion UPS) or **15 seconds** (standby UPS) of mains utility power loss.</p>
+                            <p>Mathematically, the voltage decay curve on the input filter capacitors following disconnection is modeled as:</p>
+                            <div class="formula-block" style="border: 1px dashed var(--success-color); padding: 15px; text-align: center; background: var(--hover-color); border-radius: 6px;">
+                                $$V_{\text{terminal, input}}(t) = V_{\text{peak}} \cdot e^{-\frac{t}{R_{\text{discharge}} C_{\text{filter}}}}$$
+                            </div>
+                            <p>Where:</p>
+                            <ul>
+                                <li><span class="var-volt">$V_{\text{peak}}$</span> is the peak AC line voltage before failure (e.g., $325\text{ V}$ for a $230\text{ V}$ phase).</li>
+                                <li><span class="var-cap">$C_{\text{filter}}$</span> is the capacitance of the internal AC electromagnetic interference (EMI) filter.</li>
+                                <li><span class="var-time">$R_{\text{discharge}}$</span> is the bleed resistor across the filter capacitor.</li>
+                            </ul>
+
+                            <div class="calculation-card">
+                                <h5 style="color: var(--success-color); font-weight: bold; margin-top: 0; margin-bottom: 8px;">Safety Hazard Sizing Calculation:</h5>
+                                <p style="margin: 0; font-size: 0.95rem;">
+                                    If <span class="var-cap">$C_{\text{filter}} = 10\text{ }\mu\text{F}$</span> and passive bleed resistor <span class="var-time">$R_{\text{discharge}} = 100\text{ k}\Omega$</span>:
+                                </p>
+                                <ol style="margin-top: 10px; margin-bottom: 0; font-size: 0.95rem;">
+                                    <li>Calculate the discharge time constant: $$\tau = R \cdot C = 100,000\,\Omega \times 0.00001\text{ F} = 1.0\text{ Second}$$</li>
+                                    <li>Calculate terminal voltage at $t = 1.0\text{ s}$ starting from $325\text{ V}_{\text{peak}}$: $$V(1.0\text{ s}) = 325 \cdot e^{-1.0} \approx 119.5\text{ V}$$</li>
+                                </ol>
+                                <p style="margin: 10px 0 0 0; font-size: 0.9rem; font-style: italic;">
+                                    Since 119.5 V exceeds the safe 30 V threshold, the passive resistor is too slow. To comply with IEC 62040-1, the UPS must include an **active backfeed isolation relay (contactor)** that mechanically cuts off the input terminals immediately upon grid loss.
+                                </p>
+                            </div>
+
+                            <h5 style="color: var(--success-color); font-weight: bold; margin-top: 20px;">Active Backfeed Protection Circuit Schematic:</h5>
+                            <svg viewBox="0 0 600 140" width="100%" style="background: var(--hover-color); border-radius: 8px; border: 1px solid var(--border-color); margin: 15px 0;">
+                                <!-- Grid Utility -->
+                                <rect x="20" y="45" width="80" height="50" rx="4" fill="var(--border-color)" stroke="var(--text-color)" stroke-width="1.5"/>
+                                <text x="60" y="75" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--heading-color)">Grid Mains</text>
+                                
+                                <path d="M 100 70 L 140 70" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+                                
+                                <!-- Backfeed contactor -->
+                                <circle cx="150" cy="70" r="4" fill="var(--heading-color)"/>
+                                <line x1="150" y1="70" x2="185" y2="45" stroke="#ef4444" stroke-width="2.5"/>
+                                <circle cx="190" cy="70" r="4" fill="var(--heading-color)"/>
+                                <text x="170" y="30" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="#ef4444">OPENED ON GRID LOSS</text>
+                                
+                                <path d="M 194 70 L 250 70" stroke="var(--text-color)" stroke-width="1.5" fill="none"/>
+
+                                <!-- UPS Rectifier/Inverter -->
+                                <rect x="250" y="30" width="160" height="80" rx="6" fill="var(--primary-color)" opacity="0.15" stroke="var(--primary-color)" stroke-width="1.5"/>
+                                <text x="330" y="65" text-anchor="middle" font-family="'Inter', sans-serif" font-size="11" font-weight="bold" fill="var(--heading-color)">UPS Inverter Bridge</text>
+                                <text x="330" y="85" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" fill="var(--text-color)">Active Voltage Source</text>
+                                
+                                <!-- Feedback arrow (red, dotted, showing danger) -->
+                                <path d="M 250 90 L 190 90 L 110 90" stroke="#ef4444" stroke-dasharray="4,4" stroke-width="2" fill="none"/>
+                                <polygon points="110,90 118,86 118,94" fill="#ef4444"/>
+                                <text x="210" y="105" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" font-weight="bold" fill="#ef4444">Backfeed Power Blocked</text>
+                                
+                                <!-- Control Line -->
+                                <path d="M 330 110 L 330 130 L 170 130 L 170 80" stroke="var(--success-color)" stroke-width="1.2" stroke-dasharray="3,3" fill="none"/>
+                                <text x="250" y="125" text-anchor="middle" font-family="'Inter', sans-serif" font-size="8" fill="var(--success-color)" font-weight="bold">Backfeed Sensor Control Line</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Tools Section -->
+    <section style="padding: 60px 0; background: var(--bg-color); border-top: 1px solid var(--border-color);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/battery-sizing" class="silo-card" style="text-decoration:none;">
-                        <span>Battery Sizing</span>
-                    </a>
-                    <a href="/batterychargersizing" class="silo-card" style="text-decoration:none;">
-                        <span>Batterychargersizing</span>
-                    </a>
-                    <a href="/generatorsizing" class="silo-card" style="text-decoration:none;">
-                        <span>Generatorsizing</span>
-                    </a>
+            <h2 style="text-align:center; font-size:1.8rem; margin-bottom:10px; color:var(--heading-color); font-weight:800; font-family:'Montserrat', sans-serif;">Related Engineering Calculators</h2>
+            <p style="text-align:center; color:var(--text-color); margin-bottom:40px; font-size:1rem; max-width:600px; margin-left:auto; margin-right:auto;">Explore other standard-compliant sizing and design calculators crucial for industrial electrical networks and auxiliary power systems.</p>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:25px; max-width:1100px; margin:0 auto;">
+                <!-- Card 1 -->
+                <a href="/battery-sizing" style="text-decoration:none; color:inherit; display:flex;">
+                    <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.3s ease; width:100%; display:flex; flex-direction:column; justify-content:space-between;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--secondary-color)'; this.style.boxShadow='0 10px 20px rgba(37,99,235,0.08)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--border-color)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.03)';">
+                        <div>
+                            <div style="width:50px; height:50px; background:rgba(16,185,129,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:15px; color:#10b981; font-size:1.5rem;">
+                                <i class="fas fa-car-battery"></i>
+                            </div>
+                            <h3 style="margin:0 0 10px 0; font-size:1.2rem; color:var(--heading-color); font-weight:700;">Battery Sizing (AH)</h3>
+                            <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.5;">Calculate exact battery autonomy, cell quantities, and discharge current profiles for DC and UPS banks using IEEE 485 step duty-cycle standards.</p>
+                        </div>
+                        <div style="margin-top:20px; font-size:0.85rem; color:var(--secondary-color); font-weight:600; display:flex; align-items:center; gap:5px;">
+                            Open Calculator <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
+                <!-- Card 2 -->
+                <a href="/batterychargersizing" style="text-decoration:none; color:inherit; display:flex;">
+                    <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.3s ease; width:100%; display:flex; flex-direction:column; justify-content:space-between;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--secondary-color)'; this.style.boxShadow='0 10px 20px rgba(37,99,235,0.08)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--border-color)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.03)';">
+                        <div>
+                            <div style="width:50px; height:50px; background:rgba(37,99,235,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:15px; color:var(--secondary-color); font-size:1.5rem;">
+                                <i class="fas fa-charging-station"></i>
+                            </div>
+                            <h3 style="margin:0 0 10px 0; font-size:1.2rem; color:var(--heading-color); font-weight:700;">Battery Charger Sizing</h3>
+                            <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.5;">Compute required current and kW ratings of industrial rectifiers and chargers to support continuous DC loads and recharge battery banks per IEEE 946.</p>
+                        </div>
+                        <div style="margin-top:20px; font-size:0.85rem; color:var(--secondary-color); font-weight:600; display:flex; align-items:center; gap:5px;">
+                            Open Calculator <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
+                <!-- Card 3 -->
+                <a href="/generatorsizing" style="text-decoration:none; color:inherit; display:flex;">
+                    <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.3s ease; width:100%; display:flex; flex-direction:column; justify-content:space-between;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--secondary-color)'; this.style.boxShadow='0 10px 20px rgba(37,99,235,0.08)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--border-color)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.03)';">
+                        <div>
+                            <div style="width:50px; height:50px; background:rgba(245,158,11,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:15px; color:var(--accent-color); font-size:1.5rem;">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h3 style="margin:0 0 10px 0; font-size:1.2rem; color:var(--heading-color); font-weight:700;">Generator Sizing</h3>
+                            <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.5;">Estimate backup diesel generator (DG set) capacity required for starting motors, voltage dips, and running loads without tripping.</p>
+                        </div>
+                        <div style="margin-top:20px; font-size:0.85rem; color:var(--secondary-color); font-weight:600; display:flex; align-items:center; gap:5px;">
+                            Open Calculator <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
+                <!-- Card 4 -->
+                <a href="/cable-sizing" style="text-decoration:none; color:inherit; display:flex;">
+                    <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:25px; box-shadow:0 4px 12px rgba(0,0,0,0.03); transition:all 0.3s ease; width:100%; display:flex; flex-direction:column; justify-content:space-between;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--secondary-color)'; this.style.boxShadow='0 10px 20px rgba(37,99,235,0.08)';" onmouseout="this.style.transform='none'; this.style.borderColor='var(--border-color)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.03)';">
+                        <div>
+                            <div style="width:50px; height:50px; background:rgba(239,68,68,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:15px; color:#ef4444; font-size:1.5rem;">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                            <h3 style="margin:0 0 10px 0; font-size:1.2rem; color:var(--heading-color); font-weight:700;">Cable Sizing</h3>
+                            <p style="margin:0; font-size:0.9rem; color:var(--text-color); line-height:1.5;">Verify conductor cross-sectional areas based on continuous current ampacity, voltage drop constraints, and short-circuit limits under IEC 60364.</p>
+                        </div>
+                        <div style="margin-top:20px; font-size:0.85rem; color:var(--secondary-color); font-weight:600; display:flex; align-items:center; gap:5px;">
+                            Open Calculator <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </section>
@@ -1639,10 +2705,16 @@
             // --- Show/hide custom voltage field ---
             document.getElementById('system-voltage').addEventListener('change', function() {
                 const customVoltageGroup = document.getElementById('custom-voltage-group');
+                const phaseSelect = document.getElementById('phase-type');
                 if (this.value === 'custom') {
                     customVoltageGroup.style.display = 'block';
                 } else {
                     customVoltageGroup.style.display = 'none';
+                    if (['115', '220', '230', '240'].includes(this.value)) {
+                        phaseSelect.value = 'single';
+                    } else if (['380', '400', '415', '480', '600'].includes(this.value)) {
+                        phaseSelect.value = 'three';
+                    }
                 }
             });
             
@@ -1749,11 +2821,11 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group" style="flex: 2; min-width: 200px;">
-                            <label>Description</label>
+                            <label>Load Description</label>
                             <input type="text" id="load-name-${loadCounter}" placeholder="e.g., Servers, Motors">
                         </div>
                         <div class="form-group" style="flex: 1.5; min-width: 150px;">
-                            <label>Load Type</label>
+                            <label>Load Characteristics Type</label>
                             <select id="load-type-${loadCounter}">
                                 <option value="resistive">Resistive</option>
                                 <option value="motor">Motors</option>
@@ -1763,17 +2835,17 @@
                             </select>
                         </div>
                         <div class="form-group" style="flex: 0.8; min-width: 80px;">
-                            <label>Qty</label>
+                            <label>Quantity (\(N_{\text{qty}}\))</label>
                             <input type="number" id="quantity-${loadCounter}" min="1" step="1" value="1" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Power</label>
+                            <label>Active/Apparent Power (\(P_{\text{load}}\) / \(S_{\text{load}}\))</label>
                             <input type="number" id="load-power-${loadCounter}" min="0" step="0.1" value="1" required>
                         </div>
                         <div class="form-group">
-                            <label>Unit</label>
+                            <label>Power Unit</label>
                             <select id="power-unit-${loadCounter}">
                                 <option value="kW" selected>kW</option>
                                 <option value="kVA">kVA</option>
@@ -1784,21 +2856,21 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>PF</label>
+                            <label>Load Power Factor (\(\cos\phi_{\text{load}}\))</label>
                             <input type="number" id="power-factor-${loadCounter}" min="0.1" max="1" step="0.01" value="0.95" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Start Fctr</label>
+                            <label>Inrush Multiplier (\(k_{\text{start}}\))</label>
                             <input type="number" id="starting-factor-${loadCounter}" min="1" max="10" step="0.1" value="1.5" required>
                         </div>
                         <div class="form-group">
-                            <label>Crest Fctr</label>
+                            <label>Crest Factor (\(CF_{\text{load}}\))</label>
                             <input type="number" id="crest-factor-${loadCounter}" min="1" max="5" step="0.01" value="2.5" required>
                         </div>
                         <div class="form-group">
-                            <label>Duty %</label>
+                            <label>Duty Cycle (\(DF_{\text{load}}\), %)</label>
                             <input type="number" id="duty-cycle-${loadCounter}" min="1" max="100" step="1" value="100" required>
                         </div>
                     </div>
@@ -1836,10 +2908,25 @@
                 resultTableBody.appendChild(tr);
             }
 
+            function addResultHeader(title) {
+                const tr = document.createElement('tr');
+                tr.className = 'result-header-row';
+                const td = document.createElement('td');
+                td.setAttribute('colspan', '2');
+                td.style.backgroundColor = 'var(--primary-color)';
+                td.style.color = 'white';
+                td.style.fontWeight = 'bold';
+                td.style.fontSize = '1.05rem';
+                td.style.padding = '10px 14px';
+                tr.appendChild(td);
+                td.innerHTML = title;
+                resultTableBody.appendChild(tr);
+            }
+
             // --- Helper function to clear results ---
             function clearResults() {
                 resultContainer.classList.remove('show');
-                upsGuideContent.classList.remove('show'); // Hide content block
+                // upsGuideContent is always visible — no toggle needed
                 
                 // Hide and clear results
                 setTimeout(() => {
@@ -1871,6 +2958,10 @@
                 document.getElementById('altitude').value = '0';
                 document.getElementById('environment-type').value = 'clean';
                 document.getElementById('redundancy').value = 'n';
+                document.getElementById('industry-type').value = 'general';
+                document.getElementById('seismic-zone').value = 'none';
+                document.getElementById('input-frequency').value = '50';
+                document.getElementById('battery-aging-factor').value = '1.25';
 
                 // Remove all load items except the first one
                 const allLoadItems = document.querySelectorAll('.load-item');
@@ -1909,7 +3000,7 @@
 
                 // Clear previous results immediately
                 resultContainer.classList.remove('show');
-                upsGuideContent.classList.remove('show');
+                // upsGuideContent is always visible — no toggle needed
                 resultTableBody.innerHTML = '';
                 calculationDetailsDiv.innerHTML = '';
                 loadDetailsSummaryDiv.innerHTML = '';
@@ -1936,6 +3027,10 @@
                         const redundancy = document.getElementById('redundancy').value;
                         const dcBusVoltage = parseFloat(document.getElementById('dc-bus-voltage').value);
                         const batteryTypeSelected = document.getElementById('battery-type').value;
+                        const industryType = document.getElementById('industry-type').value;
+                        const seismicZone = document.getElementById('seismic-zone').value;
+                        const inputFrequency = document.getElementById('input-frequency').value;
+                        const batteryAgingFactor = parseFloat(document.getElementById('battery-aging-factor').value);
                         
                         // Validate system inputs
                         if (!systemVoltage || systemVoltage <= 0) throw new Error("System Voltage must be a positive number.");
@@ -1954,7 +3049,7 @@
                         let totalCurrentA = 0;
                         let loadDetails = [];
                         let calculationHtml = '<h3>Detailed Calculation Steps:</h3>';
-                        let loadDetailsHtml = '<h4>Load Details Summary:</h4><table class="result-table"><thead><tr><th>Load</th><th>Type</th><th>Power (kW)</th><th>Power (kVA)</th><th>Peak (kVA)</th><th>RMS Current (A)</th><th>Peak Current (A)</th></tr></thead><tbody>';
+                        let loadDetailsHtml = '<h4>Load Details Summary:</h4><div class="table-responsive"><table class="result-table"><thead><tr><th>Load</th><th>Type</th><th>Power (kW)</th><th>Power (kVA)</th><th>Peak (kVA)</th><th>RMS Current (A)</th><th>Peak Current (A)</th></tr></thead><tbody>';
                         
                         calculationHtml += `<p><strong>1. Calculate Total Connected Load:</strong></p>`;
                         
@@ -2029,7 +3124,7 @@
                             loadDetailsHtml += `<tr><td>${loadName}</td><td>${loadType}</td><td>${runningPowerKW.toFixed(2)}</td><td>${runningPowerKVA.toFixed(2)}</td><td>${peakPowerKVAForLoad.toFixed(2)}</td><td>${currentA_rms.toFixed(2)}</td><td>${peakCurrentA_load.toFixed(2)}</td></tr>`;
                         }
                         
-                        loadDetailsHtml += '</tbody></table>';
+                        loadDetailsHtml += '</tbody></table></div>';
                         
                         // --- 3. UPS Sizing ---
                         const designPowerKW_for_load = totalPowerKW * (1 + futureExpansion);
@@ -2066,8 +3161,9 @@
                             }
                         }
 
-                        // Use the larger of traditional Ah and IEEE 485 derived Ah
-                        const effectiveRequiredAh = (ieee485AhDerived > 0) ? Math.max(requiredBatteryAhAtDCBus, ieee485AhDerived) : requiredBatteryAhAtDCBus;
+                        // Use the larger of traditional Ah and IEEE 485 derived Ah, then apply aging factor
+                        const effectiveRequiredAh_raw = (ieee485AhDerived > 0) ? Math.max(requiredBatteryAhAtDCBus, ieee485AhDerived) : requiredBatteryAhAtDCBus;
+                        const effectiveRequiredAh = effectiveRequiredAh_raw * batteryAgingFactor;
 
                         // Find standard battery size
                         const selectedBatteryAh = findStandardBatterySize(effectiveRequiredAh);
@@ -2084,8 +3180,11 @@
                             calculationHtml += `<p class="calculation-step">W/cell (required) = ${energyRequiredKWH_output.toFixed(2)} kW × 1000 / ${numSeriesUnitsPerString} cells = ${wattsPerCellRequired.toFixed(2)} W/cell</p>`;
                             calculationHtml += `<p class="calculation-step">W/cell (100Ah baseline at EODV ${eodvPerCell}V, ${backupTime} min) = ${wattsPerCellBaseline.toFixed(2)} W/cell</p>`;
                             calculationHtml += `<p class="formula">$$Ah_{\\text{IEEE 485}} = 100 \\times \\frac{W_{\\text{req}}}{W_{\\text{baseline}}} = 100 \\times \\frac{${wattsPerCellRequired.toFixed(2)}}{${wattsPerCellBaseline.toFixed(2)}} = ${ieee485AhDerived.toFixed(2)} \\text{ Ah}$$</p>`;
-                            calculationHtml += `<p class="calculation-step">Effective Required Ah = max(${requiredBatteryAhAtDCBus.toFixed(2)}, ${ieee485AhDerived.toFixed(2)}) = <strong>${effectiveRequiredAh.toFixed(2)} Ah</strong></p>`;
+                            calculationHtml += `<p class="calculation-step">Effective Required Ah (pre-aging) = max(${requiredBatteryAhAtDCBus.toFixed(2)}, ${ieee485AhDerived.toFixed(2)}) = <strong>${effectiveRequiredAh_raw.toFixed(2)} Ah</strong></p>`;
                         }
+
+                        calculationHtml += `<p class="calculation-step">Aging/Design Margin Factor (k_age) = ${batteryAgingFactor.toFixed(2)}</p>`;
+                        calculationHtml += `<p class="formula">$$C_{\\text{Ah, final}} = C_{\\text{Ah, raw}} \\times k_{\\text{age}} = ${effectiveRequiredAh_raw.toFixed(2)} \\times ${batteryAgingFactor.toFixed(2)} = ${effectiveRequiredAh.toFixed(2)} \\text{ Ah}$$</p>`;
 
                         calculationHtml += `<p class="calculation-step">Cells in Series = ${cellCountMethod}</p>`;
                         calculationHtml += `<p class="calculation-step">Selected Standard Battery Size = <strong>${selectedBatteryAh} Ah</strong></p>`;
@@ -2099,14 +3198,46 @@
                         const chargerEfficiencyACtoDC = 0.9, chargerPowerFactor = 0.95;
                         const chargingPowerAC_kW = chargingPowerDC_kW / chargerEfficiencyACtoDC;
                         const chargingPowerAC_kVA = chargingPowerAC_kW / chargerPowerFactor;
+
+                        let cellUnitMultiplier = 1;
+                        if (batteryTypeSelected === 'SMF') cellUnitMultiplier = 6;
+                        else if (batteryTypeSelected === 'Li-ion') cellUnitMultiplier = 24;
+                        const totalSeriesCells = numSeriesUnitsPerString * cellUnitMultiplier;
+
+                        let unitEodVoltage = eodvPerCell;
+                        if (batteryTypeSelected === 'Ni-Cd') unitEodVoltage = eodvPerCell * 0.6;
+                        else if (batteryTypeSelected === 'SMF') unitEodVoltage = eodvPerCell * 6;
+                        else if (batteryTypeSelected === 'Li-ion') unitEodVoltage = eodvPerCell * 24;
+                        const stringEodVoltage = numSeriesUnitsPerString * unitEodVoltage;
+
+                        const peakDcDischargeCurrent = (designPowerKW_for_load * 1000) / (stringEodVoltage * upsEfficiency);
+
+                        const totalRequiredKVA_for_ups_output = designPowerKVA_for_load + chargingPowerAC_kVA;
+                        const totalRequiredKW_for_ups_output = designPowerKW_for_load + chargingPowerAC_kW;
+
+                        // Rectifier Sizing
+                        const rectifierEfficiency = 0.95, rectifierPowerFactor = 0.95;
+                        const maxRectifierInputKW = (designPowerKW_for_load / upsEfficiency) + chargingPowerAC_kW;
+                        const maxRectifierInputKVA = maxRectifierInputKW / rectifierPowerFactor;
+
+                        let maxRectifierInputCurrentA = 0;
+                        if (phaseType === 'single') {
+                            maxRectifierInputCurrentA = (maxRectifierInputKVA * 1000) / systemVoltage;
+                        } else {
+                            maxRectifierInputCurrentA = (maxRectifierInputKVA * 1000) / (systemVoltage * Math.sqrt(3));
+                        }
+
+                        const loadPFCombined = totalPowerKVA > 0 ? (totalPowerKW / totalPowerKVA) : 1.0;
+                        const totalPowerKVAR = Math.sqrt(Math.max(0, (totalPowerKVA * totalPowerKVA) - (totalPowerKW * totalPowerKW)));
                         
                         calculationHtml += `<p><strong>4. Calculate UPS Charging Power:</strong></p>`;
                         calculationHtml += `<p class="calculation-step">Charging Power (kVA) = ${chargingPowerAC_kVA.toFixed(2)} kVA (to recharge ${finalBatteryAh.toFixed(0)} Ah bank)</p>`;
 
-                        const totalRequiredKVA_for_ups_output = designPowerKVA_for_load + chargingPowerAC_kVA;
-                        const totalRequiredKW_for_ups_output = designPowerKW_for_load + chargingPowerAC_kW;
-                        
-                        calculationHtml += `<p><strong>5. Calculate Total UPS Power:</strong></p>`;
+                        calculationHtml += `<p><strong>5. DC Link & Battery Discharge Sizing:</strong></p>`;
+                        calculationHtml += `<p class="formula">$$V_{\\text{EOD, string}} = N_{\\text{units}} \\times V_{\\text{EOD, unit}} = ${numSeriesUnitsPerString} \\times ${unitEodVoltage.toFixed(2)}\\text{ V} = ${stringEodVoltage.toFixed(1)}\\text{ V}$$</p>`;
+                        calculationHtml += `<p class="formula">$$I_{\\text{dc, max}} = \\frac{P_{\\text{design, load}}}{\\eta_{\\text{inv}} \\times V_{\\text{EOD, string}}} = \\frac{${(designPowerKW_for_load * 1000).toFixed(0)}\\text{ W}}{${upsEfficiency} \\times ${stringEodVoltage.toFixed(1)}\\text{ V}} = ${peakDcDischargeCurrent.toFixed(1)}\\text{ A}$$</p>`;
+
+                        calculationHtml += `<p><strong>6. Calculate Total UPS Power:</strong></p>`;
                         calculationHtml += `<p class="formula">$$S_{UPS, total} = S_{\\text{design, load, kVA}} + S_{\\text{charging, kVA}}$$</p>`;
                         calculationHtml += `<p class="calculation-step">S_UPS_total = ${designPowerKVA_for_load.toFixed(2)} kVA + ${chargingPowerAC_kVA.toFixed(2)} kVA = ${totalRequiredKVA_for_ups_output.toFixed(2)} kVA</p>`;
 
@@ -2115,23 +3246,75 @@
                         if (altitude > 1000) altitudeDeratingFactor = 1.0 - ((altitude - 1000) / 100) * 0.01;
                         let tempDeratingFactor = 1.0;
                         if (ambientTemp > 25) tempDeratingFactor = 1.0 - ((ambientTemp - 25) * 0.015);
-                        let environmentDeratingFactor = (environmentType === 'industrial') ? 0.95 : (environmentType === 'harsh') ? 0.90 : (environmentType === 'outdoor') ? 0.85 : 1.0;
+                        if (ambientTemp < 0) tempDeratingFactor = 1.0 - ((0 - ambientTemp) * 0.005); // Cold derating
+                        let environmentDeratingFactor = 1.0;
+                        switch(environmentType) {
+                            case 'industrial': environmentDeratingFactor = 0.95; break;
+                            case 'harsh': environmentDeratingFactor = 0.90; break;
+                            case 'outdoor': environmentDeratingFactor = 0.85; break;
+                            case 'marine': environmentDeratingFactor = 0.80; break;
+                            case 'explosive': environmentDeratingFactor = 0.75; break;
+                            default: environmentDeratingFactor = 1.0;
+                        }
+
+                        // Industry-specific safety margin factor
+                        let industrySafetyFactor = 1.0;
+                        let industryLabel = 'General Industrial';
+                        const industryFactors = {
+                            'general': { factor: 1.0, label: 'General Industrial' },
+                            'datacenter': { factor: 1.10, label: 'Data Center / IT / Telecom' },
+                            'oil-gas': { factor: 1.15, label: 'Oil & Gas / Petrochemical' },
+                            'mining': { factor: 1.15, label: 'Mining & Metals' },
+                            'pharma': { factor: 1.10, label: 'Pharmaceutical / Biotech (cGMP)' },
+                            'hospital': { factor: 1.15, label: 'Hospital / Healthcare (IEC 60364-7-710)' },
+                            'semiconductor': { factor: 1.15, label: 'Semiconductor / Electronics Fab' },
+                            'water': { factor: 1.05, label: 'Water & Wastewater Treatment' },
+                            'power-gen': { factor: 1.10, label: 'Power Generation / Utility' },
+                            'railway': { factor: 1.10, label: 'Railway / Transportation (EN 50121)' },
+                            'marine': { factor: 1.15, label: 'Marine / Offshore (DNV-GL)' },
+                            'military': { factor: 1.20, label: 'Military / Defense (MIL-STD)' },
+                            'food': { factor: 1.05, label: 'Food & Beverage Processing' },
+                            'cement': { factor: 1.10, label: 'Cement / Heavy Manufacturing' },
+                            'textile': { factor: 1.05, label: 'Textile & Apparel' },
+                            'automotive': { factor: 1.10, label: 'Automotive Manufacturing' },
+                            'airport': { factor: 1.10, label: 'Airport / Aviation' },
+                            'broadcast': { factor: 1.05, label: 'Broadcasting / Media' },
+                            'nuclear': { factor: 1.25, label: 'Nuclear (Safety Class 1E)' },
+                            'renewable': { factor: 1.05, label: 'Renewable Energy / Solar-Wind' }
+                        };
+                        if (industryFactors[industryType]) {
+                            industrySafetyFactor = industryFactors[industryType].factor;
+                            industryLabel = industryFactors[industryType].label;
+                        }
+
+                        // Seismic derating factor
+                        let seismicDeratingFactor = 1.0;
+                        let seismicLabel = 'None / Zone 0';
+                        switch(seismicZone) {
+                            case 'zone1': seismicDeratingFactor = 0.98; seismicLabel = 'Zone 1 — Moderate (0.1g–0.25g)'; break;
+                            case 'zone2': seismicDeratingFactor = 0.95; seismicLabel = 'Zone 2 — High (0.25g–0.5g)'; break;
+                            case 'zone3': seismicDeratingFactor = 0.92; seismicLabel = 'Zone 3 — Very High (>0.5g, IEEE 693)'; break;
+                            case 'zone4': seismicDeratingFactor = 0.88; seismicLabel = 'Zone 4 — Nuclear/Critical (1.0g+)'; break;
+                        }
                         
-                        const combinedDeratingFactor = altitudeDeratingFactor * tempDeratingFactor * environmentDeratingFactor;
+                        const combinedDeratingFactor = altitudeDeratingFactor * tempDeratingFactor * environmentDeratingFactor * seismicDeratingFactor;
                         if(combinedDeratingFactor <= 0) throw new Error("Environmental conditions are too extreme, resulting in an invalid derating factor.");
                         
                         // UPS must be sized to handle the LARGEST of:
-                        // 1. The derated continuous load (kVA)
+                        // 1. The derated continuous load (kVA) × industry safety factor
                         // 2. The single largest peak load (kVA)
-                        const finalUpsKVA_continuous = totalRequiredKVA_for_ups_output / combinedDeratingFactor;
+                        const finalUpsKVA_continuous = (totalRequiredKVA_for_ups_output * industrySafetyFactor) / combinedDeratingFactor;
                         const finalUpsKVA = Math.max(finalUpsKVA_continuous, peakPowerKVA);
 
-                        calculationHtml += `<p><strong>6. Apply Environmental Derating Factors:</strong></p>`;
-                        calculationHtml += `<p class="calculation-step">Altitude (${altitude}m) Factor: ${altitudeDeratingFactor.toFixed(2)}</p>`;
-                        calculationHtml += `<p class="calculation-step">Temperature (${ambientTemp}°C) Factor: ${tempDeratingFactor.toFixed(2)}</p>`;
+                        calculationHtml += `<p><strong>7. Apply Environmental & Industry Derating Factors:</strong></p>`;
+                        calculationHtml += `<p class="calculation-step">Altitude (${altitude}m) Factor: ${altitudeDeratingFactor.toFixed(3)}</p>`;
+                        calculationHtml += `<p class="calculation-step">Temperature (${ambientTemp}°C) Factor: ${tempDeratingFactor.toFixed(3)}</p>`;
                         calculationHtml += `<p class="calculation-step">Environment (${environmentType}) Factor: ${environmentDeratingFactor.toFixed(2)}</p>`;
-                        calculationHtml += `<p class="formula">$$S_{\\text{UPS, cont.}} = \\frac{S_{\\text{UPS, total}}}{\\text{Combined Derating Factor}}$$</p>`;
-                        calculationHtml += `<p class="calculation-step">S_UPS_cont. = ${totalRequiredKVA_for_ups_output.toFixed(2)} kVA / ${combinedDeratingFactor.toFixed(2)} = ${finalUpsKVA_continuous.toFixed(2)} kVA</p>`;
+                        calculationHtml += `<p class="calculation-step">Industry (${industryLabel}) Safety Factor: ${industrySafetyFactor.toFixed(2)}</p>`;
+                        calculationHtml += `<p class="calculation-step">Seismic (${seismicLabel}) Factor: ${seismicDeratingFactor.toFixed(2)}</p>`;
+                        calculationHtml += `<p class="calculation-step">Battery Aging/Design Margin Factor (k_age): ${batteryAgingFactor.toFixed(2)}</p>`;
+                        calculationHtml += `<p class="formula">$$S_{\\text{UPS, cont.}} = \\frac{S_{\\text{UPS, total}} \\times k_{\\text{industry}}}{\\text{Combined Derating Factor}}$$</p>`;
+                        calculationHtml += `<p class="calculation-step">S_UPS_cont. = (${totalRequiredKVA_for_ups_output.toFixed(2)} kVA × ${industrySafetyFactor.toFixed(2)}) / ${combinedDeratingFactor.toFixed(3)} = ${finalUpsKVA_continuous.toFixed(2)} kVA</p>`;
                         calculationHtml += `<p class="formula">$$S_{\\text{UPS, final}} = \\max(S_{\\text{UPS, cont.}}, S_{\\text{Peak Load}})$$</p>`;
                         calculationHtml += `<p class="calculation-step">S_UPS_final = max(${finalUpsKVA_continuous.toFixed(2)} kVA, ${peakPowerKVA.toFixed(2)} kVA) = ${finalUpsKVA.toFixed(2)} kVA</p>`;
 
@@ -2156,9 +3339,18 @@
                             default: redundancyConfig = `1 x ${recommendedUpsSize} kVA UPS unit (N)`;
                         }
 
-                        calculationHtml += `<p><strong>7. Apply Redundancy & Select Standard Size:</strong></p>`;
+                        calculationHtml += `<p><strong>8. Apply Redundancy & Select Standard Size:</strong></p>`;
                         calculationHtml += `<p class="calculation-step">Redundancy Configuration: ${redundancy.toUpperCase()}</p>`;
                         calculationHtml += `<p class="calculation-step">Recommended Standard UPS Size (per module): ${recommendedUpsSize} kVA</p>`;
+
+                        calculationHtml += `<p><strong>9. Sizing the Rectifier AC Input Supply:</strong></p>`;
+                        calculationHtml += `<p class="formula">$$P_{\\text{rectifier, max}} = \\frac{P_{\\text{design, load}}}{\\eta_{\\text{inv}}} + P_{\\text{charger}} = \\frac{${designPowerKW_for_load.toFixed(2)}}{${upsEfficiency}} + ${chargingPowerAC_kW.toFixed(2)} = ${maxRectifierInputKW.toFixed(2)}\\text{ kW}$$</p>`;
+                        calculationHtml += `<p class="formula">$$S_{\\text{rectifier, max}} = \\frac{P_{\\text{rectifier, max}}}{PF_{\\text{rectifier}}} = \\frac{${maxRectifierInputKW.toFixed(2)}}{${rectifierPowerFactor}} = ${maxRectifierInputKVA.toFixed(2)}\\text{ kVA}$$</p>`;
+                        if (phaseType === 'single') {
+                            calculationHtml += `<p class="formula">$$I_{\\text{rectifier, AC}} = \\frac{S_{\\text{rectifier, max}} \\times 1000}{V_{\\text{out}}} = \\frac{${(maxRectifierInputKVA * 1000).toFixed(0)}}{${systemVoltage}} = ${maxRectifierInputCurrentA.toFixed(1)}\\text{ A}$$</p>`;
+                        } else {
+                            calculationHtml += `<p class="formula">$$I_{\\text{rectifier, AC}} = \\frac{S_{\\text{rectifier, max}} \\times 1000}{\\sqrt{3} \\times V_{\\text{out}}} = \\frac{${(maxRectifierInputKVA * 1000).toFixed(0)}}{\\sqrt{3} \\times ${systemVoltage}} = ${maxRectifierInputCurrentA.toFixed(1)}\\text{ A}$$</p>`;
+                        }
                         
                         // --- 8. Populate UI ---
                         calculationDetailsDiv.innerHTML = calculationHtml;
@@ -2168,33 +3360,80 @@
                         
                         loadDetailsSummaryDiv.innerHTML = loadDetailsHtml;
                         
-                        addResultRow('<strong>Recommended UPS Size (Per Module)</strong>', `<strong>${recommendedUpsSize} kVA</strong>`);
-                        addResultRow('<strong>Final UPS Configuration</strong>', `<strong>${redundancyConfig}</strong>`);
-                        addResultRow('<strong>Required Battery Capacity</strong>', `<strong>${finalBatteryAh.toFixed(0)} Ah @ ${dcBusVoltage} V</strong> (EODV: ${eodvPerCell} V/cell)`);
-                        addResultRow('Selected Standard Size', `${selectedBatteryAh} Ah per string`);
-                        addResultRow('Total Batteries Needed', `${totalBatteriesNeeded} units (${numSeriesUnitsPerString} series × ${numParallelStrings} parallel)`);
+                        // Population with styled section headers
+                        addResultHeader('<i class="fas fa-plug" style="margin-right:8px;"></i>I. AC Output Sizing Ratings (AC System)');
+                        addResultRow('Recommended Module Rating', `<strong>${recommendedUpsSize} kVA</strong>`);
+                        addResultRow('Redundant Configuration', `<strong>${redundancyConfig}</strong>`);
+                        addResultRow('Total Connected Load Active Power (\(P_{\\text{load}}\))', `${totalPowerKW.toFixed(2)} kW`);
+                        addResultRow('Total Connected Load Apparent Power (\(S_{\\text{load}}\))', `${totalPowerKVA.toFixed(2)} kVA`);
+                        addResultRow('Total Connected Load Reactive Power (\(Q_{\\text{load}}\))', `${totalPowerKVAR.toFixed(2)} kVAR`);
+                        addResultRow('Combined Load Operating Power Factor (\(\\cos\\phi_{\\text{load}}\))', `${loadPFCombined.toFixed(2)}`);
+                        addResultRow('Peak Transient/Inrush Power (\(S_{\\text{peak}}\))', `${peakPowerKVA.toFixed(2)} kVA`);
+                        addResultRow('Design Load (with Expansion) (\(S_{\\text{design}}\))', `${designPowerKVA_for_load.toFixed(2)} kVA`);
+                        addResultRow('Adjusted Continuous Size (pre-standard)', `${finalUpsKVA_continuous.toFixed(2)} kVA`);
+
+                        addResultHeader('<i class="fas fa-battery-three-quarters" style="margin-right:8px;"></i>II. DC Link & Battery Storage Parameters (DC System)');
+                        addResultRow('Required Battery Bank Capacity (\(C_{\\text{Ah}}\))', `<strong>${finalBatteryAh.toFixed(0)} Ah @ ${dcBusVoltage} V</strong>`);
+                        addResultRow('Battery Chemistry Type', `${batteryTypeSelected}`);
+                        addResultRow('Cell End-of-Discharge Voltage (\(V_{\\text{EOD}}\))', `${eodvPerCell} V/cell`);
+                        addResultRow('Minimum String Voltage at EOD (\(V_{\\text{EOD, string}}\))', `${stringEodVoltage.toFixed(1)} V`);
+                        addResultRow('Number of Series Units / Total Cells', `${numSeriesUnitsPerString} units / ${totalSeriesCells} cells`);
+                        addResultRow('Parallel Battery Strings', `${numParallelStrings} string(s)`);
+                        addResultRow('Standard Unit Capacity Selected', `${selectedBatteryAh} Ah`);
+                        addResultRow('Total Battery Units Required', `${totalBatteriesNeeded} units`);
+                        addResultRow('Peak Battery Discharge Current (\(I_{\\text{dc, max}}\))', `${peakDcDischargeCurrent.toFixed(1)} A`);
                         if (batteryTypeSelected === 'VRLA/LA' && wattsPerCellBaseline > 0) {
                             addResultRow('IEEE 485 W/cell Required', `${wattsPerCellRequired.toFixed(2)} W/cell`);
-                            addResultRow('IEEE 485 W/cell Baseline (100Ah)', `${wattsPerCellBaseline.toFixed(2)} W/cell @ ${backupTime} min`);
-                            addResultRow('IEEE 485 Derived Ah', `${ieee485AhDerived.toFixed(2)} Ah`);
+                            addResultRow('IEEE 485 W/cell Baseline (100Ah)', `${wattsPerCellBaseline.toFixed(2)} W/cell`);
+                            addResultRow('IEEE 485 Derived Capacity', `${ieee485AhDerived.toFixed(1)} Ah`);
                         }
-                        addResultRow('---', '---');
-                        addResultRow('Total Connected Load', `${totalPowerKW.toFixed(2)} kW / ${totalPowerKVA.toFixed(2)} kVA`);
-                        addResultRow('Design Load (with Expansion)', `${designPowerKW_for_load.toFixed(2)} kW / ${designPowerKVA_for_load.toFixed(2)} kVA`);
-                        addResultRow('Peak Load (Inrush/Crest)', `${peakPowerKVA.toFixed(2)} kVA`);
-                        addResultRow('Battery Charging Power', `${chargingPowerAC_kVA.toFixed(2)} kVA`);
-                        addResultRow('Total Required UPS Power (Load + Charging)', `${totalRequiredKVA_for_ups_output.toFixed(2)} kVA`);
-                        addResultRow('Environmental Derating Factor', `${combinedDeratingFactor.toFixed(2)}`);
-                        addResultRow('Final Adjusted UPS Size (Pre-Standard)', `${finalUpsKVA.toFixed(2)} kVA`);
-                        addResultRow('UPS Technology', `${upsType.charAt(0).toUpperCase() + upsType.slice(1)}`);
-                        addResultRow('Required Backup Time', `${backupTime} minutes`);
+
+                        addResultHeader('<i class="fas fa-charging-station" style="margin-right:8px;"></i>III. Rectifier & AC Input Parameters (AC Input)');
+                        addResultRow('Battery Charger Output Power (\(P_{\\text{charge, DC}}\))', `${chargingPowerDC_kW.toFixed(2)} kW`);
+                        addResultRow('Charger Input Apparent Power (\(S_{\\text{charge}}\))', `${chargingPowerAC_kVA.toFixed(2)} kVA`);
+                        addResultRow('Max Rectifier Input Apparent Power (\(S_{\\text{input, max}}\))', `${maxRectifierInputKVA.toFixed(2)} kVA`);
+                        addResultRow('Rated AC Input Current (\(I_{\\text{rectifier, AC}}\))', `${maxRectifierInputCurrentA.toFixed(1)} A`);
+                        addResultRow('UPS Operating Topology Class', `${upsType.charAt(0).toUpperCase() + upsType.slice(1)}`);
+                        addResultRow('Required Autonomy Duration', `${backupTime} minutes`);
+                        addResultRow('Input Supply Frequency', `${inputFrequency} Hz`);
+
+                        addResultHeader('<i class="fas fa-industry" style="margin-right:8px;"></i>IV. Environmental & Industry Parameters');
+                        addResultRow('Industry / Application Type', `<strong>${industryLabel}</strong>`);
+                        addResultRow('Industry Safety Margin Factor', `${industrySafetyFactor.toFixed(2)}`);
+                        addResultRow('Seismic Zone / Qualification', `${seismicLabel}`);
+                        addResultRow('Seismic Derating Factor', `${seismicDeratingFactor.toFixed(2)}`);
+                        addResultRow('Altitude Derating Factor', `${altitudeDeratingFactor.toFixed(3)}`);
+                        addResultRow('Temperature Derating Factor', `${tempDeratingFactor.toFixed(3)}`);
+                        addResultRow('Environment Derating Factor', `${environmentDeratingFactor.toFixed(2)}`);
+                        addResultRow('Battery Aging/Design Margin Factor (\(k_{\\text{age}}\))', `${batteryAgingFactor.toFixed(2)}`);
+                        addResultRow('Combined Derating Factor', `<strong>${combinedDeratingFactor.toFixed(3)}</strong>`);
                         
                         // Recommendation content
                         let techRecommendation = (upsType === 'online') ? 'Online/Double Conversion UPS is recommended for critical industrial applications.' : 'Line Interactive or Standby UPS are suitable for less critical loads.';
+                        
+                        // Industry-specific recommendations
+                        let industryNote = '';
+                        switch(industryType) {
+                            case 'datacenter': industryNote = 'Data center installations should comply with Uptime Institute Tier standards and TIA-942.'; break;
+                            case 'oil-gas': industryNote = 'Oil & Gas installations must comply with IEC 60079 (Ex-rated zones), API 670/672 for critical rotating equipment, and NFPA 70/497.'; break;
+                            case 'mining': industryNote = 'Mining UPS systems require ruggedized enclosures (IP54+), vibration resistance, and compliance with local mining safety regulations (e.g., MSHA, DGMS).'; break;
+                            case 'pharma': industryNote = 'Pharmaceutical UPS must support 21 CFR Part 11 compliance, GMP validation, and clean-room environmental controls.'; break;
+                            case 'hospital': industryNote = 'Healthcare UPS must comply with IEC 60364-7-710 (medical locations), NFPA 99, and provide <10ms transfer for life-support equipment.'; break;
+                            case 'semiconductor': industryNote = 'Semiconductor fabs require ±1% voltage regulation, <2% THDv, and SEMI F47/F49 compliance for voltage sag immunity.'; break;
+                            case 'railway': industryNote = 'Railway traction/signaling UPS must comply with EN 50121 (EMC), EN 45545 (fire safety), and withstand vibration per EN 61373.'; break;
+                            case 'marine': industryNote = 'Marine UPS must be DNV-GL / Lloyd\'s Register type-approved with IP56 minimum rating, salt-spray resistance, and tilt/vibration tolerance.'; break;
+                            case 'military': industryNote = 'Military UPS must comply with MIL-STD-461 (EMC), MIL-STD-810 (environmental), and MIL-STD-1399 (shipboard power).'; break;
+                            case 'nuclear': industryNote = 'Nuclear Class 1E UPS must comply with IEEE 308, IEEE 323 (qualification), IEEE 344 (seismic), and 10 CFR 50 Appendix B.'; break;
+                            case 'airport': industryNote = 'Airport UPS for ATC, navigation aids, and runway lighting must comply with ICAO Annex 14 and FAA AC 150/5340.'; break;
+                            default: industryNote = 'Ensure compliance with local electrical codes (NEC/IEC 60364) and applicable industry standards.';
+                        }
+                        
                         recommendationContent.innerHTML = `
                             <p><strong>UPS Size:</strong> ${redundancyConfig}</p>
                             <p><strong>Technology:</strong> ${techRecommendation}</p>
                             <p><strong>Battery System:</strong> A <strong>${finalBatteryAh.toFixed(0)} Ah</strong> bank (${selectedBatteryAh} Ah standard blocks) at <strong>${dcBusVoltage}V</strong> is required, composed of <strong>${totalBatteriesNeeded}</strong> individual ${batteryTypeSelected} units (EODV: ${eodvPerCell} V/cell).</p>
+                            <p><strong>Industry:</strong> ${industryLabel} — ${industryNote}</p>
+                            ${seismicZone !== 'none' ? `<p><strong>Seismic:</strong> Equipment must be seismically qualified to ${seismicLabel}. Anchoring per IEEE 693 / IBC requirements.</p>` : ''}
                         `;
                         
                         standardReference.innerHTML = `Calculations based on <strong>IEEE 1100-2005 (Emerald Book)</strong>, <strong>IEEE 485</strong> (Watts/Cell method for VRLA batteries), and industry best practices for UPS sizing, accounting for load types, inrush, EODV, and environmental factors.`;
@@ -2203,7 +3442,7 @@
                         resultContainer.style.display = 'block';
                         setTimeout(() => {
                             resultContainer.classList.add('show');
-                            upsGuideContent.classList.add('show'); // Show content block
+                            // upsGuideContent is always visible — no toggle needed
                             resultContainer.scrollIntoView({ behavior: 'smooth' });
                         }, 10);
 
@@ -2280,19 +3519,29 @@
                     const pdfEodv = document.getElementById('eodv-per-cell').value;
                     const redundancy = document.getElementById('redundancy').value;
                     
-                    pdf.text(`System Voltage: ${systemVoltage} V`, 14, currentY);
-                    pdf.text(`System Type: ${phaseType}`, pdfWidth / 2, currentY);
+                    pdf.text(`Nominal AC Output Voltage (Vout): ${systemVoltage} V`, 14, currentY);
+                    pdf.text(`Phase Configuration (Φout): ${phaseType === 'three' ? 'Three-Phase (3Φ)' : 'Single-Phase (1Φ)'}`, pdfWidth / 2, currentY);
                     currentY += 6;
-                    pdf.text(`Backup Time: ${backupTime} min`, 14, currentY);
-                    pdf.text(`Future Expansion: ${futureExpansion} %`, pdfWidth / 2, currentY);
+                    pdf.text(`Required Autonomy (tautonomy): ${backupTime} min`, 14, currentY);
+                    pdf.text(`Growth Margin Factor (kgrowth): ${futureExpansion} %`, pdfWidth / 2, currentY);
                     currentY += 6;
-                    pdf.text(`UPS Efficiency: ${upsEfficiency} %`, 14, currentY);
-                    pdf.text(`DC Bus Voltage: ${dcBusVoltage} V`, pdfWidth / 2, currentY);
+                    pdf.text(`UPS Inverter Efficiency (ηinv): ${upsEfficiency} %`, 14, currentY);
+                    pdf.text(`Nominal DC Link Voltage (Vdc): ${dcBusVoltage} V`, pdfWidth / 2, currentY);
                     currentY += 6;
-                    pdf.text(`Battery Type: ${batteryType}`, 14, currentY);
-                    pdf.text(`EODV: ${pdfEodv} V/cell`, pdfWidth / 2, currentY);
+                    pdf.text(`Battery Chemistry Type: ${batteryType}`, 14, currentY);
+                    pdf.text(`Cell End-of-Discharge Voltage (VEOD): ${pdfEodv} V/cell`, pdfWidth / 2, currentY);
                     currentY += 6;
-                    pdf.text(`Redundancy: ${redundancy.toUpperCase()}`, 14, currentY);
+                    pdf.text(`System Redundancy (N+X): ${redundancy.toUpperCase()}`, 14, currentY);
+                    const pdfIndustry = document.getElementById('industry-type');
+                    const pdfSeismic = document.getElementById('seismic-zone');
+                    const pdfFrequency = document.getElementById('input-frequency').value;
+                    const pdfAgingFactor = document.getElementById('battery-aging-factor').value;
+                    pdf.text(`Input Frequency: ${pdfFrequency} Hz`, pdfWidth / 2, currentY);
+                    currentY += 6;
+                    pdf.text(`Industry Type: ${pdfIndustry.options[pdfIndustry.selectedIndex].text}`, 14, currentY);
+                    pdf.text(`Seismic Zone: ${pdfSeismic.options[pdfSeismic.selectedIndex].text}`, pdfWidth / 2, currentY);
+                    currentY += 6;
+                    pdf.text(`Battery Aging Factor (k_age): ${pdfAgingFactor}`, 14, currentY);
                     currentY += 10;
 
                     // --- 2. Load Summary ---
@@ -2479,10 +3728,20 @@
             
             initCharts();
 
+            // FAQ Accordion Interactivity
+            document.querySelectorAll('.faq-card').forEach(card => {
+                const header = card.querySelector('.faq-header');
+                header.addEventListener('click', (e) => {
+                    // Prevent toggling if user is interacting with elements inside the answer wrapper
+                    if (e.target && typeof e.target.closest === 'function' && e.target.closest('.faq-answer-wrapper')) {
+                        return;
+                    }
+                    
+                    card.classList.toggle('active');
+                });
+            });
+
         });
     </script>
 </body>
 </html>
-
-
-
