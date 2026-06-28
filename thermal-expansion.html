@@ -18,7 +18,16 @@
     <meta name="description" content="Calculate linear and volumetric thermal expansion for pipes, vessels, and structural components. Supports multiple materials and temperature ranges.">
     <title>Thermal Expansion Calculator - Design Calculators - Mechanical | Free Engineering Tool</title>
     <link rel="canonical" href="https://designcalculators.co.in/thermal-expansion" />
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF and AutoTable for PDF report export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
     <!-- MathJax for LaTeX rendering -->
     <script type="text/javascript" id="MathJax-script" async
             src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
@@ -30,89 +39,87 @@
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
     <script>
-        // MathJax configuration to support inline and display LaTeX
-        MathJax = {
+        window.MathJax = {
             tex: {
-                inlineMath: [['\\(', '\\)']],
-                displayMath: [['\\[', '\\]']],
-                processEscapes: true
-            }
+                inlineMath: [['\\(', '\\)'], ['$', '$']],
+                displayMath: [['\\[', '\\]'], ['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
         };
     </script>
     <style>
-        /* CSS Variables for theming (light and dark mode) */
+        /* CSS Variables - aligned with voltage-drop.html design system */
         :root {
-            --primary-color: #2196F3;
-            --secondary-color: #1976D2;
-            --accent-color: #FFC107;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --header-bg: #2C3E50;
-            --footer-bg: #34495E;
-            --border-color: #cccccc;
-            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            --hover-color: #e2e6ea;
-            --primary-color-rgb: 33, 150, 243;
-            --success-color: #28a745;
-            --error-color: #dc3545;
+            --primary-color: #2563EB;
+            --secondary-color: #1E3A8A;
+            --accent-color: #F59E0B;
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-color: #4B5563;
+            --header-bg: #0F172A;
+            --footer-bg: #0F172A;
+            --border-color: #E2E8F0;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --hover-color: #E2E8F0;
+            --primary-color-rgb: 37, 99, 235;
+            --success-color: #10B981;
+            --error-color: #DC2626;
+
+            /* New unified tokens */
+            --primary: #1E3A8A;
+            --secondary: #2563EB;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #4B5563;
+            --heading: #111827;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, #1E3A8A, #2563EB);
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
-        /* Dark mode overrides */
+        /* Dark mode overrides - aligned with voltage-drop.html */
         body.dark-mode {
-            --primary-color: #5DADE2;
-            --secondary-color: #2874A6;
-            --bg-color: #252D3A;
-            --card-bg: #2F3C4C;
-            --text-color: #E0E6EB;
-            --header-bg: #252D3A;
-            --footer-bg: #252D3A;
-            --border-color: #4C5C70;
+            --primary-color: #10B981;
+            --secondary-color: #34D399;
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-color: #CBD5E1;
+            --header-bg: #020617;
+            --footer-bg: #020617;
+            --border-color: #334155;
             --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-            --hover-color: #3A475C;
-            --primary-color-rgb: 93, 173, 226;
+            --hover-color: #334155;
+            --primary-color-rgb: 16, 185, 129;
             --success-color: #4CAF50;
             --error-color: #F44336;
+
+            --primary: #10B981;
+            --secondary: #34D399;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #CBD5E1;
+            --heading: #F1F5F9;
+            --border: #334155;
+            --grad: linear-gradient(135deg, #0F172A, #1E293B);
         }
-        /* Base body styling */
+        /* Base body styling - inherits from styles.css */
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             background-color: var(--bg-color);
-            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
             color: var(--text-color);
-            line-height: 1.6;
-            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
-        }
-        /* Container for content width limitation and centering */
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        /* Header styling */
-        header {
-            background-color: var(--header-bg);
-            color: white;
-            padding: 25px 0;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            position: relative;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2.8em;
-            color: var(--primary-color);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-        header .subtitle {
-            margin: 8px 0 0;
-            font-size: 1.1em;
-            color: #bdc3c7;
+            line-height: 1.7;
+            transition: background-color 0.3s, color 0.3s;
         }
         /* Main content area styling */
         main {
-            padding: 30px 0;
+            padding: 40px 0;
         }
         /* Tool container styling */
         .tool-container {
@@ -536,6 +543,303 @@
             margin: 0;
             transform: scale(1.3); /* Make checkbox slightly larger */
         }
+        
+        /* Premium presets layout */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .preset-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+        }
+        .preset-btn:hover {
+            border-color: var(--primary-color);
+            background: var(--hover-color);
+            transform: translateY(-1px);
+        }
+        .preset-btn i {
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+
+        /* Fade-in animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: formFadeIn 0.5s forwards ease-out;
+        }
+        @keyframes formFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Educational Section Styles */
+        .education-section {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-top: 30px;
+        }
+        .education-section h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 12px;
+            margin-top: 0;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .edu-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 40px;
+            margin-top: 30px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .edu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .toc-wrapper {
+            position: sticky;
+            top: 20px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .toc-wrapper h4 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .toc-item {
+            margin-bottom: 12px;
+        }
+        .toc-item a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .toc-item a:hover {
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+        .toc-item a i {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+        }
+        .edu-content section {
+            margin-bottom: 50px;
+            scroll-margin-top: 40px;
+        }
+        .edu-content h3 {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .edu-content hr {
+            border: 0;
+            height: 1px;
+            background: var(--border-color);
+            margin: 40px 0;
+        }
+
+        /* Themed Insight Cards */
+        .insight-card {
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+        }
+        .insight-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        }
+        
+        .insight-card.warning-card {
+            border-left: 5px solid #D97706;
+            background: linear-gradient(135deg, var(--card-bg), rgba(217, 119, 6, 0.03));
+        }
+        .insight-card.formula-card {
+            border-left: 5px solid #2563EB;
+            background: linear-gradient(135deg, var(--card-bg), rgba(37, 99, 235, 0.03));
+        }
+        .insight-card.danger-card {
+            border-left: 5px solid #DC2626;
+            background: linear-gradient(135deg, var(--card-bg), rgba(220, 38, 38, 0.03));
+        }
+        .insight-card.info-card {
+            border-left: 5px solid #0D9488;
+            background: linear-gradient(135deg, var(--card-bg), rgba(13, 148, 136, 0.03));
+        }
+        .insight-card.primary-card {
+            border-left: 5px solid #7C3AED;
+            background: linear-gradient(135deg, var(--card-bg), rgba(124, 58, 237, 0.03));
+        }
+        .insight-card.success-card {
+            border-left: 5px solid #16A34A;
+            background: linear-gradient(135deg, var(--card-bg), rgba(22, 163, 74, 0.03));
+        }
+        
+        .insight-card.bg-grid {
+            background-image: 
+                linear-gradient(rgba(37, 99, 235, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.04) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: center;
+        }
+
+        .card-badge {
+            display: inline-block;
+            padding: 3px 9px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .card-badge.warning { background: #FEF3C7; color: #92400E; }
+        .card-badge.danger { background: #FEE2E2; color: #991B1B; }
+        .card-badge.info { background: #CCFBF1; color: #115E59; }
+        .card-badge.primary { background: #F3E8FF; color: #6B21A8; }
+        .card-badge.success { background: #DCFCE7; color: #166534; }
+
+        .insight-card h4 {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .insight-card p {
+            margin: 10px 0;
+            line-height: 1.7;
+        }
+        .insight-card ul, .insight-card ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        .insight-card li {
+            margin-bottom: 8px;
+        }
+
+        /* Accordion Interview section */
+        .interview-container {
+            margin-top: 30px;
+        }
+        .interview-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+        }
+        .interview-item:hover {
+            transform: translateY(-2px);
+        }
+        .interview-header {
+            padding: 20px 25px;
+            background: var(--bg-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-color);
+            user-select: none;
+            transition: background 0.3s;
+        }
+        .interview-header:hover {
+            background: var(--hover-color);
+        }
+        .interview-header h4 {
+            margin: 0;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-color);
+        }
+        .q-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+        .interview-content {
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0, 1, 0, 1);
+            background: var(--card-bg);
+            border-top: 0 solid var(--border-color);
+        }
+        .interview-content.active {
+            padding: 20px 25px;
+            max-height: 2000px;
+            transition: all 0.4s cubic-bezier(1, 0, 1, 0);
+            border-top: 1px solid var(--border-color);
+        }
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            color: var(--primary-color);
+        }
+
+        /* Latex equation boxes */
+        .math-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            text-align: center;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Thermal Expansion Calculator - Design Calculators - Mechanical">
@@ -731,35 +1035,38 @@
     </header>
 
     <main class="container">
-        <a href="indexMech" class="back-button">
-            <i class="fas fa-arrow-left"></i> Back to Tools
-        </a>
+
 
         <div class="tool-container">
             <h2>Thermal Expansion Calculator</h2>
             <div class="tool-description">
                 <p>This calculator determines the change in length (elongation or contraction) of a material due to temperature changes, and estimates thermal stress if the material's expansion is constrained. It's a fundamental tool for various engineering applications.</p>
-                <p><strong>Key Inputs:</strong></p>
-                <ul>
-                    <li><strong>Original Length (\(L_0\)):</strong> Initial length of the material.</li>
-                    <li><strong>Initial Temperature (\(T_1\)):</strong> Starting temperature of the material.</li>
-                    <li><strong>Final Temperature (\(T_2\)):</strong> Temperature after change.</li>
-                    <li><strong>Material Type:</strong> Selection for common materials to auto-populate properties, or custom input.</li>
-                    <li><strong>Coefficient of Thermal Expansion (\(\alpha\)):</strong> Material property representing its tendency to expand/contract with temperature.</li>
-                    <li><strong>Young's Modulus (\(E\)):</strong> Material property representing its stiffness (required for thermal stress).</li>
-                    <li><strong>Calculate Thermal Stress (Checkbox):</strong> Option to include thermal stress calculation.</li>
-                </ul>
-                <p><strong>Calculated Outputs:</strong></p>
-                <ul>
-                    <li><strong>Temperature Change (\(\Delta T\)):</strong> Difference between final and initial temperatures.</li>
-                    <li><strong>Change in Length (\(\Delta L\)):</strong> The elongation (positive) or contraction (negative) of the material.</li>
-                    <li><strong>Final Length (\(L_f\)):</strong> The length of the material after the temperature change.</li>
-                    <li><strong>Thermal Stress (\(\sigma_t\)):</strong> The stress developed if expansion is fully constrained (only if selected).</li>
-                </ul>
             </div>
 
-            <div class="calculator-form">
+            <div class="calculator-form fade-in">
                 <form id="thermal-expansion-form">
+                    <!-- Presets Selector -->
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="margin-top:0; color: var(--primary-color); font-size: 1.2rem;"><i class="fas fa-magic"></i> Quick Load Industry Presets</h3>
+                        <div class="preset-grid">
+                            <button type="button" class="preset-btn" onclick="loadPreset('steel_steam')">
+                                <i class="fas fa-fire"></i> Steel Steam Pipe
+                            </button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('alu_line')">
+                                <i class="fas fa-bolt"></i> Alu Overhead Line
+                            </button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('copper_hx')">
+                                <i class="fas fa-random"></i> Copper HX Tube
+                            </button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('stainless_cryo')">
+                                <i class="fas fa-snowflake"></i> Stainless Cryo Pipe
+                            </button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('pvc_condensate')">
+                                <i class="fas fa-water"></i> PVC HVAC Pipe
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (m, mm, &#176;C, MPa) or Imperial (ft, inches, &#176;F, psi) units.</span></span></label>
@@ -769,11 +1076,15 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="material-select">Material Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select a common material or choose 'Custom' to input your own properties.</span></span></label>
+                            <label for="material-select">Material Type: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select an industrial material to auto-populate properties, or choose Custom.</span></span></label>
                             <select id="material-select" required>
-                                <option value="steel">Steel (Carbon)</option>
-                                <option value="aluminum">Aluminum</option>
-                                <option value="copper">Copper</option>
+                                <option value="steel">Carbon Steel (A106/A53)</option>
+                                <option value="stainless">Stainless Steel (SS304/SS316)</option>
+                                <option value="aluminum">Aluminum (6061-T6)</option>
+                                <option value="copper">Electrolytic Copper (C110)</option>
+                                <option value="brass">Red Brass (C230)</option>
+                                <option value="inconel">Inconel 625 (Superalloy)</option>
+                                <option value="pvc">PVC Pipe (Rigid)</option>
                                 <option value="custom">Custom Material</option>
                             </select>
                         </div>
@@ -800,11 +1111,11 @@
                     <h3>Material Properties</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="custom-alpha">Coefficient of Thermal Expansion (\(\alpha\)) <span class="alpha-unit-label">(/&#176;C)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material's thermal expansion coefficient (e.g., $12 \times 10^{-6}$ for steel). Enter as a decimal (e.g., 0.000012).</span></span></label>
+                            <label for="custom-alpha">Coefficient of Thermal Expansion (\(\alpha\)) <span class="alpha-unit-label">(/&#176;C)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material's thermal expansion coefficient. Enter as a decimal (e.g., 0.000012).</span></span></label>
                             <input type="number" id="custom-alpha" step="any" value="0.000012" required min="0">
                         </div>
                         <div class="form-group">
-                            <label for="custom-young-modulus">Young's Modulus (\(E\)) <span class="young-modulus-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material's stiffness (e.g., 200000 MPa for steel, or 29e6 psi). Only needed for thermal stress calculation.</span></span></label>
+                            <label for="custom-young-modulus">Young's Modulus (\(E\)) <span class="young-modulus-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material's stiffness. Only needed for thermal stress calculation.</span></span></label>
                             <input type="number" id="custom-young-modulus" step="any" value="200000" required min="0">
                         </div>
                     </div>
@@ -813,11 +1124,14 @@
                         <label for="calculate-thermal-stress">Calculate Thermal Stress (Assumes Full Restraint)</label>
                     </div>
 
-                    <button type="button" id="calculate-thermal-btn" class="calculate-btn">Calculate Thermal Expansion</button>
+                    <div style="display: flex; justify-content: center; margin-top: 30px; flex-wrap: wrap; gap: 10px;">
+                        <button type="button" id="calculate-thermal-btn" class="calculate-btn" style="flex: 2; min-width: 200px;"><i class="fas fa-calculator"></i> Calculate Thermal Expansion</button>
+                        <button type="button" id="reset-form-btn" class="reset-form-btn" style="background:#64748B; color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; cursor:pointer; transition:all 0.2s;"><i class="fas fa-undo"></i> Reset Form</button>
+                    </div>
                 </form>
             </div>
 
-            <div id="result-container" class="result-container">
+            <div id="result-container" class="result-container" style="display:none; margin-top:30px;">
                 <h3>Calculation Results</h3>
                 <div id="calculation-details"></div>
                 <table class="result-table">
@@ -829,26 +1143,330 @@
                     </thead>
                     <tbody id="result-table-body"></tbody>
                 </table>
+                <div style="display: flex; justify-content: center; margin-top: 25px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 25px; margin-bottom: 25px;">
+                    <button type="button" id="clear-results-btn" class="clear-results-btn" style="background:#EF4444; color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; cursor:pointer; transition:all 0.2s;"><i class="fas fa-times-circle"></i> Clear Results</button>
+                    <button type="button" id="download-pdf-btn" class="download-pdf-btn" style="background:#10B981; color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; cursor:pointer; transition:all 0.2s;"><i class="fas fa-file-pdf"></i> Download PDF (A4)</button>
+                </div>
                 <div class="standard-reference" id="standard-reference"></div>
             </div>
+
+        <!-- EDUCATIONAL INSIGHTS SECTION -->
+        <div class="education-section">
+            <h2><i class="fas fa-lightbulb"></i> Engineering Insights: Thermal Expansion &amp; Stress Physics</h2>
+            
+            <div class="edu-grid">
+                <!-- Sticky Table of Contents -->
+                <div class="toc-wrapper">
+                    <h4>Topics Covered</h4>
+                    <ul class="toc-list">
+                        <li class="toc-item"><a href="#edu-mechanics"><i class="fas fa-dot-circle"></i> 1. Microscopic Mechanics</a></li>
+                        <li class="toc-item"><a href="#edu-equations"><i class="fas fa-dot-circle"></i> 2. Mathematical Equations</a></li>
+                        <li class="toc-item"><a href="#edu-stress"><i class="fas fa-dot-circle"></i> 3. Constrained Thermal Stress</a></li>
+                        <li class="toc-item"><a href="#edu-piping"><i class="fas fa-dot-circle"></i> 4. Piping Expansion Loops</a></li>
+                        <li class="toc-item"><a href="#edu-codes"><i class="fas fa-dot-circle"></i> 5. International Standards</a></li>
+                        <li class="toc-item"><a href="#edu-faq"><i class="fas fa-dot-circle"></i> 6. FAQ Accordion</a></li>
+                    </ul>
+                </div>
+
+                <!-- Theory and Explanations -->
+                <div class="edu-content">
+                    <!-- Section 1 -->
+                    <section id="edu-mechanics">
+                        <h3><i class="fas fa-atom"></i> 1. Microscopic Mechanics of Thermal Expansion</h3>
+                        <p>At the atomic scale, temperature represents the average kinetic energy of a substance's molecules. In solids, atoms are bonded in a crystalline lattice, constantly vibrating about their equilibrium positions.</p>
+                        <div class="insight-card info-card">
+                            <span class="card-badge info">Lattice Potential Well</span>
+                            <p><strong>Lattice Vibration:</strong> When a solid is heated, atoms vibrate with greater amplitude. Because the atomic potential energy curve is asymmetric (anharmonic), atoms push further apart during expansion than they pull together during contraction, increasing the average spacing between lattice sites. This macroscopically manifests as structural expansion.</p>
+                        </div>
+                    </section>
+
+                    <hr>
+
+                    <!-- Section 2 -->
+                    <section id="edu-equations">
+                        <h3><i class="fas fa-calculator"></i> 2. Mathematical Physics Models</h3>
+                        <p>Thermal expansion can be linear, areal, or volumetric. For structural and piping systems, linear expansion is the critical safety dimension.</p>
+                        <div class="insight-card formula-card bg-grid">
+                            <span class="card-badge primary">Governing Equations</span>
+                            <p><strong>Linear Thermal Expansion:</strong></p>
+                            <div class="math-box">\[ \Delta L = L_0 \cdot \alpha \cdot \Delta T \]</div>
+                            <p><strong>Volumetric Thermal Expansion (for isotropic solids):</strong></p>
+                            <div class="math-box">\[ \Delta V = V_0 \cdot \beta \cdot \Delta T \approx V_0 \cdot (3\alpha) \cdot \Delta T \]</div>
+                            <p>Where:</p>
+                            <ul>
+                                <li>\(L_0\) is the original length (\(m\) or \(inches\)).</li>
+                                <li>\(\alpha\) is the linear coefficient of thermal expansion (\(/^\circ\text{C}\) or \(/^\circ\text{F}\)).</li>
+                                <li>\(\beta\) is the volumetric expansion coefficient (\(\approx 3\alpha\)).</li>
+                                <li>\(\Delta T = T_2 - T_1\) is the temperature differential.</li>
+                            </ul>
+                        </div>
+                    </section>
+ 
+                    <hr>
+ 
+                    <!-- Section 3 -->
+                    <section id="edu-stress">
+                        <h3><i class="fas fa-compress-arrows-alt"></i> 3. Constrained Thermal Stress &amp; Forces</h3>
+                        <p>If a material is free to expand, no internal stresses are induced. However, if structural anchor points prevent movement, massive internal forces develop.</p>
+                        <div class="insight-card danger-card">
+                            <span class="card-badge danger">Structural Load Warning</span>
+                            <p><strong>The Constrained Member:</strong> Blocking natural expansion converts potential strain into mechanical stress. The induced stress is independent of length, but the axial force is directly proportional to cross-sectional area:</p>
+                            <div class="math-box">\[ \sigma = E \cdot \alpha \cdot \Delta T, \quad F = \sigma \cdot A \]</div>
+                            <p>For example, a carbon steel pipe (\(E = 200,000\text{ MPa}\), \(\alpha = 12\times 10^{-6}/^\circ\text{C}\)) heated by \(100^\circ\text{C}\) develops <strong>240 MPa</strong> of compressive stress. If the pipe cross section is \(1000\text{ mm}^2\), it exerts a crushing force of <strong>240,000 N</strong> (approx. 24.5 tons) on its anchor brackets!</p>
+                        </div>
+                    </section>
+ 
+                    <hr>
+ 
+                    <!-- Section 4 -->
+                    <section id="edu-piping">
+                        <h3><i class="fas fa-project-diagram"></i> 4. Piping Sizing and Expansion Loops</h3>
+                        <p>In high-temperature pipelines (steam, process fluids), engineers design piping layouts with structural flexibility, using expansion loops, offsets, or bellows joints to absorb displacements.</p>
+                        <div class="insight-card warning-card">
+                            <span class="card-badge warning">Piping Design Guideline</span>
+                            <p><strong>Expansion Loop Design:</strong> Placing an L-bend, Z-bend, or U-loop creates a cantilever leg that flexes, absorbing expansion without overloading anchor supports. Loop sizing is governed by the structural flexural equation:</p>
+                            <div class="math-box">\[ H = C \cdot \sqrt{D \cdot \Delta L} \]</div>
+                            <p>Where \(H\) is the loop height, \(D\) is the pipe outer diameter, and \(C\) is a structural constant (typically between 1.5 and 2.5 depending on layout configurations).</p>
+                        </div>
+                    </section>
+ 
+                    <hr>
+ 
+                    <!-- Section 5 -->
+                    <section id="edu-codes">
+                        <h3><i class="fas fa-atlas"></i> 5. Approved International &amp; National Standards</h3>
+                        <p>Thermal stress assessment and allowance calculations are regulated globally by several prominent standards to protect plant personnel and equipment:</p>
+                        <div class="insight-card success-card">
+                            <span class="card-badge success">Regulatory Compliance Guide</span>
+                            <p><strong>ASME B31.3 (Process Piping):</strong> Defines allowable stress ranges (\(S_A\)) for thermal expansion and displacement stress cycles. It mandates formal piping flexibility analyses for critical temperature systems.</p>
+                            <p><strong>ASME Section VIII (Pressure Vessels):</strong> Specifies design conditions and stress limits for differential thermal expansion between vessel shells, tubesheets, and nozzles.</p>
+                            <p><strong>AISC Steel Construction Manual:</strong> Restricts expansion in structural frames and establishes design details for structural expansion joints in building layouts.</p>
+                            <p><strong>EN 13480 (European Metallic Industrial Piping):</strong> Establishes stress checks and limits for cyclic thermal fatigue load conditions.</p>
+                        </div>
+                    </section>
+
+                    <hr>
+
+                    <!-- Section 6: FAQ Accordion -->
+                    <section id="edu-faq">
+                        <h3><i class="fas fa-user-graduate"></i> 6. Frequently Asked Thermal Expansion Questions</h3>
+                        <div class="interview-container">
+                            <!-- Q1 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(1)">
+                                    <h4><span class="q-badge">Q1</span> Why is volumetric expansion considered to be approximately three times linear expansion?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-1"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-1">
+                                    <p>For an isotropic solid, a cube of side \(L_0\) has volume \(V_0 = L_0^3\). When heated, each side expands to \(L_0(1 + \alpha\Delta T)\). The new volume is:</p>
+                                    <div class="math-box">\[ V = [L_0(1 + \alpha\Delta T)]^3 = L_0^3(1 + 3\alpha\Delta T + 3\alpha^2\Delta T^2 + \alpha^3\Delta T^3) \]</div>
+                                    <p>Since \(\alpha\) is extremely small (on the order of \(10^{-5}\) or \(10^{-6}\)), the higher-order terms (\(3\alpha^2\Delta T^2\) and \(\alpha^3\Delta T^3\)) are negligible. Therefore, the equation simplifies to:</p>
+                                    <div class="math-box">\[ V \approx V_0(1 + 3\alpha\Delta T) \implies \Delta V \approx V_0 \cdot (3\alpha) \cdot \Delta T \]</div>
+                                    <p>Thus, \(\beta \approx 3\alpha\). This approximation is widely accepted across all engineering branches.</p>
+                                </div>
+                            </div>
+
+                            <!-- Q2 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(2)">
+                                    <h4><span class="q-badge">Q2</span> What is the physical layout of an ASME piping expansion loop?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-2"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-2">
+                                    <p>An expansion loop consists of elbow bends that redirect the pipe run perpendicularly, forming a loop. As the main pipe runs expand, the perpendicular legs deflect as cantilevers, absorbing the growth through bending stress instead of high axial force on anchor points.</p>
+                                    <div style="text-align: center; margin: 20px 0;">
+                                        <svg width="320" height="180" viewBox="0 0 320 180" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                                            <defs>
+                                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" />
+                                                </marker>
+                                            </defs>
+                                            <!-- Main pipe lines -->
+                                            <line x1="30" y1="130" x2="100" y2="130" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                                            <line x1="220" y1="130" x2="290" y2="130" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                                            <!-- Loop legs -->
+                                            <line x1="100" y1="130" x2="100" y2="50" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                                            <line x1="220" y1="130" x2="220" y2="50" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                                            <line x1="100" y1="50" x2="220" y2="50" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+                                            <!-- Anchors -->
+                                            <rect x="15" y="115" width="10" height="30" fill="#dc2626" />
+                                            <rect x="295" y="115" width="10" height="30" fill="#dc2626" />
+                                            <text x="20" y="160" font-size="8" font-family="Inter" font-weight="bold" fill="#dc2626">Anchor A</text>
+                                            <text x="280" y="160" font-size="8" font-family="Inter" font-weight="bold" fill="#dc2626">Anchor B</text>
+                                            
+                                            <!-- Expansion indicators -->
+                                            <path d="M 60,110 L 80,110" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow)" />
+                                            <path d="M 260,110 L 240,110" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow)" />
+                                            <text x="45" y="102" font-size="8" font-family="Inter" fill="#2563eb" font-weight="bold">Thermal Growth</text>
+                                            
+                                            <!-- Loop dimensions -->
+                                            <line x1="100" y1="40" x2="220" y2="40" stroke="#0d9488" stroke-width="1" stroke-dasharray="2" />
+                                            <text x="145" y="32" font-size="8" font-family="Inter" fill="#0d9488" font-weight="bold">Width (W)</text>
+                                            
+                                            <line x1="85" y1="50" x2="85" y2="130" stroke="#0d9488" stroke-width="1" stroke-dasharray="2" />
+                                            <text x="50" y="95" font-size="8" font-family="Inter" fill="#0d9488" font-weight="bold">Height (H)</text>
+                                        </svg>
+                                        <div style="font-size:0.82rem; color:#64748b; margin-top:5px;">Figure 1: Standard U-bend Expansion Loop layout showing structural offsets.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Q3 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(3)">
+                                    <h4><span class="q-badge">Q3</span> What are structural gaps (expansion joints) and how are they calculated?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-3"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-3">
+                                    <p>Expansion joints are physical gaps engineered between building sections, concrete slabs, bridges, or railway tracks. The gap width must be greater than the maximum thermal elongation at peak summer temperatures, plus a margin of safety:</p>
+                                    <div class="math-box">\[ \text{Gap}_{min} = \Delta L_{max} + \text{Installation Tolerance} \]</div>
+                                    <p>If joints are absent, compression forces will trigger structural buckling, railway sun kinks, or concrete cracking.</p>
+                                    <div style="text-align: center; margin: 20px 0;">
+                                        <svg width="320" height="140" viewBox="0 0 320 140" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                                            <!-- Left Slab -->
+                                            <rect x="20" y="40" width="125" height="50" fill="#94a3b8" rx="4" />
+                                            <!-- Right Slab -->
+                                            <rect x="175" y="40" width="125" height="50" fill="#94a3b8" rx="4" />
+                                            <!-- Expansion joint gap -->
+                                            <rect x="145" y="40" width="30" height="50" fill="#fef3c7" stroke="#d97706" stroke-dasharray="2" />
+                                            
+                                            <!-- Dowel bar/linkage -->
+                                            <rect x="100" y="60" width="120" height="10" fill="#475569" rx="2" />
+                                            
+                                            <!-- Labels -->
+                                            <text x="60" y="70" font-size="8" font-family="Inter" font-weight="bold" fill="#ffffff">Concrete Slab A</text>
+                                            <text x="210" y="70" font-size="8" font-family="Inter" font-weight="bold" fill="#ffffff">Concrete Slab B</text>
+                                            <text x="148" y="32" font-size="8" font-family="Inter" font-weight="bold" fill="#d97706">Joint Gap</text>
+                                            <text x="135" y="85" font-size="7" font-family="Inter" fill="#475569">Sliding Dowel Bar</text>
+                                        </svg>
+                                        <div style="font-size:0.82rem; color:#64748b; margin-top:5px;">Figure 2: Slide joint configuration preventing compression buckling.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Q4 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(4)">
+                                    <h4><span class="q-badge">Q4</span> How does carbon content affect the thermal expansion coefficient of carbon steel?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-4"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-4">
+                                    <p>Carbon content alters the atomic lattice binding energy. Increased carbon disrupts the standard ferrite lattice structure by forming cementite (\(Fe_3C\)), which has a lower expansion coefficient. Thus, high-carbon steels expand slightly less than low-carbon steels, but they are more susceptible to thermal stress cracking due to lower ductility.</p>
+                                </div>
+                            </div>
+
+                            <!-- Q5 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(5)">
+                                    <h4><span class="q-badge">Q5</span> What is the physical significance of the "Invar Effect"?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-5"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-5">
+                                    <p>Invar (FeNi36) is an iron-nickel superalloy with an exceptionally low thermal expansion coefficient (\(\alpha \approx 1.2 \times 10^{-6}/^\circ\text{C}\)). The effect is quantum-mechanical: as temperature rises, thermal lattice expansion is exactly counterbalanced by a spontaneous magnetostriction contraction associated with the change in magnetic domain alignment (ferromagnetic transition), maintaining a virtually constant volume over a wide temperature range.</p>
+                                </div>
+                            </div>
+
+                            <!-- Q6 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(6)">
+                                    <h4><span class="q-badge">Q6</span> How do you size an expansion loop for steam piping systems using ASME B31.3?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-6"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-6">
+                                    <p>Sizing requires determining the total thermal growth (\(\Delta L = L \cdot \alpha \cdot \Delta T\)) and checking that the flexing leg has enough length to keep bending stress below the allowable limit. ASME B31.3 specifies:</p>
+                                    <div class="math-box">\[S_E = \frac{i \cdot M_c}{Z} \le S_A\]</div>
+                                    <p>Where \(S_E\) is displacement stress range, \(i\) is stress intensification factor, \(M_c\) is range of bending moments, and \(S_A\) is allowable displacement stress range.</p>
+                                </div>
+                            </div>
+
+                            <!-- Q7 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(7)">
+                                    <h4><span class="q-badge">Q7</span> What is thermal fatigue and how does it cause component failure?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-7"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-7">
+                                    <p>Thermal fatigue is structural damage caused by cyclic heating and cooling. Even if the stress during one cycle is below the yield strength, repeated cycles of temperature differences lead to localized plastic deformation, micro-crack initiation, and propagation, eventually resulting in sudden brittle failure without warning (common in headers, heat exchanger tubes, and brake rotors).</p>
+                                </div>
+                            </div>
+
+                            <!-- Q8 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(8)">
+                                    <h4><span class="q-badge">Q8</span> How does thermal shock differ from thermal fatigue?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-8"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-8">
+                                    <p>Thermal shock is a transient event caused by a rapid rate of temperature change (high \(dT/dt\), e.g., quenching). It creates massive, instantaneous temperature gradients between the surface and core of a component. If the resulting surface tensile stress exceeds the material's ultimate strength, cracking or shattering occurs instantly (highly common in brittle materials like glass, industrial ceramics, and cast iron).</p>
+                                </div>
+                            </div>
+
+                            <!-- Q9 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(9)">
+                                    <h4><span class="q-badge">Q9</span> Why does concrete have a thermal expansion coefficient similar to structural steel?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-9"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-9">
+                                    <p>This is a critical civil and mechanical engineering synergy. Steel has \(\alpha \approx 12 \times 10^{-6}/^\circ\text{C}\) and concrete has \(\alpha \approx 10-13 \times 10^{-6}/^\circ\text{C}\). Because their thermal expansion rates are closely matched, reinforced concrete structural components can expand and contract together without inducing high internal shear stresses at the steel-concrete interface, which would otherwise cause debonding and structural failure.</p>
+                                </div>
+                            </div>
+
+                            <!-- Q10 -->
+                            <div class="interview-item">
+                                <div class="interview-header" onclick="toggleInterview(10)">
+                                    <h4><span class="q-badge">Q10</span> What is the "zero-stress temperature" in piping stress analysis?</h4>
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-10"></i>
+                                </div>
+                                <div class="interview-content" id="q-content-10">
+                                    <p>The zero-stress temperature (or installation temperature) is the ambient temperature at which a piping system is anchored and bolted together without any thermal expansion load. All thermal expansions, displacement calculations, and stress ranges evaluated in stress analysis software (like CAESAR II) are referenced relative to this base temperature.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
+    </div><!-- /.tool-container -->
     </main>
 
         
     <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <section style="padding: 50px 0; background: var(--card-bg, #ffffff); border-top: 1px solid var(--border-color, #e2e8f0);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/bolt-torque" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
-                    </a>
-                    <a href="/darcy-weisbach" class="silo-card" style="text-decoration:none;">
-                        <span>Darcy Weisbach</span>
-                    </a>
+            <h2 style="text-align:center; font-size:1.6rem; margin-bottom:10px; color:var(--heading-color, #1e293b); font-weight:700;">Related Engineering Calculators</h2>
+            <p style="text-align:center; color:var(--text-muted, #64748b); margin-bottom:35px; font-size:0.95rem;">Cross-reference calculations with these supplementary mechanical design utilities.</p>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:25px; max-width:1000px; margin:0 auto; padding:0 15px;">
+                <a href="/allowable-stress-safety-factor" style="display:block; text-decoration:none; color:inherit; background:var(--bg-color, #f8fafc); border:1px solid var(--border-color, #e2e8f0); border-radius:12px; padding:20px; transition:transform 0.25s ease, box-shadow 0.25s ease; box-shadow:0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div style="width:40px; height:40px; border-radius:8px; background:rgba(59,130,246,0.1); display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.2rem; margin-right:12px;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4 style="margin:0; font-size:1.1rem; font-weight:600; color:var(--heading-color, #1e293b);">Allowable Stress &amp; Safety Factor</h4>
+                    </div>
+                    <p style="margin:0; font-size:0.85rem; color:var(--text-muted, #64748b); line-height:1.4;">Calculate safety margins and maximum allowable stress limits for critical components under high thermal loads.</p>
+                </a>
+                
+                <a href="/bolt-torque" style="display:block; text-decoration:none; color:inherit; background:var(--bg-color, #f8fafc); border:1px solid var(--border-color, #e2e8f0); border-radius:12px; padding:20px; transition:transform 0.25s ease, box-shadow 0.25s ease; box-shadow:0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div style="width:40px; height:40px; border-radius:8px; background:rgba(245,158,11,0.1); display:flex; align-items:center; justify-content:center; color:#f59e0b; font-size:1.2rem; margin-right:12px;">
+                            <i class="fas fa-wrench"></i>
+                        </div>
+                        <h4 style="margin:0; font-size:1.1rem; font-weight:600; color:var(--heading-color, #1e293b);">Bolt Torque</h4>
+                    </div>
+                    <p style="margin:0; font-size:0.85rem; color:var(--text-muted, #64748b); line-height:1.4;">Determine flange tightening torques and preloads to prevent leak paths during thermal joint displacement cycles.</p>
+                </a>
+                
+                <a href="/darcy-weisbach" style="display:block; text-decoration:none; color:inherit; background:var(--bg-color, #f8fafc); border:1px solid var(--border-color, #e2e8f0); border-radius:12px; padding:20px; transition:transform 0.25s ease, box-shadow 0.25s ease; box-shadow:0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                    <div style="display:flex; align-items:center; margin-bottom:12px;">
+                        <div style="width:40px; height:40px; border-radius:8px; background:rgba(13,148,136,0.1); display:flex; align-items:center; justify-content:center; color:#0d9488; font-size:1.2rem; margin-right:12px;">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                        <h4 style="margin:0; font-size:1.1rem; font-weight:600; color:var(--heading-color, #1e293b);">Darcy Weisbach</h4>
+                    </div>
+                    <p style="margin:0; font-size:0.85rem; color:var(--text-muted, #64748b); line-height:1.4;">Analyze fluid friction loss, flow velocities, and pipe line pressure drops in systems with expanded sizing dimensions.</p>
+                </a>
             </div>
         </div>
     </section>
@@ -883,11 +1501,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -895,10 +1513,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -967,13 +1585,29 @@
                     'metric': { alpha: 0.000012, E: 200000 }, // alpha in /°C, E in MPa
                     'imperial': { alpha: 0.0000067, E: 29000000 } // alpha in /°F, E in psi
                 },
+                'stainless': {
+                    'metric': { alpha: 0.000016, E: 193000 },
+                    'imperial': { alpha: 0.0000089, E: 28000000 }
+                },
                 'aluminum': {
-                    'metric': { alpha: 0.000023, E: 69000 }, // alpha in /°C, E in MPa
-                    'imperial': { alpha: 0.0000128, E: 10000000 } // alpha in /°F, E in psi
+                    'metric': { alpha: 0.000023, E: 69000 },
+                    'imperial': { alpha: 0.0000128, E: 10000000 }
                 },
                 'copper': {
-                    'metric': { alpha: 0.000017, E: 117000 }, // alpha in /°C, E in MPa
-                    'imperial': { alpha: 0.0000094, E: 17000000 } // alpha in /°F, E in psi
+                    'metric': { alpha: 0.000017, E: 117000 },
+                    'imperial': { alpha: 0.0000094, E: 17000000 }
+                },
+                'brass': {
+                    'metric': { alpha: 0.000019, E: 97000 },
+                    'imperial': { alpha: 0.0000106, E: 14000000 }
+                },
+                'inconel': {
+                    'metric': { alpha: 0.0000128, E: 205000 },
+                    'imperial': { alpha: 0.0000071, E: 29700000 }
+                },
+                'pvc': {
+                    'metric': { alpha: 0.000050, E: 3000 },
+                    'imperial': { alpha: 0.000028, E: 435000 }
                 }
             };
 
@@ -1073,11 +1707,98 @@
             // Initial UI setup on load
             updateUnitLabelsAndDefaults();
 
-            /**
-             * Adds a row to the result table.
-             * @param {string} parameterHtml - The HTML content for the parameter column.
-             * @param {string} valueHtml - The HTML content for the value column.
-             */
+            let lastResult = null;
+
+            // Expose globally so inline onclick events work
+            window.loadPreset = function(type) {
+                const isMetric = unitSystemSelect.value === 'metric';
+                if (type === 'steel_steam') {
+                    unitSystemSelect.value = 'metric';
+                    updateUnitLabelsAndDefaults();
+                    materialSelect.value = 'steel';
+                    originalLengthInput.value = '50';
+                    initialTempInput.value = '20';
+                    finalTempInput.value = '250';
+                    calculateThermalStressCheckbox.checked = true;
+                } else if (type === 'alu_line') {
+                    unitSystemSelect.value = 'metric';
+                    updateUnitLabelsAndDefaults();
+                    materialSelect.value = 'aluminum';
+                    originalLengthInput.value = '100';
+                    initialTempInput.value = '15';
+                    finalTempInput.value = '75';
+                    calculateThermalStressCheckbox.checked = false;
+                } else if (type === 'copper_hx') {
+                    unitSystemSelect.value = 'metric';
+                    updateUnitLabelsAndDefaults();
+                    materialSelect.value = 'copper';
+                    originalLengthInput.value = '6';
+                    initialTempInput.value = '20';
+                    finalTempInput.value = '180';
+                    calculateThermalStressCheckbox.checked = true;
+                } else if (type === 'stainless_cryo') {
+                    unitSystemSelect.value = 'metric';
+                    updateUnitLabelsAndDefaults();
+                    materialSelect.value = 'stainless';
+                    originalLengthInput.value = '20';
+                    initialTempInput.value = '20';
+                    finalTempInput.value = '-196';
+                    calculateThermalStressCheckbox.checked = true;
+                } else if (type === 'pvc_condensate') {
+                    unitSystemSelect.value = 'metric';
+                    updateUnitLabelsAndDefaults();
+                    materialSelect.value = 'pvc';
+                    originalLengthInput.value = '15';
+                    initialTempInput.value = '20';
+                    finalTempInput.value = '60';
+                    calculateThermalStressCheckbox.checked = false;
+                }
+                
+                // Synchronize custom inputs state
+                toggleCustomMaterialInputs();
+                const activeUnit = unitSystemSelect.value;
+                const matType = materialSelect.value;
+                customAlphaInput.value = materialProperties[matType][activeUnit].alpha;
+                customYoungModulusInput.value = materialProperties[matType][activeUnit].E;
+                
+                // Clear old result to avoid immediate show
+                clearResults();
+                displayMessage(`${type.toUpperCase().replace('_', ' ')} Preset loaded. Click Calculate to run expansion logic.`, "success");
+            };
+
+            window.toggleInterview = function(id) {
+                const content = document.getElementById(`q-content-${id}`);
+                const icon = document.getElementById(`icon-${id}`);
+                if (!content || !icon) return;
+                
+                const isActive = content.classList.contains('active');
+                
+                // Accordion close all first
+                document.querySelectorAll('.interview-content').forEach(c => c.classList.remove('active'));
+                document.querySelectorAll('.toggle-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+                
+                if (!isActive) {
+                    content.classList.add('active');
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            };
+
+            function clearResults() {
+                lastResult = null;
+                resultContainer.style.display = 'none';
+                resultContainer.classList.remove('show');
+                resultTableBody.innerHTML = '';
+                calculationDetailsDiv.innerHTML = '';
+            }
+
+            function resetForm() {
+                document.getElementById('thermal-expansion-form').reset();
+                unitSystemSelect.value = 'metric';
+                updateUnitLabelsAndDefaults();
+                clearResults();
+                displayMessage("Form reset to system defaults.", "info");
+            }
+
             function addResultRow(parameterHtml, valueHtml) {
                 const row = resultTableBody.insertRow();
                 const paramCell = row.insertCell();
@@ -1086,17 +1807,15 @@
                 valueCell.innerHTML = valueHtml;
             }
 
-            // Main Calculation Logic
-            calculateBtn.addEventListener('click', function() {
+            function performCalculation() {
                 const form = document.getElementById('thermal-expansion-form');
                 if (!form.checkValidity()) {
                     displayMessage("Please fill in all required fields correctly.", "error");
-                    form.reportValidity(); // Show native browser validation messages
+                    form.reportValidity();
                     return;
                 }
 
                 const unitSystem = unitSystemSelect.value;
-
                 const L0_input = parseFloat(originalLengthInput.value);
                 const T1_input = parseFloat(initialTempInput.value);
                 const T2_input = parseFloat(finalTempInput.value);
@@ -1104,132 +1823,289 @@
                 const E_input = parseFloat(customYoungModulusInput.value);
                 const calculateStress = calculateThermalStressCheckbox.checked;
 
-                // Standardize inputs to SI units for calculation
-                let L0_si; // meters
-                let deltaT_si; // Celsius
-                let alpha_si; // /°C
-                let E_si; // Pascals (Pa)
+                // SI Conversion variables
+                let L0_si; // m
+                let deltaT_si; // C
+                let alpha_si; // /C
+                let E_si; // Pa
+                const lengthUnit = unitSystem === 'metric' ? 'm' : 'inches';
+                const tempUnit = unitSystem === 'metric' ? 'C' : 'F';
+                const modulusUnit = unitSystem === 'metric' ? 'MPa' : 'psi';
 
                 if (unitSystem === 'metric') {
-                    L0_si = L0_input; // meters
-                    deltaT_si = T2_input - T1_input; // °C
-                    alpha_si = alpha_input; // /°C
-                    E_si = E_input * 1e6; // MPa to Pa
-                } else { // Imperial
-                    L0_si = L0_input * 0.0254; // inches to meters
-                    deltaT_si = (T2_input - T1_input) / 1.8; // °F to °C
-                    alpha_si = alpha_input * 1.8; // /°F to /°C (because deltaT_C = deltaT_F / 1.8, so alpha_C * deltaT_C = alpha_F * deltaT_F implies alpha_C = alpha_F * 1.8)
-                    E_si = E_input * 6894.76; // psi to Pa
+                    L0_si = L0_input;
+                    deltaT_si = T2_input - T1_input;
+                    alpha_si = alpha_input;
+                    E_si = E_input * 1e6;
+                } else {
+                    L0_si = L0_input * 0.0254;
+                    deltaT_si = (T2_input - T1_input) / 1.8;
+                    alpha_si = alpha_input * 1.8;
+                    E_si = E_input * 6894.76;
                 }
 
-                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
-                calculationHtml += `<p><strong>1. Input Parameters:</strong></p><ul>
-                    <li>Original Length (\(L_0\)): ${L0_input} ${unitSystem === 'metric' ? 'm' : 'inches'}</li>
-                    <li>Initial Temperature (\(T_1\)): ${T1_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}</li>
-                    <li>Final Temperature (\(T_2\)): ${T2_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}</li>
-                    <li>Coefficient of Thermal Expansion (\(\alpha\)): ${customAlphaInput.value} ${unitSystem === 'metric' ? '/&#176;C' : '/&#176;F'}</li>
-                    ${calculateStress ? `<li>Young's Modulus (\(E\)): ${customYoungModulusInput.value} ${unitSystem === 'metric' ? 'MPa' : 'psi'}</li>` : ''}
-                </ul>`;
-
-                // Calculate Change in Temperature
                 const deltaT_display = T2_input - T1_input;
-                
-                calculationHtml += `<p><strong>2. Calculate Temperature Change (\(\Delta T\)):</strong></p>`;
-                calculationHtml += `<p class="formula">\\[ \\Delta T = T_2 - T_1 \\]</p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( \\Delta T \\) = ${T2_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'} - ${T1_input} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'} = ${deltaT_display.toFixed(2)} ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}
-                </p>`;
+                const strain_val = alpha_si * deltaT_si;
+                const deltaL_si = L0_si * strain_val;
+                const Lf_si = L0_si + deltaL_si;
 
+                let deltaL_display = unitSystem === 'metric' ? deltaL_si * 1000 : deltaL_si / 0.0254; // mm or inches
+                let Lf_display = unitSystem === 'metric' ? Lf_si : Lf_si / 0.0254;
 
-                // 3. Calculate Change in Length (\(\Delta L\))
-                const deltaL_si = L0_si * alpha_si * deltaT_si; // meters
-                
-                calculationHtml += `<p><strong>3. Calculate Change in Length (\(\Delta L\)):</strong></p>`;
-                calculationHtml += `<p class="formula">\\[ \\Delta L = L_0 \\cdot \\alpha \\cdot \\Delta T \\]</p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( \\Delta L \\) = ${L0_si.toFixed(4)} m \\times ${alpha_si.toExponential(2)} /&#176;C \\times ${deltaT_si.toFixed(2)} &#176;C = ${deltaL_si.toExponential(4)} m
-                </p>`;
+                // Volumetric
+                const beta_si = 3 * alpha_si;
+                const V0_si = L0_si * 1e-3; // Assumed cross section 1000 mm^2
+                const deltaV_si = V0_si * beta_si * deltaT_si;
 
-                // 4. Calculate Final Length (\(L_f\))
-                const Lf_si = L0_si + deltaL_si; // meters
-                
-                calculationHtml += `<p><strong>4. Calculate Final Length (\(L_f\)):</strong></p>`;
-                calculationHtml += `<p class="formula">\\[ L_f = L_0 + \\Delta L \\]</p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( L_f \\) = ${L0_si.toFixed(4)} m + ${deltaL_si.toExponential(4)} m = ${Lf_si.toFixed(4)} m
-                </p>`;
+                // Stress
+                const stress_Pa = -E_si * strain_val;
+                const stress_display = unitSystem === 'metric' ? stress_Pa / 1e6 : stress_Pa / 6894.76; // MPa or psi
 
-                let thermalStress_Pa = 0; // Pascals
-                if (calculateStress) {
-                    // 5. Calculate Thermal Stress (\(\sigma_t\))
-                    thermalStress_Pa = -E_si * alpha_si * deltaT_si; // Pascals (negative for compressive stress, positive for tensile)
-                    
-                    calculationHtml += `<p><strong>5. Calculate Thermal Stress (\(\sigma_t\)) (Assuming Full Restraint):</strong></p>`;
-                    calculationHtml += `<p class="formula">\\[ \\sigma_t = -E \\cdot \\alpha \\cdot \\Delta T \\]</p>`;
-                    calculationHtml += `<p class="calculation-step">
-                        \\( \\sigma_t \\) = -${E_si.toExponential(2)} Pa \\times ${alpha_si.toExponential(2)} /&#176;C \\times ${deltaT_si.toFixed(2)} &#176;C = ${thermalStress_Pa.toExponential(2)} Pa
-                    </p>`;
-                    if (thermalStress_Pa > 0) {
-                        calculationHtml += `<p class="calculation-step">Resulting stress is tensile (material tries to contract but is restrained).</p>`;
-                    } else if (thermalStress_Pa < 0) {
-                        calculationHtml += `<p class="calculation-step">Resulting stress is compressive (material tries to expand but is restrained).</p>`;
-                    } else {
-                        calculationHtml += `<p class="calculation-step">No thermal stress if \\( \\Delta T \\) is zero.</p>`;
-                    }
-                }
+                // Force
+                const force_N = Math.abs(stress_Pa) * 1e-3; // A = 1000 mm^2 = 1e-3 m^2
+                const force_lbf = force_N * 0.224809;
 
-                // Prepare results for display
-                resultTableBody.innerHTML = ''; // Clear previous results
+                // 10 Steps LaTeX builder
+                let calculationHtml = '<h4>Detailed Sizing Analysis (10-Step Method):</h4>';
+
+                // Step 1
+                calculationHtml += `<div class="insight-card info-card">
+                    <span class="card-badge info">Step 1</span>
+                    <h4>System Inputs & Normalization</h4>
+                    <p>Standardizing system measurements into metric SI units for thermal modeling:</p>
+                    <ul>
+                        <li>Length (\\(L_0\\)): ${L0_input} ${lengthUnit} &rarr; ${L0_si.toFixed(4)} m</li>
+                        <li>Temperature change: \\(T_1 = ${T1_input} \\text{ } ^\\circ\\text{${tempUnit}}\\) &rarr; \\(T_2 = ${T2_input} \\text{ } ^\\circ\\text{${tempUnit}}\\)</li>
+                        <li>Expansion coefficient (\\(\\alpha\\)): ${alpha_input.toExponential(4)} &rarr; ${alpha_si.toExponential(4)} /°C</li>
+                        <li>Elastic Stiffness (\\(E\\)): ${E_input.toLocaleString()} ${modulusUnit} &rarr; ${E_si.toExponential(4)} Pa</li>
+                    </ul>
+                </div>`;
+
+                // Step 2
+                calculationHtml += `<div class="insight-card primary-card">
+                    <span class="card-badge primary">Step 2</span>
+                    <h4>Temperature Differential (\\(\\Delta T\\))</h4>
+                    <div class="math-box">\\[ \\Delta T = T_2 - T_1 \\]</div>
+                    <p class="calculation-step">\\[ \\Delta T = ${T2_input} - ${T1_input} = ${deltaT_display.toFixed(2)} \\text{ } ^\\circ\\text{${unitSystem === 'metric' ? 'C' : 'F'}} \\]</p>
+                    <p>Normalized difference: \\(\\Delta T_{si} = ${deltaT_si.toFixed(2)} \\text{ } ^\\circ\\text{C}\\)</p>
+                </div>`;
+
+                // Step 3
+                calculationHtml += `<div class="insight-card success-card">
+                    <span class="card-badge success">Step 3</span>
+                    <h4>Coefficient Assessment (\\(\\alpha\\))</h4>
+                    <p>The rate of expansion is given by \\(\\alpha = ${alpha_si.toExponential(3)} \\text{ } /^\\circ\\text{C}\\). This indicates that the material expands by ${ (alpha_si * 1e6).toFixed(2) } microns per meter length for every \\(1^\\circ\\text{C}\\) temperature elevation.</p>
+                </div>`;
+
+                // Step 4
+                calculationHtml += `<div class="insight-card info-card">
+                    <span class="card-badge info">Step 4</span>
+                    <h4>Theoretical Strain (\\(\\epsilon_t\\))</h4>
+                    <div class="math-box">\\[ \\epsilon_t = \\alpha \\cdot \\Delta T \\]</div>
+                    <p class="calculation-step">\\[ \\epsilon_t = ${alpha_si.toExponential(3)} \\times ${deltaT_si.toFixed(2)} = ${strain_val.toExponential(4)} \\text{ m/m} \\]</p>
+                </div>`;
+
+                // Step 5
+                calculationHtml += `<div class="insight-card warning-card">
+                    <span class="card-badge warning">Step 5</span>
+                    <h4>Absolute Linear Expansion (\\(\\Delta L\\))</h4>
+                    <div class="math-box">\\[ \\Delta L = L_0 \\cdot \\alpha \\cdot \\Delta T \\]</div>
+                    <p class="calculation-step">\\[ \\Delta L = ${L0_si.toFixed(4)} \\text{ m} \\times ${alpha_si.toExponential(3)} \\times ${deltaT_si.toFixed(2)} = ${deltaL_si.toExponential(4)} \\text{ m} \\]</p>
+                    <p>Resulting elongation: <strong>${deltaL_display.toFixed(4)} ${unitSystem === 'metric' ? 'mm' : 'inches'}</strong></p>
+                </div>`;
+
+                // Step 6
+                calculationHtml += `<div class="insight-card primary-card">
+                    <span class="card-badge primary">Step 6</span>
+                    <h4>Percentage Dimension Change (\\(\\%\\Delta L\\))</h4>
+                    <div class="math-box">\\[ \\%\\Delta L = \\left( \\frac{\\Delta L}{L_0} \\right) \\times 100 \\% \\]</div>
+                    <p class="calculation-step">\\[ \\%\\Delta L = \\left( \\frac{${deltaL_si.toExponential(2)}}{${L0_si.toFixed(2)}} \\right) \\times 100 = ${(deltaL_si/L0_si*100).toFixed(4)}\\% \\]</p>
+                </div>`;
+
+                // Step 7
+                calculationHtml += `<div class="insight-card info-card">
+                    <span class="card-badge info">Step 7</span>
+                    <h4>Final Absolute Sizing (\\(L_f\\))</h4>
+                    <div class="math-box">\\[ L_f = L_0 + \\Delta L \\]</div>
+                    <p class="calculation-step">\\[ L_f = ${L0_si.toFixed(4)} \\text{ m} + ${deltaL_si.toExponential(4)} \\text{ m} = ${Lf_si.toFixed(4)} \\text{ m} \\]</p>
+                    <p>Extended structural length: <strong>${Lf_display.toFixed(4)} ${unitSystem === 'metric' ? 'm' : 'inches'}</strong></p>
+                </div>`;
+
+                // Step 8
+                calculationHtml += `<div class="insight-card primary-card">
+                    <span class="card-badge primary">Step 8</span>
+                    <h4>Volumetric Growth Estimation (\\(\\Delta V\\))</h4>
+                    <p>Using volumetric coefficient \\(\\beta \\approx 3\\alpha = ${beta_si.toExponential(3)} /^\\circ\\text{C}\\) and assuming standard cross section \\(A = 1000 \\text{ mm}^2\\) (\\(10^{-3} \\text{ m}^2\\)):</p>
+                    <div class="math-box">\\[ \\Delta V = V_0 \\cdot \\beta \\cdot \\Delta T \\]</div>
+                    <p class="calculation-step">\\[ \\Delta V = ${V0_si.toFixed(5)} \\text{ m}^3 \\times ${beta_si.toExponential(2)} \\times ${deltaT_si.toFixed(2)} = ${deltaV_si.toExponential(4)} \\text{ m}^3 \\]</p>
+                </div>`;
+
+                // Step 9
+                calculationHtml += `<div class="insight-card danger-card">
+                    <span class="card-badge danger">Step 9</span>
+                    <h4>Theoretical Stress (\\(\\sigma_t\\)) (Constrained Boundary)</h4>
+                    <div class="math-box">\\[ \\sigma_t = -E \\cdot \\alpha \\cdot \\Delta T \\]</div>
+                    <p class="calculation-step">\\[ \\sigma_t = -${E_si.toExponential(2)} \\text{ Pa} \\times ${strain_val.toExponential(2)} = ${stress_Pa.toExponential(2)} \\text{ Pa} \\]</p>
+                    <p>Equivalent internal stress: <strong>${stress_display.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'} ${stress_Pa < 0 ? '(Compressive)' : '(Tensile)'}</strong></p>
+                </div>`;
+
+                // Step 10
+                calculationHtml += `<div class="insight-card warning-card">
+                    <span class="card-badge warning">Step 10</span>
+                    <h4>Structural Reaction Force (\\(F_t\\))</h4>
+                    <p>Axial load transmitted onto support structural anchors (using \\(A = 1000 \\text{ mm}^2\\)):</p>
+                    <div class="math-box">\\[ F_t = |\\sigma_t| \\cdot A \\]</div>
+                    <p class="calculation-step">\\[ F_t = ${Math.abs(stress_Pa).toExponential(2)} \\times 10^{-3} = ${force_N.toFixed(1)} \\text{ N} \\]</p>
+                    <p>Generated reaction load: <strong>${force_N.toFixed(0)} N (${force_lbf.toFixed(0)} lbf)</strong></p>
+                </div>`;
+
+                // Save to state
+                lastResult = {
+                    unitSystem,
+                    materialText: materialSelect.options[materialSelect.selectedIndex].text,
+                    L0_input, T1_input, T2_input, alpha_input, E_input,
+                    lengthUnit, tempUnit, modulusUnit,
+                    deltaT_display, strain_val, deltaL_display, Lf_display, deltaV_si,
+                    calculateStress, stress_display, force_N, force_lbf
+                };
+
+                // Clear and print results table
+                resultTableBody.innerHTML = '';
                 calculationDetailsDiv.innerHTML = calculationHtml;
 
                 addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
-                addResultRow("Material Type", materialSelect.options[materialSelect.selectedIndex].text);
-                addResultRow("Original Length (\\(L_0\\))", `\\( ${L0_input.toFixed(3)} \\) ${unitSystem === 'metric' ? 'm' : 'inches'}`);
-                addResultRow("Initial Temperature (\\(T_1\\))", `\\( ${T1_input.toFixed(2)} \\) ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}`);
-                addResultRow("Final Temperature (\\(T_2\\))", `\\( ${T2_input.toFixed(2)} \\) ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}`);
-                addResultRow("Temperature Change (\\(\\Delta T\\))", `<strong>\\( ${deltaT_display.toFixed(2)} \\) ${unitSystem === 'metric' ? '&#176;C' : '&#176;F'}</strong>`);
-
-                let deltaL_display, Lf_display;
-                if (unitSystem === 'metric') {
-                    deltaL_display = deltaL_si * 1000; // meters to mm for easier reading
-                    Lf_display = Lf_si; // meters
-                    addResultRow("Change in Length (\\(\\Delta L\\))", `<strong>\\( ${deltaL_display.toPrecision(3)} \\) mm</strong>`);
-                    addResultRow("Final Length (\\(L_f\\))", `\\( ${Lf_display.toFixed(4)} \\) m`);
-                } else { // Imperial
-                    deltaL_display = deltaL_si / 0.0254; // meters to inches
-                    Lf_display = Lf_si / 0.0254; // meters to inches
-                    addResultRow("Change in Length (\\(\\Delta L\\))", `<strong>\\( ${deltaL_display.toPrecision(3)} \\) inches</strong>`);
-                    addResultRow("Final Length (\\(L_f\\))", `\\( ${Lf_display.toFixed(4)} \\) inches`);
-                }
+                addResultRow("Material Designation", lastResult.materialText);
+                addResultRow("Original Length (\\(L_0\\))", `${L0_input.toFixed(3)} ${lengthUnit}`);
+                addResultRow("Initial Temperature (\\(T_1\\))", `${T1_input.toFixed(2)} °${tempUnit}`);
+                addResultRow("Final Temperature (\\(T_2\\))", `${T2_input.toFixed(2)} °${tempUnit}`);
+                addResultRow("Temperature Change (\\(\\Delta T\\))", `<strong>${deltaT_display.toFixed(2)} °${tempUnit}</strong>`);
+                addResultRow("Change in Length (\\(\\Delta L\\))", `<strong>${deltaL_display.toPrecision(4)} ${unitSystem === 'metric' ? 'mm' : 'inches'}</strong>`);
+                addResultRow("Final Length (\\(L_f\\))", `${Lf_display.toFixed(4)} ${unitSystem === 'metric' ? 'm' : 'inches'}`);
 
                 if (calculateStress) {
-                    let thermalStress_display;
-                    if (unitSystem === 'metric') {
-                        thermalStress_display = thermalStress_Pa / 1e6; // Pa to MPa
-                        addResultRow("Thermal Stress (\\(\\sigma_t\\))", `<strong>\\( ${thermalStress_display.toFixed(2)} \\) MPa</strong>`);
-                    } else { // Imperial
-                        thermalStress_display = thermalStress_Pa / 6894.76; // Pa to psi
-                        addResultRow("Thermal Stress (\\(\\sigma_t\\))", `<strong>\\( ${thermalStress_display.toFixed(2)} \\) psi</strong>`);
-                    }
+                    addResultRow("Induced Stress (\\(\\sigma_t\\))", `<strong>${stress_display.toFixed(2)} ${unitSystem === 'metric' ? 'MPa' : 'psi'}</strong>`);
+                    addResultRow("Anchor Force (\\(F_t\\)) (\\(1000\\text{ mm}^2\\))", `<strong>${force_N.toFixed(0)} N (${force_lbf.toFixed(0)} lbf)</strong>`);
                 }
 
-                // Re-render MathJax equations - ensure MathJax is fully loaded
+                // Mathjax typeset
                 if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
                     window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
                 }
 
-                // Display standard reference
-                standardReference.innerHTML = "This tool provides theoretical estimations for thermal expansion and stress based on fundamental material science principles. It assumes constant material properties over the temperature range and perfect restraint for thermal stress calculation. For accurate design and real-world industrial applications, it is <strong>imperative</strong> to consult comprehensive industry standards (e.g., ASTM for material properties, ASME Boiler and Pressure Vessel Code for design under thermal loads), specialized engineering software, and qualified mechanical engineers.";
-
-                // Show results container
+                standardReference.innerHTML = "This calculation is based on fundamental thermal physics formulas. Thermal stress estimates assume a rigid boundary condition. Sizing loops, bellows, or gaps should be designed according to structural safety factor codes such as ASME B31.3 or AISC structural guidelines.";
+                
                 resultContainer.style.display = 'block';
                 setTimeout(() => {
                     resultContainer.classList.add('show');
                 }, 10);
                 resultContainer.scrollIntoView({ behavior: 'smooth' });
 
-                displayMessage("Thermal Expansion Calculation completed successfully!", "info");
-            });
+                displayMessage("Thermal Sizing Analysis completed successfully!", "success");
+            }
+
+            function generatePDF() {
+                if (!lastResult) {
+                    displayMessage("Please perform a calculation first before generating a report.", "error");
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                let y = 20;
+
+                // Report Header
+                pdf.setFillColor(33, 150, 243); // Primary Blue
+                pdf.rect(0, 0, 210, 38, 'F');
+
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(22);
+                pdf.setTextColor(255, 255, 255); 
+                pdf.text('THERMAL EXPANSION ANALYSIS REPORT', 15, y);
+                y += 8;
+
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10);
+                pdf.setTextColor(220, 225, 255);
+                pdf.text(`Mechanical & Piping Stress Sizing Report  |  Created: ${new Date().toLocaleString()}`, 15, y);
+                y += 22;
+
+                // System Parameters Table
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(12);
+                pdf.setTextColor(33, 150, 243);
+                pdf.text('1. Input Sizing Parameters', 14, y);
+                y += 5;
+
+                const inputData = [
+                    ['Unit System', lastResult.unitSystem === 'metric' ? 'Metric' : 'Imperial'],
+                    ['Material Designation', lastResult.materialText],
+                    ['Original Length (L0)', `${lastResult.L0_input} ${lastResult.lengthUnit}`],
+                    ['Initial Temperature (T1)', `${lastResult.T1_input} °${lastResult.tempUnit}`],
+                    ['Final Temperature (T2)', `${lastResult.T2_input} °${lastResult.tempUnit}`],
+                    ['Expansion Coefficient (alpha)', `${lastResult.alpha_input} /°${lastResult.tempUnit}`],
+                    ['Young\'s Modulus (E)', `${lastResult.E_input} ${lastResult.modulusUnit}`]
+                ];
+
+                pdf.autoTable({
+                    startY: y,
+                    head: [['Parameter', 'Value']],
+                    body: inputData,
+                    theme: 'striped',
+                    headStyles: { fillColor: [33, 150, 243] },
+                    margin: { left: 14, right: 14 }
+                });
+                y = pdf.lastAutoTable.finalY + 12;
+
+                // Sizing Results Table
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(12);
+                pdf.setTextColor(33, 150, 243);
+                pdf.text('2. Calculated Expansion & Stress Outputs', 14, y);
+                y += 5;
+
+                const outputData = [
+                    ['Temperature Differential (Delta T)', `${lastResult.deltaT_display.toFixed(2)} °${lastResult.tempUnit}`],
+                    ['Calculated Thermal Strain', `${lastResult.strain_val.toExponential(4)} m/m`],
+                    ['Change in Length (Delta L)', `${lastResult.deltaL_display.toPrecision(4)} ${lastResult.unitSystem === 'metric' ? 'mm' : 'inches'}`],
+                    ['Final Absolute Length (Lf)', `${lastResult.Lf_display.toFixed(4)} ${lastResult.unitSystem === 'metric' ? 'm' : 'inches'}`],
+                    ['Theoretical Volumetric Expansion', `${lastResult.deltaV_si.toExponential(4)} m³`],
+                    ['Induced Thermal Stress (Full Restraint)', lastResult.calculateStress ? `${lastResult.stress_display.toFixed(2)} ${lastResult.unitSystem === 'metric' ? 'MPa' : 'psi'}` : 'N/A'],
+                    ['Reaction Force on Anchors (1000 mm²)', `${lastResult.force_N.toFixed(0)} N (${lastResult.force_lbf.toFixed(0)} lbf)`]
+                ];
+
+                pdf.autoTable({
+                    startY: y,
+                    head: [['Output Metric', 'Calculated Value']],
+                    body: outputData,
+                    theme: 'striped',
+                    headStyles: { fillColor: [22, 163, 74] }, // Green header for results
+                    margin: { left: 14, right: 14 }
+                });
+                y = pdf.lastAutoTable.finalY + 15;
+
+                // Standard Disclaimer
+                pdf.setFont('helvetica', 'italic');
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 116, 139);
+                const disclaimer = "This report is generated for mechanical sizing analysis based on linear stress and strain calculations. Practical installations must account for specific pipe schedules, structural anchors, and local design margins according to ASME B31.3 or AISC codes.";
+                pdf.text(disclaimer, 14, y, { maxWidth: 180 });
+
+                pdf.save(`thermal_expansion_report_${Date.now()}.pdf`);
+                displayMessage("PDF Report downloaded successfully!", "success");
+            }
+
+            // Event listeners
+            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            materialSelect.addEventListener('change', updateUnitLabelsAndDefaults);
+            materialSelect.addEventListener('change', toggleCustomMaterialInputs);
+
+            calculateBtn.addEventListener('click', performCalculation);
+            document.getElementById('reset-form-btn').addEventListener('click', resetForm);
+            document.getElementById('clear-results-btn').addEventListener('click', clearResults);
+            document.getElementById('download-pdf-btn').addEventListener('click', generatePDF);
+
+            // Initial UI setup on load
+            updateUnitLabelsAndDefaults();
 
             // Theme switch functionality
             const themeSwitch = document.getElementById('theme-switch');
