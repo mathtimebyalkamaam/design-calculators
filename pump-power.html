@@ -19,504 +19,1094 @@
     <title>Pump Power Calculator - Design Calculators - Mechanical | Free Engineering Tool</title>
     <link rel="canonical" href="https://designcalculators.co.in/pump-power" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- MathJax for LaTeX rendering -->
-    <script type="text/javascript" id="MathJax-script" async
-            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-    </script>
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
+    <!-- MathJax for Formulas -->
     <script>
-        // MathJax configuration to support inline and display LaTeX
-        MathJax = {
+        window.MathJax = {
             tex: {
-                inlineMath: [['\\(', '\\)']],
-                displayMath: [['\\[', '\\]']],
-                processEscapes: true
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            },
+            svg: { fontCache: 'global' },
+            options: {
+                processHtmlClass: 'math-content', // Process elements with this class
+                ignoreHtmlClass: 'no-mathjax'     // Ignore elements with this class
             }
         };
     </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* CSS Variables for theming (light and dark mode) */
         :root {
-            --primary-color: #2196F3;
-            --secondary-color: #1976D2;
-            --accent-color: #FFC107;
-            --bg-color: #f4f7f6;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --header-bg: #2C3E50;
-            --footer-bg: #34495E;
-            --border-color: #cccccc;
-            --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            --hover-color: #e2e6ea;
-            --primary-color-rgb: 33, 150, 243;
-            --success-color: #28a745;
-            --error-color: #dc3545;
+            /* Old variables (to preserve header/footer layout) */
+            --primary-color: #2563EB;
+            --secondary-color: #1E3A8A;
+            --accent-color: #F59E0B;
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-color: #4B5563;
+            --header-bg: #0F172A;
+            --footer-bg: #0F172A;
+            --border-color: #E2E8F0;
+            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --hover-color: #E2E8F0;
+
+            /* New variables (matching adc-resolution.html) */
+            --primary: #1E3A8A;
+            --secondary: #2563EB;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #DC2626;
+            --warning: #F59E0B;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #4B5563;
+            --heading: #111827;
+            --footer-bg-new: #0F172A;
+            --border: #E2E8F0;
+            --grad: linear-gradient(135deg, var(--primary), var(--secondary));
+            --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+            
+            --reset-button-bg: var(--accent);
+            --reset-button-hover-bg: #DAA520;
+            --clear-button-bg: var(--secondary);
+            --clear-button-hover-bg: var(--primary);
+            
+            --ok-color: var(--success);
+            --error-color: var(--danger);
+            --warning-color: var(--warning);
         }
-        /* Dark mode overrides */
+
+        /* Dark mode variables override */
         body.dark-mode {
-            --primary-color: #5DADE2;
-            --secondary-color: #2874A6;
-            --bg-color: #252D3A;
-            --card-bg: #2F3C4C;
-            --text-color: #E0E6EB;
-            --header-bg: #252D3A;
-            --footer-bg: #252D3A;
-            --border-color: #4C5C70;
+            /* Old variables (to preserve header/footer layout in dark mode) */
+            --primary-color: #10B981;
+            --secondary-color: #34D399;
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-color: #CBD5E1;
+            --header-bg: #020617;
+            --footer-bg: #020617;
+            --border-color: #334155;
             --card-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-            --hover-color: #3A475C;
-            --primary-color-rgb: 93, 173, 226;
-            --success-color: #4CAF50;
-            --error-color: #F44336;
+            --hover-color: #334155;
+
+            /* New variables */
+            --primary: #10B981;
+            --secondary: #34D399;
+            --bg: #0F172A;
+            --card: #1E293B;
+            --text: #CBD5E1;
+            --heading: #F1F5F9;
+            --footer-bg-new: #020617;
+            --border: #334155;
+            
+            --reset-button-bg: var(--accent);
+            --reset-button-hover-bg: #DAA520;
+            --clear-button-bg: var(--secondary);
+            --clear-button-hover-bg: var(--primary);
+            
+            --ok-color: var(--success);
+            --error-color: var(--danger);
+            --warning-color: var(--warning);
         }
-        /* Base body styling */
+
+        /* General Body Styling */
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at center, var(--bg-color) 0%, rgba(244, 247, 246, 0.8) 100%);
-            color: var(--text-color);
-            line-height: 1.6;
-            transition: background-color 0.3s, color 0.3s, background-image 0.3s;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            transition: background-color 0.3s, color 0.3s;
         }
-        /* Container for content width limitation and centering */
+
         .container {
-            max-width: 960px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 24px;
         }
-        /* Header styling */
-        header {
-            background-color: var(--header-bg);
-            color: white;
-            padding: 25px 0;
-            text-align: center;
-            box-shadow: var(--card-shadow);
-            position: relative;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2.8em;
-            color: var(--primary-color);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-        }
-        header .subtitle {
-            margin: 8px 0 0;
-            font-size: 1.1em;
-            color: #bdc3c7;
-        }
-        /* Main content area styling */
+
         main {
-            padding: 30px 0;
+            padding: 40px 0;
         }
-        /* Tool container styling */
+
+        /* Main Card Styling */
         .tool-container {
-            background-color: var(--card-bg);
+            background-color: var(--card);
             border-radius: 12px;
             padding: 30px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 25px;
-            transition: transform 0.3s ease-in-out;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         }
+
         .tool-container:hover {
             transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
+
         .tool-container h2 {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 12px;
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
             margin-top: 0;
-            margin-bottom: 25px;
-            font-size: 2em;
-        }
-        .tool-description {
-            margin-bottom: 25px;
-            color: var(--text-color);
-            font-size: 1.05em;
-        }
-        .tool-description ul {
-            list-style-type: disc;
-            margin-left: 25px;
-            padding-left: 0;
-            margin-top: 15px;
-        }
-        .tool-description ul li {
-            margin-bottom: 8px;
-        }
-        .tool-description strong {
-            color: var(--primary-color);
-        }
-        /* Back button styling */
-        .back-button {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            margin-bottom: 25px;
-            transition: background-color 0.3s, transform 0.2s ease-in-out;
-            font-weight: bold;
-        }
-        .back-button:hover {
-            background-color: var(--secondary-color);
-            transform: scale(1.03);
-        }
-        /* Theme toggle switch styling */
-        .theme-toggle {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            display: flex;
-            align-items: center;
-        }
-        .theme-toggle .light-icon,
-        .theme-toggle .dark-icon {
-            color: white;
-            margin: 0 8px;
-            font-size: 1.3em;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 65px;
-            height: 38px;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 30px;
-            width: 30px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-        }
-        input:checked + .slider {
-            background-color: var(--primary-color);
-        }
-        input:focus + .slider {
-            box-shadow: 0 0 1px var(--primary-color);
-        }
-        input:checked + .slider:before {
-            transform: translateX(27px);
-        }
-        .slider.round {
-            border-radius: 38px;
-        }
-        .slider.round:before {
-            border-radius: 50%;
-        }
-        /* Footer styling */
-        footer {
-            background-color: var(--footer-bg);
-            color: white;
-            padding: 25px 0;
-            text-align: center;
-            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.2);
-            margin-top: 40px;
-        }
-        footer .disclaimer h3,
-        footer .social-share h3 {
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            font-size: 1.3em;
-        }
-        footer .disclaimer p {
-            font-size: 0.95em;
-            color: #bdc3c7;
-        }
-        .social-buttons {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        .social-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            color: white;
-            text-decoration: none;
-            font-size: 1.4em;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .social-btn:hover {
-            transform: translateY(-5px) scale(1.1);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
-        }
-        /* Specific social button colors */
-        .social-btn.linkedin { background-color: #0A66C2; }
-        .social-btn.facebook { background-color: #1877F2; }
-        .social-btn.twitter { background-color: #1DA1F2; }
-        .social-btn.whatsapp { background-color: #25D366; }
-        .social-btn.reddit { background-color: #FF4500; }
-        .social-btn.email { background-color: #7f8c8d; }
-        /* Calculator form styling */
-        .calculator-form {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 30px;
-            margin-top: 25px;
-            box-shadow: var(--card-shadow);
-        }
-        .form-group {
             margin-bottom: 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
+        .tool-description {
+            margin-bottom: 20px;
+            color: var(--text);
+            font-size: 1.05rem;
+        }
+
+        /* Styles for Calculator Forms and Results */
+        .calculator-form {
+            background-color: var(--card);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: none;
+        }
+        
+        .form-section {
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .form-section.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .form-section h3 {
+            color: var(--secondary);
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            font-weight: bold;
-            font-size: 1.05em;
+            font-weight: 600;
+            color: var(--heading);
         }
+        
         .form-group input, .form-group select {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--bg);
+            color: var(--text);
             box-sizing: border-box;
-            font-size: 1em;
             transition: border-color 0.3s, box-shadow 0.3s;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+            font-size: 1rem;
         }
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.3);
-            outline: none;
-        }
-        /* Responsive form row layout */
+        
         .form-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+            margin-bottom: 0;
         }
-        .form-row .form-group {
-            flex: 1 1 calc(50% - 10px); /* Two columns, with gap */
-            min-width: 280px; /* Minimum width before wrapping */
-        }
-        /* Media query for single column on small screens */
-        @media (max-width: 600px) {
-            .form-row .form-group {
-                flex: 1 1 100%; /* Single column */
-            }
-        }
-        /* Calculate button styling */
+        
+        /* Buttons */
         .calculate-btn {
-            background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background: var(--grad);
             color: white;
             border: none;
-            padding: 18px 25px;
+            padding: 16px 30px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 17px;
-            font-weight: bold;
-            margin-top: 20px;
-            transition: background-image 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.3s ease-in-out;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 100%; /* Full width button */
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 25px;
+            transition: all 0.3s;
+            width: auto;
+            min-width: 220px;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
+        
         .calculate-btn:hover {
-            background-image: linear-gradient(to right, var(--secondary-color), var(--primary-color));
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
         }
-        /* Result container styling */
+
+        .reset-btn {
+            background-color: var(--reset-button-bg);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 25px;
+            margin-left: 15px;
+            transition: all 0.3s;
+            width: auto;
+            min-width: 150px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--reset-button-hover-bg);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .clear-results-btn {
+            background-color: var(--clear-button-bg);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-top: 15px;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+
+        .clear-results-btn:hover {
+            background-color: var(--clear-button-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .download-pdf-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-top: 15px;
+            margin-left: 15px;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+
+        .download-pdf-btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
         .result-container {
-            margin-top: 40px;
+            margin-top: 30px;
             padding: 30px;
             border-radius: 12px;
-            background-color: var(--card-bg);
-            box-shadow: var(--card-shadow);
-            display: block; /* Always block, but opacity controls visibility */
+            background-color: var(--card);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: none;
             opacity: 0;
-            transition: opacity 0.6s ease-out;
-            pointer-events: none; /* Prevents interaction when hidden */
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
         }
+        
         .result-container.show {
             opacity: 1;
-            pointer-events: auto; /* Allows interaction when shown */
+            transform: translateY(0);
         }
+
         .result-container h3 {
-            color: var(--primary-color);
+            color: var(--primary);
             margin-bottom: 20px;
-            font-size: 1.8em;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
         }
-        /* Result table styling */
+        
         .result-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
         }
+        
         .result-table th, .result-table td {
-            padding: 15px;
+            padding: 16px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.3s;
         }
+        
         .result-table th {
-            background-color: var(--hover-color);
-            font-weight: bold;
-            font-size: 1.1em;
+            background: var(--grad);
+            font-weight: 700;
+            color: white;
         }
+
         .result-table tr:last-child td {
             border-bottom: none;
         }
-        /* Standard reference text styling */
+        
+        .result-table tr:nth-child(even) {
+            background-color: var(--bg);
+        }
+
+        .result-table tbody tr:hover {
+            background-color: var(--border);
+        }
+        
+        .result-table td:first-child {
+            font-weight: 600;
+            color: var(--heading);
+        }
+        
         .standard-reference {
-            margin-top: 25px;
+            margin-top: 20px;
             font-style: italic;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            padding: 10px;
-            background-color: var(--bg-color);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: var(--text);
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            background-color: var(--bg);
+            border-radius: 4px;
         }
-        /* Tooltip styling */
+        
         .info-icon {
-            color: var(--primary-color);
-            margin-left: 8px;
+            color: var(--primary);
+            margin-left: 5px;
             cursor: help;
-            font-size: 1em;
+            transition: color 0.3s;
         }
+
+        .info-icon:hover {
+            color: var(--accent);
+        }
+        
         .tooltip {
             position: relative;
             display: inline-block;
         }
+        
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 220px;
+            width: 250px;
             background-color: #333;
             color: #fff;
             text-align: center;
-            border-radius: 8px;
+            border-radius: 6px;
             padding: 8px;
             position: absolute;
-            z-index: 1;
-            bottom: 125%; /* Position above the element */
+            z-index: 10;
+            bottom: 125%;
             left: 50%;
-            margin-left: -110px; /* Center the tooltip */
+            margin-left: -125px;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(10px);
             font-size: 0.85em;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.4;
         }
-        .tooltip .tooltiptext::after {
-            content: "";
-            position: absolute;
-            top: 100%; /* Arrow at the bottom */
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #333 transparent transparent transparent;
-        }
+        
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
-        }
-        /* Custom message box for alerts */
-        #custom-message-box {
-            position: fixed;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 18px 30px;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-            z-index: 1000;
-            font-weight: bold;
-            color: white;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out, background-color 0.3s;
-            font-size: 1.1em;
-        }
-        #custom-message-box.info {
-            background-color: var(--success-color);
-        }
-        #custom-message-box.error {
-            background-color: var(--error-color);
-        }
-        #custom-message-box.warning {
-            background-color: var(--accent-color);
-            color: #333;
+            transform: translateY(0);
         }
 
-        /* Calculation details section styling */
-        #calculation-details {
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
+        /* Custom message box style */
+        #custom-message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 28px;
+            border-radius: 8px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            z-index: 10000;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.4s;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            min-width: 250px;
+        }
+        #custom-message-box.show {
+            display: flex;
+            opacity: 1;
+            top: 30px;
+        }
+
+        /* Styles for calculation steps */
+        .steps-container {
+            display: none;
+            margin-top: 30px;
+        }
+        .steps-container.active {
+            display: block;
+        }
+        .step-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            animation: slideIn 0.6s ease-out;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        .step-card h4 {
+            color: var(--primary);
+            margin: 0 0 20px 0;
+            font-size: 1.4rem;
+            font-family: 'Montserrat', sans-serif;
+            display: block;
+        }
+        .step-card h4::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .step-card .number {
+            float: left;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            margin-right: 15px;
+            font-size: 1.3rem;
+        }
+        .step-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr !important;
+            gap: 25px;
+            align-items: start;
+        }
+        .step-content > * { min-width: 0; }
+        .step-content .formula-block {
+            background: var(--bg);
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 25px;
-            font-size: 0.98em;
-            overflow-x: auto; /* Allow horizontal scrolling for formulas if needed */
+            font-size: 1rem;
+            border: 1px solid var(--border);
         }
-        #calculation-details h4 {
-            color: var(--secondary-color);
+        .step-content .formula-block p {
+            margin-top: 0;
+        }
+        .step-content .formula {
+            background: var(--bg);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin: 12px 0;
+            font-size: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        .step-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--success);
+            margin: 10px 0;
+            line-height: 1.2;
+        }
+        .step-unit {
+            font-size: 1rem;
+            color: var(--text);
+            opacity: 0.8;
+            font-weight: 500;
+            margin-left: 5px;
+        }
+        .step-explanation {
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+        
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            width: 100%;
+            padding-top: 20px;
+        }
+
+        /* Focus bounds */
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+            outline: none;
+        }
+        body.dark-mode .form-group input:focus, 
+        body.dark-mode .form-group select:focus {
+             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Specific styles for Status */
+        .status-display {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.5s, color 0.5s;
+            text-align: center;
+            width: auto;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .status-display.optimal {
+            background-color: var(--success);
+            color: white;
+        }
+        .status-display.sufficient {
+            background-color: #66bb6a;
+            color: white;
+        }
+        .status-display.adequate {
+            background-color: var(--secondary);
+            color: white;
+        }
+        .status-display.marginal {
+            background-color: var(--warning-color);
+            color: var(--heading);
+        }
+        .status-display.insufficient {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        /* Practical Recommendations Section */
+        #practical-recommendations {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--bg);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        #practical-recommendations h4 {
+            color: var(--secondary);
             margin-top: 0;
             margin-bottom: 15px;
-            font-size: 1.3em;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 10px;
         }
-        #calculation-details p.formula {
-            font-family: 'Times New Roman', serif;
-            font-style: italic;
-            font-size: 1.2em;
-            text-align: center;
-            padding: 12px 0;
-            background-color: var(--hover-color);
-            border-radius: 6px;
-            margin: 15px 0;
-            border: 1px dashed var(--border-color);
-            white-space: nowrap; /* Prevent formula from wrapping */
-        }
-        #calculation-details p.calculation-step {
-            font-family: 'Courier New', monospace;
-            background-color: var(--hover-color);
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-            white-space: nowrap; /* Prevent calculation steps from wrapping */
-        }
-        #calculation-details ul {
+        #practical-recommendations ul {
             list-style-type: disc;
             margin-left: 25px;
             padding-left: 0;
         }
-        #calculation-details ul li {
-            margin-bottom: 5px;
+        #practical-recommendations ul li {
+            margin-bottom: 8px;
         }
-        /* Specific styling for required inputs to highlight visually */
-        input:required:invalid {
-            border-color: var(--error-color);
+        
+        /* --- VISUAL-FIRST THEORY SECTION FRAMEWORK --- */
+        .edu-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 40px;
+            margin-top: 30px;
+            align-items: start;
         }
-        input:required:valid {
-            border-color: var(--success-color);
+        @media (max-width: 900px) {
+            .edu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Sticky Table of Contents */
+        .toc-wrapper {
+            position: sticky;
+            top: 20px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .toc-wrapper h4 {
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .toc-item {
+            margin-bottom: 12px;
+        }
+        .toc-item a {
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .toc-item a:hover {
+            color: var(--secondary);
+            transform: translateX(4px);
+        }
+        .toc-item a i {
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        /* Content Blocks */
+        .edu-content section {
+            margin-bottom: 50px;
+            scroll-margin-top: 40px;
+        }
+        
+        .edu-content hr {
+            border: 0;
+            height: 1px;
+            background: var(--border);
+            margin: 40px 0;
+        }
+
+        /* Reusable Cards */
+        .insight-card {
+            background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.03));
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid var(--secondary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .insight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .insight-card.bg-grid {
+            background-image: 
+                linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: center;
+        }
+        .insight-card h4 {
+            color: var(--secondary);
+            font-size: 1.3rem;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .insight-card p {
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+        .insight-card ol,
+        .insight-card ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        .insight-card li {
+            margin-bottom: 10px;
+        }
+        
+        .success-box, .danger-box {
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .success-box {
+            background: linear-gradient(135deg, rgba(16,185,129,0.05), var(--card));
+            border-left: 5px solid var(--success);
+        }
+        .success-box h4 {
+            color: var(--success);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .danger-box {
+            background: linear-gradient(135deg, rgba(220,38,38,0.05), var(--card));
+            border-left: 5px solid var(--danger);
+        }
+        .danger-box h4 {
+            color: var(--danger);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Glassmorphic Chart Containers */
+        .glass-chart-container {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            margin: 25px 0;
+        }
+        body.dark-mode .glass-chart-container {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* SVG Schematic */
+        .svg-schematic {
+            width: 100%;
+            height: auto;
+            max-width: 600px;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+            transition: all 0.3s ease;
+        }
+        .svg-schematic:hover {
+            transform: scale(1.02);
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.15));
+        }
+
+        .education-section {
+            margin-top: 40px;
+            margin-bottom: 40px;
+            background: var(--card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .education-section h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 0 15px; }
+            .form-row { grid-template-columns: 1fr; }
+            .tool-container, .education-section, .result-container { padding: 20px; }
+        }
+        .hidden { display: none; }
+        
+        /* Step-card border colors */
+        .step-card {
+            border-left: 6px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+        .step-card.step-1 { border-left-color: #14B8A6; }
+        .step-card.step-1 .number { background: #14B8A6; }
+        .step-card.step-2 { border-left-color: #6366F1; }
+        .step-card.step-2 .number { background: #6366F1; }
+        .step-card.step-3 { border-left-color: #8B5CF6; }
+        .step-card.step-3 .number { background: #8B5CF6; }
+        .step-card.step-4 { border-left-color: #D946EF; }
+        .step-card.step-4 .number { background: #D946EF; }
+        .step-card.step-5 { border-left-color: #EC4899; }
+        .step-card.step-5 .number { background: #EC4899; }
+        .step-card.step-6 { border-left-color: #10B981; }
+        .step-card.step-6 .number { background: #10B981; }
+        .step-card.step-7 { border-left-color: #EF4444; }
+        .step-card.step-7 .number { background: #EF4444; }
+        .step-card.step-8 { border-left-color: #F97316; }
+        .step-card.step-8 .number { background: #F97316; }
+        .step-card.step-9 { border-left-color: #06B6D4; }
+        .step-card.step-9 .number { background: #06B6D4; }
+        .step-card.step-10 { border-left-color: #3B82F6; }
+        .step-card.step-10 .number { background: #3B82F6; }
+        
+        /* Interview accordion */
+        .interview-container {
+            margin-top: 30px;
+        }
+        .interview-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .interview-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        .interview-header {
+            padding: 20px 25px;
+            background: var(--bg);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--heading);
+            user-select: none;
+            transition: background 0.3s;
+        }
+        .interview-header:hover {
+            background: var(--border);
+        }
+        .interview-header h4 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            line-height: 1.4;
+            color: var(--heading);
+        }
+        .interview-header .q-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: white;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .q-badge-1 { background: #14B8A6; }
+        .q-badge-2 { background: #6366F1; }
+        .q-badge-3 { background: #8B5CF6; }
+        .q-badge-4 { background: #D946EF; }
+        .q-badge-5 { background: #EC4899; }
+        .q-badge-6 { background: #10B981; }
+        .q-badge-7 { background: #EF4444; }
+        .q-badge-8 { background: #F97316; }
+        .q-badge-9 { background: #06B6D4; }
+        .q-badge-10 { background: #3B82F6; }
+        
+        .interview-content {
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease-out;
+            background: var(--card);
+            color: var(--text);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+        .interview-content.active {
+            padding: 25px;
+            max-height: 3500px;
+            border-top: 1px solid var(--border);
+        }
+        .interview-content p {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .interview-content ul, .interview-content ol {
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-left: 20px;
+        }
+        .interview-content li {
+            margin-bottom: 8px;
+        }
+        .interview-content .diagram-box {
+            background: #0F172A;
+            color: #38BDF8;
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 20px 0;
+            font-size: 0.92rem;
+            line-height: 1.4;
+            border-left: 4px solid var(--accent);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .mjx-container, .MathJax_Display, .MathJax {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .result-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 25px;
+        }
+        .interview-content .math-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 18px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        
+        /* Silo Cards Enhanced */
+        .silo-card-rich {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            background: var(--card);
+            padding: 22px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .silo-card-rich:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary);
+        }
+        .silo-card-rich h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .silo-card-rich p {
+            margin: 0 0 15px 0;
+            font-size: 0.95rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .silo-card-rich span {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Refined Professional Header Styles overrides */
+        .header .logo-container {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            text-decoration: none;
+            color: white;
+        }
+
+        .header .logo {
+            height: 48px !important;
+            width: auto;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .logo-text-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.1;
+        }
+
+        .header .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 !important;
+            line-height: 1.2;
+            max-width: 250px;
+            white-space: normal;
+        }
+
+        .header .nav-links a {
+            font-size: 0.95rem;
+            font-weight: 600;
+            opacity: 0.9;
+            transition: all 0.2s ease;
+        }
+        .header .nav-links a:hover {
+            opacity: 1;
+            transform: translateY(-1px);
         }
     </style>
     <link rel="stylesheet" href="styles.css">
@@ -527,61 +1117,7 @@
 
     
 
-<style>
-/* Refined Professional Header Styles */
-.header .logo-container {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important; /* Slightly tighter gap */
-    text-decoration: none;
-    color: white;
-}
 
-.header .logo {
-    height: 48px !important; /* Standard navbar size */
-    width: auto;
-    object-fit: contain;
-    border-radius: 6px; /* Soft rounding */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle depth */
-}
-
-.logo-text-group {
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Ensure vertical centering */
-    line-height: 1.1; /* Tighter line height for the group */
-}
-
-.header .logo-text {
-    font-size: 1.25rem; /* 20px - slightly smaller but bolder feel */
-    font-weight: 700;
-    letter-spacing: -0.02em; /* Modern tighten */
-    color: #ffffff;
-    margin-bottom: 2px; /* Tiny gap to subtitle */
-}
-
-.logo-subtitle {
-    font-size: 0.7rem !important; /* 11px - distinctly secondary */
-    color: rgba(255, 255, 255, 0.85) !important; /* High readability but softer */
-    font-weight: 500;
-    margin: 0 !important;
-    line-height: 1.2;
-    max-width: 250px; /* Constrain width to avoid long run-on look */
-    white-space: normal; /* Allow nice wrapping if needed */
-}
-
-/* Enhancing Navbar Links for "Pro" feel */
-.header .nav-links a {
-    font-size: 0.95rem;
-    font-weight: 600;
-    opacity: 0.9;
-    transition: all 0.2s ease;
-}
-.header .nav-links a:hover {
-    opacity: 1;
-    transform: translateY(-1px); /* Micro-interaction */
-}
-</style>
 
     
 
@@ -709,71 +1245,176 @@
                     </div>
                 </div>
             </nav>
+        </div>
     </header>
 
     <main class="container">
-        <!-- Back to Tools link -->
-        <a href="indexMech" class="back-button">
-            <i class="fas fa-arrow-left"></i> Back to Tools
-        </a>
+        <!-- Message box for popup notifications -->
+        <div id="custom-message-box"></div>
 
         <div class="tool-container">
-            <h2>Pump Power Calculator</h2>
+            <h2><i class="fas fa-pump-soap" style="color: var(--secondary); margin-right: 4px;"></i> Centrifugal Pump Power Calculator</h2>
+            
             <div class="tool-description">
-                <p>This calculator determines the hydraulic power (water power) and the brake horsepower (input power) required for a pump, based on fluid flow rate, total head, fluid density, and pump efficiency.</p>
-                <p><strong>Key Inputs:</strong></p>
-                <ul>
-                    <li><strong>Unit System:</strong> Select Metric (m&#179;/hr, m, kg/m&#179;, kW) or Imperial (GPM, ft, lb/ft&#179;, HP).</li>
-                    <li><strong>Flow Rate (\(Q\)):</strong> The volumetric flow rate of the fluid being pumped.</li>
-                    <li><strong>Total Head (\(H\)):</strong> The total equivalent height the fluid is lifted, including elevation, pressure, and friction losses.</li>
-                    <li><strong>Fluid Density (\(\rho\)):</strong> The mass density of the fluid.</li>
-                    <li><strong>Pump Efficiency (\(\eta\)):</strong> The overall efficiency of the pump, typically given as a percentage.</li>
-                </ul>
-                <p><strong>Calculated Outputs:</strong></p>
-                <ul>
-                    <li><strong>Hydraulic Power (\(P_{hyd}\) / Water Power):</strong> The power actually imparted to the fluid.</li>
-                    <li><strong>Brake Horsepower (\(P_{bhp}\) / Input Power):</strong> The mechanical power required at the pump shaft, accounting for pump inefficiencies.</li>
-                </ul>
+                <p>This premium calculator helps hydraulic and instrumentation engineers determine the <strong>theoretical hydraulic power (water power)</strong>, <strong>shaft input power (brake horsepower)</strong>, and <strong>recommended motor sizing margins</strong> for centrifugal pumps. It incorporates international design guidelines such as <strong>API 610</strong> to compute true industrial motor sizing requirements.</p>
             </div>
-
+        
             <div class="calculator-form">
                 <form id="pump-power-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="unit-system">Unit System: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (m&#179;/hr, m, kg/m&#179;, kW) or Imperial (GPM, ft, lb/ft&#179;, HP) units.</span></span></label>
-                            <select id="unit-system" required>
-                                <option value="metric">Metric (m&#179;/hr, m, kg/m&#179;, kW)</option>
-                                <option value="imperial">Imperial (GPM, ft, lb/ft&#179;, HP)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="flow-rate">Flow Rate (\(Q\)) <span class="flow-unit-label">(m&#179;/hr)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The volume of fluid moved per unit time.</span></span></label>
-                            <input type="number" id="flow-rate" step="any" value="10" required min="0.01">
+                    <!-- Section 1: Operating Parameters -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-cogs"></i> Section 1: Operating Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="unit-system">Unit System <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select Metric (m³/hr, m, kg/m³, kW) or Imperial (GPM, ft, lb/ft³, HP) units.</span></span></label>
+                                <select id="unit-system" required>
+                                    <option value="metric">Metric (m³/hr, m, kg/m³, kW)</option>
+                                    <option value="imperial">Imperial (GPM, ft, lb/ft³, HP)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="flow-rate">Flow Rate (Q) <span id="flow-unit" class="flow-unit-label">(m³/hr)</span> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Volumetric flow rate of the pumped fluid.</span></span></label>
+                                <input type="number" id="flow-rate" step="any" value="100" required min="0.001">
+                            </div>
+                            <div class="form-group">
+                                <label for="total-head">Total Head (H) <span id="head-unit" class="head-unit-label">(m)</span> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total dynamic head (TDH) representing elevation change, friction losses, and pressure differential.</span></span></label>
+                                <input type="number" id="total-head" step="any" value="50" required min="0.001">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="total-head">Total Head (\(H\)) <span class="head-unit-label">(m)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The total energy per unit weight of fluid. Includes elevation, pressure, and friction head.</span></span></label>
-                            <input type="number" id="total-head" step="any" value="20" required min="0.01">
+                    <!-- Section 2: Fluid Properties -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-tint"></i> Section 2: Fluid Properties</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fluid-input-type">Input Variable Type</label>
+                                <select id="fluid-input-type" required>
+                                    <option value="density">Fluid Density (ρ)</option>
+                                    <option value="sg">Specific Gravity (SG)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="density-input-group">
+                                <label for="fluid-density">Fluid Density (ρ) <span id="density-unit" class="density-unit-label">(kg/m³)</span> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass density of the fluid (e.g. Water is 1000 kg/m³ or 62.43 lb/ft³).</span></span></label>
+                                <input type="number" id="fluid-density" step="any" value="1000" required min="0.001">
+                            </div>
+                            <div class="form-group" id="sg-input-group" style="display: none;">
+                                <label for="specific-gravity">Specific Gravity (SG) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Ratio of fluid density to standard water density. Dimensionless.</span></span></label>
+                                <input type="number" id="specific-gravity" step="any" value="1.0" required min="0.001">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="fluid-density">Fluid Density (\(\rho\)) <span class="density-unit-label">(kg/m&#179;)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Mass per unit volume of the fluid (e.g., Water is 1000 kg/m&#179; or 62.4 lb/ft&#179;).</span></span></label>
-                            <input type="number" id="fluid-density" step="any" value="1000" required min="0.01">
+                        <div class="form-row" style="margin-top: 15px;">
+                            <div class="form-group">
+                                <label for="fluid-viscosity">Fluid Kinematic Viscosity (cSt) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Kinematic viscosity of the fluid in centistokes (cSt). Water at 20°C is 1.0 cSt. Viscous oil may exceed 100 cSt, requiring Hydraulic Institute corrections.</span></span></label>
+                                <input type="number" id="fluid-viscosity" step="any" value="1.0" required min="0.1">
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="pump-efficiency">Pump Efficiency (\(\eta\)) (%): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The ratio of hydraulic power output to mechanical power input, as a percentage (e.g., 75 for 75%).</span></span></label>
-                        <input type="number" id="pump-efficiency" step="any" value="75" required min="1" max="100">
                     </div>
 
-                    <button type="button" id="calculate-pump-power-btn" class="calculate-btn">Calculate Pump Power</button>
+                    <!-- Section 3: Pump & Motor Details -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-bolt"></i> Section 3: Pump &amp; Motor Details</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pump-efficiency">Pump Efficiency (η) (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Centrifugal pump overall efficiency as a percentage (typically between 50% and 85%).</span></span></label>
+                                <input type="number" id="pump-efficiency" step="any" value="75" required min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="margin-rule">Motor Sizing Margin Rule</label>
+                                <select id="margin-rule" required>
+                                    <option value="api-610">API 610 Centrifugal Pump Standard</option>
+                                    <option value="custom">Custom Sizing Margin (%)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="custom-margin-group" style="display: none;">
+                                <label for="custom-margin-val">Custom Sizing Margin (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Percent power added as safety factor above Brake Horsepower (e.g. 15 for 15%).</span></span></label>
+                                <input type="number" id="custom-margin-val" step="any" value="15" required min="0" max="200">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Advanced Engineering Modules -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-microchip"></i> Section 4: Advanced Engineering Modules</h3>
+                        <div class="form-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px; gap: 20px;">
+                            <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="enable-npsh" style="width: auto; height: auto; transform: scale(1.3); margin-right: 5px;">
+                                <label for="enable-npsh" style="display: inline; margin-bottom: 0;">Enable Suction NPSH Analysis</label>
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="enable-system-curve" style="width: auto; height: auto; transform: scale(1.3); margin-right: 5px;">
+                                <label for="enable-system-curve" style="display: inline; margin-bottom: 0;">Enable System Curve &amp; Operating Point</label>
+                            </div>
+                        </div>
+
+                        <!-- Panel for NPSHa Sizing -->
+                        <div id="npsh-panel" style="display: none; border-top: 1px dashed var(--border); padding-top: 15px; margin-bottom: 20px;">
+                            <h4><i class="fas fa-shield-alt"></i> Suction NPSHa Parameters</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="suction-pressure">Suction Tank Pressure <span id="suction-pres-unit">(bar gauge)</span></label>
+                                    <input type="number" id="suction-pressure" step="any" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="suction-static-head">Static Elevation Head (z_s) <span class="head-unit-label">(m)</span> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Height of source liquid level relative to pump centerline. Positive is flooded suction, negative represents lift.</span></span></label>
+                                    <input type="number" id="suction-static-head" step="any" value="2.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="suction-friction-head">Suction Pipe Friction Loss <span class="head-unit-label">(m)</span></label>
+                                    <input type="number" id="suction-friction-head" step="any" value="0.5" min="0">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="fluid-temp">Operating Temperature <span id="temp-unit">(°C)</span></label>
+                                    <input type="number" id="fluid-temp" step="any" value="20" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="required-npsh">Required NPSHr (from vendor) <span class="head-unit-label">(m)</span> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Net Positive Suction Head Required by the pump manufacturer frame.</span></span></label>
+                                    <input type="number" id="required-npsh" step="any" value="2.5" min="0.1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel for System Head Curve Sizing -->
+                        <div id="system-curve-panel" style="display: none; border-top: 1px dashed var(--border); padding-top: 15px;">
+                            <h4><i class="fas fa-route"></i> System Resistance Parameters</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="sys-static-head">System Static Lift (H_static) <span class="head-unit-label">(m)</span> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The absolute static lift elevation change downstream.</span></span></label>
+                                    <input type="number" id="sys-static-head" step="any" value="15.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sys-friction-head">Friction Head at Rated Flow <span class="head-unit-label">(m)</span> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total friction drop across piping, fittings, control valves, and elbows at rated design flow.</span></span></label>
+                                    <input type="number" id="sys-friction-head" step="any" value="5.0" min="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-wrapper">
+                        <button type="button" id="calculate-btn" class="calculate-btn"><i class="fas fa-calculator"></i> Calculate</button>
+                        <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset</button>
+                    </div>
                 </form>
             </div>
+        </div>
 
-            <div id="result-container" class="result-container">
-                <h3>Calculation Results</h3>
-                <div id="calculation-details"></div>
+        <!-- Results Container -->
+        <div id="result-container" class="result-container">
+            <h3><i class="fas fa-clipboard-check"></i> Calculation Results</h3>
+            
+            <div style="text-align: center;">
+                <p class="status-display" id="sizing-status-display">Sizing Status: N/A</p>
+            </div>
+
+            <!-- Step-by-Step Calculation Cards (rendered in 10 steps) -->
+            <div id="steps-container" class="steps-container math-content">
+                <!-- Calculation steps will be inserted dynamically here -->
+            </div>
+            
+            <!-- Summary Table -->
+            <div class="result-table-wrapper">
                 <table class="result-table">
                     <thead>
                         <tr>
@@ -781,31 +1422,505 @@
                             <th>Value</th>
                         </tr>
                     </thead>
-                    <tbody id="result-table-body"></tbody>
+                    <tbody id="result-table-body">
+                        <!-- Results will be dynamically inserted here -->
+                    </tbody>
                 </table>
-                <div class="standard-reference" id="standard-reference"></div>
+            </div>
+            
+            <!-- Practical Considerations & Recommendations -->
+            <div id="practical-recommendations" style="display: none;">
+                <h4><i class="fas fa-lightbulb"></i> Practical Considerations &amp; Recommendations</h4>
+                <ul id="recommendations-list">
+                    <!-- Recommendations will be dynamically inserted here -->
+                </ul>
+            </div>
+
+            <div style="display: flex; justify-content: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+                <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
+                <button type="button" id="download-pdf-btn" class="download-pdf-btn"><i class="fas fa-file-pdf"></i> Download PDF (A4)</button>
+            </div>
+            
+            <div class="standard-reference" id="standard-reference">
+                <p><strong>Applicable Standards and Guidelines:</strong> Centrifugal pump sizing and motor selection are regulated globally to guarantee mechanical integrity and energy efficiency. Key codes include:</p>
+                <ul>
+                    <li><strong>API 610: Centrifugal Pumps for Petroleum, Petrochemical and Natural Gas Industries.</strong> Clause 9.1.3 defines standardized motor safety power sizing margins (125%, 115%, 110%) depending on the pump BHP rating to prevent overload.</li>
+                    <li><strong>ASME B73.1 / ANSI:</strong> Standards for horizontal, end-suction centrifugal pumps for chemical process applications, establishing dimensions and mechanical limits.</li>
+                    <li><strong>ISO 5199:</strong> Technical specifications for centrifugal pumps (Class II), defining structural requirements, bearing life guidelines, and testing methods.</li>
+                </ul>
+                <p>This calculator provides a dynamic theoretical evaluation of hydraulic power and brake horsepower. Real-world systems require comprehensive piping analysis (friction, fittings, valve throttling, and fluid viscosity variations) to determine actual operating points.</p>
             </div>
         </div>
+
+        <!-- EDUCATIONAL FRAMEWORK: VISUAL-FIRST DEEP DIVE -->
+        <div id="education-section" class="education-section" style="margin-top: 40px;">
+            <h2><i class="fas fa-graduation-cap"></i> Technical Deep Dive: Centrifugal Pump Sizing &amp; Power Dynamics</h2>
+            
+            <div class="edu-grid">
+                <!-- Sticky Navigation -->
+                <div class="toc-wrapper">
+                    <h4>In This Section</h4>
+                    <ul class="toc-list">
+                        <li class="toc-item"><a href="#pump-part1"><i class="fas fa-chevron-right"></i> 1. Physics of Fluid Energy</a></li>
+                        <li class="toc-item"><a href="#pump-part2"><i class="fas fa-chevron-right"></i> 2. Hydraulic System Schematic</a></li>
+                        <li class="toc-item"><a href="#pump-part3"><i class="fas fa-chevron-right"></i> 3. Centrifugal Affinity Laws</a></li>
+                        <li class="toc-item"><a href="#pump-part4"><i class="fas fa-chevron-right"></i> 4. Suction Head and Cavitation</a></li>
+                        <li class="toc-item"><a href="#pump-part5"><i class="fas fa-chevron-right"></i> 5. Pump Efficiency Losses</a></li>
+                        <li class="toc-item"><a href="#pump-part6"><i class="fas fa-chevron-right"></i> 6. Motor Nameplate Selection</a></li>
+                        <li class="toc-item"><a href="#pump-part7"><i class="fas fa-chevron-right"></i> 7. International Standards</a></li>
+                    </ul>
+                </div>
+
+                <!-- Main Content Panel -->
+                <div class="edu-content">
+                    
+                    <!-- PART 1 -->
+                    <section id="pump-part1">
+                        <h3>1. Physics of Fluid Energy &amp; Power Transfer</h3>
+                        <p>A pump does not create pressure; it creates <strong>flow</strong>. The resistance of the downstream piping system creates pressure. The pump transfers mechanical energy from its rotating driver (typically an electric motor) to kinetic energy in the fluid, which is subsequently converted into potential energy (head) in the volute casing.</p>
+                        
+                        <p>The energy added per unit weight of the fluid is called the <strong>Total Dynamic Head</strong> ($H$). Because head represents the height of a fluid column, a pump will lift fluids of different densities to the exact same height, but the physical pressure gauge reading at the discharge will be directly proportional to the fluid's density.</p>
+                        
+                        <div class="glass-chart-container">
+                            <h5 style="text-align:center; color: var(--text); margin-top:0;">Centrifugal Pump Characteristic Curves (Flow vs Power)</h5>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="pumpCurveChart" role="img" aria-label="Pump Curve Analysis Chart"><p class="sr-only">Interactive data visualization for Centrifugal Pump curves</p></canvas>
+                            </div>
+                        </div>
+                        
+                        <p>As volumetric flow rate ($Q$) increases, the theoretical hydraulic power ($P_{hyd}$) increases linearly. However, due to turbulence and recirculation losses at high flow rates, the actual Brake Horsepower ($P_{bhp}$) required at the shaft escalates at a faster rate, as illustrated in the curve chart above.</p>
+                    </section>
+
+                    <hr>
+
+                    <!-- PART 2 -->
+                    <section id="pump-part2">
+                        <h3>2. The Hydraulic System Layout</h3>
+                        <p>To calculate pump power requirements, the entire suction and discharge piping configuration must be modeled. The total head is the difference between discharge head and suction head. Below is a physical schematic of a typical industrial pumping circuit:</p>
+                        
+                        <div class="glass-chart-container" style="padding: 10px;">
+                            <!-- Centrifugal Pump SVG Schematic -->
+                            <svg viewBox="0 0 600 300" class="svg-schematic">
+                                <defs>
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#F59E0B" />
+                                    </marker>
+                                </defs>
+                                <rect width="600" height="300" rx="10" fill="#0F172A" />
+                                <path d="M 50 150 L 220 150" stroke="#38BDF8" stroke-width="20" fill="none" stroke-linecap="round" />
+                                <path d="M 60 150 L 210 150" stroke="#0369A1" stroke-width="12" fill="none" stroke-linecap="round" />
+                                <circle cx="250" cy="150" r="50" fill="#1E293B" stroke="#475569" stroke-width="4" />
+                                <circle cx="250" cy="150" r="40" fill="none" stroke="#334155" stroke-width="6" />
+                                <g transform="translate(250, 150)">
+                                    <circle cx="0" cy="0" r="10" fill="#F59E0B" />
+                                    <path d="M 0 0 Q 15 -20 10 -35" stroke="#F59E0B" stroke-width="4" fill="none" />
+                                    <path d="M 0 0 Q -15 20 -10 35" stroke="#F59E0B" stroke-width="4" fill="none" />
+                                    <path d="M 0 0 Q 20 15 35 10" stroke="#F59E0B" stroke-width="4" fill="none" />
+                                    <path d="M 0 0 Q -20 -15 -35 -10" stroke="#F59E0B" stroke-width="4" fill="none" />
+                                    <path d="M 25 -25 A 35 35 0 0 1 35 5" fill="none" stroke="#F59E0B" stroke-width="2" marker-end="url(#arrow)" />
+                                </g>
+                                <path d="M 250 100 L 250 50 L 500 50" stroke="#38BDF8" stroke-width="16" fill="none" />
+                                <path d="M 250 100 L 250 50 L 500 50" stroke="#0369A1" stroke-width="10" fill="none" />
+                                <rect x="340" y="110" width="120" height="80" rx="5" fill="#334155" stroke="#475569" stroke-width="3" />
+                                <line x1="360" y1="105" x2="360" y2="195" stroke="#475569" stroke-width="3" />
+                                <line x1="380" y1="105" x2="380" y2="195" stroke="#475569" stroke-width="3" />
+                                <line x1="400" y1="105" x2="400" y2="195" stroke="#475569" stroke-width="3" />
+                                <line x1="420" y1="105" x2="420" y2="195" stroke="#475569" stroke-width="3" />
+                                <line x1="440" y1="105" x2="440" y2="195" stroke="#475569" stroke-width="3" />
+                                <rect x="300" y="140" width="40" height="20" fill="#64748B" stroke="#475569" stroke-width="1" />
+                                <line x1="300" y1="150" x2="340" y2="150" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="3" />
+                                <text x="100" y="125" fill="#E2E8F0" font-family="sans-serif" font-size="12" font-weight="bold">Suction (Q, Flow Rate)</text>
+                                <text x="310" y="40" fill="#E2E8F0" font-family="sans-serif" font-size="12" font-weight="bold">Discharge (H, TDH)</text>
+                                <text x="400" y="155" fill="#E2E8F0" font-family="sans-serif" font-size="14" font-weight="bold" text-anchor="middle">MOTOR</text>
+                                <text x="400" y="225" fill="#F59E0B" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">Shaft Power Input (BHP)</text>
+                                <text x="250" y="225" fill="#10B981" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">Hydraulic Power (Phyd)</text>
+                                <text x="130" y="270" fill="#94A3B8" font-family="sans-serif" font-size="11" font-style="italic">Cavitation Risk Zone at Impeller Eye</text>
+                                <circle cx="210" cy="150" r="4" fill="#EF4444" />
+                                <line x1="210" y1="150" x2="160" y2="255" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="2" />
+                            </svg>
+                        </div>
+                    </section>
+
+                    <hr>
+
+                    <!-- PART 3 -->
+                    <section id="pump-part3">
+                        <h3>3. Centrifugal Affinity Laws (Dynamic Scaling)</h3>
+                        <p>Affinity laws describe the mathematical relationships between centrifugal pump speed ($N$) or impeller diameter ($D$) and the corresponding hydraulic parameters. They govern how the pump adapts to speed variation (e.g. under a Variable Frequency Drive):</p>
+                        
+                        <div class="insight-card">
+                            <h4><i class="fas fa-sliders-h"></i> Impeller Speed Scaling Relationships</h4>
+                            <p>For a constant impeller diameter ($D$):</p>
+                            <ol>
+                                <li><strong>Flow Rate ($Q$)</strong> scales linearly with speed:
+                                    $$\frac{Q_1}{Q_2} = \frac{N_1}{N_2}$$
+                                </li>
+                                <li><strong>Total Dynamic Head ($H$)</strong> scales quadratically:
+                                    $$\frac{H_1}{H_2} = \left(\frac{N_1}{N_2}\right)^2$$
+                                </li>
+                                <li><strong>Power Consumption ($P_{bhp}$)</strong> scales <strong>cubically</strong>:
+                                    $$\frac{P_1}{P_2} = \left(\frac{N_1}{N_2}\right)^3$$
+                                </li>
+                            </ol>
+                            <p><strong>Critical Insight:</strong> A small reduction in pump speed yields a massive drop in motor energy consumption. Slowing a pump speed down by $20\%$ cuts required shaft power by nearly <strong>$50\%$</strong> ($\Delta P = 0.8^3 \approx 0.51$).</p>
+                        </div>
+                    </section>
+
+                    <hr>
+
+                    <!-- PART 4 -->
+                    <section id="pump-part4">
+                        <h3>4. Suction Head Limits &amp; Cavitation Physics</h3>
+                        <p>The suction side of a pump is the most sensitive region. If the pressure at the impeller eye falls below the <strong>vapor pressure</strong> of the liquid being pumped, the liquid will boil locally, forming microscopic vapor bubbles. When these bubbles enter higher pressure regions of the impeller, they violently collapse (implode).</p>
+                        
+                        <div class="danger-box">
+                            <h4><i class="fas fa-exclamation-triangle"></i> Cavitation Damage &amp; Sizing</h4>
+                            <p>Cavitation bubble collapse generates localized shockwaves exceeding <strong>$100,000 \text{ PSI}$</strong> and micro-jets of fluid that eat away impeller metal, causing severe pitting, noise, vibration, and mechanical seal destruction.</p>
+                            <p>To prevent cavitation, the <strong>Net Positive Suction Head Available (NPSHa)</strong> must exceed the <strong>Net Positive Suction Head Required (NPSHr)</strong> specified by the pump manufacturer (typically with a safety margin of at least $1 \text{ m}$ or $3 \text{ ft}$):</p>
+                            $$\text{NPSHa} = h_{s\_static} + h_{s\_pres} - h_{s\_fric} - h_{vapor\_pres} &gt; \text{NPSHr}$$
+                        </div>
+                    </section>
+
+                    <hr>
+
+                    <!-- PART 5 -->
+                    <section id="pump-part5">
+                        <h3>5. Pump Efficiency Losses (Mechanical, Volumetric &amp; Hydraulic)</h3>
+                        <p>Not all power delivered to the pump shaft is transferred to the liquid. Pump overall efficiency ($\eta$) represents the product of three distinct internal loss categories:</p>
+                        <ul>
+                            <li><strong>Hydraulic Efficiency ($\eta_{hyd}$):</strong> Accounts for friction losses of liquid shearing against casing walls and recirculation eddies inside the impeller channels. Optimized by smooth impeller casting and polishing.</li>
+                            <li><strong>Volumetric Efficiency ($\eta_{vol}$):</strong> Represents leakage bypass. To allow the impeller to rotate freely inside the volute, minor gaps exist at wear rings. High-pressure discharge fluid slips back to the low-pressure suction, wasting energy.</li>
+                            <li><strong>Mechanical Efficiency ($\eta_{mech}$):</strong> Mechanical friction losses occurring in radial/thrust bearings and shaft stuffing box compression packings or mechanical seals.</li>
+                        </ul>
+                        
+                        <div class="glass-chart-container">
+                            <h5 style="text-align:center; color: var(--text); margin-top:0;">Impact of Efficiency on Shaft Power (BHP) at constant hydraulic work</h5>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="lossesChart" role="img" aria-label="Losses Analysis Chart"><p class="sr-only">Interactive data visualization for Efficiency losses</p></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <hr>
+
+                    <!-- PART 6 -->
+                    <section id="pump-part6">
+                        <h3>6. Industrial Motor Nameplate Sizing Guidelines</h3>
+                        <p>When selecting a driver motor, engineers must size for transient conditions. centifrugal pumps draw more power if operating at "runout" (far right of pump curve, representing low head and high flow). To prevent motor tripping, sizing margins are standardized.</p>
+                        
+                        <p>The international standard <strong>API 610 (Centrifugal Pumps for Petroleum, Petrochemical and Natural Gas Industries)</strong> mandates standard sizing factors above Brake Horsepower:</p>
+                        
+                        <div class="insight-card bg-grid">
+                            <h4 style="justify-content:center;">API 610 Motor Sizing Margins</h4>
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid var(--border);">
+                                        <th style="padding: 10px; text-align: left;">BHP Rating (HP)</th>
+                                        <th style="padding: 10px; text-align: left;">BHP Rating (kW)</th>
+                                        <th style="padding: 10px; text-align: left;">Recommended Margin Factor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid var(--border);">
+                                        <td style="padding: 10px;">$\le 30 \text{ HP}$</td>
+                                        <td style="padding: 10px;">$\le 22 \text{ kW}$</td>
+                                        <td style="padding: 10px; font-weight: bold; color: var(--success);">125% (Add 25% safety margin)</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--border);">
+                                        <td style="padding: 10px;">$30 \text{ to } 75 \text{ HP}$</td>
+                                        <td style="padding: 10px;">$22 \text{ to } 55 \text{ kW}$</td>
+                                        <td style="padding: 10px; font-weight: bold; color: var(--warning-color);">115% (Add 15% safety margin)</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px;">$&gt; 75 \text{ HP}$</td>
+                                        <td style="padding: 10px;">$&gt; 55 \text{ kW}$</td>
+                                        <td style="padding: 10px; font-weight: bold; color: var(--danger);">110% (Add 10% safety margin)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <hr>
+
+                    <!-- PART 7 -->
+                    <section id="pump-part7">
+                        <h3>7. Applicable International &amp; National Pump Standards</h3>
+                        <p>Centrifugal pumping machinery design, safety, performance tolerances, and casing sizes are strictly regulated globally to guarantee interoperability, safety, and operational safety. Key codes include:</p>
+                        
+                        <div class="insight-card bg-grid">
+                            <h4><i class="fas fa-globe"></i> International Standards Reference</h4>
+                            <ul>
+                                <li><strong>API 610 / ISO 13709:</strong> Centrifugal Pumps for Petroleum, Petrochemical, and Natural Gas Industries. Governs heavy-duty process pumps, specifying mechanical limits, shaft vibration, casing thicknesses, and motor safety sizing factor schedules ($10\text{--}25\%$) to prevent catastrophic failures.</li>
+                                <li><strong>ASME B73.1:</strong> Design standard for horizontal, end-suction, single-stage centrifugal pumps for chemical process applications, standardizing pump sizes across US manufacturers.</li>
+                                <li><strong>ASME B73.2:</strong> Standards for vertical in-line centrifugal pumps for chemical process.</li>
+                                <li><strong>ISO 5199:</strong> Technical specifications for centrifugal pumps (Class II), defining structural criteria, bearing life, baseplate rigidity, and shaft seals.</li>
+                                <li><strong>ISO 9908:</strong> Technical specifications for centrifugal pumps (Class III) for standard water utility, sewage, and irrigation systems.</li>
+                                <li><strong>Hydraulic Institute (HI) Standards:</strong> Governing definitions, nomenclature, testing standards (HI 14.6), specific speed (Ns) classifications, and NPSH margins (HI 9.6.1).</li>
+                                <li><strong>NFPA 20:</strong> Standard for the installation of stationary pumps for fire protection, requiring rigorous sizing, diesel or backup drivers, and emergency start systems.</li>
+                                <li><strong>DIN EN 733 / BS EN 733:</strong> Regulates rated duties, nominal sizes, and dimensions of low pressure end-suction water pumps.</li>
+                                <li><strong>GB/T 5657:</strong> Chinese national standard specifying Class III centrifugal pump construction and test requirements.</li>
+                                <li><strong>JIS B 8313:</strong> Japanese national specifications for performance tests and dimension limits of centrifugal pumps.</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- 10 Most Asked Interview Questions and Answers Accordion -->
+        <div id="interview-section" class="education-section" style="margin-top: 40px;">
+            <h2><i class="fas fa-question-circle" style="color: var(--secondary);"></i> 10 Most Asked Centrifugal Pump Sizing Interview Questions &amp; Answers</h2>
+            <p style="margin-bottom: 25px; font-size: 1.05rem; color: var(--text);">
+                Master your next industrial design or mechanical systems interview. These hand-picked questions explore calculations, pump performance physics, and API standard practices.
+            </p>
+            
+            <div class="interview-container">
+                <!-- QUESTION 1 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(1)">
+                        <h4>
+                            <span class="q-badge q-badge-1">Q1</span>
+                            Static Head vs. Friction Head - What is the physical distinction, and how do they scale with flow rate?
+                        </h4>
+                        <i id="interview-icon-1" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-1" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> Total dynamic head (TDH) is split into static head and friction head:</p>
+                        <ul>
+                            <li><strong>Static Head:</strong> The absolute vertical elevation difference between source and destination liquid levels, plus pressure differentials between closed tanks. It is <strong>independent of flow rate</strong> and remains constant.</li>
+                            <li><strong>Friction Head:</strong> The resistance pressure drop of fluid flowing inside suction and discharge pipes, valves, elbows, and fittings. It scales <strong>quadratically</strong> with flow velocity (and flow rate $Q$).</li>
+                        </ul>
+                        
+                        <div class="math-box">
+                            <p><strong>Mathematical Scaling (Darcy-Weisbach):</strong></p>
+                            <p>Friction loss $h_f$ is calculated as:</p>
+                            <p class="formula">$$h_f = f \cdot \frac{L}{D} \cdot \frac{v^2}{2g}$$</p>
+                            <p>Since velocity $v = \frac{4Q}{\pi D^2}$, substituting velocity into the equation proves friction losses grow with the square of the flow rate:</p>
+                            <p class="formula">$$h_f \propto Q^2$$</p>
+                            <p>Operating a pump at double the flow rate will quadruple friction losses. Static head is independent of flow rate.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 2 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(2)">
+                        <h4>
+                            <span class="q-badge q-badge-2">Q2</span>
+                            Why must motor safety sizing margins drop as pump power ratings increase (API 610)?
+                        </h4>
+                        <i id="interview-icon-2" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-2" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> The API 610 standard specifies decreasing safety margins as power rating increases ($25\%$ margin for small pumps, reducing to $10\%$ for large pumps). This represents a trade-off between risk management and cost control.</p>
+                        <ul>
+                            <li><strong>Small Motors ($\le 22 \text{ kW}$ / $30 \text{ HP}$):</strong> A $25\%$ margin provides a large safety buffer. For a $4\text{ kW}$ pump, $25\%$ is just $1\text{ kW}$. The absolute financial and space cost of upsizing to the next standard motor size ($5.5\text{ kW}$) is minor.</li>
+                            <li><strong>Large Motors ($&gt; 55 \text{ kW}$ / $75 \text{ HP}$):</strong> A large safety buffer becomes expensive and physically bulky. For a $200\text{ kW}$ pump, a $25\%$ margin would add $50\text{ kW}$ ($250\text{ kW}$ motor). This increases cable, drive, and starter panel footprint and cost.</li>
+                        </ul>
+                        <p>Additionally, large pumps operate closer to their design Best Efficiency Point (BEP) with less curve uncertainty, making a smaller $10\%$ sizing margin statistically safe.</p>
+                    </div>
+                </div>
+
+                <!-- QUESTION 3 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(3)">
+                        <h4>
+                            <span class="q-badge q-badge-3">Q3</span>
+                            How do the Affinity Laws affect pump power consumption when motor speed changes?
+                        </h4>
+                        <i id="interview-icon-3" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-3" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> The cubic affinity law governs shaft power ($P$) as a function of rotational speed ($N$). Power is the product of flow and head ($P \propto Q \cdot H$). Since flow scales linearly with speed ($Q \propto N$) and head scales quadratically ($H \propto N^2$), power scales cubically ($P \propto N^3$).</p>
+                        
+                        <div class="math-box">
+                            <p><strong>Derivation and Example:</strong></p>
+                            <p class="formula">$$P = \frac{\rho \cdot g \cdot Q \cdot H}{\eta}$$</p>
+                            <p class="formula">$$\text{Since } Q_2 = Q_1 \left(\frac{N_2}{N_1}\right) \text{ and } H_2 = H_1 \left(\frac{N_2}{N_1}\right)^2$$</p>
+                            <p class="formula">$$P_2 = P_1 \left(\frac{N_2}{N_1}\right) \left(\frac{N_2}{N_1}\right)^2 = P_1 \left(\frac{N_2}{N_1}\right)^3$$</p>
+                            <p>If speed drops by $10\%$ ($\frac{N_2}{N_1} = 0.9$):</p>
+                            <p class="formula">$$P_2 = P_1 \times (0.9)^3 = 0.729 \times P_1$$</p>
+                            <p>A $10\%$ reduction in motor speed cuts required power by <strong>$27.1\%$</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 4 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(4)">
+                        <h4>
+                            <span class="q-badge q-badge-4">Q4</span>
+                            NPSHa vs. NPSHr - What is the physical mechanism of cavitation?
+                        </h4>
+                        <i id="interview-icon-4" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-4" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> NPSHr is the suction head threshold required to prevent cavitation. NPSHa is the head margin provided by the suction piping design.</p>
+                        <p>When pressure at the impeller inlet drops below the fluid's vapor pressure ($P_v$), local boiling occurs, creating vapor bubbles. As bubbles move into the high-pressure volute, they implode. This collapse generates localized pressure spikes up to $100,000\text{ PSI}$ and thermal hotspots ($&gt; 5000\text{ K}$), eroding metal surfaces.</p>
+                        
+                        <div class="math-box">
+                            <p><strong>Physical Model:</strong></p>
+                            <p>To avoid cavitation, the energy margins must satisfy:</p>
+                            <p class="formula">$$\text{NPSHa} = H_{barometric} + H_{static\_suction\_lift} - H_{friction\_suction\_pipe} - H_{vapor\_pressure} \ge \text{NPSHr} + \text{Safety Margin}$$</p>
+                            <p>Increasing static suction head, cooling the liquid (lowering $H_{vapor\_pressure}$), or using larger suction lines (lowering $H_{friction}$) will prevent cavitation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 5 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(5)">
+                        <h4>
+                            <span class="q-badge q-badge-5">Q5</span>
+                            How does Specific Gravity affect pump head vs. discharge pressure?
+                        </h4>
+                        <i id="interview-icon-5" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-5" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> A centrifugal pump is a constant head machine. For a given impeller speed and flow, it lifts any liquid to the exact same vertical height (head $H$ in meters/feet), regardless of density. However, discharge pressure depends directly on Specific Gravity ($SG$).</p>
+                        
+                        <div class="math-box">
+                            <p><strong>Mathematical Translation:</strong></p>
+                            <p>Pressure is force per unit area. A heavier fluid exerts more force at the base of a column than a lighter fluid. The pressure ($P$) generated by a pump head ($H$) is calculated as:</p>
+                            <p class="formula">$$P_{\text{bar}} = \frac{H_{\text{meters}} \cdot SG \cdot 9.81}{100} \quad \text{(Metric)}$$</p>
+                            <p class="formula">$$P_{\text{PSI}} = \frac{H_{\text{feet}} \cdot SG}{2.31} \quad \text{(Imperial)}$$</p>
+                            <p><strong>Example:</strong> A pump generating $100 \text{ m}$ of head will lift both water ($SG=1.0$) and gasoline ($SG=0.7$) to $100 \text{ m}$. However, the water discharge pressure will be $9.81 \text{ bar}$, while gasoline will only register $6.87 \text{ bar}$. Power consumption scales linearly with specific gravity.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 6 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(6)">
+                        <h4>
+                            <span class="q-badge q-badge-6">Q6</span>
+                            Identify and describe the three primary categories of efficiency losses in centrifugal pumps.
+                        </h4>
+                        <i id="interview-icon-6" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-6" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> Pump overall efficiency ($\eta$) is the product of three distinct internal efficiencies: $\eta = \eta_{hyd} \cdot \eta_{vol} \cdot \eta_{mech}$.</p>
+                        <ol>
+                            <li><strong>Hydraulic Losses ($\eta_{hyd}$):</strong> Caused by fluid skin friction against impeller and casing walls, recirculation eddies in the volute, and shock losses at blades entrance. Minimized by hydraulic blade design and smooth finishes.</li>
+                            <li><strong>Volumetric Losses ($\eta_{vol}$):</strong> High-pressure discharge liquid leaks back to low-pressure suction through the clearance gaps between the impeller shroud and casing wear rings. This bypass flow represents wasted shaft work.</li>
+                            <li><strong>Mechanical Losses ($\eta_{mech}$):</strong> Mechanical friction occurring in radial/thrust bearings and shaft seals (stuffing boxes or mechanical seals). These losses remain relatively constant regardless of flow rate.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- QUESTION 7 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(7)">
+                        <h4>
+                            <span class="q-badge q-badge-7">Q7</span>
+                            Why does opening a centrifugal pump's discharge valve increase motor current?
+                        </h4>
+                        <i id="interview-icon-7" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-7" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> Opening the discharge valve decreases system friction resistance (system head curve shifts down). This allows the pump to operate further to the right on its performance curve, increasing flow rate ($Q$) and reducing head ($H$).</p>
+                        <p>For a centrifugal pump, Brake Horsepower increases with flow rate across most of the curve. Because power draw rises, the electric motor draws more current. Fully opening the discharge valve can cause motor overload (runout condition).</p>
+                        <div class="math-box">
+                            <p><strong>Runout Risk:</strong> If system resistance is too low, the pump operates at high flow where efficiency drops. This increases shaft power demand ($P_{bhp} = P_{hyd} / \eta$). Sizing margins are added to protect the motor under these conditions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 8 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(8)">
+                        <h4>
+                            <span class="q-badge q-badge-8">Q8</span>
+                            How does fluid viscosity affect pump performance, head, and power consumption?
+                        </h4>
+                        <i id="interview-icon-8" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-8" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> High fluid viscosity increases internal skin friction and disc shear losses inside the pump. This alters the pump's performance curve, requiring correction factors (typically sized using Hydraulic Institute standards).</p>
+                        <ul>
+                            <li><strong>Flow Rate ($Q$):</strong> Decreases as viscosity increases.</li>
+                            <li><strong>Total Head ($H$):</strong> Decreases because internal viscous friction drops output head.</li>
+                            <li><strong>Pump Efficiency ($\eta$):</strong> Drops severely due to shear losses.</li>
+                            <li><strong>Brake Horsepower ($P_{bhp}$):</strong> Rises sharply because of increased drag and lower efficiency.</li>
+                        </ul>
+                        <p>Standard centrifugal pumps are inefficient for highly viscous oils. Positive displacement pumps are preferred in those applications.</p>
+                    </div>
+                </div>
+
+                <!-- QUESTION 9 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(9)">
+                        <h4>
+                            <span class="q-badge q-badge-9">Q9</span>
+                            What is Pump Specific Speed (Ns), and how does it influence impeller design?
+                        </h4>
+                        <i id="interview-icon-9" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-9" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> Specific Speed ($N_s$) is a dimensionless index that describes the geometry of a pump impeller at its Best Efficiency Point (BEP). It classifies impellers based on their flow-to-head ratio.</p>
+                        
+                        <div class="math-box">
+                            <p><strong>Mathematical Index:</strong></p>
+                            <p class="formula">$$N_s = \frac{N \cdot \sqrt{Q}}{H^{0.75}}$$</p>
+                            <p>Where $N$ is speed (RPM), $Q$ is flow, and $H$ is head at BEP. Specific Speed classifies impeller geometry:</p>
+                            <ul>
+                                <li><strong>Low $N_s$ (500 - 1500):</strong> Radial flow impellers. High head, low flow. Fluid discharges perpendicular to the shaft.</li>
+                                <li><strong>Medium $N_s$ (1500 - 4500):</strong> Mixed flow impellers. Moderate head and flow. Fluid discharges diagonally.</li>
+                                <li><strong>High $N_s$ (4500 - 10000+):</strong> Axial flow (propeller) impellers. High flow, low head. Fluid discharges parallel to the shaft.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 10 -->
+                <div class="interview-item">
+                    <div class="interview-header" onclick="toggleInterview(10)">
+                        <h4>
+                            <span class="q-badge q-badge-10">Q10</span>
+                            What is the Best Efficiency Point (BEP), and what are the risks of operating far from it?
+                        </h4>
+                        <i id="interview-icon-10" class="fas fa-chevron-down"></i>
+                    </div>
+                    <div id="interview-content-10" class="interview-content math-content">
+                        <p><strong>The Core Explanation:</strong> The Best Efficiency Point (BEP) is the flow rate at which the pump impeller operates with minimal turbulence, volumetric bypass, and mechanical shear. Operating far from BEP reduces pump service life.</p>
+                        <ul>
+                            <li><strong>Operating at Low Flow (Left of BEP):</strong> Causes hydraulic radial thrust imbalance, shaft deflection, bearing fatigue, casing recirculation, high temperatures, and cavitation.</li>
+                            <li><strong>Operating at High Flow (Right of BEP / Runout):</strong> Lowers output head, causes suction cavitation (NPSHa falls below NPSHr), increases motor current, and risks motor overload.</li>
+                        </ul>
+                        <p>Industrial guidelines require pumps to operate within a Preferred Operating Region (POR) of <strong>$70\%$ to $120\%$</strong> of BEP flow.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Silos Navigation Grid -->
+        <section style="padding: 40px 0; background: var(--bg);">
+            <div class="container">
+                <h3 style="text-align:center; font-family: 'Montserrat', sans-serif; font-size:1.6rem; margin-bottom:30px; color:var(--heading);">Explore Related Engineering Calculators</h3>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:960px; margin:0 auto;">
+                    <a href="/pump-head" class="silo-card-rich">
+                        <h4><i class="fas fa-water"></i> Pump Head Calculator</h4>
+                        <p>Calculate suction, discharge, and static head losses to establish Total Dynamic Head (TDH) requirements.</p>
+                        <span>Calculate Pump Head <i class="fas fa-arrow-right"></i></span>
+                    </a>
+                    <a href="/darcy-weisbach" class="silo-card-rich">
+                        <h4><i class="fas fa-random"></i> Darcy-Weisbach Calculator</h4>
+                        <p>Compute pipe friction head losses dynamically using pipe roughness, fluid viscosity, and diameter.</p>
+                        <span>Calculate Pipe Losses <i class="fas fa-arrow-right"></i></span>
+                    </a>
+                    <a href="/shaft-power-torque" class="silo-card-rich">
+                        <h4><i class="fas fa-sync"></i> Shaft Power &amp; Torque</h4>
+                        <p>Convert shaft speed and rotational torque parameters to calculate shaft mechanical power values.</p>
+                        <span>Calculate Shaft Power <i class="fas fa-arrow-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </section>
     </main>
 
-        
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
-        <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/bolt-torque" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
-                    </a>
-                    <a href="/darcy-weisbach" class="silo-card" style="text-decoration:none;">
-                        <span>Darcy Weisbach</span>
-                    </a>
-            </div>
-        </div>
-    </section>
+
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -837,11 +1952,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -849,10 +1964,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -892,280 +2007,982 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get references to DOM elements
-            const calculateBtn = document.getElementById('calculate-pump-power-btn');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resetBtn = document.getElementById('reset-form-btn');
+            const clearResultsBtn = document.getElementById('clear-results-btn');
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
             const resultContainer = document.getElementById('result-container');
             const resultTableBody = document.getElementById('result-table-body');
-            const standardReference = document.getElementById('standard-reference');
-            const calculationDetailsDiv = document.getElementById('calculation-details');
+            const stepsContainer = document.getElementById('steps-container');
+            const statusDisplay = document.getElementById('sizing-status-display');
+            const practicalRecs = document.getElementById('practical-recommendations');
+            const recsList = document.getElementById('recommendations-list');
+
+            // Input groups
+            const unitSystemSelect = document.getElementById('unit-system');
+            const fluidInputTypeSelect = document.getElementById('fluid-input-type');
+            const densityInputGroup = document.getElementById('density-input-group');
+            const sgInputGroup = document.getElementById('sg-input-group');
+            const marginRuleSelect = document.getElementById('margin-rule');
+            const customMarginGroup = document.getElementById('custom-margin-group');
+
+            // Advanced checkboxes and panels
+            const enableNpshCheckbox = document.getElementById('enable-npsh');
+            const npshPanel = document.getElementById('npsh-panel');
+            const enableSystemCurveCheckbox = document.getElementById('enable-system-curve');
+            const systemCurvePanel = document.getElementById('system-curve-panel');
 
             // Input fields
-            const unitSystemSelect = document.getElementById('unit-system');
             const flowRateInput = document.getElementById('flow-rate');
             const totalHeadInput = document.getElementById('total-head');
             const fluidDensityInput = document.getElementById('fluid-density');
+            const specificGravityInput = document.getElementById('specific-gravity');
+            const fluidViscosityInput = document.getElementById('fluid-viscosity');
             const pumpEfficiencyInput = document.getElementById('pump-efficiency');
+            const customMarginValInput = document.getElementById('custom-margin-val');
 
-            // Unit labels
-            const flowUnitLabel = document.querySelector('.flow-unit-label');
-            const headUnitLabel = document.querySelector('.head-unit-label');
-            const densityUnitLabel = document.querySelector('.density-unit-label');
+            // Advanced input fields
+            const suctionPressureInput = document.getElementById('suction-pressure');
+            const suctionStaticHeadInput = document.getElementById('suction-static-head');
+            const suctionFrictionHeadInput = document.getElementById('suction-friction-head');
+            const fluidTempInput = document.getElementById('fluid-temp');
+            const requiredNpshInput = document.getElementById('required-npsh');
+            const sysStaticHeadInput = document.getElementById('sys-static-head');
+            const sysFrictionHeadInput = document.getElementById('sys-friction-head');
 
-            // Constants
-            const g_metric = 9.81; // m/s^2
-            const g_imperial = 32.2; // ft/s^2 (approx, more precisely 32.174 ft/s^2)
+            // Unit Labels
+            const flowUnitLabel = document.getElementById('flow-unit');
+            const headUnitLabel = document.getElementById('head-unit');
+            const densityUnitLabel = document.getElementById('density-unit');
+            const suctionPresUnit = document.getElementById('suction-pres-unit');
+            const tempUnit = document.getElementById('temp-unit');
+            const headLabels = document.querySelectorAll('.head-unit-label');
 
-            /**
-             * Displays a custom message box at the top of the screen.
-             * @param {string} message - The message to display.
-             * @param {string} type - The type of message ('info', 'error', 'warning').
-             */
-            function displayMessage(message, type = "info") {
-                let messageBox = document.getElementById('custom-message-box');
-                if (!messageBox) {
-                    messageBox = document.createElement('div');
-                    messageBox.id = 'custom-message-box';
-                    document.body.appendChild(messageBox);
-                }
-                messageBox.textContent = message;
-                messageBox.className = ''; // Clear previous classes
-                messageBox.classList.add(type); // Add type class for styling
-                messageBox.style.opacity = 1;
+            // Global Chart instances
+            let pumpCurveChart = null;
+            let lossesChart = null;
 
-                // Hide message after 5 seconds
+            // Trigger animations on form load
+            const formSections = document.querySelectorAll('.form-section');
+            formSections.forEach((section, index) => {
                 setTimeout(() => {
-                    messageBox.style.opacity = 0;
-                }, 5000);
+                    section.classList.add('fade-in');
+                }, index * 100);
+            });
+
+            // Toggle Fluid Input Type
+            fluidInputTypeSelect.addEventListener('change', function() {
+                if (this.value === 'density') {
+                    densityInputGroup.style.display = 'block';
+                    sgInputGroup.style.display = 'none';
+                } else {
+                    densityInputGroup.style.display = 'none';
+                    sgInputGroup.style.display = 'block';
+                }
+            });
+
+            // Toggle Sizing Margin Rule
+            marginRuleSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customMarginGroup.style.display = 'block';
+                } else {
+                    customMarginGroup.style.display = 'none';
+                }
+            });
+
+            // Toggle Advanced checkboxes
+            enableNpshCheckbox.addEventListener('change', function() {
+                npshPanel.style.display = this.checked ? 'block' : 'none';
+            });
+
+            enableSystemCurveCheckbox.addEventListener('change', function() {
+                systemCurvePanel.style.display = this.checked ? 'block' : 'none';
+            });
+
+            // Toggle Unit System defaults and labels
+            unitSystemSelect.addEventListener('change', function() {
+                const sys = this.value;
+                if (sys === 'metric') {
+                    flowUnitLabel.textContent = '(m³/hr)';
+                    headUnitLabel.textContent = '(m)';
+                    densityUnitLabel.textContent = '(kg/m³)';
+                    suctionPresUnit.textContent = '(bar gauge)';
+                    tempUnit.textContent = '(°C)';
+                    
+                    headLabels.forEach(lbl => lbl.textContent = '(m)');
+
+                    flowRateInput.value = '100';
+                    totalHeadInput.value = '50';
+                    fluidDensityInput.value = '1000';
+                    specificGravityInput.value = '1.0';
+                    fluidViscosityInput.value = '1.0';
+                    suctionStaticHeadInput.value = '2.0';
+                    suctionFrictionHeadInput.value = '0.5';
+                    fluidTempInput.value = '20';
+                    requiredNpshInput.value = '2.5';
+                    sysStaticHeadInput.value = '15.0';
+                    sysFrictionHeadInput.value = '5.0';
+                } else {
+                    flowUnitLabel.textContent = '(GPM)';
+                    headUnitLabel.textContent = '(ft)';
+                    densityUnitLabel.textContent = '(lb/ft³)';
+                    suctionPresUnit.textContent = '(psi gauge)';
+                    tempUnit.textContent = '(°F)';
+                    
+                    headLabels.forEach(lbl => lbl.textContent = '(ft)');
+
+                    flowRateInput.value = '440';
+                    totalHeadInput.value = '164';
+                    fluidDensityInput.value = '62.43';
+                    specificGravityInput.value = '1.0';
+                    fluidViscosityInput.value = '1.0';
+                    suctionStaticHeadInput.value = '6.5';
+                    suctionFrictionHeadInput.value = '1.6';
+                    fluidTempInput.value = '68';
+                    requiredNpshInput.value = '8.2';
+                    sysStaticHeadInput.value = '49.0';
+                    sysFrictionHeadInput.value = '16.4';
+                }
+                // Update default charts quietly on unit change
+                runCalculations(true);
+            });
+
+            // Display Toast Messages
+            function displayMessage(message, type = "info") {
+                const messageBox = document.getElementById('custom-message-box');
+                messageBox.textContent = message;
+                messageBox.className = 'show ' + type;
+                
+                setTimeout(() => {
+                    messageBox.className = '';
+                }, 4000);
             }
 
-            /**
-             * Updates unit labels and input defaults based on the selected unit system.
-             */
-            function updateUnitLabelsAndDefaults() {
-                const unitSystem = unitSystemSelect.value;
+            // Standard Motor Size arrays
+            const iecSizes = [0.37, 0.55, 0.75, 1.1, 1.5, 2.2, 3.0, 4.0, 5.5, 7.5, 11, 15, 18.5, 22, 30, 37, 45, 55, 75, 90, 110, 132, 160, 200, 250, 280, 315, 355, 400, 450, 500];
+            const nemaSizes = [0.5, 0.75, 1, 1.5, 2, 3, 5, 7.5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 200, 250, 300, 350, 400, 450, 500];
 
-                if (unitSystem === 'metric') {
-                    flowUnitLabel.innerHTML = '(m&#179;/hr)';
-                    headUnitLabel.innerHTML = '(m)';
-                    densityUnitLabel.innerHTML = '(kg/m&#179;)';
+            function getRecommendedMotor(power, list) {
+                for (let i = 0; i < list.length; i++) {
+                    if (list[i] >= power) {
+                        return list[i];
+                    }
+                }
+                return null; // Exceeds standard size limits
+            }
 
-                    // Set metric defaults
-                    flowRateInput.value = "10";
-                    totalHeadInput.value = "20";
-                    fluidDensityInput.value = "1000"; // Water
-                    pumpEfficiencyInput.value = "75";
-
-                } else { // Imperial
-                    flowUnitLabel.innerHTML = '(GPM)';
-                    headUnitLabel.innerHTML = '(ft)';
-                    densityUnitLabel.innerHTML = '(lb/ft&#179;)';
-
-                    // Set imperial defaults
-                    flowRateInput.value = "100"; // GPM
-                    totalHeadInput.value = "50"; // ft
-                    fluidDensityInput.value = "62.4"; // Water
-                    pumpEfficiencyInput.value = "75";
+            // Antoine Water Vapor Pressure Calculator
+            function getWaterVaporPressure(temp_c, isMetric) {
+                // log10(P_mmHg) = 8.07131 - 1730.63 / (T_C + 233.426)
+                const logP = 8.07131 - 1730.63 / (temp_c + 233.426);
+                const p_mmHg = Math.pow(10, logP);
+                if (isMetric) {
+                    return p_mmHg * 0.001333224; // mmHg to bar
+                } else {
+                    return p_mmHg * 0.01933677; // mmHg to psi
                 }
             }
 
-            // Event listener for unit system change
-            unitSystemSelect.addEventListener('change', updateUnitLabelsAndDefaults);
-
-            // Initial UI setup on load
-            updateUnitLabelsAndDefaults();
-
-            /**
-             * Adds a row to the result table.
-             * @param {string} parameterHtml - The HTML content for the parameter column.
-             * @param {string} valueHtml - The HTML content for the value column.
-             */
-            function addResultRow(parameterHtml, valueHtml) {
-                const row = resultTableBody.insertRow();
-                const paramCell = row.insertCell();
-                const valueCell = row.insertCell();
-                paramCell.innerHTML = parameterHtml;
-                valueCell.innerHTML = valueHtml;
-            }
-
-            // Main Calculation Logic
-            calculateBtn.addEventListener('click', function() {
-                const form = document.getElementById('pump-power-form');
-                if (!form.checkValidity()) {
-                    displayMessage("Please fill in all required fields correctly.", "error");
-                    form.reportValidity(); // Show native browser validation messages
-                    return;
-                }
-
-                const unitSystem = unitSystemSelect.value;
-
+            // Central Calculation Execution Wrapper
+            function runCalculations(quiet = false) {
+                const isMetric = unitSystemSelect.value === 'metric';
                 const Q_input = parseFloat(flowRateInput.value);
                 const H_input = parseFloat(totalHeadInput.value);
-                const rho_input = parseFloat(fluidDensityInput.value);
-                const eta_input_percent = parseFloat(pumpEfficiencyInput.value);
+                const densityInputType = fluidInputTypeSelect.value;
+                const density_val = parseFloat(fluidDensityInput.value);
+                const sg_val = parseFloat(specificGravityInput.value);
+                const viscosity_val = parseFloat(fluidViscosityInput.value);
+                const efficiency_val = parseFloat(pumpEfficiencyInput.value);
+                const marginRule = marginRuleSelect.value;
+                const customMarginVal = parseFloat(customMarginValInput.value);
 
-                // Input validation
-                if (Q_input <= 0 || H_input <= 0 || rho_input <= 0 || eta_input_percent <= 0 || eta_input_percent > 100) {
-                    displayMessage("All input values (Flow Rate, Total Head, Fluid Density) must be positive. Pump Efficiency must be between 1 and 100.", "error");
+                const enableNpsh = enableNpshCheckbox.checked;
+                const enableSystemCurve = enableSystemCurveCheckbox.checked;
+
+                // Standardize density and SG
+                const refWaterDensityMetric = 1000.0;
+                const refWaterDensityImperial = 62.42796;
+                let finalSG, finalDensity;
+
+                if (densityInputType === 'density') {
+                    finalDensity = density_val;
+                    finalSG = isMetric ? (density_val / refWaterDensityMetric) : (density_val / refWaterDensityImperial);
+                } else {
+                    finalSG = sg_val;
+                    finalDensity = isMetric ? (sg_val * refWaterDensityMetric) : (sg_val * refWaterDensityImperial);
+                }
+
+                // Constants
+                const g_metric = 9.80665;
+                const g_imperial = 32.174;
+
+                // Step 2: Flow standard unit conversion
+                const Q_standard_val = isMetric ? (Q_input / 3600) : (Q_input / 448.831169);
+
+                // Step 4: Viscosity Correction factors (HI Standards)
+                let C_Q = 1.0, C_H = 1.0, C_eta = 1.0;
+                let B_factor = 0.0;
+                
+                // Convert values to metric for B factor equation
+                const Q_metric = isMetric ? Q_input : (Q_input * 0.2271247);
+                const H_metric = isMetric ? H_input : (H_input * 0.3048);
+                
+                if (viscosity_val > 1.0) {
+                    B_factor = 16.5 * (Math.sqrt(viscosity_val) * Math.pow(H_metric, 0.0625)) / Math.pow(Q_metric, 0.375);
+                    if (B_factor > 1.0) {
+                        const lnB = Math.log(B_factor);
+                        C_Q = Math.exp(-0.165 * lnB * lnB);
+                        C_H = Math.exp(-0.125 * lnB * lnB);
+                        C_eta = Math.exp(-0.320 * lnB * lnB);
+
+                        C_Q = Math.max(0.2, C_Q);
+                        C_H = Math.max(0.2, C_H);
+                        C_eta = Math.max(0.1, C_eta);
+                    }
+                }
+
+                // Correct design flow and head for viscosity
+                const Q_visc_val = Q_input * C_Q;
+                const H_visc_val = H_input * C_H;
+                const eta_visc_val = efficiency_val * C_eta;
+                const Q_visc_std = isMetric ? (Q_visc_val / 3600) : (Q_visc_val / 448.831169);
+
+                // Step 6: Theoretical Hydraulic Power (based on viscous-corrected flow and head)
+                let Phyd_kW, Phyd_HP;
+                if (isMetric) {
+                    Phyd_kW = (finalDensity * g_metric * Q_visc_std * H_visc_val) / 1000;
+                    Phyd_HP = Phyd_kW * 1.341022;
+                } else {
+                    Phyd_HP = (Q_visc_val * H_visc_val * finalSG) / 3960;
+                    Phyd_kW = Phyd_HP * 0.7456999;
+                }
+
+                // Step 8: Shaft Power (Brake Horsepower)
+                const eta_decimal = eta_visc_val / 100;
+                const Pbhp_kW = Phyd_kW / eta_decimal;
+                const Pbhp_HP = Phyd_HP / eta_decimal;
+
+                // Step 9: Sizing Margin Rule
+                let marginPct = 0;
+                if (marginRule === 'api-610') {
+                    if (isMetric) {
+                        if (Pbhp_kW <= 22) marginPct = 25;
+                        else if (Pbhp_kW <= 55) marginPct = 15;
+                        else marginPct = 10;
+                    } else {
+                        if (Pbhp_HP <= 30) marginPct = 25;
+                        else if (Pbhp_HP <= 75) marginPct = 15;
+                        else marginPct = 10;
+                    }
+                } else {
+                    marginPct = customMarginVal;
+                }
+
+                const Pmotor_min_kW = Pbhp_kW * (1 + marginPct / 100);
+                const Pmotor_min_HP = Pbhp_HP * (1 + marginPct / 100);
+
+                // Recommended Motor sizes
+                const recMotor_kW = getRecommendedMotor(Pmotor_min_kW, iecSizes);
+                const recMotor_HP = getRecommendedMotor(Pmotor_min_HP, nemaSizes);
+
+                const loss_kW = Pbhp_kW - Phyd_kW;
+                const loss_HP = Pbhp_HP - Phyd_HP;
+
+                // Advanced Module 1: NPSHa Sizing
+                let npsha = 0, npsh_margin = 0, npsh_ok = true, P_vapor = 0, temp_c = 20;
+                let h_suction_abs = 0, h_vapor = 0, suctionPressure = 0, suctionStatic = 0, suctionFriction = 0, npshr = 2.5;
+
+                if (enableNpsh) {
+                    suctionPressure = parseFloat(suctionPressureInput.value) || 0;
+                    suctionStatic = parseFloat(suctionStaticHeadInput.value) || 0;
+                    suctionFriction = parseFloat(suctionFrictionHeadInput.value) || 0;
+                    const temp = parseFloat(fluidTempInput.value) || 0;
+                    npshr = parseFloat(requiredNpshInput.value) || 2.5;
+
+                    temp_c = isMetric ? temp : ((temp - 32) * 5 / 9);
+                    P_vapor = getWaterVaporPressure(temp_c, isMetric);
+
+                    const Patm = isMetric ? 1.01325 : 14.696;
+                    const conversion_const = isMetric ? 10.1972 : 2.311;
+
+                    h_suction_abs = ((Patm + suctionPressure) * conversion_const) / finalSG;
+                    h_vapor = (P_vapor * conversion_const) / finalSG;
+
+                    npsha = h_suction_abs + suctionStatic - suctionFriction - h_vapor;
+                    npsh_margin = npsha - npshr;
+                    npsh_ok = npsha >= (npshr + (isMetric ? 1.0 : 3.28));
+                }
+
+                // Advanced Module 2: System Head Curve & Intersection Point Sizing
+                let sysStatic = 0, sysFriction = 0, Q_actual = 0, H_actual = 0, runout = false;
+                if (enableSystemCurve) {
+                    sysStatic = parseFloat(sysStaticHeadInput.value) || 0;
+                    sysFriction = parseFloat(sysFrictionHeadInput.value) || 0;
+
+                    // Fit H_pump = H_shutoff - K_p * Q^2
+                    // design visc: H_visc_val, Q_visc_val. H_shutoff = 1.25 * H_visc_val
+                    const H_shutoff = 1.25 * H_visc_val;
+                    const K_p = (0.25 * H_visc_val) / (Q_visc_val * Q_visc_val);
+                    const K_s = sysFriction / (Q_input * Q_input); // System friction relative to design water flow
+
+                    if (H_shutoff <= sysStatic) {
+                        Q_actual = 0;
+                        H_actual = H_shutoff;
+                        runout = true;
+                    } else {
+                        Q_actual = Math.sqrt((H_shutoff - sysStatic) / (K_s + K_p));
+                        H_actual = H_shutoff - K_p * Q_actual * Q_actual;
+                    }
+                }
+
+                if (quiet) {
+                    // Update only charts without displaying container
+                    renderCharts(Q_input, H_input, finalSG, efficiency_val, Pbhp_kW, enableSystemCurve, sysStatic, sysFriction, Q_actual, H_actual);
                     return;
                 }
 
-                const eta = eta_input_percent / 100; // Convert efficiency to a decimal
-
-                let Q_si, H_si, rho_si; // Standardized to SI units: m^3/s, m, kg/m^3
-                let P_hyd_watts; // Hydraulic power in Watts
-                let P_bhp_watts; // Brake horsepower in Watts
-
-                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
-                calculationHtml += `<p><strong>1. Input Parameters (Converted to SI Units for calculation):</strong></p><ul>`;
-
-                if (unitSystem === 'metric') {
-                    Q_si = Q_input / 3600; // m³/hr to m³/s
-                    H_si = H_input; // m
-                    rho_si = rho_input; // kg/m³
-
-                    calculationHtml += `<li>Flow Rate (\\(Q\\)): ${Q_input.toFixed(2)} m&#179;/hr \\( \\rightarrow \\) ${Q_si.toExponential(3)} m&#179;/s</li>`;
-                    calculationHtml += `<li>Total Head (\\(H\\)): ${H_input.toFixed(2)} m</li>`;
-                    calculationHtml += `<li>Fluid Density (\\(\\rho\\)): ${rho_input.toFixed(2)} kg/m&#179;</li>`;
-                    calculationHtml += `<li>Pump Efficiency (\\(\\eta\\)): ${eta_input_percent.toFixed(1)}% \\( \\rightarrow \\) ${eta.toFixed(2)} (decimal)</li>`;
-                    calculationHtml += `<li>Acceleration due to Gravity (\\(g\\)): ${g_metric} m/s&#178;</li>`;
-
-                    // Calculate Hydraulic Power (Water Power) in Watts
-                    P_hyd_watts = rho_si * g_metric * Q_si * H_si;
-                    calculationHtml += `<p><strong>2. Calculate Hydraulic Power (Water Power):</strong></p>`;
-                    calculationHtml += `<p class="formula">\\[ P_{hyd} = \\rho \\cdot g \\cdot Q \\cdot H \\]</p>`;
-                    calculationHtml += `<p class="calculation-step">
-                        \\( P_{hyd} \\) = ${rho_si.toFixed(2)} kg/m&#179; \\( \\times \\) ${g_metric.toFixed(2)} m/s&#178; \\( \\times \\) ${Q_si.toExponential(3)} m&#179;/s \\( \\times \\) ${H_si.toFixed(2)} m = ${P_hyd_watts.toFixed(2)} Watts
-                    </p>`;
-
-                } else { // Imperial
-                    // GPM to ft³/s (1 GPM = 0.002228 ft³/s) OR (1 GPM = 1/448.83 ft³/s)
-                    Q_si = Q_input * 0.002228; // GPM to ft³/s (common conversion factor)
-                    H_si = H_input; // ft
-                    rho_si = rho_input; // lb/ft³
-                    // Note: Imperial calculations often use "specific weight" (gamma = rho * g) directly in lbf/ft^3,
-                    // but since density is an input, we'll convert it conceptually.
-                    // Power = Q (ft^3/s) * H (ft) * rho (lb/ft^3) = (ft^3/s) * ft * (lb/ft^3) = ft-lb/s
-                    // Then convert ft-lb/s to HP (1 HP = 550 ft-lb/s)
-
-                    calculationHtml += `<li>Flow Rate (\\(Q\\)): ${Q_input.toFixed(2)} GPM \\( \\rightarrow \\) ${Q_si.toExponential(3)} ft&#179;/s</li>`;
-                    calculationHtml += `<li>Total Head (\\(H\\)): ${H_input.toFixed(2)} ft</li>`;
-                    calculationHtml += `<li>Fluid Density (\\(\\rho\\)): ${rho_input.toFixed(2)} lb/ft&#179;</li>`;
-                    calculationHtml += `<li>Pump Efficiency (\\(\\eta\\)): ${eta_input_percent.toFixed(1)}% \\( \\rightarrow \\) ${eta.toFixed(2)} (decimal)</li>`;
-                    // For Imperial, often specific weight is used (gamma = rho_imp * g_imp) implicitly in the formula with 3960 or 33000 factor.
-                    // Direct conversion to SI and then back to HP is robust.
-                    // Or, using standard imperial pump power formula: (Q_GPM * H_ft * SG) / (3960 * efficiency) for HP, where SG is specific gravity (rho_fluid / rho_water_imperial).
-                    // Given input is density, it's safer to convert to SI.
-                    // Or use (Q_GPM * H_ft * rho_lbf_per_ft3) / (33000 * efficiency) where 33000 is ft-lb/min per HP
-                    // Let's use the explicit rho*g*Q*H concept and convert units for consistency.
-                    // Q in ft3/s, H in ft, rho in lb/ft3.
-                    // Power in ft-lb/s = rho * Q * H * g (if rho is mass density)
-                    // If rho is given as weight density (lbf/ft3), then Power = Q * H * rho. Fluid density is mass density.
-                    // So we must include g.
-                    // P_hyd_ft_lbf_per_s = rho_input * Q_si * H_si * g_imperial (if rho_input is mass density and g_imperial in ft/s^2).
-                    // If fluidDensityInput is in lb/ft^3, this is mass density.
-                    // Power = (mass density) * g * Flow * Head
-                    // So in imperial: Power (lbf-ft/s) = (rho in slugs/ft3) * g (ft/s2) * Q (ft3/s) * H (ft)
-                    // 1 slug = 32.174 lbm. So if rho_input is in lbm/ft3, need to convert to slugs/ft3 by dividing by 32.174 (g_imperial).
-                    // So rho_slugs = rho_input / g_imperial
-                    // P_hyd_ft_lbf_per_s = (rho_input / g_imperial) * g_imperial * Q_si * H_si = rho_input * Q_si * H_si (conceptually)
-                    // This means if density is lbm/ft3, and we want lbf-ft/s, we use (rho * Q * H) directly.
-                    // Example: 62.4 lbm/ft3 * 1 ft3/s * 1 ft = 62.4 lbm-ft/s. Convert lbm to lbf by dividing by g.
-                    // So, (rho_lbm/ft3 * Q_ft3/s * H_ft) / (g_imperial_ft/s2) * g_imperial_ft/s2 = rho_lbm/ft3 * Q_ft3/s * H_ft.
-                    // This is still in lbm units.
-                    // 1 HP = 550 lbf-ft/s.
-                    // P_hyd_lbf_ft_per_s = rho_input * Q_si * H_si; // This is if density is in (lbm/ft^3) and results in lbm-ft/s
-                    // To convert lbm-ft/s to lbf-ft/s, divide by g_imperial (for unit consistency)
-                    P_hyd_watts = (rho_input * Q_si * H_si) * 1.35582; // Convert ft-lbf/s to Watts for final consistency in formula explanation.
-                    // Q_si is ft³/s. H_si is ft. rho_input is lb/ft³. (lb/ft³ * ft³/s * ft) = lb-ft/s.
-                    // Convert lb-ft/s to Watts: 1 lb-ft/s = 1.35582 W.
-                    
-                    calculationHtml += `<li>Acceleration due to Gravity (\\(g\\)): ${g_imperial.toFixed(2)} ft/s&#178; (Used for conceptual clarity, actual Imperial formula often combines factors)</li>`;
-
-                    calculationHtml += `<p><strong>2. Calculate Hydraulic Power (Water Power):</strong></p>`;
-                    calculationHtml += `<p class="calculation-step">
-                        For Imperial Units, a common formula for Hydraulic Power in ft&#183;lbf/s is \\( P_{hyd, ft&#183;lbf/s} = \\rho \\cdot Q \\cdot H \\) (where \\( \\rho \\) is in lb/ft&#179;, \\( Q \\) in ft&#179;/s, \\( H \\) in ft).
-                    </p>`;
-                    const P_hyd_ft_lbf_per_s = rho_input * Q_si * H_si; // This is in lbf-ft/s assuming rho_input is weight density or combined with g
-                    calculationHtml += `<p class="calculation-step">
-                        \\( P_{hyd, ft&#183;lbf/s} \\) = ${rho_input.toFixed(2)} lb/ft&#179; \\( \\times \\) ${Q_si.toExponential(3)} ft&#179;/s \\( \\times \\) ${H_si.toFixed(2)} ft = ${P_hyd_ft_lbf_per_s.toFixed(2)} ft&#183;lbf/s
-                    </p>`;
-                    P_hyd_watts = P_hyd_ft_lbf_per_s * 1.35582; // Convert to Watts for unified next step
-
-                }
-                
-                // Calculate Brake Horsepower (Input Power) in Watts
-                P_bhp_watts = P_hyd_watts / eta;
-
-                calculationHtml += `<p><strong>3. Calculate Brake Horsepower (Input Power):</strong></p>`;
-                calculationHtml += `<p class="formula">\\[ P_{bhp} = \\frac{P_{hyd}}{\\eta} \\]</p>`;
-                calculationHtml += `<p class="calculation-step">
-                    \\( P_{bhp} \\) = ${P_hyd_watts.toFixed(2)} Watts / ${eta.toFixed(2)} = ${P_bhp_watts.toFixed(2)} Watts
-                </p>`;
-
-
-                // Prepare results for display
-                resultTableBody.innerHTML = ''; // Clear previous results
-                calculationDetailsDiv.innerHTML = calculationHtml;
-
-                addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
-                addResultRow("Flow Rate (\\(Q\\))", `${Q_input.toFixed(2)} ${unitSystem === 'metric' ? 'm&#179;/hr' : 'GPM'}`);
-                addResultRow("Total Head (\\(H\\))", `${H_input.toFixed(2)} ${unitSystem === 'metric' ? 'm' : 'ft'}`);
-                addResultRow("Fluid Density (\\(\\rho\\))", `${rho_input.toFixed(2)} ${unitSystem === 'metric' ? 'kg/m&#179;' : 'lb/ft&#179;'}`);
-                addResultRow("Pump Efficiency (\\(\\eta\\))", `${eta_input_percent.toFixed(1)}%`);
-                
-                let P_hyd_display, P_bhp_display;
-                if (unitSystem === 'metric') {
-                    P_hyd_display = P_hyd_watts / 1000; // Watts to kW
-                    P_bhp_display = P_bhp_watts / 1000; // Watts to kW
-                    addResultRow("Hydraulic Power (\\(P_{hyd}\\))", `<strong>\\( ${P_hyd_display.toFixed(2)} \\) kW</strong>`);
-                    addResultRow("Brake Horsepower (\\(P_{bhp}\\))", `<strong>\\( ${P_bhp_display.toFixed(2)} \\) kW</strong>`);
-                } else { // Imperial
-                    P_hyd_display = P_hyd_watts / 745.7; // Watts to HP (1 HP = 745.7 Watts)
-                    P_bhp_display = P_bhp_watts / 745.7; // Watts to HP
-                    addResultRow("Hydraulic Power (\\(P_{hyd}\\))", `<strong>\\( ${P_hyd_display.toFixed(2)} \\) HP</strong>`);
-                    addResultRow("Brake Horsepower (\\(P_{bhp}\\))", `<strong>\\( ${P_bhp_display.toFixed(2)} \\) HP</strong>`);
+                // Status classification
+                let statusText, statusClass;
+                if (eta_visc_val >= 80) {
+                    statusText = "OPTIMAL DESIGN (Excellent operating efficiency, minimal friction losses)";
+                    statusClass = "optimal";
+                } else if (eta_visc_val >= 70) {
+                    statusText = "SUFFICIENT DESIGN (Highly efficient industrial standard pump)";
+                    statusClass = "sufficient";
+                } else if (eta_visc_val >= 60) {
+                    statusText = "ADEQUATE DESIGN (Standard operating efficiency)";
+                    statusClass = "adequate";
+                } else if (eta_visc_val >= 48) {
+                    statusText = "MARGINAL PERFORMANCE (High viscous shear or impeller bypass, verify trim)";
+                    statusClass = "marginal";
+                } else {
+                    statusText = "INSUFFICIENT EFFICIENCY (Excessive power losses. Redesign piping, check size)";
+                    statusClass = "insufficient";
                 }
 
-                // Re-render MathJax equations - ensure MathJax is fully loaded
+                statusDisplay.textContent = statusText;
+                statusDisplay.className = "status-display " + statusClass;
+
+                // Render Step Cards (10 steps)
+                let stepHtml = '';
+
+                // Step 1
+                stepHtml += `
+                <div class="step-card step-1">
+                    <h4><span class="number">1</span> Input Parameters and Boundary Mapping</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>We log the measured engineering input parameters, viscosity constraints, and margin safety definitions to establish calculations limits.</p>
+                            <ul>
+                                <li>Flow Rate ($Q$): <strong>${Q_input.toFixed(3)}</strong> ${isMetric ? 'm³/hr' : 'GPM'}</li>
+                                <li>Total Dynamic Head ($H$): <strong>${H_input.toFixed(3)}</strong> ${isMetric ? 'm' : 'ft'}</li>
+                                <li>Fluid Kinematic Viscosity ($\nu$): <strong>${viscosity_val.toFixed(2)} cSt</strong></li>
+                                <li>Design Pump Efficiency ($\eta$): <strong>${efficiency_val.toFixed(2)}%</strong></li>
+                                <li>Motor safety margin standard: <strong>${marginRule.toUpperCase()}</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 2
+                stepHtml += `
+                <div class="step-card step-2">
+                    <h4><span class="number">2</span> Volumetric Flow Rate Conversion to Standard Units</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Convert volumetric flow rate to standard values per second ($m^3/s$ or $ft^3/s$) for work calculations.</p>
+                            <div class="formula-block">
+                                ${isMetric ? `
+                                <p>Standard metric volumetric flow conversion:</p>
+                                <div class="formula">$$Q_{\\text{s}} = \\frac{Q}{3600} = \\frac{${Q_input.toFixed(3)}}{3600}$$</div>
+                                ` : `
+                                <p>Standard GPM flow rate conversion:</p>
+                                <div class="formula">$$Q_{\\text{s}} = \\frac{Q}{448.831} = \\frac{${Q_input.toFixed(3)}}{448.831}$$</div>
+                                `}
+                                <div class="step-value">${Q_standard_val.toExponential(6)}<span class="step-unit">${isMetric ? 'm³/s' : 'ft³/s'}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 3
+                stepHtml += `
+                <div class="step-card step-3">
+                    <h4><span class="number">3</span> Specific Gravity ($SG$) &amp; Absolute Density Calculations</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Compute Specific Gravity ($SG$) relative to reference water ($1000\\text{ kg/m}^3$ or $62.43\\text{ lb/ft}^3$) to scale density mechanical work.</p>
+                            <div class="formula-block">
+                                ${densityInputType === 'density' ? `
+                                <p>Compute Specific Gravity from absolute density input:</p>
+                                <div class="formula">$$SG = \\frac{\\rho}{\\rho_{\\text{water}}} = \\frac{${density_val.toFixed(3)}}{${isMetric ? refWaterDensityMetric : refWaterDensityImperial}}$$</div>
+                                ` : `
+                                <p>Compute absolute density from Specific Gravity input:</p>
+                                <div class="formula">$$\\rho = SG \\cdot \\rho_{\\text{water}} = ${sg_val.toFixed(4)} \\cdot ${isMetric ? refWaterDensityMetric : refWaterDensityImperial}$$</div>
+                                `}
+                                <ul>
+                                    <li>Fluid Specific Gravity ($SG$): <strong>${finalSG.toFixed(5)}</strong></li>
+                                    <li>Fluid Absolute Density ($\rho$): <strong>${finalDensity.toFixed(3)} ${isMetric ? 'kg/m³' : 'lb/ft³'}</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 4
+                stepHtml += `
+                <div class="step-card step-4">
+                    <h4><span class="number">4</span> Viscosity Correction Factors (Hydraulic Institute Standard)</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Viscous drag drops head, flow, and efficiency. We evaluate B-factor to obtain correction coefficients $C_Q$, $C_H$, and $C_{\\eta}$:</p>
+                            <div class="formula-block">
+                                <p>Hydraulic Institute B-Parameter equation:</p>
+                                <div class="formula">$$B = 16.5 \\cdot \\frac{\\nu^{0.5} \\cdot H_{\\text{metric}}^{0.0625}}{Q_{\\text{metric}}^{0.375}}$$</div>
+                                <p>Calculated B parameter: <strong>${B_factor.toFixed(5)}</strong></p>
+                                <ul>
+                                    <li>Flow Correction ($C_Q$): <strong>${C_Q.toFixed(4)}</strong> (Flow: ${(Q_input * C_Q).toFixed(2)} ${isMetric ? 'm³/hr' : 'GPM'})</li>
+                                    <li>Head Correction ($C_H$): <strong>${C_H.toFixed(4)}</strong> (Head: ${(H_input * C_H).toFixed(2)} ${isMetric ? 'm' : 'ft'})</li>
+                                    <li>Efficiency Correction ($C_{\\eta}$): <strong>${C_eta.toFixed(4)}</strong> (Efficiency: ${(efficiency_val * C_eta).toFixed(2)}%)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 5
+                stepHtml += `
+                <div class="step-card step-5">
+                    <h4><span class="number">5</span> Total Dynamic Head ($H$) Sizing &amp; Verification</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>The total dynamic lift head is logged and adjusted for internal viscous drag loss:</p>
+                            <div class="formula-block">
+                                <p>Viscous Corrected head:</p>
+                                <div class="formula">$$H_{\\text{visc}} = H \\cdot C_H = ${H_input.toFixed(2)} \\cdot ${C_H.toFixed(4)}$$</div>
+                                <div class="step-value">${H_visc_val.toFixed(3)}<span class="step-unit">${isMetric ? 'meters (m)' : 'feet (ft)'}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 6
+                stepHtml += `
+                <div class="step-card step-6">
+                    <h4><span class="number">6</span> Theoretical Hydraulic Power ($P_{\\text{hyd\\_raw}}$)</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Compute theoretical energy transferred directly to the viscous fluid stream per unit time.</p>
+                            <div class="formula-block">
+                                ${isMetric ? `
+                                <div class="formula">$$P_{\\text{hyd}} = \\rho \\cdot g \\cdot Q_{\\text{visc\\_std}} \\cdot H_{\\text{visc}}$$</div>
+                                <div class="formula">$$P_{\\text{hyd}} = ${finalDensity.toFixed(2)} \\cdot ${g_metric.toFixed(5)} \\cdot ${Q_visc_std.toExponential(5)} \\cdot ${H_visc_val.toFixed(3)}$$</div>
+                                <div class="step-value">${(Phyd_kW * 1000).toFixed(2)}<span class="step-unit">Watts (W)</span></div>
+                                ` : `
+                                <div class="formula">$$P_{\\text{hyd}} = \\frac{Q_{\\text{visc}} \\cdot H_{\\text{visc}} \\cdot SG}{3960}$$</div>
+                                <div class="formula">$$P_{\\text{hyd}} = \\frac{${Q_visc_val.toFixed(2)} \\cdot ${H_visc_val.toFixed(2)} \\cdot ${finalSG.toFixed(4)}}{3960}$$</div>
+                                <div class="step-value">${Phyd_HP.toFixed(3)}<span class="step-unit">HP</span></div>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 7
+                stepHtml += `
+                <div class="step-card step-7">
+                    <h4><span class="number">7</span> Power Unit Conversion Standards</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Translate the theoretical fluid power into both metric (kW) and imperial (HP) units for comparison.</p>
+                            <div class="formula-block">
+                                <div class="formula">$$P_{\\text{hyd\\_kW}} = ${Phyd_kW.toFixed(4)}\\text{ kW} \\quad \\leftrightarrow \\quad P_{\\text{hyd\\_HP}} = ${Phyd_HP.toFixed(4)}\\text{ HP}$$</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 8
+                stepHtml += `
+                <div class="step-card step-8">
+                    <h4><span class="number">8</span> Shaft Power &amp; Brake Horsepower ($P_{\\text{bhp}}$)</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Calculate the total input mechanical power needed at the shaft coupling, using the viscous-corrected pump efficiency $\\eta_{\\text{visc}} = ${eta_visc_val.toFixed(2)}\\%$:</p>
+                            <div class="formula-block">
+                                <div class="formula">$$P_{\\text{bhp}} = \\frac{P_{\\text{hyd}}}{\\eta_{\\text{visc}} / 100}$$</div>
+                                <ul>
+                                    <li>Brake Horsepower in Metric: <strong>${Pbhp_kW.toFixed(3)} kW</strong></li>
+                                    <li>Brake Horsepower in Imperial: <strong>${Pbhp_HP.toFixed(3)} HP</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 9
+                stepHtml += `
+                <div class="step-card step-9">
+                    <h4><span class="number">9</span> Motor Sizing Safety Margin Assessment</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Apply safety factors (API 610 standards or custom percentage) to compute the minimum required motor nameplate sizing.</p>
+                            <div class="formula-block">
+                                <ul>
+                                    <li>Selected Rule: <strong>${marginRule === 'api-610' ? 'API 610 standards sizing' : 'Custom Fixed Percentage'}</strong></li>
+                                    <li>Applied Safety Margin Factor: <strong>${marginPct}%</strong></li>
+                                    <li>Minimum Motor Sizing Requirement:
+                                        <ul>
+                                            <li>Metric: <strong>${Pmotor_min_kW.toFixed(3)} kW</strong></li>
+                                            <li>Imperial: <strong>${Pmotor_min_HP.toFixed(3)} HP</strong></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 10
+                stepHtml += `
+                <div class="step-card step-10">
+                    <h4><span class="number">10</span> Advanced Sizing Reports &amp; Operating Point Intersection</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Analyze standard frame sizes, viscous power dissipations, suction NPSH safety limits, and piping operating point intersections.</p>
+                            <div class="formula-block">
+                                <p><strong>Recommended Standard Drivers:</strong></p>
+                                <ul>
+                                    <li>IEC standard frame selected: <strong>${recMotor_kW !== null ? recMotor_kW + ' kW' : 'Exceeds standard ratings'}</strong></li>
+                                    <li>NEMA standard frame selected: <strong>${recMotor_HP !== null ? recMotor_HP + ' HP' : 'Exceeds standard ratings'}</strong></li>
+                                </ul>
+
+                                ${enableNpsh ? `
+                                <p style="margin-top:15px; font-weight:bold;"><i class="fas fa-shield-alt"></i> NPSHa Safety Analysis Report:</p>
+                                <ul>
+                                    <li>Suction Absolute Head: <strong>${h_suction_abs.toFixed(2)} ${isMetric ? 'm' : 'ft'}</strong></li>
+                                    <li>Fluid Vapor Head: <strong>${h_vapor.toFixed(2)} ${isMetric ? 'm' : 'ft'}</strong> (Vapor Pressure: ${P_vapor.toFixed(4)} ${isMetric ? 'bar' : 'psi'})</li>
+                                    <li>Net NPSHa: <strong>${npsha.toFixed(2)} ${isMetric ? 'm' : 'ft'}</strong> (NPSHr: ${npshr.toFixed(2)} ${isMetric ? 'm' : 'ft'})</li>
+                                    <li>NPSH Margin: <span style="font-weight:bold; color: ${npsh_ok ? 'var(--success)' : 'var(--danger)'}">${npsh_margin.toFixed(2)} ${isMetric ? 'm' : 'ft'}</span> (${npsh_ok ? 'SAFE' : 'RISK OF CAVITATION'})</li>
+                                </ul>
+                                ` : ''}
+
+                                ${enableSystemCurve ? `
+                                <p style="margin-top:15px; font-weight:bold;"><i class="fas fa-route"></i> Piping Operating Point Intersection:</p>
+                                <ul>
+                                    <li>Piping System Static lift: <strong>${sysStatic.toFixed(2)} ${isMetric ? 'm' : 'ft'}</strong></li>
+                                    <li>Operating Intersection Flow: <strong>${Q_actual.toFixed(2)} ${isMetric ? 'm³/hr' : 'GPM'}</strong></li>
+                                    <li>Operating Intersection Head: <strong>${H_actual.toFixed(2)} ${isMetric ? 'm' : 'ft'}</strong></li>
+                                    <li>Operational Status: <strong>${runout ? 'STATIC HEAD EXCEEDS PUMP SHUTOFF' : 'OPERATIONAL POINT SOLVED'}</strong></li>
+                                </ul>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                stepsContainer.innerHTML = stepHtml;
+                stepsContainer.classList.add('active');
+
+                // Render Results Table Rows
+                resultTableBody.innerHTML = '';
+                
+                function addRow(param, val, tooltipText = null) {
+                    const row = document.createElement('tr');
+                    const c1 = document.createElement('td');
+                    c1.innerHTML = param;
+                    if (tooltipText) {
+                        c1.innerHTML += ` <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">${tooltipText}</span></span>`;
+                    }
+                    const c2 = document.createElement('td');
+                    c2.innerHTML = val;
+                    row.appendChild(c1);
+                    row.appendChild(c2);
+                    resultTableBody.appendChild(row);
+                }
+
+                addRow("Selected Unit System", isMetric ? "Metric System" : "Imperial System");
+                addRow("Operating Design Flow Rate (Q)", `${Q_input.toLocaleString()} ${isMetric ? 'm³/hr' : 'GPM'}`);
+                addRow("Total Dynamic Head (H)", `${H_input.toLocaleString()} ${isMetric ? 'meters (m)' : 'feet (ft)'}`);
+                addRow("Fluid Viscosity", `${viscosity_val.toFixed(2)} cSt`);
+                if (viscosity_val > 1.0) {
+                    addRow("Viscosity Correction Factors", `C_Q = ${C_Q.toFixed(3)}, C_H = ${C_H.toFixed(3)}, C_η = ${C_eta.toFixed(3)}`);
+                    addRow("Corrected Operating Point", `${Q_visc_val.toFixed(2)} ${isMetric ? 'm³/hr' : 'GPM'} @ ${H_visc_val.toFixed(2)} ${isMetric ? 'm' : 'ft'}`);
+                }
+                addRow("Fluid Density (ρ)", `${finalDensity.toFixed(2)} ${isMetric ? 'kg/m³' : 'lb/ft³'}`);
+                addRow("Fluid Specific Gravity (SG)", `${finalSG.toFixed(5)}`);
+                addRow("Pump Efficiency (η)", `${efficiency_val.toFixed(2)}% (Viscous: ${eta_visc_val.toFixed(2)}%)`);
+                addRow("Theoretical Hydraulic Power (Phyd)", `<strong>${Phyd_kW.toFixed(3)} kW</strong> (${Phyd_HP.toFixed(3)} HP)`);
+                addRow("Required Shaft Power (Brake BHP)", `<strong>${Pbhp_kW.toFixed(3)} kW</strong> (${Pbhp_HP.toFixed(3)} HP)`, "Mechanical power demanded at the pump input coupling.");
+                addRow("Selected Sizing Margin Rule", `${marginRule === 'api-610' ? 'API 610 Sizing Standard' : 'Custom Fixed Percentage'}`);
+                addRow("Safety Margin Applied", `${marginPct}%`);
+                addRow("Minimum Motor Sizing Requirement", `${Pmotor_min_kW.toFixed(3)} kW (${Pmotor_min_HP.toFixed(3)} HP)`);
+                addRow("Recommended Standard IEC Motor Size", recMotor_kW !== null ? `<strong>${recMotor_kW} kW</strong>` : `<span style="color:var(--danger)">Exceeds List (&gt;500 kW)</span>`);
+                addRow("Recommended Standard NEMA Motor Size", recMotor_HP !== null ? `<strong>${recMotor_HP} HP</strong>` : `<span style="color:var(--danger)">Exceeds List (&gt;500 HP)</span>`);
+                addRow("Calculated Power Losses", `${loss_kW.toFixed(3)} kW (${loss_HP.toFixed(3)} HP)`);
+
+                if (enableNpsh) {
+                    addRow("NPSH Available (NPSHa)", `<strong>${npsha.toFixed(2)} ${isMetric ? 'm' : 'ft'}</strong>`, "NPSH provided by the suction line design layout.");
+                    addRow("NPSH Sizing Status", npsh_ok ? `<span style="color:var(--success); font-weight:bold;">SAFE (Margin: ${npsh_margin.toFixed(2)} ${isMetric ? 'm' : 'ft'})</span>` : `<span style="color:var(--danger); font-weight:bold;">CAVITATION RISK (Insufficient Head)</span>`);
+                }
+
+                if (enableSystemCurve) {
+                    addRow("Actual Operating Flow Point", runout ? `<span style="color:var(--danger)">No Flow (Surge)</span>` : `<strong>${Q_actual.toFixed(2)} ${isMetric ? 'm³/hr' : 'GPM'}</strong>`);
+                    addRow("Actual Operating Head Point", `<strong>${H_actual.toFixed(2)} ${isMetric ? 'm' : 'ft'}</strong>`);
+                }
+
+                // Render Recommendations
+                recsList.innerHTML = '';
+                let recCount = 0;
+
+                function addRec(text) {
+                    const li = document.createElement('li');
+                    li.innerHTML = text;
+                    recsList.appendChild(li);
+                    recCount++;
+                }
+
+                if (efficiency_val < 60) {
+                    addRec(`<strong>Low Pump Efficiency warning (${efficiency_val.toFixed(1)}%):</strong> Centrifugal pump is operating at high energy loss. Check if wear ring clearances are worn out, verify impeller specific speed matches flow constraints, or select a multi-stage pump.`);
+                }
+                if (finalSG > 1.25) {
+                    addRec(`<strong>High Density / Specific Gravity Alert ($SG = ${finalSG.toFixed(3)}$):</strong> Heavy fluids cause severe mechanical loads. Ensure pump shaft torque capability (shear limits) is rated for high density and motor starting current controls are sized appropriately.`);
+                }
+                if (viscosity_val > 50) {
+                    addRec(`<strong>High Viscosity Warning (${viscosity_val.toFixed(1)} cSt):</strong> Fluid is highly viscous, causing severe drag losses and reducing pump efficiency by **${((1 - C_eta)*100).toFixed(0)}%**. Standard centrifugal pumps are inefficient for viscosity above 100 cSt; consider positive displacement pumps.`);
+                }
+                if (enableNpsh && !npsh_ok) {
+                    addRec(`<strong>CRITICAL NPSHa CAVITATION RISK:</strong> NPSH available ($NPSHa = ${npsha.toFixed(2)} \\text{ ${isMetric ? 'm' : 'ft'}}$) is extremely close to or below required NPSHr ($${npshr.toFixed(2)} \\text{ ${isMetric ? 'm' : 'ft'}}$). Raise static level ($z_s$), lower suction friction loss, cool the liquid, or pressurize the tank to avoid seal and impeller destruction.`);
+                }
+                if (enableSystemCurve && runout) {
+                    addRec("<strong>CRITICAL: Pump shutoff head cannot overcome system static lift!</strong> The static elevation lift is higher than the pump shutoff head. No fluid will move; the pump will operate at dead-head, overheat, and fail.");
+                }
+                addRec("<strong>Suction Line NPSH Verification:</strong> To prevent cavitation erosion damage, verify that Net Positive Suction Head Available ($NPSHa$) exceeds required NPSHr by a safety margin of at least $1.0\\text{ m}$ ($3.28\\text{ ft}$).");
+
+                practicalRecs.style.display = recCount > 0 ? 'block' : 'none';
+
+                // Render Charts
+                renderCharts(Q_input, H_input, finalSG, efficiency_val, Pbhp_kW, enableSystemCurve, sysStatic, sysFriction, Q_actual, H_actual);
+
+                // Run MathJax Typeset to render math inside step-cards
                 if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-                    window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody]);
+                    window.MathJax.typesetPromise([stepsContainer, resultTableBody, practicalRecs]);
                 }
 
-                // Display standard reference
-                standardReference.innerHTML = "This tool provides theoretical calculations for pump power based on fundamental fluid dynamics principles. It simplifies the actual complexities involved in pump sizing and selection. For accurate design, selection, and safety in real-world applications, it is <strong>imperative</strong> to consult pump manufacturer's data, comprehensive fluid mechanics handbooks, specialized pump selection software, and qualified mechanical or hydraulic engineers. This tool is for preliminary estimation and educational purposes only.";
-
-                // Show results container
+                // Make results visible
                 resultContainer.style.display = 'block';
                 setTimeout(() => {
                     resultContainer.classList.add('show');
                 }, 10);
-                resultContainer.scrollIntoView({ behavior: 'smooth' });
+                
+                if (!quiet) {
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                    displayMessage("Pump power calculated successfully!", "info");
+                }
+            }
 
-                displayMessage("Pump Power Calculation completed successfully!", "info");
+            // Bind triggers to calculate
+            calculateBtn.addEventListener('click', () => runCalculations(false));
+
+            // Reset Form fields
+            resetBtn.addEventListener('click', function() {
+                document.getElementById('pump-power-form').reset();
+                unitSystemSelect.dispatchEvent(new Event('change'));
+                fluidInputTypeSelect.dispatchEvent(new Event('change'));
+                marginRuleSelect.dispatchEvent(new Event('change'));
+                enableNpshCheckbox.dispatchEvent(new Event('change'));
+                enableSystemCurveCheckbox.dispatchEvent(new Event('change'));
+                
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    stepsContainer.innerHTML = '';
+                    stepsContainer.classList.remove('active');
+                    runCalculations(true); // Redraw default curves quietly
+                }, 500);
+
+                displayMessage("Form reset to defaults.", "warning");
             });
 
-            // Theme switch functionality
-            const themeSwitch = document.getElementById('theme-switch');
-            if (themeSwitch) {
-                if (localStorage.getItem('theme') === 'dark') {
-                    document.body.classList.add('dark-mode');
-                    themeSwitch.checked = true;
+            // Clear Results
+            clearResultsBtn.addEventListener('click', function() {
+                resultContainer.classList.remove('show');
+                setTimeout(() => {
+                    resultContainer.style.display = 'none';
+                    stepsContainer.innerHTML = '';
+                    stepsContainer.classList.remove('active');
+                }, 500);
+                displayMessage("Calculation results cleared.", "warning");
+            });
+
+            // PDF generation
+            downloadPdfBtn.addEventListener('click', function() {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const element = document.getElementById('result-container');
+                
+                displayMessage("Generating PDF report, please wait...", "info");
+
+                html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: document.body.classList.contains('dark-mode') ? '#1E293B' : '#FFFFFF'
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const imgWidth = 190; // mm width for A4 with margins
+                    const pageHeight = 295; // mm
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    let heightLeft = imgHeight;
+                    let position = 10; // mm top margin
+
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+                    pdf.save('Centrifugal_Pump_Power_Calculation_Report.pdf');
+                    displayMessage("PDF downloaded successfully!", "info");
+                }).catch(err => {
+                    console.error("PDF generation error: ", err);
+                    displayMessage("Failed to generate PDF. Use Ctrl+P as a print fallback.", "error");
+                });
+            });
+
+            // Chart Drawing Function (Visual curves)
+            function renderCharts(flow, head, sg, eff, bhp, enableSysCurve, sysStatic, sysFriction, Q_actual, H_actual) {
+                const ctx1 = document.getElementById('pumpCurveChart').getContext('2d');
+                const ctx2 = document.getElementById('lossesChart').getContext('2d');
+
+                if (pumpCurveChart) pumpCurveChart.destroy();
+                if (lossesChart) lossesChart.destroy();
+
+                const pumpHeadPoints = [];
+                const pumpPowerPoints = [];
+                const systemCurvePoints = [];
+                const isMetric = unitSystemSelect.value === 'metric';
+
+                const maxFlow = flow * 1.5;
+                const steps = 20;
+
+                for (let i = 0; i <= steps; i++) {
+                    const q_val = (i / steps) * maxFlow;
+                    const pct = q_val / flow;
+
+                    // Pump Head: H_shutoff = 1.25 * head. curves down quadratically
+                    const h_shutoff = 1.25 * head;
+                    const h_val = Math.max(0, h_shutoff - 0.25 * head * (pct * pct));
+                    pumpHeadPoints.push({x: q_val, y: h_val});
+
+                    // Parabolic efficiency curve peaking at 100% flow
+                    const current_eff = eff * (2 * pct - pct * pct) / 100;
+                    const p_hyd = isMetric ? (q_val * h_val * sg / 367.09) : (q_val * h_val * sg / 3960);
+                    const p_shaft = current_eff > 0 ? (p_hyd / current_eff) : 0;
+                    pumpPowerPoints.push({x: q_val, y: p_shaft});
+
+                    // System head curve: H_sys = sysStatic + sysFriction * (Q / Q_design)^2
+                    if (enableSysCurve) {
+                        const h_sys = sysStatic + sysFriction * (q_val / flow) * (q_val / flow);
+                        systemCurvePoints.push({x: q_val, y: h_sys});
+                    }
                 }
-                themeSwitch.addEventListener('change', function() {
-                    if (this.checked) {
-                        document.body.classList.add('dark-mode');
-                        localStorage.setItem('theme', 'dark');
-                    } else {
-                        document.body.classList.remove('dark-mode');
-                        localStorage.setItem('theme', 'light');
+
+                // Build datasets for primary chart
+                const datasets = [
+                    {
+                        label: 'Pump H-Q Head Curve',
+                        data: pumpHeadPoints,
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.03)',
+                        yAxisID: 'y',
+                        tension: 0.2,
+                        fill: false
+                    },
+                    {
+                        label: 'Shaft Power Draw (BHP)',
+                        data: pumpPowerPoints,
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245, 158, 11, 0.03)',
+                        yAxisID: 'y1',
+                        tension: 0.2,
+                        fill: false
+                    }
+                ];
+
+                if (enableSysCurve) {
+                    datasets.push({
+                        label: 'System Head Curve',
+                        data: systemCurvePoints,
+                        borderColor: '#10B981',
+                        borderDash: [5, 5],
+                        yAxisID: 'y',
+                        tension: 0.2,
+                        fill: false
+                    });
+
+                    if (Q_actual > 0) {
+                        datasets.push({
+                            label: 'Operating Point Intersection',
+                            data: [{x: Q_actual, y: H_actual}],
+                            borderColor: '#EF4444',
+                            backgroundColor: '#EF4444',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            yAxisID: 'y',
+                            showLine: false
+                        });
+                    }
+                }
+
+                // Render curves
+                pumpCurveChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                title: {
+                                    display: true,
+                                    text: isMetric ? 'Flow Rate (m³/hr)' : 'Flow Rate (GPM)',
+                                    color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563'
+                                },
+                                ticks: { color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563' },
+                                grid: { color: document.body.classList.contains('dark-mode') ? '#334155' : '#E2E8F0' }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: isMetric ? 'Head (m)' : 'Head (ft)',
+                                    color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563'
+                                },
+                                ticks: { color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563' },
+                                grid: { color: document.body.classList.contains('dark-mode') ? '#334155' : '#E2E8F0' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: isMetric ? 'Power (kW)' : 'Power (HP)',
+                                    color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563'
+                                },
+                                ticks: { color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563' },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
+                    }
+                });
+
+                // Render Loss Category Doughnut
+                const hydPowerVal = (eff / 100) * bhp;
+                const totalLossVal = bhp - hydPowerVal;
+                const hydLoss = totalLossVal * 0.60;
+                const volLoss = totalLossVal * 0.28;
+                const mechLoss = totalLossVal * 0.12;
+
+                lossesChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Hydraulic Power Output', 'Hydraulic Friction Losses', 'Volumetric Leakage Losses', 'Mechanical Friction Losses'],
+                        datasets: [{
+                            data: [
+                                parseFloat(hydPowerVal.toFixed(3)),
+                                parseFloat(hydLoss.toFixed(3)),
+                                parseFloat(volLoss.toFixed(3)),
+                                parseFloat(mechLoss.toFixed(3))
+                            ],
+                            backgroundColor: ['#10B981', '#3B82F6', '#EC4899', '#F59E0B'],
+                            borderWidth: 1,
+                            borderColor: document.body.classList.contains('dark-mode') ? '#1E293B' : '#FFFFFF'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: document.body.classList.contains('dark-mode') ? '#CBD5E1' : '#4B5563' }
+                            }
+                        }
                     }
                 });
             }
+
+            // Fallback Theme Toggle implementation
+            const themeSwitch = document.getElementById('theme-switch');
+            if (themeSwitch) {
+                themeSwitch.addEventListener('change', function() {
+                    setTimeout(() => {
+                        // Re-render chart colors on theme toggle
+                        if (pumpCurveChart && lossesChart) {
+                            const isDark = document.body.classList.contains('dark-mode');
+                            const textColor = isDark ? '#CBD5E1' : '#4B5563';
+                            const gridColor = isDark ? '#334155' : '#E2E8F0';
+
+                            pumpCurveChart.options.plugins.legend.labels.color = textColor;
+                            pumpCurveChart.options.scales.y.title.color = textColor;
+                            pumpCurveChart.options.scales.y.ticks.color = textColor;
+                            pumpCurveChart.options.scales.y.grid.color = gridColor;
+                            pumpCurveChart.options.scales.y1.title.color = textColor;
+                            pumpCurveChart.options.scales.y1.ticks.color = textColor;
+                            pumpCurveChart.options.scales.x.title.color = textColor;
+                            pumpCurveChart.options.scales.x.ticks.color = textColor;
+                            pumpCurveChart.options.scales.x.grid.color = gridColor;
+                            pumpCurveChart.update();
+
+                            lossesChart.options.plugins.legend.labels.color = textColor;
+                            lossesChart.data.datasets[0].borderColor = isDark ? '#1E293B' : '#FFFFFF';
+                            lossesChart.update();
+                        }
+                    }, 100);
+                });
+            }
+
+            // Initial UI Setup: Draw default curves quietly on load
+            runCalculations(true);
         });
+
+        // FAQ Toggle function (available globally)
+        function toggleInterview(id) {
+            const content = document.getElementById(`interview-content-${id}`);
+            const icon = document.getElementById(`interview-icon-${id}`);
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            } else {
+                // Close other panels
+                for (let i = 1; i <= 10; i++) {
+                    const otherContent = document.getElementById(`interview-content-${i}`);
+                    const otherIcon = document.getElementById(`interview-icon-${i}`);
+                    if (otherContent && otherContent.classList.contains('active')) {
+                        otherContent.classList.remove('active');
+                        otherIcon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                    }
+                }
+                content.classList.add('active');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            }
+        }
+        window.toggleInterview = toggleInterview;
     </script>
 </body>
 </html>
-
-
-
-
-
