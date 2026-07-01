@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pipe Flow Calculator - Professional Darcy-Weisbach | Design Calculators</title>
-    <link rel="canonical" href="https://designcalculators.co.in/pipe-flow" />
-<meta name="description" content="Professional pipe flow calculator using Darcy-Weisbach equation per ISO, ASME standards. Calculate pressure drop, velocity, flow rate with Reynolds number analysis for laminar and turbulent flow in industrial piping systems.">
-<meta name="keywords" content="pipe flow calculator, Darcy-Weisbach equation, pressure drop, Reynolds number, friction factor, fluid mechanics">
+<title>Pipe Flow Sizing & Pressure Drop Calculator - ASME B31.3 & IS 2065 | Design Calculators</title>
+<link rel="canonical" href="https://designcalculators.co.in/pipe-flow" />
+<meta name="description" content="Professional industrial pipe flow calculator using Darcy-Weisbach & Colebrook-White equations. Sizing and pressure drop per ASME B31.3, IS 2065, IS 1239 standards. Calculate minor losses, velocity limits, and export PDF.">
+<meta name="keywords" content="pipe flow calculator, Darcy-Weisbach equation, Colebrook-White, pressure drop, Reynolds number, pipe sizing, ASME B31.3, IS 2065, minor losses, crane tp410">
 <meta name="author" content="Design Calculators">
 <meta name="robots" content="index, follow">
 
@@ -21,10 +21,13 @@ gtag('config', 'G-23Y1V450SR');
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap" onload="this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&family=Fira+Code:wght@400;500;600&display=swap" onload="this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&family=Fira+Code:wght@400;500;600&display=swap"></noscript>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<!-- jsPDF & MathJax libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -39,6 +42,8 @@ gtag('config', 'G-23Y1V450SR');
 --secondary-color: #2563EB;
 --accent-color: #F59E0B;
 --success-color: #10B981;
+--warning-color: #F59E0B;
+--danger-color: #EF4444;
 --bg-color: #F8FAFC;
 --card-bg: #FFFFFF;
 --text-color: #4B5563;
@@ -46,9 +51,12 @@ gtag('config', 'G-23Y1V450SR');
 --footer-bg: #0F172A;
 --border-color: #E2E8F0;
 --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+--gradient-accent: linear-gradient(135deg, #F59E0B, #D97706);
+--gradient-success: linear-gradient(135deg, #10B981, #059669);
 --gradient-dark: linear-gradient(135deg, #0F172A, #1E293B);
---card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+--card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
 --hover-color: #e2e6ea;
+--transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 body.dark-mode {
@@ -61,6 +69,7 @@ body.dark-mode {
 --footer-bg: #020617;
 --border-color: #334155;
 --hover-color: #1E293B;
+--card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
 }
 
 * { box-sizing: border-box; }
@@ -70,7 +79,7 @@ body {
 font-family: 'Inter', sans-serif;
 background-color: var(--bg-color);
 color: var(--text-color);
-line-height: 1.8;
+line-height: 1.7;
 transition: background-color 0.3s, color 0.3s;
 overflow-x: hidden;
 margin: 0;
@@ -188,17 +197,20 @@ transform: translateX(26px);
 main { padding: 40px 0; }
 
 .content-container {
-max-width: 1000px;
+max-width: 1200px;
 margin: 0 auto;
 padding: 20px;
 }
 
+/* Premium Visual Elements */
 .tool-container {
 background-color: var(--card-bg);
-border-radius: 12px;
-padding: 30px;
+border-radius: 16px;
+padding: 35px;
 box-shadow: var(--card-shadow);
-margin-bottom: 30px;
+margin-bottom: 35px;
+border: 1px solid var(--border-color);
+transition: var(--transition);
 }
 
 .tool-container h2 {
@@ -208,13 +220,16 @@ padding-bottom: 15px;
 margin-top: 0;
 margin-bottom: 25px;
 font-family: 'Montserrat', sans-serif;
-font-size: 1.8rem;
+font-size: 2rem;
+display: flex;
+align-items: center;
+gap: 12px;
 }
 
 .tool-description {
-margin-bottom: 25px;
+margin-bottom: 30px;
 color: var(--text-color);
-font-size: 1rem;
+font-size: 1.05rem;
 line-height: 1.8;
 }
 
@@ -222,60 +237,179 @@ line-height: 1.8;
 display: inline-block;
 background-color: var(--primary-color);
 color: white;
-padding: 12px 20px;
+padding: 12px 24px;
 border-radius: 8px;
 text-decoration: none;
-margin-bottom: 20px;
-transition: all 0.3s;
+margin-bottom: 25px;
+transition: var(--transition);
 font-weight: 600;
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
 .back-button:hover {
 background-color: var(--secondary-color);
 transform: translateY(-2px);
+box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
 }
 
+/* Premium Form Styling */
 .calculator-form {
 background-color: var(--card-bg);
 border-radius: 12px;
-padding: 25px;
+padding: 15px 0;
 margin-top: 25px;
-box-shadow: var(--card-shadow);
+}
+
+.form-section-title {
+font-size: 1.2rem;
+font-weight: 700;
+color: var(--primary-color);
+margin-bottom: 20px;
+border-bottom: 1px dashed var(--border-color);
+padding-bottom: 8px;
+margin-top: 15px;
+display: flex;
+align-items: center;
+gap: 10px;
 }
 
 .form-group {
-margin-bottom: 20px;
+margin-bottom: 22px;
+position: relative;
 }
 
 .form-group label {
-display: block;
+display: flex;
+align-items: center;
+justify-content: space-between;
 margin-bottom: 8px;
 font-weight: 600;
 color: var(--heading-color);
+font-size: 0.95rem;
 }
 
-.form-group input, .form-group select {
-width: 100%;
-padding: 12px;
+.input-with-unit {
+display: flex;
+align-items: center;
+position: relative;
+}
+
+.input-with-unit input, .input-with-unit select {
+padding: 12px 14px;
 border: 2px solid var(--border-color);
-border-radius: 6px;
 background-color: var(--bg-color);
 color: var(--text-color);
-box-sizing: border-box;
-transition: all 0.3s;
 font-size: 1rem;
+transition: var(--transition);
+}
+
+.input-with-unit input {
+flex: 1;
+border-top-left-radius: 8px;
+border-bottom-left-radius: 8px;
+border-right: none;
+}
+
+.input-with-unit select {
+width: 90px;
+border-top-right-radius: 8px;
+border-bottom-right-radius: 8px;
+cursor: pointer;
+font-weight: 600;
+background-color: var(--border-color);
+}
+
+.form-group input.full-select, .form-group select.full-select {
+width: 100%;
+padding: 12px 14px;
+border: 2px solid var(--border-color);
+border-radius: 8px;
+background-color: var(--bg-color);
+color: var(--text-color);
+transition: var(--transition);
+font-size: 1rem;
+outline: none;
 }
 
 .form-group input:focus, .form-group select:focus {
-border-color: var(--primary-color);
-box-shadow: 0 0 12px rgba(30, 58, 138, 0.25);
+border-color: var(--secondary-color);
+box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 outline: none;
 }
 
 .form-row {
 display: grid;
-grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-gap: 20px;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 24px;
+}
+
+/* Fittings List Table styling */
+.fittings-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+gap: 15px;
+margin-top: 15px;
+background-color: var(--bg-color);
+padding: 20px;
+border-radius: 10px;
+border: 1px solid var(--border-color);
+}
+
+.fitting-card {
+background: var(--card-bg);
+padding: 12px;
+border-radius: 8px;
+border: 1px solid var(--border-color);
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+gap: 8px;
+transition: var(--transition);
+}
+
+.fitting-card:hover {
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+border-color: var(--secondary-color);
+}
+
+.fitting-card label {
+font-size: 0.85rem;
+font-weight: 600;
+color: var(--heading-color);
+}
+
+.fitting-qty-control {
+display: flex;
+align-items: center;
+border: 1px solid var(--border-color);
+border-radius: 6px;
+overflow: hidden;
+}
+
+.fitting-qty-control button {
+background-color: var(--border-color);
+border: none;
+color: var(--heading-color);
+font-weight: bold;
+width: 32px;
+height: 32px;
+cursor: pointer;
+transition: var(--transition);
+}
+
+.fitting-qty-control button:hover {
+background-color: var(--hover-color);
+}
+
+.fitting-qty-control input {
+flex: 1;
+border: none;
+text-align: center;
+width: 100%;
+font-weight: bold;
+background-color: var(--card-bg);
+color: var(--text-color);
+height: 32px;
 }
 
 .calculate-btn {
@@ -285,24 +419,39 @@ border: none;
 padding: 16px 30px;
 border-radius: 8px;
 cursor: pointer;
-font-size: 1.1rem;
+font-size: 1.15rem;
 font-weight: 700;
-margin-top: 15px;
-transition: all 0.3s;
+margin-top: 25px;
+transition: var(--transition);
 width: 100%;
 box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 12px;
 }
 
 .calculate-btn:hover {
-transform: translateY(-3px);
+transform: translateY(-2px);
 box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
 }
 
+.download-pdf-btn {
+background: var(--gradient-success);
+box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.download-pdf-btn:hover {
+box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Results section overrides */
 .result-container {
 margin-top: 40px;
-padding: 30px;
-border-radius: 12px;
+padding: 35px;
+border-radius: 16px;
 background-color: var(--card-bg);
+border: 2px solid var(--secondary-color);
 box-shadow: var(--card-shadow);
 display: none;
 }
@@ -311,67 +460,444 @@ display: none;
 color: var(--primary-color);
 margin-bottom: 25px;
 font-family: 'Montserrat', sans-serif;
-font-size: 1.6rem;
+font-size: 1.8rem;
+border-bottom: 2px solid var(--secondary-color);
+padding-bottom: 10px;
+display: flex;
+align-items: center;
+gap: 10px;
 }
 
-#calculation-details {
-background-color: var(--bg-color);
-border: 2px solid var(--border-color);
-border-radius: 8px;
+.results-dashboard-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+gap: 20px;
+margin-bottom: 30px;
+}
+
+.result-card {
+background: var(--bg-color);
+border: 1px solid var(--border-color);
+border-radius: 10px;
 padding: 20px;
-margin-bottom: 25px;
-font-size: 0.95rem;
-}
-
-#calculation-details h4 {
-color: var(--secondary-color);
-margin-top: 0;
-margin-bottom: 15px;
-font-size: 1.2rem;
-}
-
-#calculation-details p.formula {
-font-family: 'Times New Roman', serif;
-font-size: 1.1rem;
 text-align: center;
-padding: 15px;
-background-color: var(--hover-color);
-border-radius: 6px;
-margin: 15px 0;
-overflow-x: auto;
+transition: var(--transition);
 }
 
-#calculation-details p.calculation-step {
-font-family: 'Courier New', monospace;
-background-color: var(--hover-color);
-padding: 8px 12px;
-border-radius: 4px;
+.result-card:hover {
+transform: translateY(-3px);
+border-color: var(--secondary-color);
+}
+
+.result-card-title {
+font-size: 0.9rem;
+font-weight: 700;
+text-transform: uppercase;
+color: var(--text-color);
 margin-bottom: 8px;
+letter-spacing: 0.5px;
+}
+
+.result-card-value {
+font-size: 1.6rem;
+font-weight: 800;
+color: var(--primary-color);
+}
+
+.result-card-unit {
+font-size: 0.85rem;
+font-weight: 600;
+color: var(--text-color);
+}
+
+.result-badge {
+display: inline-block;
+padding: 4px 10px;
+border-radius: 20px;
+font-size: 0.8rem;
+font-weight: bold;
+margin-top: 8px;
+}
+
+.badge-safe { background-color: rgba(16, 185, 129, 0.15); color: #059669; }
+.badge-warning { background-color: rgba(245, 158, 11, 0.15); color: #D97706; }
+.badge-danger { background-color: rgba(239, 68, 68, 0.15); color: #DC2626; }
+
+/* Visual Step-by-Step results wrapper */
+.calculation-stepper {
+display: flex;
+flex-direction: column;
+gap: 25px;
+margin-top: 30px;
+margin-bottom: 35px;
+}
+
+.stepper-step {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-left: 6px solid var(--secondary-color);
+border-radius: 12px;
+padding: 24px;
+position: relative;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+transition: var(--transition);
+}
+
+.stepper-step:hover {
+transform: translateX(4px);
+box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.stepper-step.laminar-theme { border-left-color: #3B82F6; }
+.stepper-step.turbulent-theme { border-left-color: #10B981; }
+.stepper-step.warning-theme { border-left-color: #F59E0B; }
+.stepper-step.danger-theme { border-left-color: #EF4444; }
+
+.step-meta {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 12px;
+flex-wrap: wrap;
+gap: 10px;
+}
+
+.step-num-title {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.step-circle {
+width: 34px;
+height: 34px;
+border-radius: 50%;
+background: var(--gradient-primary);
+color: white;
+font-weight: 800;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 0.95rem;
+box-shadow: 0 2px 4px rgba(30,58,138,0.2);
+}
+
+.step-title-text {
+font-size: 1.15rem;
+font-weight: 700;
+color: var(--heading-color);
+font-family: 'Montserrat', sans-serif;
+}
+
+.step-standard-pill {
+background-color: var(--bg-color);
+border: 1px solid var(--border-color);
+color: var(--text-color);
+font-size: 0.75rem;
+font-weight: 600;
+padding: 4px 10px;
+border-radius: 20px;
+letter-spacing: 0.3px;
+}
+
+.step-explanation {
+font-size: 0.95rem;
+color: var(--text-color);
+margin-bottom: 15px;
 line-height: 1.6;
 }
 
-#calculation-details ul {
-list-style-type: disc;
-margin-left: 25px;
-padding-left: 0;
+.step-equation-panel {
+background: linear-gradient(135deg, rgba(37,99,235,0.06), rgba(37,99,235,0.01));
+border: 1px solid rgba(37,99,235,0.12);
+border-radius: 8px;
+padding: 16px;
+margin-bottom: 15px;
+text-align: center;
+overflow-x: auto;
 }
 
-#calculation-details ul li {
-margin-bottom: 8px;
-line-height: 1.7;
+.step-math-expression {
+font-family: 'Fira Code', 'Courier New', monospace;
+font-size: 0.9rem;
+background-color: var(--bg-color);
+padding: 10px 14px;
+border-radius: 6px;
+color: var(--primary-color);
+border: 1px dashed var(--border-color);
+display: block;
+word-break: break-all;
+line-height: 1.5;
+}
+
+/* Walkthrough visual adjustments */
+.walkthrough-visual-container {
+display: flex;
+flex-direction: column;
+gap: 15px;
+margin-top: 20px;
+}
+
+.walkthrough-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 12px;
+padding: 24px;
+transition: var(--transition);
+border-left: 6px solid var(--accent-color);
+}
+
+.walkthrough-card:hover {
+transform: translateX(4px);
+box-shadow: var(--card-shadow);
+}
+
+.walkthrough-step-label {
+font-weight: 800;
+color: #B45309;
+text-transform: uppercase;
+font-size: 0.8rem;
+letter-spacing: 1px;
+margin-bottom: 10px;
+display: inline-block;
+background-color: rgba(245, 158, 11, 0.12);
+padding: 4px 10px;
+border-radius: 4px;
+}
+
+.walkthrough-card-title {
+font-family: 'Montserrat', sans-serif;
+font-weight: 700;
+font-size: 1.2rem;
+color: var(--heading-color);
+margin-bottom: 12px;
+}
+
+.walkthrough-math-box {
+background: linear-gradient(135deg, rgba(245,158,11,0.05), rgba(245,158,11,0.01));
+border: 1px solid rgba(245,158,11,0.15);
+padding: 16px;
+border-radius: 8px;
+margin-top: 15px;
+text-align: center;
+overflow-x: auto;
+}
+
+/* Theory Grid Section Sizing */
+.theory-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+gap: 20px;
+margin-top: 25px;
+}
+
+.theory-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 12px;
+padding: 24px;
+transition: var(--transition);
+position: relative;
+overflow: hidden;
+}
+
+.theory-card::before {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 4px;
+background: var(--gradient-primary);
+}
+
+.theory-card:hover {
+transform: translateY(-4px);
+box-shadow: var(--card-shadow);
+}
+
+.theory-card.why::before { background: var(--gradient-accent); }
+.theory-card.where::before { background: var(--gradient-success); }
+.theory-card.how::before { background: var(--gradient-primary); }
+
+.theory-card h4 {
+font-family: 'Montserrat', sans-serif;
+font-size: 1.25rem;
+font-weight: 700;
+color: var(--heading-color);
+margin-top: 0;
+margin-bottom: 12px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+/* Standards cards layout */
+.standards-grid-v2 {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 20px;
+margin-top: 25px;
+}
+
+.standard-card-v2 {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 12px;
+padding: 20px;
+transition: var(--transition);
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+height: 100%;
+}
+
+.standard-card-v2:hover {
+transform: translateY(-3px);
+box-shadow: var(--card-shadow);
+border-color: var(--secondary-color);
+}
+
+.std-card-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 12px;
+}
+
+.std-logo {
+background: var(--gradient-primary);
+color: white;
+font-weight: 800;
+font-size: 0.9rem;
+padding: 4px 10px;
+border-radius: 6px;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+
+.std-scope-pill {
+background-color: var(--bg-color);
+border: 1px solid var(--border-color);
+color: var(--text-color);
+font-size: 0.75rem;
+padding: 2px 8px;
+border-radius: 4px;
+font-weight: 600;
+}
+
+.std-card-title {
+font-family: 'Montserrat', sans-serif;
+font-size: 1.15rem;
+font-weight: 700;
+color: var(--heading-color);
+margin-bottom: 10px;
+}
+
+.std-card-body {
+font-size: 0.9rem;
+color: var(--text-color);
+line-height: 1.6;
+flex-grow: 1;
+margin-bottom: 15px;
+}
+
+.std-card-limits {
+background-color: var(--bg-color);
+padding: 10px 12px;
+border-radius: 6px;
+font-size: 0.85rem;
+border-left: 3px solid var(--accent-color);
+color: var(--heading-color);
+}
+
+/* Dynamic design for Related Calculators */
+.silo-grid-v2 {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 20px;
+margin-top: 25px;
+}
+
+.silo-card-v2 {
+background-color: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 12px;
+padding: 22px;
+text-decoration: none;
+color: var(--text-color);
+transition: var(--transition);
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+height: 100%;
+position: relative;
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+}
+
+.silo-card-v2:hover {
+transform: translateY(-4px);
+box-shadow: var(--card-shadow);
+border-color: var(--secondary-color);
+}
+
+.silo-card-v2 h4 {
+margin-top: 0;
+margin-bottom: 10px;
+font-family: 'Montserrat', sans-serif;
+font-size: 1.15rem;
+font-weight: 700;
+color: var(--heading-color);
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.silo-card-v2 p {
+font-size: 0.88rem;
+line-height: 1.5;
+color: var(--text-color);
+margin-bottom: 15px;
+flex-grow: 1;
+}
+
+.silo-card-v2 span.help-note {
+font-size: 0.8rem;
+font-weight: 600;
+color: var(--secondary-color);
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.silo-card-v2::after {
+content: "";
+position: absolute;
+top: 0;
+right: 0;
+width: 30px;
+height: 30px;
+background: linear-gradient(135deg, transparent 50%, var(--border-color) 50%);
+border-top-right-radius: 12px;
+transition: var(--transition);
+}
+
+.silo-card-v2:hover::after {
+background: linear-gradient(135deg, transparent 50%, var(--secondary-color) 50%);
 }
 
 .result-table {
 width: 100%;
 border-collapse: collapse;
-margin-top: 20px;
-box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-border-radius: 8px;
+margin-top: 25px;
+box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+border-radius: 10px;
 overflow: hidden;
+border: 1px solid var(--border-color);
 }
 
 .result-table th, .result-table td {
-padding: 14px;
+padding: 15px 20px;
 text-align: left;
 border-bottom: 1px solid var(--border-color);
 }
@@ -380,25 +906,36 @@ border-bottom: 1px solid var(--border-color);
 background: var(--gradient-primary);
 color: white;
 font-weight: 700;
+font-size: 0.95rem;
 }
 
 .result-table tr:nth-child(even) {
-background-color: rgba(0,0,0,0.02);
+background-color: rgba(0,0,0,0.015);
+}
+
+.result-table tr:hover {
+background-color: rgba(0,0,0,0.03);
 }
 
 .standard-reference {
-margin-top: 25px;
-font-style: italic;
+margin-top: 30px;
 font-size: 0.95rem;
-padding: 15px;
-background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
-border-left: 4px solid var(--accent-color);
-border-radius: 6px;
-line-height: 1.7;
+padding: 20px;
+background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.03));
+border-left: 5px solid var(--secondary-color);
+border-radius: 8px;
+line-height: 1.8;
+}
+
+.standard-reference h5 {
+margin: 0 0 10px 0;
+font-size: 1.1rem;
+font-weight: 700;
+color: var(--primary-color);
 }
 
 .info-icon {
-color: var(--primary-color);
+color: var(--secondary-color);
 margin-left: 6px;
 cursor: help;
 font-size: 0.9rem;
@@ -411,23 +948,24 @@ display: inline-block;
 
 .tooltip .tooltiptext {
 visibility: hidden;
-width: 260px;
-background-color: #333;
+width: 280px;
+background-color: #1e293b;
 color: #fff;
-text-align: center;
-border-radius: 6px;
-padding: 10px;
+text-align: left;
+border-radius: 8px;
+padding: 12px;
 position: absolute;
 z-index: 1000;
 bottom: 130%;
 left: 50%;
-margin-left: -130px;
+margin-left: -140px;
 opacity: 0;
 transition: opacity 0.3s;
-font-size: 0.85rem;
-line-height: 1.5;
+font-size: 0.8rem;
+line-height: 1.6;
 white-space: normal;
-box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+box-shadow: 0 10px 15px -3px rgba(0,0,0,0.25);
+border: 1px solid #475569;
 }
 
 .tooltip:hover .tooltiptext {
@@ -435,6 +973,112 @@ visibility: visible;
 opacity: 1;
 }
 
+/* Accordion FAQs Sizing with Visual Colors */
+.faq-section {
+margin-top: 50px;
+}
+
+.faq-item {
+background-color: var(--card-bg);
+border: 1px solid var(--border-color);
+border-left: 5px solid var(--secondary-color);
+border-radius: 12px;
+margin-bottom: 20px;
+overflow: hidden;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+transition: var(--transition);
+}
+
+.faq-item:hover {
+transform: translateX(4px);
+box-shadow: var(--card-shadow);
+}
+
+.faq-item:nth-child(even) {
+  border-left-color: var(--accent-color);
+}
+
+.faq-item:nth-child(3n) {
+  border-left-color: var(--success-color);
+}
+
+.faq-question {
+padding: 20px;
+font-weight: 700;
+font-size: 1.1rem;
+cursor: pointer;
+display: flex;
+justify-content: space-between;
+align-items: center;
+background-color: var(--bg-color);
+color: var(--heading-color);
+transition: var(--transition);
+font-family: 'Montserrat', sans-serif;
+}
+
+.faq-question:hover {
+background-color: var(--hover-color);
+}
+
+.faq-answer {
+padding: 0 20px;
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+font-size: 0.95rem;
+line-height: 1.8;
+}
+
+.faq-answer.open {
+padding: 24px;
+max-height: 1500px;
+border-top: 1px solid var(--border-color);
+}
+
+.faq-answer strong {
+  color: var(--primary-color);
+}
+body.dark-mode .faq-answer strong {
+  color: var(--secondary-color);
+}
+
+.faq-chevron {
+transition: transform 0.3s ease;
+color: var(--secondary-color);
+}
+
+.faq-chevron.rotate {
+transform: rotate(180deg);
+}
+
+.faq-diagram-container {
+margin: 20px auto;
+padding: 15px;
+background-color: #fff;
+border-radius: 8px;
+border: 1px dashed var(--border-color);
+max-width: 600px;
+display: flex;
+justify-content: center;
+align-items: center;
+box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.highlight-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 4px;
+  background-color: var(--border-color);
+  color: var(--heading-color);
+  margin: 2px 4px;
+  border: 1px solid var(--border-color);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Custom Message Box styling */
 #custom-message-box {
 position: fixed;
 top: 20px;
@@ -448,113 +1092,17 @@ font-weight: 600;
 color: white;
 opacity: 0;
 transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+pointer-events: none;
 }
 
 #custom-message-box.show {
 opacity: 1;
 }
 
-/* FOOTER */
-footer {
-background: var(--gradient-dark);
-color: #CBD5E1;
-padding: 50px 0 20px 0;
+/* Responsive grid layouts */
+@media (max-width: 992px) {
+.content-container { padding: 10px; }
 }
-
-.footer-content {
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-flex-wrap: wrap;
-gap: 40px;
-margin-bottom: 30px;
-}
-
-.footer-col {
-flex: 1;
-min-width: 200px;
-}
-
-.footer-col h4 {
-font-size: 1.1rem;
-color: white;
-margin-bottom: 15px;
-font-weight: 700;
-}
-
-.footer-col ul {
-list-style: none;
-padding: 0;
-margin: 0;
-}
-
-.footer-col ul li {
-margin-bottom: 10px;
-}
-
-.footer-col a {
-color: #CBD5E1;
-text-decoration: none;
-transition: color 0.3s;
-font-size: 0.95rem;
-}
-
-.footer-col a:hover {
-color: var(--accent-color);
-}
-
-.footer-disclaimer {
-text-align: center;
-margin: 30px auto;
-padding-top: 25px;
-border-top: 1px solid #334155;
-max-width: 800px;
-font-size: 0.9rem;
-line-height: 1.6;
-}
-
-.footer-bottom {
-text-align: center;
-padding-top: 20px;
-font-size: 0.9rem;
-color: #94A3B8;
-}
-
-.creator-name {
-color: var(--secondary-color);
-font-weight: bold;
-}
-
-.social-buttons {
-display: flex;
-gap: 12px;
-margin-top: 15px;
-}
-
-.social-btn {
-width: 40px;
-height: 40px;
-display: inline-flex;
-justify-content: center;
-align-items: center;
-color: white;
-border-radius: 50%;
-text-decoration: none;
-font-size: 1.1rem;
-transition: transform 0.3s, box-shadow 0.3s;
-box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.social-btn:hover {
-transform: translateY(-4px);
-box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-}
-
-.social-btn.linkedin { background-color: #0A66C2; }
-.social-btn.youtube { background-color: #FF0000; }
-.social-btn.twitter { background-color: #1DA1F2; }
-.social-btn.facebook { background-color: #1877F2; }
-.social-btn.whatsapp { background-color: #25D366; }
 
 @media (max-width: 768px) {
 .navbar { flex-direction: column; gap: 20px; }
@@ -562,61 +1110,57 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 .form-row { grid-template-columns: 1fr; }
 .container { padding: 15px; }
 .tool-container { padding: 20px; }
-.footer-content { flex-direction: column; gap: 25px; }
+.fittings-grid { grid-template-columns: 1fr; }
 }
 </style>
-    <link rel="stylesheet" href="styles.css">
-    <meta property="og:title" content="Pipe Flow Calculator - Professional Darcy-Weisbach | Design Calculators">
-    <meta property="og:description" content="Professional pipe flow calculator using Darcy-Weisbach equation per ISO, ASME standards. Calculate pressure drop, velocity, flow rate with Reynolds number analysis for laminar and turbulent flow in industrial piping systems.">
-
-    <meta name="theme-color" content="#2563EB">
-
-    
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Pipe Flow Sizing & Pressure Drop Calculator - ASME & IS compliant | Design Calculators">
+<meta property="og:description" content="Industrial-grade pipe flow calculator utilizing Darcy-Weisbach & Colebrook-White friction equations. Covers ASME B31.3 process piping & IS 2065 building standards with full fitting calculations.">
+<meta name="theme-color" content="#2563EB">
 
 <style>
 /* Refined Professional Header Styles */
 .header .logo-container {
     display: flex !important;
     align-items: center !important;
-    gap: 12px !important; /* Slightly tighter gap */
+    gap: 12px !important;
     text-decoration: none;
     color: white;
 }
 
 .header .logo {
-    height: 48px !important; /* Standard navbar size */
+    height: 48px !important;
     width: auto;
     object-fit: contain;
-    border-radius: 6px; /* Soft rounding */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle depth */
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .logo-text-group {
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Ensure vertical centering */
-    line-height: 1.1; /* Tighter line height for the group */
+    justify-content: center;
+    line-height: 1.1;
 }
 
 .header .logo-text {
-    font-size: 1.25rem; /* 20px - slightly smaller but bolder feel */
+    font-size: 1.25rem;
     font-weight: 700;
-    letter-spacing: -0.02em; /* Modern tighten */
+    letter-spacing: -0.02em;
     color: #ffffff;
-    margin-bottom: 2px; /* Tiny gap to subtitle */
+    margin-bottom: 2px;
 }
 
 .logo-subtitle {
-    font-size: 0.7rem !important; /* 11px - distinctly secondary */
-    color: rgba(255, 255, 255, 0.85) !important; /* High readability but softer */
+    font-size: 0.7rem !important;
+    color: rgba(255, 255, 255, 0.85) !important;
     font-weight: 500;
     margin: 0 !important;
     line-height: 1.2;
-    max-width: 250px; /* Constrain width to avoid long run-on look */
-    white-space: normal; /* Allow nice wrapping if needed */
+    max-width: 250px;
+    white-space: normal;
 }
 
-/* Enhancing Navbar Links for "Pro" feel */
 .header .nav-links a {
     font-size: 0.95rem;
     font-weight: 600;
@@ -625,68 +1169,151 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 .header .nav-links a:hover {
     opacity: 1;
-    transform: translateY(-1px); /* Micro-interaction */
+    transform: translateY(-1px);
 }
 </style>
 
-    
-
-    <!-- Standardised SEO Schema (Auto-generated) -->
-    <script type="application/ld+json">
+<!-- JSON-LD Structured Data Schema (SoftwareApplication & FAQPage) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-    "@context": "https://schema.org",
-    "@graph": [
+      "@type": "SoftwareApplication",
+      "name": "Pipe Flow Sizing & Pressure Drop Calculator",
+      "url": "https://designcalculators.co.in/pipe-flow",
+      "description": "Professional engineering utility calculating pipe pressure drop, velocities, and flow regimes utilizing the Darcy-Weisbach and Colebrook-White formulations, compliant with ASME B31.3 and IS 2065 codes.",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Web",
+      "author": {
+        "@type": "Person",
+        "@id": "https://designcalculators.co.in/#person",
+        "name": "Anil Sharma",
+        "url": "https://designcalculators.co.in/about.html",
+        "image": "https://designcalculators.co.in/logo.png",
+        "description": "Expert engineering consultant with over 15 years of experience in Electrical, Mechanical, and Instrumentation design. Specialist in IEC, ASME and IEEE standards.",
+        "sameAs": [
+          "https://www.linkedin.com/in/anil-sharma-engineering",
+          "https://www.youtube.com/@designcalculators"
+        ]
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
         {
-            "@type": "SoftwareApplication",
-            "name": "Pipe Flow Calculator - Professional Darcy-Weisbach | Design Calculators",
-            "url": "https://designcalculators.co.in/pipe-flow",
-            "description": "Professional pipe flow calculator using Darcy-Weisbach equation per ISO, ASME standards. Calculate pressure drop, velocity, flow rate with Reynolds number analysis for laminar and turbulent flow in industrial piping systems.",
-            "applicationCategory": "UtilityApplication",
-            "operatingSystem": "Web",
-            "author": {
-                "@type": "Person",
-                "@id": "https://designcalculators.co.in/#person",
-                "name": "Anil Sharma",
-                "url": "https://designcalculators.co.in/about.html",
-                "image": "https://designcalculators.co.in/logo.png",
-                "description": "Expert engineering consultant with over 15 years of experience in Electrical, Mechanical, and Instrumentation design. Specialist in IEC and IEEE standards.",
-                "sameAs": [
-                    "https://www.linkedin.com/in/anil-sharma-engineering",
-                    "https://www.youtube.com/@designcalculators"
-                ]
-            },
-            "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "USD"
-            }
+          "@type": "Question",
+          "name": "How do Laminar and Turbulent flow velocity profiles differ?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Laminar flow velocity profile is parabolic, where the fluid velocity is zero at the pipe wall and reaches its maximum at the centerline, equal to twice the average velocity. Turbulent flow velocity profile is much flatter and blunt due to intense eddy mixing, with the maximum centerline velocity being only about 1.2 times the average velocity."
+          }
         },
         {
-            "@type": "BreadcrumbList",
-            "itemListElement": [
-                {
-                    "@type": "ListItem",
-                    "position": 1,
-                    "name": "Home",
-                    "item": "https://designcalculators.co.in"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 2,
-                    "name": "Mechanical Tools",
-                    "item": "https://designcalculators.co.in/indexmech"
-                },
-                {
-                    "@type": "ListItem",
-                    "position": 3,
-                    "name": "Pipe Flow Calculator",
-                    "item": "https://designcalculators.co.in/pipe-flow"
-                }
-            ]
+          "@type": "Question",
+          "name": "Why is the Darcy-Weisbach equation preferred over Hazen-Williams?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Darcy-Weisbach equation is physically derived from basic principles of fluid mechanics and works for any Newtonian fluid at any temperature, pressure, and flow regime. In contrast, the Hazen-Williams formula is strictly empirical, only accurate for water at ambient temperatures (around 15-25°C), and fails outside of turbulent flow regimes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is Pipe Relative Roughness and why does it affect pressure drop?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Relative roughness (epsilon / D) is the ratio of internal wall microscopic irregularities to the pipe inner diameter. In turbulent flow, these irregularities disrupt the boundary layer, generating eddies and increasing shear stress, which dramatically increases the friction factor and total pressure drop."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do fitting losses (minor losses) contribute to system pressure drop?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Fittings, valves, and bends create pressure drops (known as minor losses) by disrupting flow symmetry, causing localized turbulence, separation zones, and mixing. They are calculated using a resistance coefficient (K-factor) where pressure drop is K times the kinetic energy of the flow (rho * V^2 / 2)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is water hammer and how can it be mitigated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Water hammer is a high-pressure shockwave created when a moving fluid is forced to stop or change direction suddenly (such as closing a valve rapidly). It is mitigated by installing water hammer arrestors (surge tanks), choosing slower-closing valves, and restricting fluid velocities within standard-defined limits."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What causes cavitation in piping systems?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cavitation occurs when localized static pressure drops below the fluid's vapor pressure, causing liquid to flash into vapor bubbles. As these bubbles move to higher pressure zones downstream, they collapse implosively, generating shockwaves that can erode metal walls, cause severe vibration, and damage components."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between static, dynamic, and total pressure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Static pressure is the thermodynamic pressure exerted equally in all directions (measured perpendicular to flow). Dynamic pressure represents kinetic energy per unit volume (rho * V^2 / 2). Total pressure is the sum of static and dynamic pressure, representing the pressure when the fluid is brought to rest reversibly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the entry length in pipe flow calculations?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The entry length is the distance from a pipe inlet required for the boundary layer to develop fully and meet at the pipe centerline. In this region, velocity profiles change continuously, and friction gradients are higher than in fully developed flow. It is approximately 10 diameters for turbulent flow and 0.06 * Re * D for laminar flow."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does equivalent length (Leq) mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Equivalent length (Leq) is the length of straight pipe that would produce the same friction head loss as a specific fitting or valve under identical flow conditions. It represents minor losses in terms of pipe length, making hand calculations simpler (Leq = K * D / f)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the system curve interact with the pump curve?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A system curve maps the required head (static elevation plus friction losses, which increase quadratically with flow rate) against flow rate. The operating point of the piping system is the exact intersection of this system curve with the pump's head-capacity performance curve."
+          }
         }
-    ]
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://designcalculators.co.in"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Mechanical Tools",
+          "item": "https://designcalculators.co.in/indexmech"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Pipe Flow Calculator",
+          "item": "https://designcalculators.co.in/pipe-flow"
+        }
+      ]
+    }
+  ]
 }
-    </script>
+</script>
 </head>
 <body>
 
@@ -759,147 +1386,944 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
             </nav>
         </div>
     </header>
-
-<!-- MAIN CONTENT -->
 <main class="content-container">
 <a href="indexMech" class="back-button">
 <i class="fas fa-arrow-left"></i> Back to Tools
 </a>
 
 <div class="tool-container">
-<h2><i class="fas fa-tint"></i> Professional Pipe Flow Calculator</h2>
+<h2><i class="fas fa-tint" style="color: var(--secondary-color);"></i> High-Precision Industrial Pipe Flow Sizing Utility</h2>
 
 <div class="tool-description">
-<p>This advanced pipe flow calculator determines pressure drop, velocity, and flow rate for incompressible fluid flow in pipes using the industry-standard <strong>Darcy-Weisbach equation</strong> per ISO 5167, ASME, and fluid mechanics principles. Accurately calculates Reynolds number to determine flow regime (laminar, transitional, or turbulent), friction factor using Swamee-Jain approximation for turbulent flow and Hagen-Poiseuille for laminar flow, and provides comprehensive step-by-step calculation methodology for engineering verification and documentation.</p>
-
-<p><strong>Key Features:</strong> Temperature-dependent fluid properties for water, air, and oil; automatic flow regime detection; iterative solution for pressure drop-driven calculations; complete calculation transparency with LaTeX-formatted equations; compliance with international mechanical engineering standards including ISO, ASME, and fundamental fluid mechanics textbooks.</p>
+<p>This professional engineering utility sizes industrial piping systems and calculates fluid friction head losses. By solving the fundamental <strong>Darcy-Weisbach</strong> and implicit <strong>Colebrook-White</strong> equations via a high-precision Newton-Raphson solver, it computes exact fluid velocity profiles, friction factors, and system pressure drops. Additionally, it integrates localized minor loss coefficients (K-factors) per <strong>Crane Co. Technical Paper No. 410</strong> and evaluates velocity compliance against <strong>ASME B31.3</strong>, <strong>API RP 14E</strong>, and <strong>IS 2065</strong> engineering codes.</p>
 </div>
 
 <div class="calculator-form">
 <form id="pipe-flow-form">
-<div class="form-row">
-<div class="form-group">
-<label for="fluid-type">Fluid Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select fluid flowing through pipe. Properties vary with temperature affecting density and viscosity.</span></span></label>
-<select id="fluid-type" required>
-<option value="water">Water</option>
-<option value="air">Air</option>
-<option value="oil">Engine Oil (SAE 30)</option>
-</select>
-</div>
-<div class="form-group">
-<label for="pipe-material">Pipe Material <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Material affects surface roughness, key factor in friction loss calculations per Moody diagram.</span></span></label>
-<select id="pipe-material" required>
-<option value="steel">Commercial Steel</option>
-<option value="cast_iron">Cast Iron</option>
-<option value="pvc">PVC</option>
-<option value="copper">Copper</option>
-</select>
-</div>
-</div>
+  <!-- Section 1: Fluid & Pipe Properties -->
+  <div class="form-section-title">
+    <i class="fas fa-sliders-h"></i> 1. Fluid & Pipe Specifications
+  </div>
+  
+  <div class="form-row">
+    <div class="form-group">
+      <label for="fluid-type">Fluid Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Properties (density and viscosity) are dynamically computed based on operating temperature and pressure.</span></span></label>
+      <select id="fluid-type" class="full-select" required>
+        <option value="water">Water (Liquid)</option>
+        <option value="air">Air (Gas)</option>
+        <option value="oil">Engine Oil (SAE 30)</option>
+        <option value="steam">Saturated Steam</option>
+        <option value="natural_gas">Natural Gas (Methane)</option>
+        <option value="custom">Custom Fluid Properties...</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="pipe-material">Pipe Material & Roughness <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Pipe material determines absolute internal wall roughness (&epsilon;), a critical variable in Colebrook-White friction factor calculations.</span></span></label>
+      <select id="pipe-material" class="full-select" required>
+        <option value="steel">Commercial Carbon Steel (&epsilon; = 0.045 mm)</option>
+        <option value="galvanized">Galvanized Iron (&epsilon; = 0.15 mm)</option>
+        <option value="cast_iron">Cast Iron (&epsilon; = 0.26 mm)</option>
+        <option value="pvc">PVC / Plastic (&epsilon; = 0.0015 mm)</option>
+        <option value="copper">Copper / Brass (&epsilon; = 0.0015 mm)</option>
+        <option value="stainless">Stainless Steel (&epsilon; = 0.015 mm)</option>
+        <option value="concrete">Concrete (Smooth) (&epsilon; = 0.3 mm)</option>
+        <option value="custom_rough">Custom Surface Roughness...</option>
+      </select>
+    </div>
+  </div>
 
-<div class="form-row">
-<div class="form-group">
-<label for="fluid-temperature">Fluid Temperature (°C) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Temperature determines fluid properties. Critical for accurate density and viscosity.</span></span></label>
-<input type="number" id="fluid-temperature" min="-50" step="0.1" value="20" required>
-</div>
-<div class="form-group">
-<label for="pipe-diameter">Pipe Internal Diameter (mm) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Internal diameter of pipe. Ensure consistent units throughout calculation.</span></span></label>
-<input type="number" id="pipe-diameter" min="1" step="0.1" value="50" required>
-</div>
-</div>
+  <div class="form-row" id="custom-fluid-row" style="display: none;">
+    <div class="form-group">
+      <label for="custom-density">Custom Density (kg/m³)</label>
+      <input type="number" id="custom-density" min="0.1" step="0.1" value="1000">
+    </div>
+    <div class="form-group">
+      <label for="custom-viscosity">Custom Dynamic Viscosity (cP or mPa·s)</label>
+      <input type="number" id="custom-viscosity" min="0.0001" step="0.0001" value="1.0">
+    </div>
+  </div>
 
-<div class="form-row">
-<div class="form-group">
-<label for="pipe-length">Pipe Length (m) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total length of pipe section for which pressure drop is calculated.</span></span></label>
-<input type="number" id="pipe-length" min="0.1" step="0.1" value="100" required>
-</div>
-<div class="form-group">
-<label for="flow-input-type">Input Type <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Choose which parameter you provide. Calculator solves for other two.</span></span></label>
-<select id="flow-input-type" required>
-<option value="flow_rate">Flow Rate</option>
-<option value="velocity">Velocity</option>
-<option value="pressure_drop">Pressure Drop</option>
-</select>
-</div>
-</div>
+  <div class="form-row" id="custom-rough-row" style="display: none;">
+    <div class="form-group">
+      <label for="custom-roughness-input">Custom Roughness (&epsilon;)</label>
+      <div class="input-with-unit">
+        <input type="number" id="custom-roughness-input" min="0" step="0.0001" value="0.045">
+        <select id="custom-roughness-unit">
+          <option value="mm">mm</option>
+          <option value="in">in</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-<div class="form-row">
-<div class="form-group">
-<label for="flow-rate-input" id="flow-rate-label">Flow Rate (m³/s) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Volumetric flow rate of fluid.</span></span></label>
-<input type="number" id="flow-rate-input" min="0.000001" step="0.000001" value="0.005" required>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="fluid-temperature">Fluid Temperature <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Temperature dictates fluid viscosity and density profiles. For gases, dynamic properties shift significantly.</span></span></label>
+      <div class="input-with-unit">
+        <input type="number" id="fluid-temperature" min="-100" max="500" step="0.1" value="20" required>
+        <select id="fluid-temperature-unit">
+          <option value="C">°C</option>
+          <option value="F">°F</option>
+          <option value="K">K</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group" id="fluid-pressure-group">
+      <label for="fluid-pressure">Operating Gauge Pressure <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Required to calculate gas density (Air, Natural Gas) via ideal gas law and to evaluate saturation properties of Saturated Steam.</span></span></label>
+      <div class="input-with-unit">
+        <input type="number" id="fluid-pressure" min="0.01" step="0.01" value="1" required>
+        <select id="fluid-pressure-unit">
+          <option value="bar">bar(g)</option>
+          <option value="kPa">kPa(g)</option>
+          <option value="psi">psi(g)</option>
+          <option value="Pa">Pa(g)</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-<label for="velocity-input" id="velocity-label" style="display: none;">Velocity (m/s) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Average velocity of fluid in pipe.</span></span></label>
-<input type="number" id="velocity-input" min="0.0001" step="0.0001" value="0.5" required style="display: none;">
+  <div class="form-row">
+    <div class="form-group">
+      <label for="pipe-diameter">Pipe Internal Diameter (ID) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Actual internal diameter of the pipe. For steel pipes, this is smaller than nominal pipe size (NPS) due to wall thickness.</span></span></label>
+      <div class="input-with-unit">
+        <input type="number" id="pipe-diameter" min="0.1" step="0.01" value="52.5" required>
+        <select id="pipe-diameter-unit">
+          <option value="mm">mm</option>
+          <option value="in">inch</option>
+          <option value="m">m</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="pipe-length">Piping Section Length <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total straight-run length of the piping system section for major friction loss calculation.</span></span></label>
+      <div class="input-with-unit">
+        <input type="number" id="pipe-length" min="0.1" step="0.1" value="100" required>
+        <select id="pipe-length-unit">
+          <option value="m">m</option>
+          <option value="ft">feet</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-<label for="pressure-drop-input" id="pressure-drop-label" style="display: none;">Pressure Drop (Pa) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total pressure drop across pipe section in Pascals.</span></span></label>
-<input type="number" id="pressure-drop-input" min="0.1" step="0.1" value="10000" required style="display: none;">
-</div>
-</div>
+  <!-- Section 2: Minor Losses -->
+  <div class="form-section-title">
+    <i class="fas fa-random"></i> 2. Fittings, Valves & Minor Losses (Crane Co. TP-410)
+    <span class="tooltip"><i class="fas fa-info-circle info-icon" style="font-size:0.8rem;"></i><span class="tooltiptext">Calculates localized head loss coefficients (K-factors) using Crane Co. Technical Paper 410 methodology. Total fittings loss coefficient adds directly to friction drop.</span></span>
+  </div>
+  
+  <p style="font-size: 0.85rem; margin-top: -10px; color: var(--text-color);">Enter quantities of valves and fittings in the pipe run to compute total minor head loss.</p>
+  
+  <div class="fittings-grid">
+    <div class="fitting-card">
+      <label>90° Elbow (Std Radius)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-90el', -1)">-</button>
+        <input type="number" id="fit-90el" min="0" value="2">
+        <button type="button" onclick="adjustQty('fit-90el', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>90° Elbow (Long Radius)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-90lr', -1)">-</button>
+        <input type="number" id="fit-90lr" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-90lr', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>45° Elbow (Std Radius)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-45el', -1)">-</button>
+        <input type="number" id="fit-45el" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-45el', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Standard Tee (Branch Flow)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-tee-b', -1)">-</button>
+        <input type="number" id="fit-tee-b" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-tee-b', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Standard Tee (Run Flow)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-tee-r', -1)">-</button>
+        <input type="number" id="fit-tee-r" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-tee-r', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Gate Valve (Fully Open)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-gate', -1)">-</button>
+        <input type="number" id="fit-gate" min="0" value="1">
+        <button type="button" onclick="adjustQty('fit-gate', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Globe Valve (Fully Open)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-globe', -1)">-</button>
+        <input type="number" id="fit-globe" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-globe', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Ball Valve (Fully Open)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-ball', -1)">-</button>
+        <input type="number" id="fit-ball" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-ball', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Swing Check Valve</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-check', -1)">-</button>
+        <input type="number" id="fit-check" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-check', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Butterfly Valve (Fully Open)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-bf', -1)">-</button>
+        <input type="number" id="fit-bf" min="0" value="0">
+        <button type="button" onclick="adjustQty('fit-bf', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Sharp Entrance (K=0.5)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-ent', -1)">-</button>
+        <input type="number" id="fit-ent" min="0" value="1">
+        <button type="button" onclick="adjustQty('fit-ent', 1)">+</button>
+      </div>
+    </div>
+    <div class="fitting-card">
+      <label>Pipe Outlet (K=1.0)</label>
+      <div class="fitting-qty-control">
+        <button type="button" onclick="adjustQty('fit-exit', -1)">-</button>
+        <input type="number" id="fit-exit" min="0" value="1">
+        <button type="button" onclick="adjustQty('fit-exit', 1)">+</button>
+      </div>
+    </div>
+  </div>
 
-<button type="button" id="calculate-pipe-flow-btn" class="calculate-btn">
-<i class="fas fa-calculator"></i> Calculate Pipe Flow
-</button>
+  <!-- Section 3: Solver Input -->
+  <div class="form-section-title">
+    <i class="fas fa-crosshairs"></i> 3. Input Parameter & Solver Setup
+  </div>
+  
+  <div class="form-row">
+    <div class="form-group">
+      <label for="flow-input-type">Parameters to Input <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Choose which parameter you want to specify. The calculator will run solvers to determine the other two dependent variables.</span></span></label>
+      <select id="flow-input-type" class="full-select" required>
+        <option value="flow_rate">Flow Rate (Solve for Velocity & Pressure Drop)</option>
+        <option value="velocity">Velocity (Solve for Flow Rate & Pressure Drop)</option>
+        <option value="pressure_drop">Total Pressure Drop (Solve for Velocity & Flow Rate)</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <!-- Dynamic labels and inputs handled in JS -->
+      <label id="variable-input-label" for="variable-input-value">Flow Rate (Q)</label>
+      <div class="input-with-unit">
+        <input type="number" id="variable-input-value" min="0.000001" step="0.000001" value="5" required>
+        <select id="variable-input-unit">
+          <!-- Populated dynamically based on flow-input-type -->
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-row" id="limits-row">
+    <div class="form-group">
+      <label for="user-velocity-limit">Velocity Warning Limit <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum velocity threshold (default based on ASME B31.3 water flow limits). Velocities above this trigger erosion warnings.</span></span></label>
+      <div class="input-with-unit">
+        <input type="number" id="user-velocity-limit" min="0.1" step="0.1" value="3.0">
+        <select id="user-velocity-limit-unit">
+          <option value="m_s">m/s</option>
+          <option value="ft_s">ft/s</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="pump-efficiency">Assumed Pump/Fan Efficiency (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Used to estimate required electrical motor power (shaft power) to overcome the calculated total system head loss.</span></span></label>
+      <input type="number" id="pump-efficiency" class="full-select" min="1" max="100" value="70" required>
+    </div>
+  </div>
+
+  <button type="button" id="calculate-pipe-flow-btn" class="calculate-btn">
+    <i class="fas fa-cog fa-spin" id="calc-spinner" style="display:none;"></i>
+    <i class="fas fa-calculator" id="calc-icon"></i> Run Pipe Flow Analysis & Size System
+  </button>
 </form>
 </div>
 
+<!-- RESULTS CONTAINER -->
 <div id="result-container" class="result-container">
-<h3><i class="fas fa-chart-line"></i> Pipe Flow Analysis Results</h3>
-<div id="calculation-details"></div>
-<table class="result-table">
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody id="result-table-body"></tbody>
-</table>
-<div class="standard-reference" id="standard-reference"></div>
+  <h3><i class="fas fa-poll"></i> Pipe Sizing & Verification Dashboard</h3>
+  
+  <!-- Cards Grid -->
+  <div class="results-dashboard-grid">
+    <div class="result-card" style="border-top: 4px solid var(--secondary-color);">
+      <div class="result-card-title">Total Pressure Drop (&Delta;P)</div>
+      <div class="result-card-value" id="card-p-drop">-</div>
+      <div class="result-card-unit" id="card-p-drop-unit">kPa</div>
+      <div class="result-badge" id="badge-p-drop">-</div>
+    </div>
+    
+    <div class="result-card" style="border-top: 4px solid var(--primary-color);">
+      <div class="result-card-title">Fluid Velocity (V)</div>
+      <div class="result-card-value" id="card-velocity">-</div>
+      <div class="result-card-unit" id="card-velocity-unit">m/s</div>
+      <div class="result-badge" id="badge-velocity">-</div>
+    </div>
+    
+    <div class="result-card" style="border-top: 4px solid var(--accent-color);">
+      <div class="result-card-title">Reynolds Number (Re)</div>
+      <div class="result-card-value" id="card-reynolds">-</div>
+      <div class="result-card-unit" id="card-flow-regime">Flow Regime</div>
+      <div class="result-badge" id="badge-flow-regime">-</div>
+    </div>
+    
+    <div class="result-card" style="border-top: 4px solid var(--success-color);">
+      <div class="result-card-title">Electrical Motor Power</div>
+      <div class="result-card-value" id="card-power">-</div>
+      <div class="result-card-unit" id="card-power-unit">Watts</div>
+      <div class="result-badge" id="badge-power">-</div>
+    </div>
+  </div>
+
+  <!-- Dynamic Stepper results details -->
+  <h4 style="font-family:'Montserrat', sans-serif; font-size:1.35rem; color:var(--primary-color); margin-top:35px; margin-bottom:15px; border-left: 5px solid var(--secondary-color); padding-left:12px;"><i class="fas fa-list-ol"></i> Step-by-Step Sizing & Pressure Drop Verification</h4>
+  <p style="font-size:0.95rem; color:var(--text-color); margin-top:-5px; margin-bottom:20px;">The logical calculations completed for your target design parameters are broken down below step-by-step:</p>
+  
+  <div class="calculation-stepper" id="calculation-details"></div>
+
+  <!-- Result parameters table -->
+  <table class="result-table">
+    <thead>
+      <tr>
+        <th style="background-color: var(--primary-color);">Calculated Parameter</th>
+        <th style="background-color: var(--primary-color);">SI Unit Value</th>
+        <th style="background-color: var(--primary-color);">Selected Unit Value</th>
+        <th style="background-color: var(--primary-color);">Description & Reference Standards</th>
+      </tr>
+    </thead>
+    <tbody id="result-table-body">
+      <!-- Populated dynamically via JS -->
+    </tbody>
+  </table>
+
+  <!-- Safety Warning and recommendations list -->
+  <div class="standard-reference" id="standard-compliance-report" style="display:none; margin-top:25px;">
+    <!-- Populated dynamically via JS -->
+  </div>
+
+  <!-- PDF Action Button -->
+  <button type="button" id="download-pdf-btn" class="calculate-btn download-pdf-btn">
+    <i class="fas fa-file-pdf"></i> Generate & Download Certified PDF Report
+  </button>
 </div>
 </div>
 
-<!-- EDUCATIONAL CONTENT FOR ADSENSE COMPLIANCE -->
-<div class="tool-container" style="margin-top: 40px;">
-<h2>Understanding Pipe Flow Calculations</h2>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">The Darcy-Weisbach Equation</h3>
-<p>The Darcy-Weisbach equation is the fundamental relationship for calculating pressure drop due to friction in pipe flow, universally accepted in mechanical and hydraulic engineering per ISO 5167 and ASME standards. Unlike empirical equations limited to specific conditions, Darcy-Weisbach applies to all flow regimes and fluid types when combined with appropriate friction factor correlations. The equation states that pressure drop is proportional to pipe length, fluid density, velocity squared, and friction factor, while inversely proportional to pipe diameter.</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Reynolds Number and Flow Regimes</h3>
-<p>Reynolds number (Re) is the dimensionless parameter determining flow character. Re < 2000 indicates laminar flow where fluid particles move in parallel layers with minimal mixing—friction factor depends only on Re via f = 64/Re (Hagen-Poiseuille). Re > 4000 indicates turbulent flow where chaotic motion and eddies dominate—friction factor depends on both Re and relative roughness via Colebrook-White equation (or Swamee-Jain approximation). Transitional flow (2000 < Re < 4000) exhibits unstable characteristics switching between regimes, requiring conservative design assumptions.</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Friction Factor Determination</h3>
-<p>For laminar flow, friction factor calculation is straightforward: f = 64/Re. For turbulent flow, the implicit Colebrook-White equation requires iterative solution, so the explicit Swamee-Jain approximation provides accuracy within 1% while avoiding iteration. Pipe roughness (ε) represents average height of surface irregularities—commercial steel ≈ 0.045 mm, cast iron ≈ 0.26 mm, PVC/copper ≈ 0.0015 mm (very smooth). Relative roughness (ε/D) determines friction factor sensitivity: smooth pipes (small ε/D) approach hydraulically smooth behavior where roughness effects vanish at high Re.</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Temperature Effects on Fluid Properties</h3>
-<p>Fluid properties vary significantly with temperature. Water density decreases slightly from 1000 kg/m³ at 0°C to 958 kg/m³ at 100°C, while dynamic viscosity drops dramatically from 0.00179 Pa·s at 0°C to 0.000282 Pa·s at 100°C—this viscosity reduction increases Reynolds number by factor of 6, potentially changing flow regime from laminar to turbulent. Air density follows ideal gas law (ρ = P/RT) inversely proportional to absolute temperature. Oil viscosity is extremely temperature-sensitive: SAE 30 oil at 0°C has viscosity ~0.8 Pa·s but only ~0.02 Pa·s at 80°C, affecting pump selection and pressure drop calculations by orders of magnitude.</p>
-
-<h3 style="color: var(--primary-color); margin-top: 25px;">Practical Engineering Applications</h3>
-<p>Pipe flow calculations are essential for designing water distribution networks ensuring adequate pressure at all delivery points, sizing HVAC systems maintaining required airflow with acceptable fan power, selecting pumps providing necessary head to overcome friction losses, and verifying oil lubrication systems deliver sufficient flow at operating temperature. Always verify calculations against vendor data and field measurements during commissioning, as minor losses from fittings, valves, and bends can add 20-50% to calculated friction losses in complex piping layouts.</p>
+<!-- THEORY DETAILS SECTION -->
+<div class="tool-container">
+  <h2><i class="fas fa-graduation-cap" style="color: var(--secondary-color);"></i> Hydraulic Flow Sizing & Friction Loss Theory</h2>
+  <p>Piping systems are the arteries of industrial processes. Understanding the core physics behind fluid flow and pressure drop is essential for robust engineering.</p>
+  
+  <div class="theory-grid">
+    <div class="theory-card what">
+      <h4><i class="fas fa-question-circle" style="color: var(--secondary-color);"></i> WHAT is Pipe Flow Sizing?</h4>
+      <p>It is the engineering process of matching a volumetric fluid flow rate with a pipe internal diameter to achieve safe operating velocities, acceptable friction loss limits, and structural protection under operational temperatures and pressures.</p>
+    </div>
+    <div class="theory-card why">
+      <h4><i class="fas fa-exclamation-triangle" style="color: var(--accent-color);"></i> WHY is it Crucial (Importance)?</h4>
+      <p>Sizing prevents major failures. Sizing pipes too small results in excessive velocity, leading to rapid wall erosion (especially in multi-phase flows per API RP 14E), excessive noise, high pressure drop, and exponential pumping electrical costs. Sizing pipes too large increases capital costs and risks sediment accumulation in slurry/water networks.</p>
+    </div>
+    <div class="theory-card where">
+      <h4><i class="fas fa-map-marker-alt" style="color: var(--success-color);"></i> WHERE is it Applied?</h4>
+      <p>Used globally in petrochemical refineries (ASME B31.3 hydrocarbon lines), steam power generation facilities (ASME B31.1 superheated steam lines), building water service installations (IS 2065 layouts), and cross-country gas pipelines.</p>
+    </div>
+    <div class="theory-card how">
+      <h4><i class="fas fa-cogs" style="color: var(--secondary-color);"></i> HOW does it work?</h4>
+      <p>Fluid properties (density, viscosity) are calculated at fluid temperatures. Viscous resistance at the pipe walls is modeled via the <strong>Darcy Friction Factor (\(f\))</strong>, solved iteratively via the implicit <strong>Colebrook-White equation</strong> for turbulent flows. Localized friction drops are calculated as Major Losses, and fittings are solved using the K-factor method per <strong>Crane Co. TP-410</strong>.</p>
+    </div>
+    <div class="theory-card who">
+      <h4><i class="fas fa-users" style="color: var(--primary-color);"></i> WHO needs this calculator?</h4>
+      <p>Designed for Process Engineers sizing chemical headers, Utility Engineers routing HVAC ducts, Piping Designers rating distribution manifolds, and Field Commissioning Specialists auditing pumping heads and flow limits.</p>
+    </div>
+    <div class="theory-card when">
+      <h4><i class="fas fa-clock" style="color: var(--accent-color);"></i> WHEN is it performed?</h4>
+      <p>Conducted during frontend loading (FEED) to establish pipe diameters, detail engineering to select pumps/valves, and troubleshoot active plants experiencing cavitation or erosion failures.</p>
+    </div>
+  </div>
 </div>
 
+<!-- COMPREHENSIVE PIPING STANDARDS SECTION -->
+<div class="tool-container">
+  <h2><i class="fas fa-book" style="color: var(--secondary-color);"></i> Applicable Piping Sizing Codes & Standards</h2>
+  <p>Industrial piping design requires meeting compliance thresholds defined in approved national and international codes. These standards dictate fluid velocities and sizing constraints to prevent pipe failures.</p>
+  
+  <div class="standards-grid-v2">
+    <div class="standard-card-v2">
+      <div class="std-card-header">
+        <span class="std-logo">ASME B31.3</span>
+        <span class="std-scope-pill">Process Piping</span>
+      </div>
+      <div class="std-card-title">Process Plant Piping Code</div>
+      <div class="std-card-body">
+        Governs process pipes in petroleum, chemical, paper, and pharmaceutical plants. Restricts maximum design fluid velocities to prevent wall erosion, flow-induced fatigue, and high pressure losses.
+      </div>
+      <div class="std-card-limits">
+        <strong>Water limits:</strong> 1.5 - 3.0 m/s<br>
+        <strong>Saturated Steam:</strong> 25 - 40 m/s
+      </div>
+    </div>
+
+    <div class="standard-card-v2">
+      <div class="std-card-header">
+        <span class="std-logo">IS 2065</span>
+        <span class="std-scope-pill">Bureau of Indian Standards</span>
+      </div>
+      <div class="std-card-title">Water Supply in Buildings</div>
+      <div class="std-card-body">
+        Indian Standard code of practice for designing and installing domestic and industrial building water supplies. Mandates fluid velocities to prevent pipe scouring and water hammer.
+      </div>
+      <div class="std-card-limits">
+        <strong>Velocity ceiling:</strong> 2.4 m/s max<br>
+        <strong>Recommended target:</strong> 1.0 - 1.5 m/s
+      </div>
+    </div>
+
+    <div class="standard-card-v2">
+      <div class="std-card-header">
+        <span class="std-logo">API RP 14E</span>
+        <span class="std-scope-pill">American Petroleum Inst.</span>
+      </div>
+      <div class="std-card-title">Design of Production Piping</div>
+      <div class="std-card-body">
+        Recommends sizing practices for offshore production platforms. Computes fluid-density dependent erosion thresholds to prevent sand impingement and liquid droplet wall thinning.
+      </div>
+      <div class="std-card-limits">
+        <strong>Erosional limit:</strong> \(V_{limit} = \frac{C}{\sqrt{\rho}}\)<br>
+        (\(C = 100\) continuous, \(125\) intermittent)
+      </div>
+    </div>
+
+    <div class="standard-card-v2">
+      <div class="std-card-header">
+        <span class="std-logo">IS 1239 / 3589</span>
+        <span class="std-scope-pill">Steel Pipes Specs</span>
+      </div>
+      <div class="std-card-title">Carbon Steel Piping Guidelines</div>
+      <div class="std-card-body">
+        Defines sizes, nominal bores, schedules, and structural properties for water, gas, steam, and sewage steel pipes. Roughness values (\(\epsilon = 0.15\) mm aged) are typical for hydraulic loss designs.
+      </div>
+      <div class="std-card-limits">
+        <strong>Normal Roughness:</strong> &epsilon; = 0.15 mm<br>
+        <strong>Design range:</strong> Up to 1500 mm OD
+      </div>
+    </div>
+
+    <div class="standard-card-v2">
+      <div class="std-card-header">
+        <span class="std-logo">ASME B31.1</span>
+        <span class="std-scope-pill">Power Piping</span>
+      </div>
+      <div class="std-card-title">Steam Power Stations Code</div>
+      <div class="std-card-body">
+        Applies to steam boilers, feedwater pipelines, and high-pressure steam distribution headers in electricity generation facilities. Prioritizes low friction losses and high thermal safety margins.
+      </div>
+      <div class="std-card-limits">
+        <strong>Feedwater lines:</strong> 1.5 - 2.5 m/s<br>
+        <strong>Superheated Steam:</strong> 40 - 60 m/s
+      </div>
+    </div>
+
+    <div class="standard-card-v2">
+      <div class="std-card-header">
+        <span class="std-logo">ISO 5167</span>
+        <span class="std-scope-pill">Measurement Standards</span>
+      </div>
+      <div class="std-card-title">Orifice plate flow guidelines</div>
+      <div class="std-card-body">
+        Dictates upstream and downstream straight piping lengths required to establish uniform velocity profiles. This ensures differential pressure meters can measure flow rates accurately.
+      </div>
+      <div class="std-card-limits">
+        <strong>Straight Upstream:</strong> 10D to 40D<br>
+        <strong>Straight Downstream:</strong> 5D to 8D
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP BY STEP WORKBOOK EXAMPLE (MOCK CALCULATION) -->
+<div class="tool-container">
+  <h2><i class="fas fa-book-open" style="color: var(--accent-color);"></i> Step-by-Step Manual Sizing Walkthrough Workbook</h2>
+  <p>To verify the mathematical models and logic, a manual workbook calculation is outlined below. All variables are parsed through LaTeX mathematical equations for maximum precision.</p>
+  
+  <div class="walkthrough-visual-container">
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(37,99,235,0.15); color:#2563EB;">Workbook Step 1</span>
+      <div class="walkthrough-card-title">Specify Sizing Constraints & Fluid Properties</div>
+      <p>We select water at \(20^\circ\text{C}\) as our process fluid and specify commercial carbon steel as our pipe material. At this temperature, the physical properties are computed:</p>
+      <div class="walkthrough-math-box">
+        $$\text{Density } (\rho) = 998.2 \text{ kg/m}^3$$
+        $$\text{Dynamic Viscosity } (\mu) = 1.002 \times 10^{-3} \text{ Pa}\cdot\text{s} \quad (1.002 \text{ cP})$$
+        $$\text{Absolute Roughness } (\epsilon) = 0.045 \text{ mm} = 4.5 \times 10^{-5} \text{ m}$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(37,99,235,0.15); color:#2563EB;">Workbook Step 2</span>
+      <div class="walkthrough-card-title">Compute Pipe Internal Flow Area (A)</div>
+      <p>For a nominal diameter of \(52.5\text{ mm}\), convert to meters and apply the standard area formula:</p>
+      <div class="walkthrough-math-box">
+        $$D = 52.5 \text{ mm} = 0.0525 \text{ m}$$
+        $$A = \frac{\pi D^2}{4} = \frac{\pi \cdot (0.0525)^2}{4} = 2.16475 \times 10^{-3} \text{ m}^2$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(16,185,129,0.15); color:#059669;">Workbook Step 3</span>
+      <div class="walkthrough-card-title">Compute Mean Flow Velocity (V) & Check Code Compliance</div>
+      <p>For a process flow rate of \(5\text{ L/s}\) (\(0.005\text{ m}^3/\text{s}\)), divide by the flow area to obtain velocity. Compare this against velocity limit guidelines defined in <span class="highlight-pill">ASME B31.3</span> and <span class="highlight-pill">IS 2065</span>:</p>
+      <div class="walkthrough-math-box">
+        $$Q = 5.0 \text{ L/s} = 0.005 \text{ m}^3/\text{s} = 18.0 \text{ m}^3/\text{h}$$
+        $$V = \frac{Q}{A} = \frac{0.005}{2.16475 \times 10^{-3}} = 2.3097 \text{ m/s}$$
+        $$\text{Sizing Status: } \mathbf{SAFE} \quad (0.6 \text{ m/s} &lt; V &lt; 3.0 \text{ m/s})$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(245,158,11,0.15); color:#D97706;">Workbook Step 4</span>
+      <div class="walkthrough-card-title">Calculate Reynolds Number (Re) & Detect Flow Regime</div>
+      <p>Find the ratio of inertial forces to viscous forces to determine the boundary limits of the flow pattern per <span class="highlight-pill">ISO 12208</span>:</p>
+      <div class="walkthrough-math-box">
+        $$Re = \frac{\rho V D}{\mu} = \frac{998.2 \times 2.3097 \times 0.0525}{1.002 \times 10^{-3}} = 120,779$$
+        $$\text{Regime: } Re &gt; 4000 \implies \mathbf{Turbulent \ Flow}$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(245,158,11,0.15); color:#D97706;">Workbook Step 5</span>
+      <div class="walkthrough-card-title">Solve Colebrook-White Friction Factor (f)</div>
+      <p>Calculate the pipe relative roughness and solve the implicit Colebrook-White equation using the Newton-Raphson method:</p>
+      <div class="walkthrough-math-box">
+        $$\text{Relative Roughness } \left(\frac{\epsilon}{D}\right) = \frac{4.5 \times 10^{-5}}{0.0525} = 0.0008571$$
+        $$\frac{1}{\sqrt{f}} = -2 \log_{10}\left( \frac{\epsilon/D}{3.7} + \frac{2.51}{Re \sqrt{f}} \right) \implies f = 0.02086$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(239,68,68,0.15); color:#DC2626;">Workbook Step 6</span>
+      <div class="walkthrough-card-title">Calculate Major Friction Pressure Drop (P_major)</div>
+      <p>Using the Darcy-Weisbach equation, calculate the primary head loss across a pipeline length of \(100\text{ meters}\):</p>
+      <div class="walkthrough-math-box">
+        $$L = 100 \text{ m}$$
+        $$\Delta P_{major} = f \frac{L}{D} \frac{\rho V^2}{2} = 0.02086 \cdot \frac{100}{0.0525} \cdot \frac{998.2 \cdot (2.3097)^2}{2} = 105,798 \text{ Pa} = 105.80 \text{ kPa}$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(239,68,68,0.15); color:#DC2626;">Workbook Step 7</span>
+      <div class="walkthrough-card-title">Sum Fittings Minor Losses K-Factors (Crane Co. TP-410)</div>
+      <p>Calculate fully turbulent friction factor (\(f_T\)) for NPS 2" steel pipe, then calculate K-factors for the fitting configurations: 2 x 90° elbows, 1 x gate valve, 1 x entrance, 1 x exit:</p>
+      <div class="walkthrough-math-box">
+        $$f_T = \frac{0.25}{\left[ \log_{10} \left( \frac{4.5 \times 10^{-5} / 0.0525}{3.7} \right) \right]^2} = 0.01915$$
+        $$K_{elbow} = 30 \cdot f_T = 30 \cdot 0.01915 = 0.5745 \quad (\text{Total for 2} = 1.149)$$
+        $$K_{gate} = 8 \cdot f_T = 8 \cdot 0.01915 = 0.1532$$
+        $$K_{entrance} = 0.5, \quad K_{exit} = 1.0$$
+        $$\sum K = 1.149 + 0.1532 + 0.5 + 1.0 = 2.802$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(16,185,129,0.15); color:#059669;">Workbook Step 8</span>
+      <div class="walkthrough-card-title">Calculate Minor Fitting Pressure Drop (P_minor) & Sized Total &Delta;P</div>
+      <p>Combine major friction losses and minor losses to obtain the final sized pressure drop:</p>
+      <div class="walkthrough-math-box">
+        $$\Delta P_{minor} = \sum K \cdot \frac{\rho V^2}{2} = 2.802 \cdot \frac{998.2 \cdot (2.3097)^2}{2} = 7,461 \text{ Pa} = 7.46 \text{ kPa}$$
+        $$\Delta P_{total} = \Delta P_{major} + \Delta P_{minor} = 105.80 \text{ kPa} + 7.46 \text{ kPa} = 113.26 \text{ kPa}$$
+      </div>
+    </div>
+
+    <div class="walkthrough-card">
+      <span class="walkthrough-step-label" style="background-color:rgba(16,185,129,0.15); color:#059669;">Workbook Step 9</span>
+      <div class="walkthrough-card-title">Estimate Hydraulic & Electrical Pumping Power</div>
+      <p>Using the sized system pressure drop and flow rate, compute hydraulic energy and electrical motor power at \(70\%\) efficiency:</p>
+      <div class="walkthrough-math-box">
+        $$P_{hydraulic} = Q \cdot \Delta P_{total} = 0.005 \text{ m}^3/\text{s} \cdot 113,259 \text{ Pa} = 566.3 \text{ W}$$
+        $$P_{motor} = \frac{P_{hydraulic}}{\eta} = \frac{566.3}{0.70} = 809.0 \text{ W} = 0.809 \text{ kW} \quad (1.08 \text{ HP})$$
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIVE EDUCATIONAL ACCORDIONS & SVG DIAGRAMS -->
+<div class="tool-container faq-section">
+  <h2><i class="fas fa-graduation-cap" style="color: var(--secondary-color);"></i> Pipe Flow Sizing: Core Principles & FAQs</h2>
+  
+  <div class="tool-description">
+    <p>Read detailed explanations of the core hydraulic design questions, featuring vector illustrations depicting the physics behind pipe flow and pressure losses.</p>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(1)">
+      1. How do Laminar and Turbulent flow velocity profiles differ?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-1"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-1">
+      <p>Fluid flow profiles depend on viscous forces versus inertial forces. 
+      In <span class="highlight-pill">Laminar Flow</span> (\(Re &lt; 2000\)), viscous forces dominate, and fluid particles move in smooth parallel lines. The velocity profile is perfectly parabolic: the fluid layer touching the wall is stationary (no-slip condition), and the centerline velocity is exactly <strong>twice</strong> the average velocity (\(V_{max} = 2 \cdot V_{avg}\)).</p>
+      <p>In <span class="highlight-pill">Turbulent Flow</span> (\(Re &gt; 4000\)), inertial forces dominate, causing chaotic mixing, vortex shedding, and eddies. This constant mixing acts to distribute momentum evenly across the pipe, making the profile much flatter and blunter. The centerline velocity is only about 1.15 to 1.25 times the average velocity (\(V_{max} \approx 1.2 \cdot V_{avg}\)), with a very steep velocity gradient near the wall.</p>
+      <div class="faq-diagram-container">
+        <svg viewBox="0 0 500 180" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
+          <!-- Pipe Walls -->
+          <line x1="20" y1="20" x2="480" y2="20" stroke="#475569" stroke-width="6"/>
+          <line x1="20" y1="160" x2="480" y2="160" stroke="#475569" stroke-width="6"/>
+          <line x1="250" y1="20" x2="250" y2="160" stroke="#94A3B8" stroke-dasharray="4,4"/>
+          <!-- Laminar Profile (Left Side) -->
+          <text x="120" y="15" fill="#1E3A8A" font-size="12" font-weight="bold" text-anchor="middle">Laminar Flow (Parabolic)</text>
+          <!-- Streamline arrows -->
+          <path d="M 20 90 Q 90 90 140 90" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          <polygon points="140,90 132,86 132,94" fill="#3B82F6"/>
+          <path d="M 20 50 Q 80 50 110 50" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          <polygon points="110,50 102,46 102,54" fill="#3B82F6"/>
+          <path d="M 20 130 Q 80 130 110 130" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          <polygon points="110,130 102,126 102,134" fill="#3B82F6"/>
+          <path d="M 20 30 Q 50 30 65 30" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          <polygon points="65,30 57,26 57,34" fill="#3B82F6"/>
+          <path d="M 20 150 Q 50 150 65 150" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          <polygon points="65,150 57,146 57,154" fill="#3B82F6"/>
+          <!-- Parabola Envelope Curve -->
+          <path d="M 20 20 Q 150 90 20 160" stroke="#EF4444" stroke-width="3" fill="none"/>
+          
+          <!-- Turbulent Profile (Right Side) -->
+          <text x="370" y="15" fill="#059669" font-size="12" font-weight="bold" text-anchor="middle">Turbulent Flow (Flatter/Blunt)</text>
+          <!-- Turbulent velocity arrows -->
+          <path d="M 270 90 L 410 90" stroke="#10B981" stroke-width="2" fill="none"/>
+          <polygon points="410,90 402,86 402,94" fill="#10B981"/>
+          <path d="M 270 50 L 400 50" stroke="#10B981" stroke-width="2" fill="none"/>
+          <polygon points="400,50 392,46 392,54" fill="#10B981"/>
+          <path d="M 270 130 L 400 130" stroke="#10B981" stroke-width="2" fill="none"/>
+          <polygon points="400,130 392,126 392,134" fill="#10B981"/>
+          <path d="M 270 30 L 320 30" stroke="#10B981" stroke-width="2" fill="none"/>
+          <polygon points="320,30 312,26 312,34" fill="#10B981"/>
+          <path d="M 270 150 L 320 150" stroke="#10B981" stroke-width="2" fill="none"/>
+          <polygon points="320,150 312,146 312,154" fill="#10B981"/>
+          <!-- Flat envelope curve -->
+          <path d="M 270 20 L 300 24 Q 315 28 320 40 L 410 80 Q 415 90 410 100 L 320 140 Q 315 152 300 156 L 270 160" stroke="#F59E0B" stroke-width="3" fill="none"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(2)">
+      2. Why is the Darcy-Weisbach equation preferred over Hazen-Williams?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-2"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-2">
+      <p>The <span class="highlight-pill">Darcy-Weisbach equation</span> is a fundamentally derived physical equation:
+      $$\Delta P = f \cdot \frac{L}{D} \cdot \frac{\rho V^2}{2}$$
+      It accounts for fluid density (\(\rho\)), dynamic viscosity (\(\mu\)), pipe length (\(L\)), diameter (\(D\)), and internal roughness (\(\epsilon\)). It is valid for <strong>all Newtonian fluids</strong> (water, steam, oils, air, chemicals) at any temperature and across all flow regimes (laminar, transitional, and turbulent).</p>
+      
+      <p>The <span class="highlight-pill">Hazen-Williams formula</span>, conversely, is strictly empirical:
+      $$h_f = 10.67 \cdot L \cdot Q^{1.852} \cdot C^{-1.852} \cdot D^{-4.87}$$
+      It has major limitations:
+      <ul>
+        <li>It does not include density or viscosity, meaning it is only accurate for water at normal ambient temperatures (\(\approx 15 - 25^\circ\text{C}\)).</li>
+        <li>It assumes turbulent flow and is completely invalid for laminar or transitional flows.</li>
+        <li>It fails for highly viscous oils, hot water systems, gases, or steam.</li>
+      </ul>
+      For these reasons, international codes (ASME, ISO) mandate Darcy-Weisbach for general industrial process calculations.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(3)">
+      3. What is Pipe Relative Roughness and why does it affect pressure drop?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-3"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-3">
+      <p>Relative roughness is the ratio of the average height of microscopic wall irregularities (\(\epsilon\)) to the inside pipe diameter (\(D\)), expressed as \(\epsilon/D\).</p>
+      <p>In turbulent flow, the fluid near the pipe walls forms a thin laminar boundary layer. If the pipe is smooth (small \(\epsilon\)), the roughness peaks stay submerged inside this laminar boundary layer, meaning the wall acts as "hydraulically smooth". However, as the Reynolds number increases, the boundary layer becomes thinner. The physical roughness peaks then protrude into the main turbulent flow core, generating wake eddies behind each roughness peak, which increases energy dissipation (friction loss) and head loss.</p>
+      <div class="faq-diagram-container">
+        <svg viewBox="0 0 500 120" width="100%" height="100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Pipe Wall showing Roughness -->
+          <rect x="0" y="80" width="500" height="40" fill="#E2E8F0"/>
+          <line x1="0" y1="80" x2="500" y2="80" stroke="#475569" stroke-dasharray="5,5"/>
+          <!-- Jagged roughness profile -->
+          <path d="M 0 80 L 20 70 L 40 80 L 60 65 L 80 80 L 100 68 L 120 80 L 140 72 L 160 80 L 180 62 L 200 80 L 220 70 L 240 80 L 260 67 L 280 80 L 300 70 L 320 80 L 340 60 L 360 80 L 380 68 L 400 80 L 420 72 L 440 80 L 460 65 L 480 80 L 500 70" fill="none" stroke="#475569" stroke-width="3"/>
+          <text x="250" y="110" fill="#1E293B" font-size="12" font-weight="bold" text-anchor="middle">Pipe Wall Material (Microscopic Roughness View)</text>
+          
+          <!-- Roughness height indicator -->
+          <line x1="340" y1="80" x2="340" y2="60" stroke="#EF4444" stroke-width="2"/>
+          <line x1="335" y1="80" x2="345" y2="80" stroke="#EF4444" stroke-width="2"/>
+          <line x1="335" y1="60" x2="345" y2="60" stroke="#EF4444" stroke-width="2"/>
+          <text x="355" y="73" fill="#EF4444" font-size="12" font-weight="bold">Roughness height (&epsilon;)</text>
+          
+          <!-- Laminar boundary layer line -->
+          <path d="M 0 50 C 150 52 350 48 500 50" stroke="#3B82F6" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+          <text x="20" y="45" fill="#3B82F6" font-size="10" font-weight="bold">Laminar Boundary Layer Boundary</text>
+          
+          <!-- Turbulent Flow arrow -->
+          <path d="M 50 25 L 200 25" stroke="#10B981" stroke-width="3" fill="none"/>
+          <polygon points="200,25 192,20 192,30" fill="#10B981"/>
+          <text x="210" y="28" fill="#10B981" font-size="11" font-weight="bold">Main Turbulent Core Flow</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(4)">
+      4. How do fitting losses (minor losses) contribute to system pressure drop?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-4"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-4">
+      <p>Fittings (elbows, tees, valves, entries, expansions) alter the direction or flow cross-sectional area of a pipe, disrupting the stable velocity profile. This causes flow separation, localized high-speed jets, boundary layer disruption, and recalculating vortex regions (eddies). The kinetic energy of the fluid is converted to turbulent heat, resulting in localized pressure drops.</p>
+      <p>According to <span class="highlight-pill">Crane Co. TP-410</span>, the head loss for fittings is calculated as:
+      $$h_f = K \cdot \frac{V^2}{2g} \quad \text{or} \quad \Delta P = K \cdot \frac{\rho V^2}{2}$$
+      where \(K\) is the fitting loss coefficient. For standard fittings, \(K\) is often expressed as:
+      $$K = N \cdot f_T$$
+      where \(N\) is an equivalent length factor (e.g., 30 for standard 90° elbow) and \(f_T\) is the friction factor for fully turbulent flow in commercial steel pipe of the same size. This tool calculates these values dynamically.</p>
+      <div class="faq-diagram-container">
+        <svg viewBox="0 0 500 180" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
+          <!-- Elbow outer boundaries -->
+          <path d="M 20 20 L 100 20 A 80 80 0 0 1 180 100 L 180 160" stroke="#475569" stroke-width="6" fill="none"/>
+          <path d="M 20 80 L 100 80 A 20 20 0 0 1 120 100 L 120 160" stroke="#475569" stroke-width="6" fill="none"/>
+          
+          <!-- Flow Streamlines -->
+          <!-- Inflow -->
+          <path d="M 25 35 L 90 35 A 65 65 0 0 1 155 100 L 155 155" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          <polygon points="155,145 151,137 159,137" fill="#3B82F6"/>
+          
+          <path d="M 25 50 L 95 50 A 45 45 0 0 1 140 95 L 140 155" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          
+          <path d="M 25 65 L 100 65 A 25 25 0 0 1 125 90 L 125 155" stroke="#3B82F6" stroke-width="2" fill="none"/>
+          
+          <!-- Separation & Vortex zone downstream -->
+          <path d="M 120 102 C 122 120 135 125 130 110 C 125 105 121 103 120 102" fill="#EF4444" opacity="0.3"/>
+          <path d="M 120 120 Q 130 125 120 130" stroke="#EF4444" stroke-width="1.5" fill="none"/>
+          <circle cx="126" cy="122" r="3" fill="#EF4444"/>
+          <circle cx="127" cy="112" r="2.5" fill="#EF4444"/>
+          
+          <!-- Outer separation zone -->
+          <path d="M 160 110 C 175 125 178 140 178 150" stroke="#F59E0B" stroke-dasharray="3,3" stroke-width="1.5" fill="none"/>
+          
+          <text x="50" y="15" fill="#475569" font-size="11" font-weight="bold">90° Elbow</text>
+          <text x="135" y="145" fill="#EF4444" font-size="9" font-weight="bold" text-anchor="end">Recirculation / Eddy Zone (Loss)</text>
+          <text x="180" y="125" fill="#F59E0B" font-size="10" font-weight="bold">Flow Separation</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(5)">
+      5. What is water hammer and how can it be calculated or prevented?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-5"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-5">
+      <p><strong>Water hammer</strong> (hydraulic shock) is a pressure spike that occurs when a moving fluid is suddenly forced to stop or change direction, such as when a valve closes quickly. This sudden change in momentum creates a dynamic pressure wave that travels back and forth through the pipe at the speed of sound in the liquid (\(a \approx 1000 - 1400 \text{ m/s}\) for water in steel pipes).</p>
+      <p>The maximum pressure rise (\(\Delta P\)) can be estimated using Joukowsky's equation:
+      $$\Delta P = \rho \cdot a \cdot \Delta V$$
+      where \(\rho\) is fluid density and \(\Delta V\) is the change in fluid velocity. For water flowing at \(2 \text{ m/s}\), a sudden shutdown can cause a pressure spike of:
+      $$\Delta P = 1000 \text{ kg/m}^3 \cdot 1200 \text{ m/s} \cdot 2 \text{ m/s} = 2.4 \text{ MPa} \approx 24 \text{ bar} \quad (350 \text{ psi})!$$
+      This spike can rupture pipe walls, damage pressure transmitters, and buckle supports.</p>
+      <p><strong>Prevention methods:</strong>
+      <ul>
+        <li>Limit fluid velocities per standard recommendations (e.g., <span class="highlight-pill">IS 2065</span> limits velocity to 2.4 m/s).</li>
+        <li>Increase valve closing times (ensuring the valve closing time \(t_c &gt; 2L/a\)).</li>
+        <li>Install surge tanks, accumulator systems, or shock arrestors.</li>
+      </ul>
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(6)">
+      6. What causes cavitation in piping systems?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-6"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-6">
+      <p>According to Bernoulli's principle, when a fluid accelerates through a restriction (such as a partially closed valve or orifice plate), its velocity increases and its localized static pressure drops. The point of highest velocity and lowest pressure is called the <strong>vena contracta</strong>.</p>
+      <p>If the static pressure at this vena contracta drops below the fluid's <strong>vapor pressure (\(P_v\))</strong> at the operating temperature, the liquid flashes locally, creating vapor bubbles. Downstream of the restriction, the flow area widens, the velocity drops, and static pressure recovers. If the recovered pressure is higher than the vapor pressure, these vapor bubbles collapse implosively in microseconds.</p>
+      <p>These implosions generate micro-jets of fluid and local pressures up to \(1000 \text{ bar}\), which can pit metal surfaces, cause loud crackling noise, create high-frequency vibration, and damage valves.</p>
+      <div class="faq-diagram-container">
+        <svg viewBox="0 0 500 150" width="100%" height="130" xmlns="http://www.w3.org/2000/svg">
+          <!-- Constricted Pipe (Valve Port Model) -->
+          <path d="M 10 20 L 200 20 L 220 50 L 280 50 L 300 20 L 490 20" stroke="#475569" stroke-width="4" fill="none"/>
+          <path d="M 10 130 L 200 130 L 220 100 L 280 100 L 300 130 L 490 130" stroke="#475569" stroke-width="4" fill="none"/>
+          
+          <!-- Streamlines showing contraction -->
+          <path d="M 15 45 Q 200 45 225 60 L 275 60 Q 300 45 485 45" stroke="#3B82F6" stroke-width="1.5" fill="none"/>
+          <path d="M 15 75 L 485 75" stroke="#3B82F6" stroke-width="1.5" fill="none"/>
+          <path d="M 15 105 Q 200 105 225 90 L 275 90 Q 300 105 485 105" stroke="#3B82F6" stroke-width="1.5" fill="none"/>
+          
+          <!-- Vapor Bubbles in constriction -->
+          <circle cx="230" cy="75" r="3" fill="#E2E8F0" stroke="#3B82F6" stroke-width="1"/>
+          <circle cx="240" cy="65" r="4.5" fill="#E2E8F0" stroke="#3B82F6" stroke-width="1"/>
+          <circle cx="250" cy="85" r="4" fill="#E2E8F0" stroke="#3B82F6" stroke-width="1"/>
+          <circle cx="265" cy="72" r="5" fill="#E2E8F0" stroke="#3B82F6" stroke-width="1"/>
+          
+          <!-- Bubble Implosion downstream -->
+          <g transform="translate(320, 75)">
+            <path d="M -8 -8 L -2 -2 L -8 0 L -2 2 L -8 8 L -1 3 L 0 8 L 2 2 L 8 8 L 3 1 L 8 0 L 2 -2 L 8 -8 L 1 -3 L 0 -8 L -2 -2 Z" fill="#EF4444" opacity="0.8"/>
+            <circle cx="0" cy="0" r="2" fill="#fff"/>
+          </g>
+          
+          <text x="100" y="38" fill="#1E3A8A" font-size="10" font-weight="bold">1. High Pressure</text>
+          <text x="250" y="42" fill="#F59E0B" font-size="9" font-weight="bold" text-anchor="middle">2. Vaporization (P &lt; Pv)</text>
+          <text x="380" y="40" fill="#EF4444" font-size="9" font-weight="bold">3. Implosion (P Recovery)</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(7)">
+      7. What is the difference between static, dynamic, and total pressure?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-7"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-7">
+      <p>In fluid dynamics, total mechanical energy is conserved along a streamline per Bernoulli's equation (excluding frictional loss):
+      $$P_{\text{total}} = P_{\text{static}} + P_{\text{dynamic}} + \rho g z$$
+      <ul>
+        <li><strong>Static Pressure (\(P_s\))</strong>: The actual thermodynamic pressure of the fluid. It is exerted equally in all directions and is measured using a tap parallel to the flow direction (no kinetic component).</li>
+        <li><strong>Dynamic Pressure (\(P_d\))</strong>: The kinetic energy of the fluid per unit volume, defined as:
+        $$P_d = \frac{1}{2} \rho V^2$$
+        It represents the pressure rise that occurs if the kinetic energy of the fluid is converted entirely to static pressure.</li>
+        <li><strong>Total Pressure (\(P_t\))</strong>: The sum of static and dynamic pressure (\(P_t = P_s + P_d\)). This is the pressure measured by pointing a probe (like a Pitot tube) directly upstream into the flow to stall the fluid locally.</li>
+      </ul>
+      </p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(8)">
+      8. What is the entrance length in pipe flow and why does it matter?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-8"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-8">
+      <p>When fluid enters a pipe from a tank, the velocity profile is flat and uniform. As the fluid flows downstream, friction against the walls creates a shear layer, and a boundary layer begins to grow. The thickness of this boundary layer increases until it reaches the centerline of the pipe. Beyond this point, the velocity profile stops changing, and the flow is considered <strong>fully developed</strong>.</p>
+      <p>The length required to reach this state is the <strong>entrance length (\(L_e\))</strong>:
+      <ul>
+        <li>For Laminar Flow: \(L_e \approx 0.06 \cdot Re \cdot D\) (Can be very long, e.g., if Re = 2000, \(L_e \approx 120\) pipe diameters).</li>
+        <li>For Turbulent Flow: \(L_e \approx 10 \cdot D\) (Viscous effects mix quickly due to eddies).</li>
+      </ul>
+      In this entrance region, velocity gradients at the wall are steeper, so the pressure drop per meter is higher than in the fully developed region. Standard engineering models assume fully developed flow for simplicity.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(9)">
+      9. What does equivalent pipe length (Leq) mean in system head calculations?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-9"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-9">
+      <p>Equivalent length (\(L_{eq}\)) is a simplified method used to calculate pressure drops for fittings and valves. Instead of using K-factors, each fitting is modeled as an equivalent length of straight pipe that would produce the same friction loss under identical conditions.</p>
+      <p>The relationship is derived by equating the Darcy-Weisbach equation to the minor loss equation:
+      $$f \cdot \frac{L_{eq}}{D} \cdot \frac{V^2}{2g} = K \cdot \frac{V^2}{2g} \implies L_{eq} = K \cdot \frac{D}{f}$$
+      For example, if a 2-inch gate valve has a K-factor of 0.15 and the pipe friction factor is 0.02, its equivalent length is:
+      $$L_{eq} = 0.15 \cdot \frac{0.05 \text{ m}}{0.02} = 0.375 \text{ m}$$
+      Summing the straight-run pipe length and the equivalent lengths of all fittings gives the total equivalent length, simplifying calculations:
+      $$L_{\text{total}} = L_{\text{straight}} + \sum L_{eq}$$
+      This method is commonly used in building services codes, including <span class="highlight-pill">IS 2065</span>.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question" onclick="toggleFaq(10)">
+      10. What is a Piping System Curve and how does it intersect with a Pump Curve?
+      <i class="fas fa-chevron-down faq-chevron" id="faq-chev-10"></i>
+    </div>
+    <div class="faq-content faq-answer" id="faq-ans-10">
+      <p>A <strong>system curve</strong> maps the total dynamic head (TDH) required to move fluid through a piping system against volumetric flow rate. It is the sum of:
+      <ul>
+        <li><strong>Static Head (\(h_s\))</strong>: The static elevation change and pressure differences between source and destination (independent of flow rate).</li>
+        <li><strong>Frictional Head Loss (\(h_f\))</strong>: Major and minor losses, which increase quadratically with flow rate (\(h_f \propto Q^2\)).</li>
+      </ul>
+      A centrifugal pump has a <strong>performance curve (head vs. flow)</strong> supplied by the manufacturer. The pump curve slants downward, showing that head decreases as flow rate increases. The operating point of the system is the intersection of these two curves, representing the flow rate where the pump's head output exactly matches the system's head requirements.</p>
+      <div class="faq-diagram-container">
+        <svg viewBox="0 0 500 200" width="100%" height="160" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid Axes -->
+          <line x1="40" y1="20" x2="40" y2="170" stroke="#475569" stroke-width="2"/>
+          <line x1="40" y1="170" x2="480" y2="170" stroke="#475569" stroke-width="2"/>
+          <text x="260" y="192" fill="#475569" font-size="11" font-weight="bold" text-anchor="middle">Flow Rate (Q)</text>
+          <text x="15" y="95" fill="#475569" font-size="11" font-weight="bold" text-anchor="middle" transform="rotate(-90 15 95)">Head (H) / Pressure</text>
+          
+          <!-- Static Head Level -->
+          <line x1="40" y1="130" x2="470" y2="130" stroke="#94A3B8" stroke-dasharray="3,3" stroke-width="1.5"/>
+          <text x="45" y="125" fill="#94A3B8" font-size="9" font-weight="bold">Static Head (Hs)</text>
+          
+          <!-- System Curve (starts at Hs and rises quadratically) -->
+          <path d="M 40 130 Q 250 120 450 40" stroke="#EF4444" stroke-width="3" fill="none"/>
+          <text x="380" y="55" fill="#EF4444" font-size="10" font-weight="bold" transform="rotate(-15 380 55)">System Curve (Hs + Hf)</text>
+          
+          <!-- Pump Curve (Starts high, curves downward) -->
+          <path d="M 40 50 Q 250 80 450 150" stroke="#3B82F6" stroke-width="3" fill="none"/>
+          <text x="350" y="115" fill="#3B82F6" font-size="10" font-weight="bold" transform="rotate(16 350 115)">Pump Curve</text>
+          
+          <!-- Intersection Point -->
+          <!-- Operating point is at approx x=267, y=82 -->
+          <circle cx="267" cy="82" r="6" fill="#F59E0B"/>
+          <line x1="267" y1="82" x2="267" y2="170" stroke="#F59E0B" stroke-dasharray="3,3" stroke-width="1"/>
+          <line x1="267" y1="82" x2="40" y2="82" stroke="#F59E0B" stroke-dasharray="3,3" stroke-width="1"/>
+          
+          <text x="278" y="76" fill="#D97706" font-size="11" font-weight="bold">Operating Point</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
 </main>
 
-<!-- FOOTER -->
-    
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+
+    <!-- Related Tools Section (Upgraded) -->
+    <section style="padding: 50px 0; background: var(--bg-color, #f8fafc); border-top: 1px solid var(--border-color);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
+            <h2 style="text-align:center; font-size:1.6rem; margin-bottom:10px; color:var(--heading-color, #1e293b); font-family: 'Montserrat', sans-serif;">Related Engineering Sizing Utilities</h2>
+            <p style="text-align:center; max-width:700px; margin: 0 auto 30px auto; font-size:0.95rem; color: var(--text-color);">Explore other closely coupled calculators essential for piping design engineers, mechanical structures analysts, and fluid system rating operators.</p>
+            <div class="silo-grid-v2">
+                    <a href="/allowable-stress-safety-factor" class="silo-card-v2" style="text-decoration:none;">
+                        <div>
+                          <h4><i class="fas fa-shield-alt" style="color: var(--secondary-color);"></i> Allowable Stress & Safety Factor</h4>
+                          <p>Calculates materials maximum allowable stresses and design safety margins under temperature per ASME Boiler and Pressure Vessel Codes (BPVC).</p>
+                        </div>
+                        <span class="help-note"><i class="fas fa-lightbulb"></i> Helps verify wall thickness mechanical strength compliance.</span>
                     </a>
-                    <a href="/bolt-torque" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
+                    <a href="/bolt-torque" class="silo-card-v2" style="text-decoration:none;">
+                        <div>
+                          <h4><i class="fas fa-wrench" style="color: var(--secondary-color);"></i> Bolt Torque & Flange Sizing</h4>
+                          <p>Computes torque requirements and bolt preloads for pipe flanges and mechanical joints to prevent leakage under pressure.</p>
+                        </div>
+                        <span class="help-note"><i class="fas fa-lightbulb"></i> Helps prevent gasket failure and system fluid leaks.</span>
                     </a>
-                    <a href="/darcy-weisbach" class="silo-card" style="text-decoration:none;">
-                        <span>Darcy Weisbach</span>
+                    <a href="/darcy-weisbach" class="silo-card-v2" style="text-decoration:none;">
+                        <div>
+                          <h4><i class="fas fa-water" style="color: var(--secondary-color);"></i> Darcy-Weisbach head loss</h4>
+                          <p>Focuses strictly on pure head loss and equivalent straight piping friction factor analysis for mechanical systems.</p>
+                        </div>
+                        <span class="help-note"><i class="fas fa-lightbulb"></i> Helps map system curve head calculations.</span>
                     </a>
             </div>
         </div>
     </section>
-    <footer>
+    
+<footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-left">
@@ -930,11 +2354,11 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -942,10 +2366,10 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -985,411 +2409,1168 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 <div id="custom-message-box"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-const calculateBtn = document.getElementById('calculate-pipe-flow-btn');
-const resultContainer = document.getElementById('result-container');
-const resultTableBody = document.getElementById('result-table-body');
-const standardReference = document.getElementById('standard-reference');
-const calculationDetailsDiv = document.getElementById('calculation-details');
-
-const fluidTypeSelect = document.getElementById('fluid-type');
-const pipeMaterialSelect = document.getElementById('pipe-material');
-const fluidTemperatureInput = document.getElementById('fluid-temperature');
-const pipeDiameterInput = document.getElementById('pipe-diameter');
-const pipeLengthInput = document.getElementById('pipe-length');
-const flowInputTypeSelect = document.getElementById('flow-input-type');
-const flowRateInput = document.getElementById('flow-rate-input');
-const velocityInput = document.getElementById('velocity-input');
-const pressureDropInput = document.getElementById('pressure-drop-input');
-const flowRateLabel = document.getElementById('flow-rate-label');
-const velocityLabel = document.getElementById('velocity-label');
-const pressureDropLabel = document.getElementById('pressure-drop-label');
-
-// Temperature-dependent fluid properties
-function getWaterProperties(temperatureCelsius) {
-let density, viscosity;
-if (temperatureCelsius <= 0) {
-density = 1000; viscosity = 0.001792;
-} else if (temperatureCelsius <= 10) {
-density = 999.7; viscosity = 0.001307;
-} else if (temperatureCelsius <= 20) {
-density = 998.2; viscosity = 0.001002;
-} else if (temperatureCelsius <= 30) {
-density = 995.7; viscosity = 0.0007978;
-} else if (temperatureCelsius <= 40) {
-density = 992.2; viscosity = 0.0006529;
-} else if (temperatureCelsius <= 60) {
-density = 983.2; viscosity = 0.0004665;
-} else if (temperatureCelsius <= 80) {
-density = 971.8; viscosity = 0.0003550;
-} else if (temperatureCelsius <= 100) {
-density = 958.4; viscosity = 0.0002821;
-} else {
-density = 998.2; viscosity = 0.001002;
-displayMessage("Warning: Water properties outside typical range (0-100°C). Using approximate values.", "warning");
-}
-return { density: density, viscosity: viscosity };
-}
-
-function getAirProperties(temperatureCelsius) {
-const atmosphericPressure_Pa = 101325;
-const R_specific_air = 287.05;
-const temperatureKelvin = temperatureCelsius + 273.15;
-let density = atmosphericPressure_Pa / (R_specific_air * temperatureKelvin);
-let viscosity;
-if (temperatureCelsius <= 0) {
-viscosity = 0.00001716;
-} else if (temperatureCelsius <= 20) {
-viscosity = 0.00001825;
-} else if (temperatureCelsius <= 40) {
-viscosity = 0.00001930;
-} else {
-viscosity = 0.00002000;
-}
-return { density: density, viscosity: viscosity };
-}
-
-function getOilProperties(temperatureCelsius) {
-let density = 880;
-let viscosity;
-if (temperatureCelsius <= 0) {
-viscosity = 0.8;
-} else if (temperatureCelsius <= 20) {
-viscosity = 0.29;
-} else if (temperatureCelsius <= 40) {
-viscosity = 0.1;
-} else if (temperatureCelsius <= 60) {
-viscosity = 0.05;
-} else {
-viscosity = 0.02;
-}
-return { density: density, viscosity: viscosity };
-}
-
-const pipeRoughness = {
-'steel': 0.000045,
-'cast_iron': 0.00026,
-'pvc': 0.0000015,
-'copper': 0.0000015,
+// Global units conversion object
+const UnitConversions = {
+  diameter: {
+    mm: { toSI: v => v / 1000, fromSI: v => v * 1000, label: 'mm' },
+    in: { toSI: v => v * 0.0254, fromSI: v => v / 0.0254, label: 'inch' },
+    m: { toSI: v => v, fromSI: v => v, label: 'm' }
+  },
+  length: {
+    m: { toSI: v => v, fromSI: v => v, label: 'm' },
+    ft: { toSI: v => v * 0.3048, fromSI: v => v / 0.3048, label: 'ft' }
+  },
+  pressure: {
+    bar: { toSI: v => v * 100000, fromSI: v => v / 100000, label: 'bar(g)' },
+    kPa: { toSI: v => v * 1000, fromSI: v => v / 1000, label: 'kPa(g)' },
+    psi: { toSI: v => v * 6894.757, fromSI: v => v / 6894.757, label: 'psi(g)' },
+    Pa: { toSI: v => v, fromSI: v => v, label: 'Pa(g)' }
+  },
+  flow: {
+    m3_s: { toSI: v => v, fromSI: v => v, label: 'm³/s' },
+    m3_h: { toSI: v => v / 3600, fromSI: v => v * 3600, label: 'm³/h' },
+    l_min: { toSI: v => v / 60000, fromSI: v => v * 60000, label: 'L/min' },
+    gpm: { toSI: v => v * 6.30901964e-5, fromSI: v => v / 6.30901964e-5, label: 'gpm' },
+    cfm: { toSI: v => v * 4.71947443e-4, fromSI: v => v / 4.71947443e-4, label: 'cfm' }
+  },
+  velocity: {
+    m_s: { toSI: v => v, fromSI: v => v, label: 'm/s' },
+    ft_s: { toSI: v => v * 0.3048, fromSI: v => v / 0.3048, label: 'ft/s' }
+  },
+  pressureDrop: {
+    Pa: { toSI: v => v, fromSI: v => v, label: 'Pa' },
+    kPa: { toSI: v => v * 1000, fromSI: v => v / 1000, label: 'kPa' },
+    bar: { toSI: v => v * 100000, fromSI: v => v / 100000, label: 'bar' },
+    psi: { toSI: v => v * 6894.757, fromSI: v => v / 6894.757, label: 'psi' },
+    mH2o: { toSI: v => v * 9806.65, fromSI: v => v / 9806.65, label: 'mH₂O' }
+  }
 };
 
-function displayMessage(message, type = "info") {
-let messageBox = document.getElementById('custom-message-box');
-if (!messageBox) {
-messageBox = document.createElement('div');
-messageBox.id = 'custom-message-box';
-document.body.appendChild(messageBox);
-}
-messageBox.textContent = message;
-if (type === "error") {
-messageBox.style.backgroundColor = '#dc3545';
-} else if (type === "warning") {
-messageBox.style.backgroundColor = '#ffc107';
-messageBox.style.color = '#333';
-} else {
-messageBox.style.backgroundColor = '#28a745';
-}
-messageBox.classList.add('show');
-setTimeout(() => {
-messageBox.classList.remove('show');
-}, 5000);
-}
+// Pipe roughness mapping (in meters)
+const PipeMaterials = {
+  steel: 0.000045,
+  galvanized: 0.00015,
+  cast_iron: 0.00026,
+  pvc: 0.0000015,
+  copper: 0.0000015,
+  stainless: 0.000015,
+  concrete: 0.0003
+};
 
-function toggleFlowInput() {
-flowRateLabel.style.display = 'none';
-flowRateInput.style.display = 'none';
-flowRateInput.required = false;
-velocityLabel.style.display = 'none';
-velocityInput.style.display = 'none';
-velocityInput.required = false;
-pressureDropLabel.style.display = 'none';
-pressureDropInput.style.display = 'none';
-pressureDropInput.required = false;
+// Global state to store the last result for PDF generation
+let lastCalculationResult = null;
 
-if (flowInputTypeSelect.value === 'flow_rate') {
-flowRateLabel.style.display = 'block';
-flowRateInput.style.display = 'block';
-flowRateInput.required = true;
-} else if (flowInputTypeSelect.value === 'velocity') {
-velocityLabel.style.display = 'block';
-velocityInput.style.display = 'block';
-velocityInput.required = true;
-} else if (flowInputTypeSelect.value === 'pressure_drop') {
-pressureDropLabel.style.display = 'block';
-pressureDropInput.style.display = 'block';
-pressureDropInput.required = true;
-}
-}
+// Adjust quantity helper for fittings UI
+window.adjustQty = function(id, delta) {
+  const el = document.getElementById(id);
+  if (el) {
+    let val = parseInt(el.value) || 0;
+    val = Math.max(0, val + delta);
+    el.value = val;
+  }
+};
 
-flowInputTypeSelect.addEventListener('change', toggleFlowInput);
-toggleFlowInput();
+// FAQ Toggle function
+window.toggleFaq = function(index) {
+  const answer = document.getElementById(`faq-ans-${index}`);
+  const chevron = document.getElementById(`faq-chev-${index}`);
+  if (answer && chevron) {
+    answer.classList.toggle('open');
+    chevron.classList.toggle('rotate');
+  }
+};
 
-calculateBtn.addEventListener('click', function() {
-let flowRate_m3s, velocity_ms, pressureDrop_pa, reynoldsNumber, frictionFactor, flowRegime;
+document.addEventListener('DOMContentLoaded', function() {
+  const fluidTypeSelect = document.getElementById('fluid-type');
+  const pipeMaterialSelect = document.getElementById('pipe-material');
+  const customFluidRow = document.getElementById('custom-fluid-row');
+  const customRoughRow = document.getElementById('custom-rough-row');
+  
+  const fluidTemperatureInput = document.getElementById('fluid-temperature');
+  const fluidTemperatureUnit = document.getElementById('fluid-temperature-unit');
+  const fluidPressureInput = document.getElementById('fluid-pressure');
+  const fluidPressureUnit = document.getElementById('fluid-pressure-unit');
+  const fluidPressureGroup = document.getElementById('fluid-pressure-group');
+  
+  const pipeDiameterInput = document.getElementById('pipe-diameter');
+  const pipeDiameterUnit = document.getElementById('pipe-diameter-unit');
+  const pipeLengthInput = document.getElementById('pipe-length');
+  const pipeLengthUnit = document.getElementById('pipe-length-unit');
+  
+  const flowInputTypeSelect = document.getElementById('flow-input-type');
+  const variableInputLabel = document.getElementById('variable-input-label');
+  const variableInputValue = document.getElementById('variable-input-value');
+  const variableInputUnit = document.getElementById('variable-input-unit');
+  
+  const calculateBtn = document.getElementById('calculate-pipe-flow-btn');
+  const downloadPdfBtn = document.getElementById('download-pdf-btn');
+  const resultContainer = document.getElementById('result-container');
+  const resultTableBody = document.getElementById('result-table-body');
+  const calculationDetailsDiv = document.getElementById('calculation-details');
+  const standardComplianceReport = document.getElementById('standard-compliance-report');
+  
+  // Setup dynamic field toggles
+  fluidTypeSelect.addEventListener('change', function() {
+    const val = this.value;
+    if (val === 'custom') {
+      customFluidRow.style.display = 'grid';
+    } else {
+      customFluidRow.style.display = 'none';
+    }
+    
+    // Hide pressure input for incompressible liquids that don't depend on it in properties
+    if (val === 'water' || val === 'oil') {
+      fluidPressureGroup.style.display = 'none';
+    } else {
+      fluidPressureGroup.style.display = 'block';
+    }
+  });
 
-const fluidType = fluidTypeSelect.value;
-const pipeMaterial = pipeMaterialSelect.value;
-const fluidTemperature = parseFloat(fluidTemperatureInput.value);
-let diameter_mm = parseFloat(pipeDiameterInput.value);
-let length_m = parseFloat(pipeLengthInput.value);
-let inputType = flowInputTypeSelect.value;
+  pipeMaterialSelect.addEventListener('change', function() {
+    if (this.value === 'custom_rough') {
+      customRoughRow.style.display = 'grid';
+    } else {
+      customRoughRow.style.display = 'none';
+    }
+  });
 
-if (isNaN(diameter_mm) || diameter_mm <= 0 || isNaN(length_m) || length_m <= 0 || isNaN(fluidTemperature)) {
-displayMessage("Please enter valid positive values for Pipe Diameter and Pipe Length, and a valid Fluid Temperature.", "error");
-return;
-}
+  // Populate dynamic variable unit dropdown on setup & change
+  function updateVariableInputUI() {
+    const type = flowInputTypeSelect.value;
+    variableInputUnit.innerHTML = '';
+    
+    if (type === 'flow_rate') {
+      variableInputLabel.innerHTML = 'Volumetric Flow Rate <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Flow rate parameter. Sizing resolves velocity and total friction head loss based on this.</span></span>';
+      variableInputValue.value = '18.0';
+      variableInputValue.min = '0.000001';
+      variableInputValue.step = '0.1';
+      
+      const optData = [
+        { val: 'm3_h', label: 'm³/h' },
+        { val: 'm3_s', label: 'm³/s' },
+        { val: 'l_min', label: 'L/min' },
+        { val: 'gpm', label: 'gpm (US)' },
+        { val: 'cfm', label: 'cfm' }
+      ];
+      optData.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt.val;
+        o.textContent = opt.label;
+        variableInputUnit.appendChild(o);
+      });
+    } else if (type === 'velocity') {
+      variableInputLabel.innerHTML = 'Fluid Velocity <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Desired average flow velocity. Sizing resolves volumetric flow rate and total pressure drop.</span></span>';
+      variableInputValue.value = '2.0';
+      variableInputValue.min = '0.0001';
+      variableInputValue.step = '0.1';
+      
+      const optData = [
+        { val: 'm_s', label: 'm/s' },
+        { val: 'ft_s', label: 'ft/s' }
+      ];
+      optData.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt.val;
+        o.textContent = opt.label;
+        variableInputUnit.appendChild(o);
+      });
+    } else if (type === 'pressure_drop') {
+      variableInputLabel.innerHTML = 'Total Pressure Drop <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total pressure drop (Major + Minor) allowed across this pipe section. Solver iteratively determines flow rate and velocity.</span></span>';
+      variableInputValue.value = '100.0';
+      variableInputValue.min = '0.01';
+      variableInputValue.step = '0.1';
+      
+      const optData = [
+        { val: 'kPa', label: 'kPa' },
+        { val: 'Pa', label: 'Pa' },
+        { val: 'bar', label: 'bar' },
+        { val: 'psi', label: 'psi' },
+        { val: 'mH2o', label: 'mH₂O' }
+      ];
+      optData.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt.val;
+        o.textContent = opt.label;
+        variableInputUnit.appendChild(o);
+      });
+    }
+  }
 
-const diameter_m = diameter_mm / 1000;
+  flowInputTypeSelect.addEventListener('change', updateVariableInputUI);
+  updateVariableInputUI(); // Init trigger
+  
+  // Trigger change on fluid to set initial visibility
+  fluidTypeSelect.dispatchEvent(new Event('change'));
 
-let density, viscosity;
-if (fluidType === 'water') {
-const waterProps = getWaterProperties(fluidTemperature);
-density = waterProps.density;
-viscosity = waterProps.viscosity;
-} else if (fluidType === 'air') {
-const airProps = getAirProperties(fluidTemperature);
-density = airProps.density;
-viscosity = airProps.viscosity;
-} else if (fluidType === 'oil') {
-const oilProps = getOilProperties(fluidTemperature);
-density = oilProps.density;
-viscosity = oilProps.viscosity;
-} else {
-displayMessage("Unsupported fluid type selected.", "error");
-return;
-}
+  // Temperature unit change boundary warnings
+  fluidTemperatureUnit.addEventListener('change', function() {
+    const val = parseFloat(fluidTemperatureInput.value);
+    if (!isNaN(val)) {
+      if (this.value === 'C') {
+        fluidTemperatureInput.min = '-100';
+        fluidTemperatureInput.max = '500';
+      } else if (this.value === 'F') {
+        fluidTemperatureInput.min = '-148';
+        fluidTemperatureInput.max = '932';
+      } else {
+        fluidTemperatureInput.min = '173';
+        fluidTemperatureInput.max = '773';
+      }
+    }
+  });
 
-const roughness_e = pipeRoughness[pipeMaterial];
-let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
+  // Simple toast notifier
+  function displayMessage(msg, type = 'info') {
+    let box = document.getElementById('custom-message-box');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'custom-message-box';
+      document.body.appendChild(box);
+    }
+    box.textContent = msg;
+    box.className = ''; // reset
+    if (type === 'error') {
+      box.style.backgroundColor = '#EF4444';
+      box.style.color = '#FFFFFF';
+    } else if (type === 'warning') {
+      box.style.backgroundColor = '#F59E0B';
+      box.style.color = '#333333';
+    } else {
+      box.style.backgroundColor = '#10B981';
+      box.style.color = '#FFFFFF';
+    }
+    box.classList.add('show');
+    setTimeout(() => box.classList.remove('show'), 5000);
+  }
 
-const area_m2 = Math.PI * Math.pow(diameter_m / 2, 2);
-calculationHtml += `<p><strong>1. Calculate Pipe Cross-sectional Area:</strong></p>`;
-calculationHtml += `<p>The cross-sectional area of the pipe is calculated using its internal diameter. This area is fundamental for relating flow rate and velocity.</p>`;
-calculationHtml += `<p class="formula">$$A = \\frac{\\pi D^2}{4}$$</p>`;
-calculationHtml += `<ul>
-<li>Pipe Internal Diameter (D) = ${diameter_mm} mm = ${diameter_m.toFixed(4)} m</li>
-</ul>`;
-calculationHtml += `<p class="calculation-step">A = π × (${diameter_m.toFixed(4)})<sup>2</sup> / 4 = ${area_m2.toFixed(6)} m<sup>2</sup></p>`;
+  // Fluid solvers
+  function getFluidProperties(fluid, tempC, pressGaugePa) {
+    let density = 1000;
+    let viscosity = 0.001; // Pa-s
+    let warning = "";
+    
+    if (fluid === 'water') {
+      // Density of water (Tilton-Taylor equation)
+      density = 1000 * (1 - (tempC + 288.9414) / (508929.2 * (tempC + 68.12963)) * Math.pow(tempC - 3.9863, 2));
+      // Dynamic viscosity of water (Al-Shemmeri viscosity fit)
+      let tk = tempC + 273.15;
+      viscosity = 2.414e-5 * Math.pow(10, 247.8 / (tk - 140));
+      
+      if (tempC < 0 || tempC > 150) {
+        warning = "Water temperature exceeds standard liquid operations bounds (0-150°C). Properties approximated.";
+      }
+    } else if (fluid === 'air') {
+      const pAbs = pressGaugePa + 101325;
+      const tk = tempC + 273.15;
+      // Air Density (Ideal Gas Law)
+      density = pAbs / (287.05 * tk);
+      // Air Viscosity (Sutherland's Law)
+      const mu0 = 1.716e-5;
+      const T0 = 273.15;
+      const S = 110.4;
+      viscosity = mu0 * Math.pow(tk / T0, 1.5) * ((T0 + S) / (tk + S));
+    } else if (fluid === 'oil') {
+      // SAE 30 Engine Oil dynamic fits
+      density = 890 - 0.62 * tempC;
+      viscosity = 0.29 * Math.exp(-0.045 * (tempC - 20)); // dynamic cP equivalent at 20C is 0.29 Pa-s
+    } else if (fluid === 'steam') {
+      const tk = tempC + 273.15;
+      // Antoine saturation pressure (Pa)
+      const pSat = Math.exp(23.1964 - 3816.44 / (tk - 46.13));
+      // Density of saturated steam using ideal gas law at sat pressure
+      density = pSat / (461.5 * tk);
+      // Steam Viscosity
+      viscosity = (1.1e-5 + 3.8e-8 * tempC);
+      
+      if (tempC < 100) {
+        warning = "Steam calculations at <100°C represent sub-atmospheric conditions. Condensation risk high.";
+      }
+    } else if (fluid === 'natural_gas') {
+      const pAbs = pressGaugePa + 101325;
+      const tk = tempC + 273.15;
+      const p_bar = pAbs / 100000;
+      // Compressibility Z factor fit
+      const Z = 1 - (0.18 * p_bar) / (tk / 100);
+      density = pAbs / (Z * 518.28 * tk);
+      viscosity = 1.1e-5 * Math.pow(tk / 273.15, 0.8);
+    } else if (fluid === 'custom') {
+      density = parseFloat(document.getElementById('custom-density').value) || 1000;
+      let vis_cp = parseFloat(document.getElementById('custom-viscosity').value) || 1;
+      viscosity = vis_cp / 1000; // convert cP to Pa-s
+    }
+    
+    return { density, viscosity, warning };
+  }
 
-if (inputType === 'flow_rate') {
-flowRate_m3s = parseFloat(flowRateInput.value);
-if (isNaN(flowRate_m3s) || flowRate_m3s <= 0) {
-displayMessage("Please enter a valid positive value for Flow Rate.", "error");
-return;
-}
-velocity_ms = flowRate_m3s / area_m2;
+  // Colebrook friction factor solver via Newton-Raphson
+  function solveColebrook(Re, rr) {
+    if (Re <= 2300) {
+      return 64 / Re;
+    } else if (Re < 4000) {
+      // Transitional region cubic interpolator between Hagen-Poiseuille limit (2300) & Colebrook (4000)
+      let f_l = 64 / 2300;
+      let f_t = solveColebrookTurbulent(4000, rr);
+      let x = (Re - 2300) / (4000 - 2300);
+      return f_l + x * (f_t - f_l);
+    } else {
+      return solveColebrookTurbulent(Re, rr);
+    }
+  }
 
-calculationHtml += `<p><strong>2. Calculate Velocity from Input Flow Rate:</strong></p>`;
-calculationHtml += `<p>Velocity is determined by dividing the volumetric flow rate by the pipe's cross-sectional area.</p>`;
-calculationHtml += `<p class="formula">$$V = \\frac{Q}{A}$$</p>`;
-calculationHtml += `<ul>
-<li>Flow Rate (Q) = ${flowRate_m3s.toExponential(2)} m<sup>3</sup>/s</li>
-<li>Pipe Cross-sectional Area (A) = ${area_m2.toFixed(6)} m<sup>2</sup></li>
-</ul>`;
-calculationHtml += `<p class="calculation-step">V = ${flowRate_m3s.toExponential(2)} / ${area_m2.toFixed(6)} = ${velocity_ms.toFixed(4)} m/s</p>`;
+  function solveColebrookTurbulent(Re, rr) {
+    // Initial guess using Swamee-Jain explicit formula
+    let sj = 0.25 / Math.pow(Math.log10(rr / 3.7 + 5.74 / Math.pow(Re, 0.9)), 2);
+    let x = 1 / Math.sqrt(sj);
+    
+    // Newton-Raphson iteration
+    for (let i = 0; i < 30; i++) {
+      let term = rr / 3.7 + 2.51 * x / Re;
+      if (term <= 0) break;
+      let F = x + 2 * Math.log10(term);
+      let dF = 1 + (2 * 2.51 / (Re * term * Math.log(10)));
+      let x_new = x - F / dF;
+      if (Math.abs(x_new - x) < 1e-7) {
+        return 1 / (x_new * x_new);
+      }
+      x = x_new;
+    }
+    return 1 / (x * x);
+  }
 
-} else if (inputType === 'velocity') {
-velocity_ms = parseFloat(velocityInput.value);
-if (isNaN(velocity_ms) || velocity_ms <= 0) {
-displayMessage("Please enter a valid positive value for Velocity.", "error");
-return;
-}
-flowRate_m3s = velocity_ms * area_m2;
+  // Calculate fitting coefficients (Crane Co. TP-410)
+  function getFittingsK(d_m) {
+    // Calculate f_T based on steel roughness (0.045mm) as reference for fittings
+    const rr_steel = 0.000045 / d_m;
+    // solve Colebrook at fully turbulent region (Re -> infinity)
+    const f_T = 0.25 / Math.pow(Math.log10(rr_steel / 3.7), 2);
+    
+    const qty_90el = parseInt(document.getElementById('fit-90el').value) || 0;
+    const qty_90lr = parseInt(document.getElementById('fit-90lr').value) || 0;
+    const qty_45el = parseInt(document.getElementById('fit-45el').value) || 0;
+    const qty_tee_b = parseInt(document.getElementById('fit-tee-b').value) || 0;
+    const qty_tee_r = parseInt(document.getElementById('fit-tee-r').value) || 0;
+    const qty_gate = parseInt(document.getElementById('fit-gate').value) || 0;
+    const qty_globe = parseInt(document.getElementById('fit-globe').value) || 0;
+    const qty_ball = parseInt(document.getElementById('fit-ball').value) || 0;
+    const qty_check = parseInt(document.getElementById('fit-check').value) || 0;
+    const qty_bf = parseInt(document.getElementById('fit-bf').value) || 0;
+    const qty_ent = parseInt(document.getElementById('fit-ent').value) || 0;
+    const qty_exit = parseInt(document.getElementById('fit-exit').value) || 0;
+    
+    const fittingsList = [];
+    let k_sum = 0;
+    
+    if (qty_90el > 0) {
+      const k = 30 * f_T;
+      k_sum += qty_90el * k;
+      fittingsList.push({ name: '90° Elbow (Std)', qty: qty_90el, kEach: k, kTotal: qty_90el * k });
+    }
+    if (qty_90lr > 0) {
+      const k = 20 * f_T;
+      k_sum += qty_90lr * k;
+      fittingsList.push({ name: '90° Elbow (Long Rad)', qty: qty_90lr, kEach: k, kTotal: qty_90lr * k });
+    }
+    if (qty_45el > 0) {
+      const k = 16 * f_T;
+      k_sum += qty_45el * k;
+      fittingsList.push({ name: '45° Elbow', qty: qty_45el, kEach: k, kTotal: qty_45el * k });
+    }
+    if (qty_tee_b > 0) {
+      const k = 60 * f_T;
+      k_sum += qty_tee_b * k;
+      fittingsList.push({ name: 'Standard Tee (Branch)', qty: qty_tee_b, kEach: k, kTotal: qty_tee_b * k });
+    }
+    if (qty_tee_r > 0) {
+      const k = 20 * f_T;
+      k_sum += qty_tee_r * k;
+      fittingsList.push({ name: 'Standard Tee (Run)', qty: qty_tee_r, kEach: k, kTotal: qty_tee_r * k });
+    }
+    if (qty_gate > 0) {
+      const k = 8 * f_T;
+      k_sum += qty_gate * k;
+      fittingsList.push({ name: 'Gate Valve (Open)', qty: qty_gate, kEach: k, kTotal: qty_gate * k });
+    }
+    if (qty_globe > 0) {
+      const k = 340 * f_T;
+      k_sum += qty_globe * k;
+      fittingsList.push({ name: 'Globe Valve (Open)', qty: qty_globe, kEach: k, kTotal: qty_globe * k });
+    }
+    if (qty_ball > 0) {
+      const k = 3 * f_T;
+      k_sum += qty_ball * k;
+      fittingsList.push({ name: 'Ball Valve (Open)', qty: qty_ball, kEach: k, kTotal: qty_ball * k });
+    }
+    if (qty_check > 0) {
+      const k = 100 * f_T;
+      k_sum += qty_check * k;
+      fittingsList.push({ name: 'Swing Check Valve', qty: qty_check, kEach: k, kTotal: qty_check * k });
+    }
+    if (qty_bf > 0) {
+      const k = 45 * f_T;
+      k_sum += qty_bf * k;
+      fittingsList.push({ name: 'Butterfly Valve (Open)', qty: qty_bf, kEach: k, kTotal: qty_bf * k });
+    }
+    if (qty_ent > 0) {
+      const k = 0.5;
+      k_sum += qty_ent * k;
+      fittingsList.push({ name: 'Sharp Pipe Entrance', qty: qty_ent, kEach: k, kTotal: qty_ent * k });
+    }
+    if (qty_exit > 0) {
+      const k = 1.0;
+      k_sum += qty_exit * k;
+      fittingsList.push({ name: 'Pipe Outlet / Discharge', qty: qty_exit, kEach: k, kTotal: qty_exit * k });
+    }
+    
+    return { k_sum, f_T, fittingsList };
+  }
 
-calculationHtml += `<p><strong>2. Calculate Flow Rate from Input Velocity:</strong></p>`;
-calculationHtml += `<p>Flow rate is calculated by multiplying the fluid's average velocity by the pipe's cross-sectional area.</p>`;
-calculationHtml += `<p class="formula">$$Q = V \\times A$$</p>`;
-calculationHtml += `<ul>
-<li>Velocity (V) = ${velocity_ms.toFixed(4)} m/s</li>
-<li>Pipe Cross-sectional Area (A) = ${area_m2.toFixed(6)} m<sup>2</sup></li>
-</ul>`;
-calculationHtml += `<p class="calculation-step">Q = ${velocity_ms.toFixed(4)} × ${area_m2.toFixed(6)} = ${flowRate_m3s.toExponential(2)} m<sup>3</sup>/s</p>`;
+  // Core Calculator Handler
+  calculateBtn.addEventListener('click', function() {
+    // Show spinner
+    document.getElementById('calc-spinner').style.display = 'inline-block';
+    document.getElementById('calc-icon').style.display = 'none';
+    
+    setTimeout(() => {
+      try {
+        runCalculation();
+      } catch (err) {
+        displayMessage(err.message, 'error');
+        console.error(err);
+      } finally {
+        document.getElementById('calc-spinner').style.display = 'none';
+        document.getElementById('calc-icon').style.display = 'inline-block';
+      }
+    }, 150);
+  });
 
-} else if (inputType === 'pressure_drop') {
-const pressureDrop_pa_input = parseFloat(pressureDropInput.value);
-if (isNaN(pressureDrop_pa_input) || pressureDrop_pa_input <= 0) {
-displayMessage("Please enter a valid positive value for Pressure Drop.", "error");
-return;
-}
-pressureDrop_pa = pressureDrop_pa_input;
+  function runCalculation() {
+    // Read input values & convert to SI units
+    const fluidType = fluidTypeSelect.value;
+    const pipeMaterial = pipeMaterialSelect.value;
+    
+    // Normalize temperature to C
+    const rawTemp = parseFloat(fluidTemperatureInput.value);
+    const tempUnit = fluidTemperatureUnit.value;
+    if (isNaN(rawTemp)) throw new Error("Invalid Fluid Temperature value.");
+    let tempC = rawTemp;
+    if (tempUnit === 'F') tempC = (rawTemp - 32) * 5/9;
+    if (tempUnit === 'K') tempC = rawTemp - 273.15;
+    
+    // Normalize pressure to Pa
+    const rawPress = parseFloat(fluidPressureInput.value);
+    const pressUnit = fluidPressureUnit.value;
+    if (isNaN(rawPress)) throw new Error("Invalid Operating Gauge Pressure value.");
+    const pressGaugePa = UnitConversions.pressure[pressUnit].toSI(rawPress);
+    
+    // Pipe geometry
+    const rawDiam = parseFloat(pipeDiameterInput.value);
+    const diamUnit = pipeDiameterUnit.value;
+    if (isNaN(rawDiam) || rawDiam <= 0) throw new Error("Pipe Internal Diameter must be a positive number.");
+    const diameter_m = UnitConversions.diameter[diamUnit].toSI(rawDiam);
+    
+    const rawLength = parseFloat(pipeLengthInput.value);
+    const lengthUnit = pipeLengthUnit.value;
+    if (isNaN(rawLength) || rawLength <= 0) throw new Error("Pipe Length must be a positive number.");
+    const length_m = UnitConversions.length[lengthUnit].toSI(rawLength);
+    
+    // Roughness
+    let roughness_m = 0.000045; // default steel
+    if (pipeMaterial === 'custom_rough') {
+      const rawRough = parseFloat(document.getElementById('custom-roughness-input').value);
+      const roughUnit = document.getElementById('custom-roughness-unit').value;
+      if (isNaN(rawRough) || rawRough < 0) throw new Error("Custom roughness must be a non-negative number.");
+      if (roughUnit === 'mm') roughness_m = rawRough / 1000;
+      else roughness_m = rawRough * 0.0254;
+    } else {
+      roughness_m = PipeMaterials[pipeMaterial];
+    }
+    
+    // Get fluid properties
+    const props = getFluidProperties(fluidType, tempC, pressGaugePa);
+    const rho = props.density;
+    const mu = props.viscosity;
+    
+    // Fittings sum K
+    const fitsObj = getFittingsK(diameter_m);
+    const K_fit = fitsObj.k_sum;
+    
+    // Target inputs
+    const inputType = flowInputTypeSelect.value;
+    const rawVarValue = parseFloat(variableInputValue.value);
+    const varUnit = variableInputUnit.value;
+    if (isNaN(rawVarValue) || rawVarValue <= 0) throw new Error("Specified input parameter must be a positive value.");
+    
+    let flowRate_m3s = 0;
+    let velocity_ms = 0;
+    let pressureDrop_Pa = 0;
+    
+    const area_m2 = Math.PI * Math.pow(diameter_m / 2, 2);
+    
+    // Solver cases
+    if (inputType === 'flow_rate') {
+      flowRate_m3s = UnitConversions.flow[varUnit].toSI(rawVarValue);
+      velocity_ms = flowRate_m3s / area_m2;
+      
+      const Re = (rho * velocity_ms * diameter_m) / mu;
+      const relativeRoughness = roughness_m / diameter_m;
+      const f = solveColebrook(Re, relativeRoughness);
+      
+      const dp_major = f * (length_m / diameter_m) * (rho * Math.pow(velocity_ms, 2) / 2);
+      const dp_minor = K_fit * (rho * Math.pow(velocity_ms, 2) / 2);
+      pressureDrop_Pa = dp_major + dp_minor;
+      
+    } else if (inputType === 'velocity') {
+      velocity_ms = UnitConversions.velocity[varUnit].toSI(rawVarValue);
+      flowRate_m3s = velocity_ms * area_m2;
+      
+      const Re = (rho * velocity_ms * diameter_m) / mu;
+      const relativeRoughness = roughness_m / diameter_m;
+      const f = solveColebrook(Re, relativeRoughness);
+      
+      const dp_major = f * (length_m / diameter_m) * (rho * Math.pow(velocity_ms, 2) / 2);
+      const dp_minor = K_fit * (rho * Math.pow(velocity_ms, 2) / 2);
+      pressureDrop_Pa = dp_major + dp_minor;
+      
+    } else if (inputType === 'pressure_drop') {
+      pressureDrop_Pa = UnitConversions.pressureDrop[varUnit].toSI(rawVarValue);
+      
+      // Iterative solver for velocity and flow rate including fittings
+      let v_guess = 1.0;
+      let diff = 1.0;
+      let iter = 0;
+      let f = 0.02;
+      
+      while (diff > 1e-6 && iter < 100) {
+        let Re = (rho * v_guess * diameter_m) / mu;
+        if (Re < 1e-1) Re = 1e-1; // prevent log of zero
+        f = solveColebrook(Re, roughness_m / diameter_m);
+        
+        let term = f * (length_m / diameter_m) + K_fit;
+        if (term <= 0) term = 1e-5;
+        let v_new = Math.sqrt((2 * pressureDrop_Pa) / (rho * term));
+        
+        diff = Math.abs(v_new - v_guess) / v_guess;
+        v_guess = v_new;
+        iter++;
+      }
+      
+      velocity_ms = v_guess;
+      flowRate_m3s = velocity_ms * area_m2;
+    }
+    
+    // Sizing power requirements
+    const hydraulicPower = flowRate_m3s * pressureDrop_Pa;
+    const pumpEff = parseFloat(document.getElementById('pump-efficiency').value) || 70;
+    const motorPower = hydraulicPower / (pumpEff / 100);
+    
+    // Solve primary outputs
+    const Re = (rho * velocity_ms * diameter_m) / mu;
+    const relativeRoughness = roughness_m / diameter_m;
+    const frictionFactor = solveColebrook(Re, relativeRoughness);
+    const headLossMajor_Pa = frictionFactor * (length_m / diameter_m) * (rho * Math.pow(velocity_ms, 2) / 2);
+    const headLossMinor_Pa = K_fit * (rho * Math.pow(velocity_ms, 2) / 2);
+    
+    // Evaluate regime
+    let regime = "Laminar";
+    if (Re > 4000) regime = "Turbulent";
+    else if (Re > 2300) regime = "Transitional";
+    
+    // Sizing standard recommendations and limits checks
+    let userVelLimitSI = 3.0; // default 3 m/s
+    const userVelLimitRaw = parseFloat(document.getElementById('user-velocity-limit').value);
+    const userVelLimitUnitVal = document.getElementById('user-velocity-limit-unit').value;
+    if (!isNaN(userVelLimitRaw)) {
+      userVelLimitSI = UnitConversions.velocity[userVelLimitUnitVal].toSI(userVelLimitRaw);
+    }
+    
+    let erosionStatus = "SAFE";
+    let erosionMsg = "Flow velocity is within recommended limits.";
+    let erosionBadge = "badge-safe";
+    
+    // API RP 14E Erosional Velocity Formula: Ve = C / sqrt(rho)
+    // C = 100 for continuous operations
+    const cFactor = 100;
+    const Ve = cFactor / Math.sqrt(rho);
+    
+    if (velocity_ms > Ve) {
+      erosionStatus = "CRITICAL";
+      erosionMsg = `Flow velocity (${velocity_ms.toFixed(2)} m/s) exceeds the API RP 14E erosional limit of ${Ve.toFixed(2)} m/s. Risk of rapid pipe wall erosion.`;
+      erosionBadge = "badge-danger";
+    } else if (velocity_ms > userVelLimitSI) {
+      erosionStatus = "WARNING";
+      erosionMsg = `Flow velocity (${velocity_ms.toFixed(2)} m/s) exceeds user warning threshold of ${userVelLimitSI.toFixed(2)} m/s. High pressure drop and noise may occur.`;
+      erosionBadge = "badge-warning";
+    } else if (velocity_ms < 0.6 && fluidType === 'water') {
+      erosionStatus = "WARNING";
+      erosionMsg = `Velocity (${velocity_ms.toFixed(2)} m/s) is below self-cleansing threshold of 0.6 m/s (IS 2065). Risk of sedimentation and scaling.`;
+      erosionBadge = "badge-warning";
+    }
+    
+    // Water hammer potential check (Joukowsky surge estimate)
+    const speedOfSound = 1200; // m/s in steel pipe for water
+    const surgePa = rho * speedOfSound * velocity_ms;
+    const surgeBar = surgePa / 100000;
+    
+    // Save results for PDF
+    lastCalculationResult = {
+      fluidType,
+      pipeMaterial,
+      tempC,
+      rawTemp,
+      tempUnit,
+      pressGaugePa,
+      rawPress,
+      pressUnit,
+      diameter_m,
+      rawDiam,
+      diamUnit,
+      length_m,
+      rawLength,
+      lengthUnit,
+      roughness_m,
+      rho,
+      mu,
+      K_fit,
+      f_T: fitsObj.f_T,
+      fittingsList: fitsObj.fittingsList,
+      flowRate_m3s,
+      velocity_ms,
+      pressureDrop_Pa,
+      headLossMajor_Pa,
+      headLossMinor_Pa,
+      Re,
+      relativeRoughness,
+      frictionFactor,
+      regime,
+      hydraulicPower,
+      motorPower,
+      pumpEff,
+      erosionStatus,
+      erosionMsg,
+      erosionBadge,
+      Ve,
+      surgeBar,
+      warning: props.warning
+    };
+    
+    // Update Dashboard Cards
+    document.getElementById('card-p-drop').textContent = (pressureDrop_Pa / 1000).toFixed(2);
+    document.getElementById('card-p-drop-unit').textContent = "kPa";
+    
+    const pDropBadge = document.getElementById('badge-p-drop');
+    pDropBadge.className = "result-badge";
+    if (pressureDrop_Pa / length_m > 500) {
+      pDropBadge.textContent = "High Gradient";
+      pDropBadge.classList.add('badge-danger');
+    } else {
+      pDropBadge.textContent = "Acceptable";
+      pDropBadge.classList.add('badge-safe');
+    }
+    
+    document.getElementById('card-velocity').textContent = velocity_ms.toFixed(2);
+    document.getElementById('card-velocity-unit').textContent = "m/s";
+    const velBadge = document.getElementById('badge-velocity');
+    velBadge.textContent = erosionStatus;
+    velBadge.className = "result-badge " + erosionBadge;
+    
+    document.getElementById('card-reynolds').textContent = Re.toExponential(3);
+    document.getElementById('card-flow-regime').textContent = regime + " Flow";
+    const regBadge = document.getElementById('badge-flow-regime');
+    regBadge.className = "result-badge";
+    if (regime === 'Turbulent') {
+      regBadge.textContent = "High Mixing";
+      regBadge.classList.add('badge-safe');
+    } else if (regime === 'Laminar') {
+      regBadge.textContent = "Viscous-Dominated";
+      regBadge.classList.add('badge-warning');
+    } else {
+      regBadge.textContent = "Unstable flow";
+      regBadge.classList.add('badge-danger');
+    }
+    
+    document.getElementById('card-power').textContent = motorPower >= 1000 ? (motorPower/1000).toFixed(2) + " kW" : motorPower.toFixed(0) + " W";
+    document.getElementById('card-power-unit').textContent = `at ${pumpEff}% Eff`;
+    const powBadge = document.getElementById('badge-power');
+    powBadge.className = "result-badge badge-safe";
+    powBadge.textContent = (motorPower / 745.7).toFixed(2) + " HP";
+    
+    // Generate step-by-step mathematical HTML
+    generateStepsHtml(lastCalculationResult);
+    
+    // Populate detailed parameters table
+    populateParamsTable(lastCalculationResult);
+    
+    // Render standard warnings & recommendations
+    let complianceHtml = `<h5><i class="fas fa-exclamation-triangle"></i> Sizing Compliance & Design Advice:</h5>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong>Flow Regime:</strong> The flow has a Reynolds number of ${Re.toFixed(0)}, classifying it as <strong>${regime}</strong>. ${regime === 'Transitional' ? 'Warning: transitional flow is highly unstable; design parameters should assume conservative turbulent friction losses.' : ''}</li>
+        <li><strong>Velocity limits check:</strong> ${erosionMsg}</li>
+        <li><strong>API RP 14E Sizing check:</strong> Calculated erosional limit velocity for this fluid density is <strong>${Ve.toFixed(2)} m/s</strong>. Current design velocity is <strong>${velocity_ms.toFixed(2)} m/s</strong>.</li>
+        <li><strong>Water Hammer Potential:</strong> Sizing indicates that a rapid shut-off surge wave can propagate at ${speedOfSound} m/s, causing a peak pressure rise of approximately <strong>&plusmn;${surgeBar.toFixed(1)} bar</strong>. Ensure slow closing valve logic to prevent surge waves.</li>
+        ${props.warning ? `<li><strong style="color: var(--danger-color);">Property warning:</strong> ${props.warning}</li>` : ''}
+      </ul>`;
+    
+    standardComplianceReport.innerHTML = complianceHtml;
+    standardComplianceReport.style.display = 'block';
+    
+    // Show results
+    resultContainer.style.display = 'block';
+    resultContainer.scrollIntoView({ behavior: 'smooth' });
+    
+    displayMessage("Calculations successfully sized per codes!", "info");
+  }
 
-let f_guess = 0.02;
-let maxIterations = 100;
-let tolerance = 0.0001;
+  // Interactive dynamic stepper results builder
+  function generateStepsHtml(res) {
+    let themeClass = "turbulent-theme";
+    if (res.regime === 'Laminar') themeClass = "laminar-theme";
+    else if (res.regime === 'Transitional') themeClass = "warning-theme";
+    
+    let html = `
+    <!-- Step 1 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">1</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Input Normalization to SI Units</span>
+        </div>
+        <span class="step-standard-pill">Metric/Imperial Standard Conversions</span>
+      </div>
+      <div class="step-explanation">To ensure computational consistency, all user parameters (such as nominal dimensions, pressures, temperatures, and flow rates) are transformed into core SI units.</div>
+      <div class="step-equation-panel">
+        <span class="step-math-expression" style="color:#0F172A; text-align:left;">
+          &bull; Temperature (T): ${res.rawTemp} ${res.tempUnit} &rarr; <strong>${res.tempC.toFixed(2)} °C</strong> (Kelvin: ${(res.tempC + 273.15).toFixed(2)} K)<br>
+          &bull; Operating Gauge Pressure: ${res.rawPress} ${res.pressUnit} &rarr; <strong>${(res.pressGaugePa / 1000).toFixed(2)} kPa(g)</strong><br>
+          &bull; Internal Pipe Diameter (D): ${res.rawDiam} ${res.diamUnit} &rarr; <strong>${res.diameter_m.toFixed(5)} m</strong><br>
+          &bull; Pipeline Length (L): ${res.rawLength} ${res.lengthUnit} &rarr; <strong>${res.length_m.toFixed(1)} m</strong>
+        </span>
+      </div>
+    </div>
 
-calculationHtml += `<p><strong>2. Iteratively Determine Velocity and Flow Rate from Input Pressure Drop:</strong></p>`;
-calculationHtml += `<p>When pressure drop is known, finding velocity requires iterative solution because friction factor depends on velocity.</p>`;
-calculationHtml += `<p class="formula">$$V = \\sqrt{\\frac{2 \\Delta P D}{f \\rho L}}$$</p>`;
-calculationHtml += `<ul>
-<li>Input Pressure Drop (ΔP) = ${pressureDrop_pa_input.toFixed(2)} Pa</li>
-<li>Pipe Internal Diameter (D) = ${diameter_m.toFixed(4)} m</li>
-<li>Fluid Density (ρ) = ${density} kg/m<sup>3</sup></li>
-<li>Pipe Length (L) = ${length_m} m</li>
-</ul>`;
+    <!-- Step 2 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">2</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Dynamic Fluid Physical Properties</span>
+        </div>
+        <span class="step-standard-pill">IAPWS / Sutherland Standards</span>
+      </div>
+      <div class="step-explanation">Fluid properties vary with operating temperature and pressure. The dynamic density (\(\\rho\)) and dynamic viscosity (\(\\mu\)) are computed using reference models.</div>
+      <div class="step-equation-panel">
+        <span class="step-math-expression" style="color:#0F172A; text-align:left;">
+          &bull; Sized Density (&rho;): <strong>${res.rho.toFixed(2)} kg/m³</strong><br>
+          &bull; Sized Viscosity (&mu;): <strong>${res.mu.toExponential(4)} Pa·s</strong> (${(res.mu*1000).toFixed(3)} cP)<br>
+          &bull; Kinematic Viscosity (&nu; = &mu;/&rho;): <strong>${(res.mu/res.rho).toExponential(4)} m²/s</strong>
+        </span>
+      </div>
+    </div>
 
-let converged = false;
-for (let i = 0; i < maxIterations; i++) {
-let V_calc = Math.sqrt((2 * pressureDrop_pa_input * diameter_m) / (f_guess * density * length_m));
-let Re_calc = (density * V_calc * diameter_m) / viscosity;
+    <!-- Step 3 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">3</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Cross-Sectional Area (A) Sizing</span>
+        </div>
+        <span class="step-standard-pill">Geometry Clause</span>
+      </div>
+      <div class="step-explanation">Calculates the clear internal flow boundary cross-sectional area based on the pipe's internal diameter.</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$A = \\frac{\\pi D^2}{4}$$</div>
+        <span class="step-math-expression">
+          A = &pi; &times; (${res.diameter_m.toFixed(5)})² / 4 = <strong>${(Math.PI * Math.pow(res.diameter_m, 2) / 4).toExponential(5)} m²</strong>
+        </span>
+      </div>
+    </div>
 
-let f_calc;
-if (Re_calc < 2000) {
-f_calc = 64 / Re_calc;
-} else {
-const relativeRoughness = roughness_e / diameter_m;
-f_calc = 0.25 / Math.pow(Math.log10((relativeRoughness / 3.7) + (5.74 / Math.pow(Re_calc, 0.9))), 2);
-}
+    <!-- Step 4 -->
+    <div class="stepper-step ${res.erosionStatus === 'SAFE' ? '' : (res.erosionStatus === 'WARNING' ? 'warning-theme' : 'danger-theme')}">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">4</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Flow Velocity Sizing & Compliance</span>
+        </div>
+        <span class="step-standard-pill">ASME B31.3 / IS 2065 Limits</span>
+      </div>
+      <div class="step-explanation">Determines the average fluid velocity (V) and cross-references it against warning limits to prevent structural wear or sedimentation.</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$V = \\frac{Q}{A}$$</div>
+        <span class="step-math-expression">
+          V = ${(res.flowRate_m3s).toExponential(4)} m³/s / ${(Math.PI * Math.pow(res.diameter_m, 2) / 4).toExponential(5)} m² = <strong>${res.velocity_ms.toFixed(4)} m/s</strong>
+        </span>
+      </div>
+    </div>
 
-calculationHtml += `<p class="calculation-step">Iteration ${i + 1}:</p>`;
-calculationHtml += `<p class="calculation-step">&nbsp;&nbsp;&nbsp;Assumed f = ${f_guess.toFixed(6)}</p>`;
-calculationHtml += `<p class="calculation-step">&nbsp;&nbsp;&nbsp;Calculated V = ${V_calc.toFixed(4)} m/s</p>`;
-calculationHtml += `<p class="calculation-step">&nbsp;&nbsp;&nbsp;Calculated Re = ${Re_calc.toExponential(4)}</p>`;
-calculationHtml += `<p class="calculation-step">&nbsp;&nbsp;&nbsp;Calculated New f = ${f_calc.toFixed(6)}</p>`;
+    <!-- Step 5 -->
+    <div class="stepper-step ${themeClass}">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">5</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Reynolds Number & Regime Detection</span>
+        </div>
+        <span class="step-standard-pill">ISO 12208 Fluid Mechanics</span>
+      </div>
+      <div class="step-explanation">Dimensionless ratio of inertial force to viscous force. Classifies flow as laminar (Re &le; 2300), transitional, or turbulent (Re &ge; 4000).</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$Re = \\frac{\\rho V D}{\\mu}$$</div>
+        <span class="step-math-expression">
+          Re = (${res.rho.toFixed(1)} &times; ${res.velocity_ms.toFixed(4)} &times; ${res.diameter_m.toFixed(5)}) / ${res.mu.toExponential(4)} = <strong>${res.Re.toFixed(0)} (${res.regime} Flow)</strong>
+        </span>
+      </div>
+    </div>
 
-if (Math.abs(f_calc - f_guess) / f_guess < tolerance) {
-velocity_ms = V_calc;
-frictionFactor = f_calc;
-reynoldsNumber = Re_calc;
-converged = true;
-calculationHtml += `<p class="calculation-step">Converged after ${i + 1} iterations. Final f = ${frictionFactor.toFixed(6)}</p>`;
-break;
-}
-f_guess = f_calc;
-}
+    <!-- Step 6 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">6</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Pipe Relative Roughness</span>
+        </div>
+        <span class="step-standard-pill">ASME Material Specification</span>
+      </div>
+      <div class="step-explanation">Evaluates absolute material roughness height against internal pipe diameter. Protrusion of peaks affects boundary layer eddies.</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$\\text{Relative Roughness} = \\frac{\\epsilon}{D}$$</div>
+        <span class="step-math-expression">
+          &epsilon;/D = ${res.roughness_m.toExponential(3)} m / ${res.diameter_m.toFixed(5)} m = <strong>${res.relativeRoughness.toExponential(4)}</strong>
+        </span>
+      </div>
+    </div>
 
-if (!converged) {
-displayMessage("Warning: Calculation did not converge within maximum iterations.", "warning");
-}
+    <!-- Step 7 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">7</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Iterative Friction Factor Solver</span>
+        </div>
+        <span class="step-standard-pill">Colebrook-White NR Solver</span>
+      </div>
+      <div class="step-explanation">Newton-Raphson iteration is executed on the implicit Colebrook-White equation for turbulent flows, establishing exact friction coefficients.</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$\\frac{1}{\\sqrt{f}} = -2 \\log_{10}\\left(\\frac{\\epsilon}{3.7D} + \\frac{2.51}{\\text{Re}\\sqrt{f}}\\right)$$</div>
+        <span class="step-math-expression">
+          Newton-Raphson Converged Friction Factor (f) = <strong>${res.frictionFactor.toFixed(6)}</strong>
+        </span>
+      </div>
+    </div>
 
-flowRate_m3s = velocity_ms * area_m2;
-}
+    <!-- Step 8 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">8</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Fittings & Valves Minor Losses (K_total)</span>
+        </div>
+        <span class="step-standard-pill">Crane Co. Technical Paper No. 410</span>
+      </div>
+      <div class="step-explanation">Fitting coefficients are scaled by fully turbulent friction factor limit \(f_T\) of the pipe, summing fitting losses.</div>
+      <div class="step-equation-panel">
+        <span class="step-math-expression" style="color:#0F172A; text-align:left;">
+          &bull; Fully Turbulent f_T factor: <strong>${res.f_T.toFixed(5)}</strong><br>
+          &bull; Fittings List included: ${res.fittingsList.length > 0 ? res.fittingsList.map(f => `${f.qty}x ${f.name} (K=${(f.kTotal).toFixed(3)})`).join(', ') : 'None'}<br>
+          &bull; Sum Fittings Loss Coefficient (K_total): <strong>${res.K_fit.toFixed(4)}</strong>
+        </span>
+      </div>
+    </div>
 
-if (reynoldsNumber < 2000) {
-flowRegime = 'Laminar';
-} else if (reynoldsNumber > 4000) {
-flowRegime = 'Turbulent';
-} else {
-flowRegime = 'Transitional';
-}
+    <!-- Step 9 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">9</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Major Friction Pressure Drop (&Delta;P_major)</span>
+        </div>
+        <span class="step-standard-pill">Darcy-Weisbach Formulation</span>
+      </div>
+      <div class="step-explanation">Calculates the pressure drop due to shear stresses along the straight pipe walls.</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$\\Delta P_{\\text{major}} = f \\frac{L}{D} \\frac{\\rho V^2}{2}$$</div>
+        <span class="step-math-expression">
+          &Delta;P_major = ${res.frictionFactor.toFixed(6)} &times; (${res.length_m.toFixed(1)} / ${res.diameter_m.toFixed(5)}) &times; (${res.rho.toFixed(2)} &times; ${res.velocity_ms.toFixed(4)}² / 2) = <strong>${res.headLossMajor_Pa.toFixed(1)} Pa</strong> (${(res.headLossMajor_Pa/1000).toFixed(3)} kPa)
+        </span>
+      </div>
+    </div>
 
-if (inputType !== 'pressure_drop') {
-reynoldsNumber = (density * velocity_ms * diameter_m) / viscosity;
-calculationHtml += `<p><strong>3. Calculate Reynolds Number:</strong></p>`;
-calculationHtml += `<p>The Reynolds number (Re) is a dimensionless quantity used to predict flow patterns.</p>`;
-calculationHtml += `<p class="formula">$$Re = \\frac{\\rho V D}{\\mu}$$</p>`;
-calculationHtml += `<ul>
-<li>Density (ρ) = ${density} kg/m<sup>3</sup> (${fluidType} at ${fluidTemperature}°C)</li>
-<li>Velocity (V) = ${velocity_ms.toFixed(4)} m/s</li>
-<li>Pipe Internal Diameter (D) = ${diameter_m.toFixed(4)} m</li>
-<li>Dynamic Viscosity (μ) = ${viscosity.toExponential(3)} Pa·s (${fluidType} at ${fluidTemperature}°C)</li>
-</ul>`;
-calculationHtml += `<p class="calculation-step">Re = (${density} × ${velocity_ms.toFixed(4)} × ${diameter_m.toFixed(4)}) / ${viscosity.toExponential(3)} = ${reynoldsNumber.toExponential(4)}</p>`;
-calculationHtml += `<p class="calculation-step">Flow Regime: ${flowRegime}</p>`;
-} else {
-calculationHtml += `<p><strong>3. Determined Reynolds Number:</strong></p>`;
-calculationHtml += `<p>Based on converged velocity, Reynolds number is:</p>`;
-calculationHtml += `<p class="calculation-step">Re = ${reynoldsNumber.toExponential(4)}</p>`;
-calculationHtml += `<p class="calculation-step">Flow Regime: ${flowRegime}</p>`;
-}
+    <!-- Step 10 -->
+    <div class="stepper-step">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">10</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Minor Fitting Pressure Drop (&Delta;P_minor)</span>
+        </div>
+        <span class="step-standard-pill">Localized Head Loss Method</span>
+      </div>
+      <div class="step-explanation">Calculates head losses resulting from direction changes and flow disruptions through fittings.</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$\\Delta P_{\\text{minor}} = K_{\\text{total}} \\frac{\\rho V^2}{2}$$</div>
+        <span class="step-math-expression">
+          &Delta;P_minor = ${res.K_fit.toFixed(4)} &times; (${res.rho.toFixed(2)} &times; ${res.velocity_ms.toFixed(4)}² / 2) = <strong>${res.headLossMinor_Pa.toFixed(1)} Pa</strong> (${(res.headLossMinor_Pa/1000).toFixed(3)} kPa)
+        </span>
+      </div>
+    </div>
 
-if (inputType !== 'pressure_drop') {
-let frictionFormula = '';
-if (reynoldsNumber < 2000) {
-frictionFactor = 64 / reynoldsNumber;
-frictionFormula = `$$f = \\frac{64}{Re}$$ (For Laminar Flow)`;
-} else {
-const relativeRoughness = roughness_e / diameter_m;
-frictionFactor = 0.25 / Math.pow(Math.log10((relativeRoughness / 3.7) + (5.74 / Math.pow(reynoldsNumber, 0.9))), 2);
-frictionFormula = `$$f = \\frac{0.25}{\\left[\\log_{10}\\left(\\frac{\\epsilon}{3.7D} + \\frac{5.74}{Re^{0.9}}\\right)\\right]^2}$$ (Swamee-Jain equation)`;
-calculationHtml += `<p class="calculation-step">Relative Roughness (ε/D) = ${roughness_e.toExponential(2)} / ${diameter_m.toFixed(4)} = ${relativeRoughness.toExponential(2)}</p>`;
-}
-calculationHtml += `<p><strong>4. Calculate Friction Factor:</strong></p>`;
-calculationHtml += `<p>The friction factor (f) accounts for resistance to flow caused by pipe's internal surface.</p>`;
-calculationHtml += `<p class="formula">${frictionFormula}</p>`;
-calculationHtml += `<ul>
-<li>Reynolds Number (Re) = ${reynoldsNumber.toExponential(4)}</li>
-<li>Pipe Roughness (ε) = ${roughness_e.toExponential(2)} m (${pipeMaterial})</li>
-<li>Pipe Internal Diameter (D) = ${diameter_m.toFixed(4)} m</li>
-</ul>`;
-calculationHtml += `<p class="calculation-step">f = ${frictionFactor.toFixed(6)}</p>`;
-} else {
-calculationHtml += `<p><strong>4. Determined Friction Factor:</strong></p>`;
-calculationHtml += `<p>Based on converged velocity and Reynolds number:</p>`;
-calculationHtml += `<p class="calculation-step">f = ${frictionFactor.toFixed(6)}</p>`;
-}
+    <!-- Step 11 -->
+    <div class="stepper-step" style="border-left-color: var(--success-color);">
+      <div class="step-meta">
+        <div class="step-num-title">
+          <div class="step-circle">11</div>
+          <span class="step-title-text" style="color: var(--primary-color);">Sized Total &Delta;P & Pump Electrical Power</span>
+        </div>
+        <span class="step-standard-pill">Hydronic System Energy Rating</span>
+      </div>
+      <div class="step-explanation">Sum of major and minor losses defines total pressure drop. Hydraulic power represents work done, while electrical power factors in pump motor efficiency.</div>
+      <div class="step-equation-panel">
+        <div class="formula">$$\\Delta P_{\\text{total}} = \\Delta P_{\\text{major}} + \\Delta P_{\\text{minor}} \\quad \\text{and} \\quad P_{\\text{elec}} = \\frac{Q \\cdot \\Delta P_{\\text{total}}}{\\eta}$$</div>
+        <span class="step-math-expression">
+          &bull; Total Pressure Drop (&Delta;P): <strong>${res.pressureDrop_Pa.toFixed(1)} Pa</strong> (${(res.pressureDrop_Pa/1000).toFixed(2)} kPa)<br>
+          &bull; Hydraulic Power: <strong>${res.hydraulicPower.toFixed(1)} W</strong><br>
+          &bull; Sized Motor Power (at ${res.pumpEff}% Eff): <strong>${res.motorPower.toFixed(1)} W</strong> (${(res.motorPower / 745.7).toFixed(2)} HP)
+        </span>
+      </div>
+    </div>`;
+    
+    calculationDetailsDiv.innerHTML = html;
+    
+    // Re-trigger MathJax to parse equations
+    if (window.MathJax) {
+      window.MathJax.typesetPromise([calculationDetailsDiv]);
+    }
+  }
 
-if (inputType !== 'pressure_drop') {
-pressureDrop_pa = frictionFactor * (length_m / diameter_m) * (density * Math.pow(velocity_ms, 2) / 2);
-calculationHtml += `<p><strong>5. Calculate Pressure Drop using Darcy-Weisbach Equation:</strong></p>`;
-calculationHtml += `<p>The Darcy-Weisbach equation calculates major head loss due to friction in pipe.</p>`;
-calculationHtml += `<p class="formula">$$\\Delta P = f \\frac{L}{D} \\frac{\\rho V^2}{2}$$</p>`;
-calculationHtml += `<ul>
-<li>Friction Factor (f) = ${frictionFactor.toFixed(6)}</li>
-<li>Pipe Length (L) = ${length_m} m</li>
-<li>Pipe Internal Diameter (D) = ${diameter_m.toFixed(4)} m</li>
-<li>Density (ρ) = ${density} kg/m<sup>3</sup></li>
-<li>Velocity (V) = ${velocity_ms.toFixed(4)} m/s</li>
-</ul>`;
-calculationHtml += `<p class="calculation-step">ΔP = ${frictionFactor.toFixed(6)} × (${length_m} / ${diameter_m.toFixed(4)}) × (${density} × ${velocity_ms.toFixed(4)}<sup>2</sup> / 2) = ${pressureDrop_pa.toFixed(2)} Pa</p>`;
-} else {
-calculationHtml += `<p><strong>5. Input Pressure Drop Confirmed:</strong></p>`;
-calculationHtml += `<p class="calculation-step">ΔP = ${pressureDrop_pa.toFixed(2)} Pa</p>`;
-}
+  function populateParamsTable(res) {
+    resultTableBody.innerHTML = '';
+    
+    const showRows = [
+      { param: 'Fluid Dynamic Density', si: `${res.rho.toFixed(2)} kg/m³`, sel: `${res.rho.toFixed(2)} kg/m³`, code: 'IAPWS-IF97 / ISO' },
+      { param: 'Dynamic Viscosity', si: `${res.mu.toExponential(4)} Pa·s`, sel: `${(res.mu*1000).toFixed(4)} cP`, code: 'Sutherland / Al-Shemmeri' },
+      { param: 'Cross-sectional Flow Area', si: `${(Math.PI * Math.pow(res.diameter_m, 2) / 4).toExponential(5)} m²`, sel: `${(Math.PI * Math.pow(res.diameter_m, 2) / 4 * 1.55e3).toFixed(2)} sq in`, code: 'Geometry' },
+      { param: 'Mean Flow Velocity', si: `${res.velocity_ms.toFixed(4)} m/s`, sel: `${(res.velocity_ms * 3.28084).toFixed(3)} ft/s`, code: 'ASME B31.3 Limits' },
+      { param: 'Reynolds Number', si: `${res.Re.toFixed(0)}`, sel: `${res.Re.toFixed(0)}`, code: `Regime: ${res.regime}` },
+      { param: 'Colebrook Friction Factor', si: `${res.frictionFactor.toFixed(6)}`, sel: `${res.frictionFactor.toFixed(6)}`, code: 'Colebrook-White solver' },
+      { param: 'Fittings Loss Coeff (K)', si: `${res.K_fit.toFixed(4)}`, sel: `${res.K_fit.toFixed(4)}`, code: 'Crane Co. TP-410' },
+      { param: 'Major Friction Pressure Drop', si: `${res.headLossMajor_Pa.toFixed(1)} Pa`, sel: `${(res.headLossMajor_Pa/1000).toFixed(2)} kPa`, code: 'Darcy-Weisbach' },
+      { param: 'Minor Fitting Pressure Drop', si: `${res.headLossMinor_Pa.toFixed(1)} Pa`, sel: `${(res.headLossMinor_Pa/1000).toFixed(2)} kPa`, code: 'K-factor method' },
+      { param: 'Total System Pressure Drop', si: `${res.pressureDrop_Pa.toFixed(1)} Pa`, sel: `${(res.pressureDrop_Pa/1000).toFixed(2)} kPa`, code: 'Total major + minor' },
+      { param: 'Hydraulic Energy Power', si: `${res.hydraulicPower.toFixed(2)} W`, sel: `${(res.hydraulicPower/745.7).toFixed(3)} HP`, code: 'Ideal Sizing' },
+      { param: 'Motor Sized Electrical Power', si: `${res.motorPower.toFixed(2)} W`, sel: `${(res.motorPower/1000).toFixed(3)} kW`, code: `at ${res.pumpEff}% Pump Efficiency` }
+    ];
+    
+    showRows.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${row.param}</strong></td>
+        <td>${row.si}</td>
+        <td>${row.sel}</td>
+        <td><span style="font-size:0.85rem; font-weight:600; color:var(--primary-color);">${row.code}</span></td>`;
+      resultTableBody.appendChild(tr);
+    });
+  }
 
-calculationDetailsDiv.innerHTML = calculationHtml;
-if (window.MathJax) {
-window.MathJax.typesetPromise([calculationDetailsDiv]);
-}
-
-resultTableBody.innerHTML = '';
-
-function addResultRow(parameter, value) {
-const row = resultTableBody.insertRow();
-const paramCell = row.insertCell();
-const valueCell = row.insertCell();
-paramCell.textContent = parameter;
-valueCell.innerHTML = value;
-}
-
-addResultRow("Fluid Type", fluidType.charAt(0).toUpperCase() + fluidType.slice(1));
-addResultRow("Fluid Temperature", `${fluidTemperature}°C`);
-addResultRow("Pipe Material", pipeMaterial.replace('_', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '));
-addResultRow("Pipe Internal Diameter", `${diameter_mm} mm`);
-addResultRow("Pipe Length", `${length_m} m`);
-addResultRow("Fluid Density", `${density.toFixed(3)} kg/m³`);
-addResultRow("Fluid Viscosity", `${viscosity.toExponential(3)} Pa·s`);
-addResultRow("Pipe Roughness", `${roughness_e.toExponential(2)} m`);
-addResultRow("Pipe Cross-sectional Area", `${area_m2.toFixed(6)} m²`);
-addResultRow("Velocity", `${velocity_ms.toFixed(4)} m/s`);
-addResultRow("Flow Rate", `${flowRate_m3s.toExponential(4)} m³/s`);
-addResultRow("Reynolds Number", `${reynoldsNumber.toExponential(4)} (${flowRegime} Flow)`);
-addResultRow("Friction Factor", frictionFactor.toFixed(6));
-addResultRow("Pressure Drop", `${(pressureDrop_pa / 1000).toFixed(2)} kPa (${pressureDrop_pa.toFixed(2)} Pa)`);
-
-standardReference.innerHTML = "Pipe flow calculations based on fundamental fluid mechanics principles per ISO 5167, ASME standards. Darcy-Weisbach equation universally recognized for pressure drop due to friction. Friction factor determined using Swamee-Jain explicit approximation for turbulent flow and Hagen-Poiseuille for laminar flow. Temperature-dependent fluid properties ensure accuracy across operating conditions. Always verify against manufacturer data and field measurements during commissioning.";
-resultContainer.style.display = 'block';
-resultContainer.scrollIntoView({ behavior: 'smooth' });
-displayMessage("Calculation completed successfully!", "info");
+  // Certified PDF generation function (reusing local design-calculators layout)
+  downloadPdfBtn.addEventListener('click', function() {
+    if (!lastCalculationResult) {
+      displayMessage("Please perform a calculation first before exporting.", "error");
+      return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const r = lastCalculationResult;
+    
+    let y = 20;
+    
+    // Watermark/Background decoration
+    pdf.setFillColor(248, 250, 252);
+    pdf.rect(0, 0, 210, 297, 'F');
+    
+    // Left decorative bar
+    pdf.setFillColor(30, 58, 138); // Primary Color
+    pdf.rect(0, 0, 8, 297, 'F');
+    
+    // Header section
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(18);
+    pdf.setTextColor(30, 58, 138);
+    pdf.text("Design Calculators - Sizing Report", 15, y);
+    y += 6;
+    
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100);
+    pdf.text("Certified Industrial Pipe Sizing & Pressure Drop Sizing Analysis", 15, y);
+    y += 10;
+    
+    pdf.setFontSize(9);
+    pdf.text(`Timestamp: ${new Date().toLocaleString()}`, 15, y);
+    pdf.text(`Piping Reference Standard: ASME B31.3 / IS 2065`, 195, y, { align: 'right' });
+    y += 6;
+    
+    pdf.setDrawColor(226, 28, 45); // Red underline accent
+    pdf.setLineWidth(0.5);
+    pdf.line(15, y, 195, y);
+    y += 10;
+    
+    // Section 1: Inputs
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.setTextColor(30, 58, 138);
+    pdf.text("1. Input Sizing Parameters", 15, y);
+    y += 6;
+    
+    const inputTableBody = [
+      ["Fluid Selected", `${r.fluidType.toUpperCase()}`],
+      ["Operating Temperature", `${r.rawTemp} ${r.tempUnit} (${r.tempC.toFixed(1)} °C)`],
+      ["Operating Gauge Pressure", `${r.rawPress} ${r.pressUnit}`],
+      ["Internal Diameter (D)", `${r.rawDiam} ${r.diamUnit} (${(r.diameter_m*1000).toFixed(1)} mm)`],
+      ["Pipeline Length (L)", `${r.rawLength} ${r.lengthUnit} (${r.length_m.toFixed(1)} m)`],
+      ["Pipe Roughness (epsilon)", `${r.roughness_m.toExponential(3)} m`]
+    ];
+    
+    pdf.autoTable({
+      startY: y,
+      margin: { left: 15, right: 15 },
+      head: [['Parameter Profile', 'Specified Value']],
+      body: inputTableBody,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138] },
+      styles: { fontSize: 9 }
+    });
+    
+    y = pdf.lastAutoTable.finalY + 12;
+    
+    // Section 2: Results Sizing
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.setTextColor(30, 58, 138);
+    pdf.text("2. Calculated Sizing Results", 15, y);
+    y += 6;
+    
+    const resultsTableBody = [
+      ["Reynolds Number", `${r.Re.toFixed(0)} (${r.regime} Flow)`],
+      ["Friction Factor (f)", `${r.frictionFactor.toFixed(6)}`],
+      ["Calculated Flow Velocity", `${r.velocity_ms.toFixed(3)} m/s`],
+      ["Total Fitting Loss K-factor", `${r.K_fit.toFixed(3)}`],
+      ["Major Friction Loss", `${(r.headLossMajor_Pa/1000).toFixed(2)} kPa`],
+      ["Minor Fittings Loss", `${(r.headLossMinor_Pa/1000).toFixed(2)} kPa`],
+      ["Total System Pressure Drop", `${(r.pressureDrop_Pa/1000).toFixed(2)} kPa`],
+      ["Motor Electrical Power Requirement", `${r.motorPower >= 1000 ? (r.motorPower/1000).toFixed(2) + " kW" : r.motorPower.toFixed(0) + " W"} (at ${r.pumpEff}% Eff)`]
+    ];
+    
+    pdf.autoTable({
+      startY: y,
+      margin: { left: 15, right: 15 },
+      head: [['Hydraulic Output metric', 'Calculated Value']],
+      body: resultsTableBody,
+      theme: 'grid',
+      headStyles: { fillColor: [37, 99, 235] },
+      styles: { fontSize: 9 }
+    });
+    
+    y = pdf.lastAutoTable.finalY + 12;
+    
+    // Page breaking check
+    if (y > 220) {
+      pdf.addPage();
+      y = 20;
+    }
+    
+    // Section 3: Fittings list if present
+    if (r.fittingsList.length > 0) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 58, 138);
+      pdf.text("3. Valves & Fittings List (Crane Co. TP-410)", 15, y);
+      y += 6;
+      
+      const fitBody = r.fittingsList.map(f => [
+        f.name, f.qty.toString(), f.kEach.toFixed(4), f.kTotal.toFixed(4)
+      ]);
+      
+      pdf.autoTable({
+        startY: y,
+        margin: { left: 15, right: 15 },
+        head: [['Fitting Description', 'Quantity', 'K (each)', 'K (total)']],
+        body: fitBody,
+        theme: 'grid',
+        headStyles: { fillColor: [15, 23, 42] },
+        styles: { fontSize: 8 }
+      });
+      y = pdf.lastAutoTable.finalY + 12;
+    }
+    
+    if (y > 230) {
+      pdf.addPage();
+      y = 20;
+    }
+    
+    // Section 4: Compliance Report
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.setTextColor(30, 58, 138);
+    pdf.text("4. Standard Compliance & Sizing Analysis", 15, y);
+    y += 6;
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(50);
+    
+    let reportText = `- Flow Velocity check: ${r.erosionMsg}\n`;
+    reportText += `- API RP 14E Limit: The density-based erosional threshold is ${r.Ve.toFixed(2)} m/s. Sized velocity is ${r.velocity_ms.toFixed(2)} m/s.\n`;
+    reportText += `- Water hammer surge potential: Sizing indicates surge spikes can reach ±${r.surgeBar.toFixed(1)} bar on sudden valve closure.\n`;
+    if (r.warning) {
+      reportText += `- Warning: ${r.warning}\n`;
+    }
+    
+    pdf.text(reportText, 15, y);
+    y += 25;
+    
+    // Drawing Header/Footer running elements on all pages
+    const pageCount = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      
+      // Header
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(150);
+      pdf.text("Design Calculators - Sizing Utilities", 15, 10);
+      pdf.text("https://designcalculators.co.in", 195, 10, { align: "right" });
+      pdf.setDrawColor(200);
+      pdf.setLineWidth(0.2);
+      pdf.line(15, 12, 195, 12);
+      
+      // Footer
+      pdf.line(15, 282, 195, 282);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Sized per ASME B31.3, API 14E, IS 2065 | Page ${i} of ${pageCount}`, 15, 287);
+      pdf.text("All reports must be validated by a licensed professional engineer.", 195, 287, { align: "right" });
+    }
+    
+    // Download
+    pdf.save("pipe_flow_sizing_report.pdf");
+    displayMessage("PDF Report successfully generated and downloaded!", "info");
+  });
+  
+  // Theme switcher load & save integration
+  const themeSwitch = document.getElementById('theme-switch');
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeSwitch.checked = true;
+  }
+  themeSwitch.addEventListener('change', function() {
+    if (this.checked) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('theme', 'light');
+    }
+  });
+  
 });
 
-const themeSwitch = document.getElementById('theme-switch');
-if (localStorage.getItem('theme') === 'dark') {
-document.body.classList.add('dark-mode');
-themeSwitch.checked = true;
-}
-themeSwitch.addEventListener('change', function() {
-if (this.checked) {
-document.body.classList.add('dark-mode');
-localStorage.setItem('theme', 'dark');
-} else {
-document.body.classList.remove('dark-mode');
-localStorage.setItem('theme', 'light');
-}
-});
-});
 </script>
 
 </body>
 </html>
-
-
