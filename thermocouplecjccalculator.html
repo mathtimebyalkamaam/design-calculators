@@ -28,12 +28,7 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap"></noscript>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- PDF Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- Chart.js for Visuals -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- MathJax for Formulas -->
     <script>
@@ -73,6 +68,13 @@
             --grad-dark: linear-gradient(135deg, #0F172A, #1E293B);
             --shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
             --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.1);
+            
+            /* Custom measurement colors */
+            --color-meas: #f59e0b;
+            --color-ref: #2563eb;
+            --color-total: #4f46e5;
+            --color-safe: #10b981;
+            --color-tol: #ef4444;
         }
 
         body.dark-mode {
@@ -85,6 +87,12 @@
             --footer-bg: #020617;
             --border: #334155;
             --accent: #F59E0B;
+            
+            --color-meas: #fbbf24;
+            --color-ref: #60a5fa;
+            --color-total: #818cf8;
+            --color-safe: #34d399;
+            --color-tol: #f87171;
         }
 
         * { box-sizing: border-box; }
@@ -96,9 +104,11 @@
             line-height: 1.7;
             margin: 0;
             padding: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+        .content-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
         /* Header & Nav */
         header {
@@ -114,7 +124,7 @@
         }
         .logo-container {
             display: flex;
-            flex-direction: column;
+            align-items: center;
             text-decoration: none;
             color: white;
         }
@@ -179,107 +189,114 @@
 
         /* Main Content & Cards */
         main { padding: 40px 0; }
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            padding: 30px;
+        
+        .tool-container {
+            background-color: var(--card);
+            border-radius: 16px;
+            padding: 35px;
             box-shadow: var(--shadow);
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             border: 1px solid var(--border);
+            animation: slideUpFade 0.6s ease-out;
         }
-        .card h2 {
+        
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tool-container h2 {
             color: var(--primary);
             border-bottom: 3px solid var(--primary);
             padding-bottom: 15px;
             margin-top: 0;
+            margin-bottom: 25px;
             font-family: 'Montserrat', sans-serif;
             font-size: 1.8rem;
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        h3 {
-            color: var(--heading);
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.5rem;
-            margin-top: 25px;
-            margin-bottom: 20px;
+
+        .tool-description {
+            margin-bottom: 25px;
+            color: var(--text);
+            font-size: 1.05rem;
+            line-height: 1.8;
         }
+
+        .color-meas { color: var(--color-meas); font-weight: 700; }
+        .color-ref { color: var(--color-ref); font-weight: 700; }
+        .color-total { color: var(--color-total); font-weight: 700; }
+        .color-safe { color: var(--color-safe); font-weight: 700; }
+        .color-tol { color: var(--color-tol); font-weight: 700; }
+
+        .badge-meas { background-color: rgba(245, 158, 11, 0.08); color: var(--color-meas); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .badge-ref { background-color: rgba(37, 99, 235, 0.08); color: var(--color-ref); border: 1px solid rgba(37, 99, 235, 0.2); }
+        .badge-total { background-color: rgba(79, 70, 229, 0.08); color: var(--color-total); border: 1px solid rgba(79, 70, 229, 0.2); }
+        .badge-safe { background-color: rgba(16, 185, 129, 0.08); color: var(--color-safe); border: 1px solid rgba(16, 185, 129, 0.2); }
 
         /* Forms */
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
-        .form-group { margin-bottom: 0; }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
         .form-group label {
-            display: block;
-            margin-bottom: 8px;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--heading);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         .form-group input, .form-group select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border);
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
             border-radius: 6px;
             background-color: var(--bg);
             color: var(--text);
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
         }
         .form-group input:focus, .form-group select:focus {
-            border-color: var(--primary);
+            border-color: var(--secondary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-        }
-        body.dark-mode .form-group input:focus { 
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
         /* Buttons */
-        .btn {
+        .calculate-btn {
             background: var(--grad);
             color: white;
             border: none;
             padding: 16px 30px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
-            transition: all 0.3s;
+            margin-top: 25px;
+            transition: all 0.3s ease;
             width: 100%;
-            display: inline-flex;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
         }
-        .btn:hover {
+        .calculate-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
         }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--secondary);
-            color: var(--secondary);
-            font-size: 0.9rem;
-            padding: 8px 16px;
-        }
-        .btn-outline:hover {
-            background: var(--secondary);
-            color: white;
-        }
-        .button-wrapper {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            padding-top: 15px;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+        .calculate-btn:active { transform: translateY(-1px); }
         
         /* Quick Load Buttons */
         .preset-container {
@@ -289,17 +306,18 @@
             margin-bottom: 20px;
         }
         .preset-btn {
-            padding: 8px 12px;
+            padding: 8px 14px;
             font-size: 0.85rem;
-            border: 1px solid var(--border);
+            font-weight: 600;
+            border: 1.5px solid var(--border);
             background: var(--card);
             border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             color: var(--text);
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
         .preset-btn:hover {
             background: var(--bg);
@@ -308,238 +326,493 @@
         }
 
         /* Results Layout */
-        .results-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .result-container {
+            margin-top: 40px;
+            padding: 35px;
+            border-radius: 16px;
+            background-color: var(--card);
+            box-shadow: var(--shadow);
+            border: 2px solid var(--border);
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+        .result-container.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .results-header-dashboard {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 30px;
-            align-items: start;
-        }
-        @media (max-width: 1024px) {
-            .results-grid { grid-template-columns: 1fr; }
-        }
-
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .results-table th, .results-table td {
-            padding: 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        .results-table th {
-            background: var(--grad);
-            color: white;
-            font-weight: 700;
-        }
-        .results-table tr:nth-child(even) { background-color: var(--bg); }
-        .results-table td:first-child {
-            font-weight: 600;
-            color: var(--heading);
-        }
-        .highlight { color: var(--success); font-weight: 700; }
-        .danger-text { color: var(--danger); font-weight: 700; }
-
-        /* Canvas Container */
-        .chart-container {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 15px;
-            position: relative;
-            height: 400px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        canvas {
-            max-width: 100%;
-            max-height: 100%;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 25px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
         }
 
-        /* Educational Section Styling */
-        .insight-card {
-            background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.03));
+        .status-summary-card {
+            flex: 1;
+            min-width: 280px;
+            padding: 24px;
             border-radius: 12px;
-            padding: 25px;
-            margin: 20px 0;
-            border-left: 5px solid var(--secondary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: all 0.3s;
+            background: rgba(37, 99, 235, 0.03);
+            border-left: 6px solid var(--secondary);
         }
-        .insight-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .status-summary-card.compliant {
+            background: rgba(16, 185, 129, 0.03);
+            border-left-color: var(--success);
         }
-        .insight-card h4 {
-            color: var(--secondary);
+        .status-summary-card.non-compliant {
+            background: rgba(239, 68, 68, 0.03);
+            border-left-color: var(--danger);
+        }
+        .status-summary-card h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
             font-size: 1.3rem;
-            margin: 0 0 15px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             font-family: 'Montserrat', sans-serif;
         }
-        .insight-card p, .insight-card ul {
-            margin: 10px 0;
-            line-height: 1.8;
-            color: var(--text);
-        }
-        .insight-card ul { padding-left: 20px; }
-        .insight-card li { margin-bottom: 8px; }
+        .status-summary-card p { margin: 0; font-size: 1rem; }
 
-        /* Formulas & Steps */
-        .formula {
-            background: var(--bg);
-            border-left: 3px solid var(--accent);
-            padding: 15px;
-            margin: 12px 0;
-            font-size: 1.1rem;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            overflow-x: auto;
+        .gauge-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            min-width: 180px;
+        }
+        .gauge-svg-container {
+            width: 140px;
+            height: 140px;
+            position: relative;
+        }
+        .gauge-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .gauge-label .val { font-size: 1.8rem; font-weight: 800; color: var(--heading); }
+        .gauge-label .lbl { font-size: 0.75rem; text-transform: uppercase; color: var(--text); font-weight: 600; }
+
+        .results-grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+        .results-grid-table th, .results-grid-table td {
+            padding: 14px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        .results-grid-table th {
+            background-color: var(--bg);
             color: var(--heading);
+            font-weight: 700;
+        }
+        .results-grid-table tr:hover { background-color: rgba(0,0,0,0.01); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge.success { background-color: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge.danger { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .badge.warning { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .badge.info { background-color: rgba(37, 99, 235, 0.1); color: var(--secondary); border: 1px solid rgba(37, 99, 235, 0.2); }
+
+        /* Math Steps styling */
+        .math-breakdown-container {
+            margin-top: 35px;
+        }
+        .math-breakdown-container h4 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
         }
         .calculation-step {
-            font-family: 'Courier New', monospace;
-            background-color: rgba(0,0,0,0.03);
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--success);
-            font-size: 0.95rem;
-            line-height: 1.6;
+            margin-bottom: 20px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            background: var(--card);
         }
-        body.dark-mode .calculation-step { background-color: rgba(255,255,255,0.05); }
+        .step-header {
+            background: var(--bg);
+            padding: 12px 18px;
+            font-weight: 700;
+            color: var(--heading);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            border-bottom: 1.5px solid var(--border);
+        }
+        .step-content {
+            padding: 20px;
+        }
+        .step-content p { margin-top: 0; margin-bottom: 12px; line-height: 1.7; }
+        .step-content .formula-box {
+            font-family: 'Courier New', monospace;
+            background: var(--bg);
+            padding: 14px 18px;
+            border-radius: 6px;
+            border-left: 4px solid var(--secondary);
+            overflow-x: auto;
+            font-size: 0.92rem;
+            color: var(--heading);
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+        .step-content .result-box {
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px dashed var(--secondary);
+            display: inline-block;
+            color: var(--secondary);
+        }
 
-        /* Vector Input Group Styling (Reused) */
+        /* Vector Input Groups */
         .vector-input-group {
             background: var(--bg);
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
-            border: 1px solid var(--border);
-            position: relative;
+            border: 1.5px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         .vector-input-header {
             font-weight: 700;
-            margin-bottom: 10px;
+            font-size: 1.05rem;
             color: var(--primary);
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-        
-        /* Print Styling */
-        @media print {
-            header, footer, .education-section, .theme-toggle, .button-wrapper, .preset-container { display: none !important; }
-            .card { border: none; shadow: none; padding: 0; }
-            .container { width: 100%; max-width: 100%; padding: 0; }
-            .results-grid { grid-template-columns: 1fr 1fr; }
-            .chart-container { height: 300px; page-break-inside: avoid; }
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 6px;
         }
 
-        /* Message Box */
-        .message-box {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 16px 28px;
-            border-radius: 8px;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-            z-index: 10000;
-            font-weight: 600;
-            color: white;
-            opacity: 0;
-            transition: all 0.4s;
-            display: none;
+        /* Tooltips */
+        .info-icon {
+            color: var(--secondary);
+            cursor: help;
+            font-size: 0.85rem;
+            margin-left: 4px;
+            transition: transform 0.2s ease;
         }
-        .message-box.show { display: block; opacity: 1; top: 30px; }
-        .hidden { display: none; }
-
-        /* Tooltip */
-        .info-icon { color: var(--secondary); margin-left: 5px; cursor: help; }
+        .info-icon:hover { transform: scale(1.2); }
         .tooltip { position: relative; display: inline-block; }
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 220px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
+            width: 240px;
+            background-color: #1e293b;
+            color: #f1f5f9;
+            text-align: left;
             border-radius: 6px;
-            padding: 8px;
+            padding: 12px;
             position: absolute;
-            z-index: 1;
-            bottom: 125%;
+            z-index: 10;
+            bottom: 130%;
             left: 50%;
-            margin-left: -110px;
+            transform: translateX(-50%);
             opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.85rem;
-            font-weight: 400;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: opacity 0.3s ease;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: normal;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            border: 1px solid #334155;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
         }
         .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
 
-        /* Footer */
-        footer {
-            background: var(--grad-dark);
-            color: #CBD5E1;
-            padding: 50px 0 20px 0;
-            margin-top: 60px;
+        /* Standards Cards */
+        .standards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
-        .footer-content {
+        .standard-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            transition: all 0.25s ease;
+        }
+        .standard-card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            border-color: var(--secondary);
+        }
+        .standard-card h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        .standard-card .badge { margin-bottom: 10px; }
+        .standard-card p { margin: 0; font-size: 0.95rem; line-height: 1.6; }
+
+        /* FAQs Accordion */
+        .faq-section { margin-top: 40px; }
+        .faq-accordion { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .faq-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--card);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .faq-trigger {
+            width: 100%;
+            padding: 16px 20px;
+            text-align: left;
+            background: none;
+            border: none;
+            color: var(--heading);
+            font-weight: 700;
+            font-size: 1.05rem;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
             display: flex;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 40px;
-            margin-bottom: 30px;
+            align-items: center;
+            gap: 15px;
+            transition: background-color 0.2s ease;
         }
-        .footer-col { flex: 1; min-width: 200px; }
-        .footer-col h4 { color: white; margin-bottom: 15px; font-weight: 700; }
-        .footer-col ul { list-style: none; padding: 0; margin: 0; }
-        .footer-col a { color: #CBD5E1; text-decoration: none; transition: color 0.3s; }
-        .footer-col a:hover { color: var(--accent); }
-        .social-buttons { display: flex; gap: 12px; margin-top: 15px; }
-        .social-btn {
-            width: 40px; height: 40px;
-            display: flex; justify-content: center; align-items: center;
-            color: white; border-radius: 50%;
-            font-size: 1.1rem; transition: transform 0.3s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        .faq-trigger:hover { background-color: var(--bg); }
+        .faq-trigger i { transition: transform 0.3s ease; color: var(--secondary); }
+        .faq-item.active .faq-trigger i { transform: rotate(180deg); }
+        .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+        .faq-content-inner {
+            padding: 0 20px 20px 20px;
+            border-top: 1px solid var(--border);
+            font-size: 0.98rem;
+            line-height: 1.7;
         }
-        .social-btn:hover { transform: translateY(-4px); }
-        .social-btn.linkedin { background-color: #0A66C2; }
-        .social-btn.youtube { background-color: #FF0000; }
-        .social-btn.twitter { background-color: #1DA1F2; }
-        .social-btn.facebook { background-color: #1877F2; }
-        .social-btn.whatsapp { background-color: #25D366; }
-        .footer-disclaimer {
-            text-align: center; padding-top: 25px;
-            border-top: 1px solid #334155;
-            max-width: 800px; margin: 0 auto;
-            font-size: 0.9rem;
+        
+        .faq-diagram-container {
+            margin-top: 15px;
+            text-align: center;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 6px;
         }
-        .footer-bottom {
-            text-align: center; padding-top: 20px;
-            font-size: 0.9rem; color: #94A3B8;
+        .faq-diagram-container svg {
+            min-width: 650px; /* Prevents diagrams from shrinking and ensures text is fully readable on mobile */
+            height: auto;
+            display: inline-block;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container { padding: 0 15px; }
-            .navbar { flex-direction: column; gap: 20px; }
-            .nav-links { flex-direction: column; gap: 12px; text-align: center; }
-            .form-row { grid-template-columns: 1fr; }
-            .card { padding: 20px; }
-            .footer-content { flex-direction: column; gap: 25px; }
+
+        .walkthrough-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.92rem;
         }
-    </style>
+        .walkthrough-table th, .walkthrough-table td {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        .walkthrough-table th { background-color: var(--bg); }
+
+        /* Toast Box */
+        #message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 14px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            z-index: 9999;
+            font-weight: 600;
+            color: white;
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #message-box.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Print formatting */
+        @media print {
+            html, body {
+                background: white !important;
+                color: black !important;
+                font-size: 10pt !important;
+            }
+            main { padding: 0 !important; }
+            header, footer, .theme-toggle, .mobile-menu-toggle, .nav-menu, #cjc-form, .preset-container, .faq-section, .standards-grid, .tool-container:not(#result-container) {
+                display: none !important;
+            }
+            #result-container {
+                display: block !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+            .results-header-dashboard {
+                border-bottom: 2px solid #333 !important;
+                margin-bottom: 20px !important;
+                padding-bottom: 15px !important;
+            }
+            .status-summary-card {
+                border: 1px solid #333 !important;
+                background: none !important;
+                border-left: 6px solid #333 !important;
+            }
+            .print-header {
+                display: block !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                font-size: 7.5pt;
+                border-bottom: 1px solid #ddd;
+                padding-bottom: 5px;
+                color: #555;
+            }
+            .print-footer {
+                display: block !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                font-size: 7.5pt;
+                border-top: 1px solid #ddd;
+                padding-top: 5px;
+                color: #555;
+            }
+            .print-footer a { color: #555; text-decoration: none; }
+            .calculation-step {
+                page-break-inside: avoid;
+                border: 1px solid #999 !important;
+                margin-bottom: 15px !important;
+            }
+            .results-grid-table th {
+                background-color: #eaeaea !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .step-header {
+                background-color: #f0f0f0 !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .formula-box {
+                border-left: 3px solid #333 !important;
+                background-color: #fafafa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            @page {
+                margin: 20mm 15mm 20mm 15mm;
+            }
+        }
+
+        /* --- MOBILE RESPONSIVENESS OVERRIDES --- */
+        #loopCanvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #parameters-table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .results-grid-table {
+            min-width: 600px; /* Ensures text doesn't squeeze on tiny screens, instead enables smooth horizontal scroll */
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 12px; }
+            .content-container { padding: 10px; }
+            .tool-container { padding: 20px 15px; border-radius: 12px; }
+            .tool-container h2 { font-size: 1.4rem; padding-bottom: 10px; }
+            .form-row { grid-template-columns: 1fr !important; gap: 15px; }
+            .vector-input-group { padding: 15px; }
+            .calculate-btn { font-size: 1rem; padding: 14px 20px; }
+            .results-header-dashboard { flex-direction: column; align-items: stretch; gap: 20px; }
+            .gauge-block { min-width: 100%; }
+            .status-summary-card { min-width: 100%; padding: 15px; }
+            
+            /* Visual Circuit Grid layout wrap */
+            .tool-container div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+            .chart-container {
+                width: 100%;
+                height: auto !important;
+                display: flex;
+                justify-content: center;
+            }
+
+            /* Adjust walk-through and print layouts */
+            .walkthrough-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            /* Standard card layouts */
+            .standards-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+</style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Thermocouple Cold Junction Compensation & Tolerance Calculator - Industrial Grade">
     <meta property="og:description" content="Professional Thermocouple CJC Calculator. Calculates corrected process temperature, compensates for Cold Junction, determines IEC 60584 Tolerance Classes, and Seebeck Sensitivity.">
@@ -548,70 +821,15 @@
 
     
 
-<style>
-/* Refined Professional Header Styles */
-.header .logo-container {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important; /* Slightly tighter gap */
-    text-decoration: none;
-    color: white;
-}
 
-.header .logo {
-    height: 48px !important; /* Standard navbar size */
-    width: auto;
-    object-fit: contain;
-    border-radius: 6px; /* Soft rounding */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle depth */
-}
-
-.logo-text-group {
-    display: flex;
-    flex-direction: column;
-    justify-content: center; /* Ensure vertical centering */
-    line-height: 1.1; /* Tighter line height for the group */
-}
-
-.header .logo-text {
-    font-size: 1.25rem; /* 20px - slightly smaller but bolder feel */
-    font-weight: 700;
-    letter-spacing: -0.02em; /* Modern tighten */
-    color: #ffffff;
-    margin-bottom: 2px; /* Tiny gap to subtitle */
-}
-
-.logo-subtitle {
-    font-size: 0.7rem !important; /* 11px - distinctly secondary */
-    color: rgba(255, 255, 255, 0.85) !important; /* High readability but softer */
-    font-weight: 500;
-    margin: 0 !important;
-    line-height: 1.2;
-    max-width: 250px; /* Constrain width to avoid long run-on look */
-    white-space: normal; /* Allow nice wrapping if needed */
-}
-
-/* Enhancing Navbar Links for "Pro" feel */
-.header .nav-links a {
-    font-size: 0.95rem;
-    font-weight: 600;
-    opacity: 0.9;
-    transition: all 0.2s ease;
-}
-.header .nav-links a:hover {
-    opacity: 1;
-    transform: translateY(-1px); /* Micro-interaction */
-}
-</style>
 
     
 
     <!-- Standardised SEO Schema (Auto-generated) -->
     <script type="application/ld+json">
-    {
-    "@context": "https://schema.org",
-    "@graph": [
+    [
         {
+            "@context": "https://schema.org",
             "@type": "SoftwareApplication",
             "name": "Thermocouple Cold Junction Compensation & Tolerance Calculator - Industrial Grade",
             "url": "https://designcalculators.co.in/thermocouplecjccalculator",
@@ -620,15 +838,8 @@
             "operatingSystem": "Web",
             "author": {
                 "@type": "Person",
-                "@id": "https://designcalculators.co.in/#person",
                 "name": "Anil Sharma",
-                "url": "https://designcalculators.co.in/about.html",
-                "image": "https://designcalculators.co.in/logo.png",
-                "description": "Expert engineering consultant with over 15 years of experience in Electrical, Mechanical, and Instrumentation design. Specialist in IEC and IEEE standards.",
-                "sameAs": [
-                    "https://www.linkedin.com/in/anil-sharma-engineering",
-                    "https://www.youtube.com/@designcalculators"
-                ]
+                "url": "https://designcalculators.co.in/about.html"
             },
             "offers": {
                 "@type": "Offer",
@@ -637,6 +848,7 @@
             }
         },
         {
+            "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             "itemListElement": [
                 {
@@ -654,13 +866,58 @@
                 {
                     "@type": "ListItem",
                     "position": 3,
-                    "name": "Thermocouple Cold Junction Compensation & Tolerance Calculator",
+                    "name": "Thermocouple Cold Junction Compensation Calculator",
                     "item": "https://designcalculators.co.in/thermocouplecjccalculator"
+                }
+            ]
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is Cold Junction Compensation (CJC) in thermocouples?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Cold Junction Compensation (CJC) is the process of measuring the reference junction temperature (where the thermocouple wires connect to copper wires at the measuring instrument) and adding its equivalent thermoelectric voltage to the measured voltage to compute the true hot junction temperature."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why can I not simply add temperatures for cold junction compensation?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Thermocouple thermoelectric curves (EMF vs Temperature) are non-linear. Simply adding the measured and reference temperatures (T_meas + T_ref) results in significant errors. You must convert the reference temperature to millivolts, add it to the measured millivolts, and convert the sum back to temperature."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the Seebeck Effect?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The Seebeck Effect is the generation of an electromotive force (EMF) or electrical potential difference along the length of two dissimilar metal conductors whenever there is a temperature gradient between their junctions."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What are the IEC 60584 Tolerance Classes?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "IEC 60584 defines three tolerance classes for thermocouples. Class 1 has the highest accuracy (e.g. +/- 1.5C or +/- 0.4% for Type K), Class 2 is standard accuracy (e.g. +/- 2.5C or +/- 0.75%), and Class 3 is for cryogenic applications."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What happens if a thermocouple polarity is reversed?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Reversing thermocouple polarity causes the measuring instrument to read in the opposite direction. As the process temperature rises, the displayed reading will drop, creating severe measurement errors."
+                    }
                 }
             ]
         }
     ]
-}
     </script>
 </head>
 <body>
@@ -734,203 +991,690 @@
         </div>
     </header>
 
-    <main class="container">
-        <div class="card">
-            <h2><i class="fas fa-thermometer-half"></i> Thermocouple Cold Junction Compensation Calculator</h2>
-            
-            <div class="tool-description">
-                <p>This industrial-grade tool calculates the corrected <strong>Process Temperature ($T_{hot}$)</strong> by compensating for the <strong>Cold Junction (Reference)</strong> temperature. It also evaluates the <strong>Tolerance Class (Accuracy)</strong> per IEC 60584 and calculates the <strong>Sensitivity ($\alpha$)</strong> at the operating point.</p>
-            </div>
-
-            <div class="calculator-form">
-                <form id="cjc-form">
-                    <!-- Controls Row -->
-                    <div class="form-row" style="align-items: end;">
-                        <div class="form-group">
-                            <label>Quick Load Scenarios:</label>
-                            <div class="preset-container" style="margin-bottom: 0;">
-                                <button type="button" class="preset-btn" onclick="loadPreset('k_room')"><i class="fas fa-fire"></i> Type K @ Room Temp</button>
-                                <button type="button" class="preset-btn" onclick="loadPreset('j_hot')"><i class="fas fa-temperature-high"></i> Type J (Hot Junction)</button>
-                                <button type="button" class="preset-btn" onclick="loadPreset('error_sim')"><i class="fas fa-exclamation-triangle"></i> Simulate Error</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Inputs -->
-                    <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">1. Sensor Configuration</h4>
-                    <div class="form-row">
-                        <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-microchip"></i> Sensor Details</div>
-                            <div class="form-group">
-                                <label for="tc-type">Thermocouple Type</label>
-                                <select id="tc-type">
-                                    <option value="K" selected>Type K (NiCr-NiAl)</option>
-                                    <option value="J">Type J (Fe-CuNi)</option>
-                                    <option value="T">Type T (Cu-CuNi)</option>
-                                    <option value="E">Type E (NiCr-CuNi)</option>
-                                    <option value="N">Type N (Nicrosil-Nisil)</option>
-                                    <option value="R">Type R (Pt13Rh-Pt)</option>
-                                    <option value="S">Type S (Pt10Rh-Pt)</option>
-                                </select>
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label for="tol-class">Tolerance Class (IEC 60584)</label>
-                                <select id="tol-class">
-                                    <option value="1">Class 1 (Special Limits)</option>
-                                    <option value="2" selected>Class 2 (Standard Limits)</option>
-                                    <option value="3">Class 3 (Cryogenic)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-bolt"></i> Measurement</div>
-                            <div class="form-group">
-                                <label for="meas-volts">Measured EMF ($V_{meas}$) [mV]</label>
-                                <input type="number" id="meas-volts" value="12.2" step="0.001">
-                            </div>
-                        </div>
-                        <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-thermometer"></i> Reference</div>
-                            <div class="form-group">
-                                <label for="ref-temp">Cold Junction ($T_{ref}$) [°C] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Temperature at the transmitter terminals or input card. Standard ambient is 20-25°C.</span></span></label>
-                                <input type="number" id="ref-temp" value="25.0" step="0.1">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="button-wrapper">
-                        <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate Temperature</button>
-                        <button type="button" id="pdf-btn" class="btn btn-outline"><i class="fas fa-file-pdf"></i> Download PDF Report</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Results Section -->
-            <div id="result-container" class="card hidden" style="margin-top: 40px;">
-                <h3><i class="fas fa-poll"></i> Compensation Results</h3>
-                
-                <div class="results-grid">
-                    <!-- Left Col: Table -->
-                    <div>
-                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Calculated Values</h4>
-                        <table class="results-table">
-                            <thead>
-                                <tr>
-                                    <th>Parameter</th>
-                                    <th>Value</th>
-                                    <th>Unit</th>
-                                </tr>
-                            </thead>
-                            <tbody id="result-table-body">
-                                <!-- Dynamic rows -->
-                            </tbody>
-                        </table>
-                        
-                        <div style="margin-top: 20px; background: var(--bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border);">
-                            <strong><i class="fas fa-info-circle"></i> Impact:</strong>
-                            <div id="interpretation-text" style="margin-top: 5px; font-size: 0.95rem;"></div>
-                        </div>
-                    </div>
-
-                    <!-- Right Col: Visual Chart -->
-                    <div>
-                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Circuit Visualization</h4>
-                        <div class="chart-container" style="display: flex; justify-content: center; align-items: center; background-color: #f9fafb;">
-                            <canvas id="loopCanvas" width="400" height="300" role="img" aria-label="Loop Canvas"><p class="sr-only">Interactive data visualization for Loop Canvas</p></canvas>
-                        </div>
-                        <div style="text-align: center; margin-top: 10px; font-size: 0.85rem; color: var(--text);">
-                            <span style="color: #EF4444;">● Hot Junction</span> &nbsp;
-                            <span style="color: #3B82F6;">● Cold Junction</span> &nbsp;
-                            <span style="color: #10B981;">● ADC Input</span>
-                        </div>
-                    </div>
-                </div>
-
-                <h4 style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">Step-by-Step Engineering Calculation</h4>
-                <div id="calculation-details">
-                    <!-- Dynamic math steps -->
-                </div>
-
-                <div class="standard-reference" style="margin-top: 20px; font-style: italic; color: var(--text);">
-                     Based on NIST ITS-90 Polynomial Coefficients. Tolerance per IEC 60584-2.
-                </div>
-            </div>
-        </div>
-
-        <!-- EDUCATIONAL CONTENT SECTION (MASSIVE) -->
-        <div class="education-section card">
-            <h2><i class="fas fa-lightbulb"></i> Engineering Insights: The Seebeck Effect & Compensation</h2>
-            
-            <!-- Insight 1: Seebeck Effect -->
-            <div class="insight-card">
-                <h4><i class="fas fa-atom"></i> 1. The Seebeck Effect: It's Not Just the Tip</h4>
-                <p>A common misconception is that a thermocouple generates voltage at the junction tip. In reality, the voltage is generated <strong>along the entire length</strong> of the wire wherever there is a temperature gradient. The junction merely closes the circuit.</p>
-                <p>The voltage measured at the open ends ($V_{meas}$) is proportional to the difference in temperature between the hot end ($T_{hot}$) and the cold end ($T_{ref}$).</p>
-                <div class="formula">
-                    $$ V_{meas} = \int_{T_{ref}}^{T_{hot}} S(T) \, dT $$
-                </div>
-                <p>Where $S(T)$ is the Seebeck Coefficient (Sensitivity) of the specific metal pair. Since we only measure $V_{meas}$ and want to find $T_{hot}$, we must know $T_{ref}$ precisely.</p>
-            </div>
-
-            <!-- Insight 2: Why CJC is Mandatory -->
-            <div class="insight-card">
-                <h4><i class="fas fa-snowflake"></i> 2. Cold Junction Compensation (CJC)</h4>
-                <p>Historically, laboratories placed the reference junction in an ice bath ($0^\circ C$) so that $V(T_{ref}) = 0$. In industrial transmitters, we cannot carry ice buckets. Instead, we connect the TC wires to a terminal block (Isothermal Block).</p>
-                <p>The instrument uses a separate sensor (RTD, Thermistor, or semiconductor) to measure the temperature of this terminal block ($T_{ref}$). It then performs the following math:</p>
-                <ol>
-                    <li>Calculate equivalent voltage of the reference temp: $V_{ref} = f(T_{ref})$.</li>
-                    <li>Add this to the measured voltage: $V_{total} = V_{meas} + V_{ref}$.</li>
-                    <li>Convert the total voltage to process temperature: $T_{process} = f^{-1}(V_{total})$.</li>
-                </ol>
-                <p><strong>Crucial Note:</strong> You cannot simply add temperatures ($T_{meas} + T_{ref} \neq T_{hot}$). You must work in Millivolts because the curve is non-linear.</p>
-            </div>
-
-            <!-- Insight 3: Accuracy & Tolerance -->
-            <div class="insight-card">
-                <h4><i class="fas fa-check-circle"></i> 3. Tolerance Classes (IEC 60584-2)</h4>
-                <p>Thermocouple accuracy is defined by tolerance classes. It is the greater of a fixed value or a percentage of reading.</p>
-                <ul>
-                    <li><strong>Class 1 (Special Limits):</strong> High purity wire. Typical accuracy $\pm 1.5^\circ C$ or $\pm 0.4\%$. Used for critical control.</li>
-                    <li><strong>Class 2 (Standard Limits):</strong> Standard wire. Typical accuracy $\pm 2.5^\circ C$ or $\pm 0.75\%$. General purpose.</li>
-                    <li><strong>Class 3:</strong> Low temp / cryogenic applications (Type T, E).</li>
-                </ul>
-                <p><strong>Note:</strong> Extension wire (e.g., KX, JX) also has tolerance classes (Class 1 vs Class 2). Using Class 2 extension wire on a Class 1 sensor degrades the overall system accuracy.</p>
-            </div>
-
-            <!-- Insight 4: Ground Loops -->
-            <div class="insight-card">
-                <h4><i class="fas fa-bolt"></i> 4. Ground Loops & Isolation</h4>
-                <p>Thermocouple signals are small (mV). If a <strong>Grounded</strong> thermocouple (where the junction touches the sheath) is used, and the extension wire shield is grounded at the PLC end, a ground loop forms. Current flows through the TC wire due to ground potential differences.</p>
-                <p>This creates an offset error or 50/60Hz noise. <strong>Solution:</strong> Use ungrounded thermocouples or Isolated Temperature Transmitters to break the galvanic path.</p>
-            </div>
-
-            <!-- Insight 5: Wire Identification -->
-            <div class="insight-card">
-                <h4><i class="fas fa-palette"></i> 5. Wire Colors (ANSI vs IEC)</h4>
-                <p>Confusion between US (ANSI) and International (IEC) color codes is a major source of error. Reversing polarity creates a reading that moves backwards!</p>
-                <ul>
-                    <li><strong>Type K:</strong> ANSI = Yellow (+) / Red (-). IEC = Green (+) / White (-).</li>
-                    <li><strong>Type J:</strong> ANSI = White (+) / Red (-). IEC = Black (+) / White (-).</li>
-                </ul>
-                <p>Always assume Red is Negative in ANSI standards!</p>
-            </div>
-        </div>
-    </main>    <!-- FOOTER -->
+    <main class="content-container">
+    <div class="tool-container">
+        <h2><i class="fas fa-thermometer-half"></i> Thermocouple Cold Junction Compensation Calculator</h2>
         
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+        <div class="tool-description">
+            <p>This premium, commercial-grade Cold Junction Compensation (CJC) calculator determines the true process temperature (<span class="color-safe">\(T_{\text{hot}}\)</span>) of thermocouple loops. Designed in accordance with international standards <strong>IEC 60584-1 / 60584-2</strong>, <strong>ASTM E230</strong>, and <strong>NIST ITS-90</strong>. It performs non-linear thermocouple EMF summation by calculating reference thermoelectric voltage (<span class="color-ref">\(V_{\text{ref}}\)</span>) at the cold junction temperature (<span class="color-ref">\(T_{\text{ref}}\)</span>), adding it to the measured loop EMF (\(V_{\text{meas}}\)), evaluating tolerance class accuracy limits, calculating Seebeck sensitivity, and evaluating <strong>long-run lead wire resistance loading errors</strong>.</p>
+        </div>
+
+        <div class="calculator-form">
+            <form id="cjc-form">
+                <!-- Preset Controls -->
+                <div class="form-row" style="align-items: end;">
+                    <div class="form-group">
+                        <label>Quick Load Operational Scenarios:</label>
+                        <div class="preset-container" style="margin-bottom: 0;">
+                            <button type="button" class="preset-btn" onclick="loadPreset('k_room')"><i class="fas fa-fire"></i> Type K @ 425°C Process</button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('j_hot')"><i class="fas fa-temperature-high"></i> Type J @ 350°C Process</button>
+                            <button type="button" class="preset-btn" onclick="loadPreset('error_sim')"><i class="fas fa-exclamation-triangle"></i> Simulate Limit Over-range</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input configuration -->
+                <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px;"><i class="fas fa-sliders-h"></i> 1. Parameter Inputs</h4>
+                <div class="form-row">
+                    <div class="vector-input-group">
+                        <div class="vector-input-header"><i class="fas fa-microchip"></i> Sensor Details</div>
+                        <div class="form-group">
+                            <label for="tc-type">Thermocouple Calibration Type</label>
+                            <select id="tc-type">
+                                <option value="K" selected>Type K (Chromel / Alumel)</option>
+                                <option value="J">Type J (Iron / Constantan)</option>
+                                <option value="T">Type T (Copper / Constantan)</option>
+                                <option value="E">Type E (Chromel / Constantan)</option>
+                                <option value="N">Type N (Nicrosil / Nisil)</option>
+                                <option value="R">Type R (Platinum-13% Rhodium / Pt)</option>
+                                <option value="S">Type S (Platinum-10% Rhodium / Pt)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label for="tol-class">Tolerance Class (IEC 60584)</label>
+                            <select id="tol-class">
+                                <option value="1">Class 1 (Special Limits of Error)</option>
+                                <option value="2" selected>Class 2 (Standard Limits of Error)</option>
+                                <option value="3">Class 3 (Cryogenic Limits)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="vector-input-group">
+                        <div class="vector-input-header"><i class="fas fa-bolt"></i> Measured EMF Loop</div>
+                        <div class="form-group">
+                            <label for="meas-volts">Measured voltage (\(V_{\text{meas}}\)) [mV] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The raw millivolt signal measured at the open ends of the thermocouple wire.</span></span></label>
+                            <input type="number" id="meas-volts" value="16.397" step="0.001" required>
+                        </div>
+                    </div>
+                    
+                    <div class="vector-input-group">
+                        <div class="vector-input-header"><i class="fas fa-thermometer-half"></i> Cold Junction Reference</div>
+                        <div class="form-group">
+                            <label for="ref-temp">Reference Junction (\(T_{\text{ref}}\)) [°C] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Temperature of the terminal isothermal block. Reference temperature for CJC calculation.</span></span></label>
+                            <input type="number" id="ref-temp" value="25.0" step="0.1" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Loop Configuration -->
+                <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 25px;"><i class="fas fa-route"></i> 2. Advanced Loop Parameters (Cable resistance loading)</h4>
+                <div class="form-row">
+                    <div class="vector-input-group">
+                        <div class="vector-input-header"><i class="fas fa-ruler-horizontal"></i> Extension Cable Length</div>
+                        <div class="form-group">
+                            <label for="cable-length">Total Cable Length [m] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Length of the thermocouple extension or compensating cable connecting the sensor to the transmitter.</span></span></label>
+                            <input type="number" id="cable-length" value="100" min="0" max="5000" step="10" required>
+                        </div>
+                    </div>
+                    
+                    <div class="vector-input-group">
+                        <div class="vector-input-header"><i class="fas fa-weight-hanging"></i> Extension Wire Gauge</div>
+                        <div class="form-group">
+                            <label for="wire-gauge">Wire Gauge (AWG)</label>
+                            <select id="wire-gauge">
+                                <option value="16">AWG 16 (1.29 mm dia, ~0.026 Ω/m)</option>
+                                <option value="18">AWG 18 (1.02 mm dia, ~0.041 Ω/m)</option>
+                                <option value="20" selected>AWG 20 (0.81 mm dia, ~0.065 Ω/m)</option>
+                                <option value="24">AWG 24 (0.51 mm dia, ~0.165 Ω/m)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="vector-input-group">
+                        <div class="vector-input-header"><i class="fas fa-wave-square"></i> Input Impedance</div>
+                        <div class="form-group">
+                            <label for="input-impedance">Voltmeter Impedance (\(R_{\text{input}}\)) [MΩ] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Input impedance of the transmitter A/D converter. Standard devices range from 1 to 20 Megaohms.</span></span></label>
+                            <input type="number" id="input-impedance" value="10" min="0.1" max="1000" step="0.1" required>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="calculate-btn" class="calculate-btn"><i class="fas fa-calculator"></i> Calculate Compensated Temperature &amp; Verify Specs</button>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="result-container" class="result-container">
+            <h3><i class="fas fa-clipboard-check"></i> Compensation Verification Report</h3>
+
+            <!-- Dashboard Summary -->
+            <div class="results-header-dashboard">
+                <div id="status-card" class="status-summary-card">
+                    <!-- Dynamic Summary -->
+                </div>
+                <div id="gauge-container" class="gauge-block">
+                    <!-- Dynamic Circular Gauge -->
+                </div>
+            </div>
+
+            <!-- Parameters Grid -->
+            <h4 style="font-family: 'Montserrat', sans-serif; color: var(--primary);"><i class="fas fa-poll"></i> Evaluated Measurement Metrics</h4>
+            <div id="parameters-table-container">
+                <table class="results-grid-table">
+                    <thead>
+                        <tr>
+                            <th>Measurement Parameter</th>
+                            <th>Value</th>
+                            <th>Unit</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Visual Circuit -->
+            <div style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; align-items: center; border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+                <div>
+                    <h4 style="margin: 0 0 10px 0; font-family: 'Montserrat'; color: var(--primary);">Thermoelectric Loop Circuit</h4>
+                    <p style="font-size: 0.9rem; line-height: 1.6; margin: 0;">This schematic represents the thermocouple loop. The thermocouple generates a potential gradient along its length due to the temperature differential. The cold junction compensation circuit measures the terminal temperature (\(T_{\text{ref}}\)) to calculate the true process temperature (\(T_{\text{hot}}\)) at the measurement junction.</p>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="chart-container" style="background-color: var(--bg); border-radius: 8px; border: 1px solid var(--border); height: 260px;">
+                        <canvas id="loopCanvas" width="450" height="240" role="img" aria-label="Loop Canvas"></canvas>
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 10px; font-size: 0.8rem; font-weight: 600;">
+                        <span style="color: #EF4444;"><i class="fas fa-circle"></i> Hot Junction</span>
+                        <span style="color: #3B82F6;"><i class="fas fa-circle"></i> Cold Junction</span>
+                        <span style="color: #10B981;"><i class="fas fa-circle"></i> ADC Input</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step-by-Step Mathematical Breakdown -->
+            <div class="math-breakdown-container">
+                <h4><i class="fas fa-list-ol"></i> Step-by-Step Mathematical Calculation Breakdown</h4>
+                <div id="calculation-steps"></div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="recommendations" style="margin-top: 35px; padding: 25px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg);">
+                <h4><i class="fas fa-lightbulb"></i> Instrumentation Guidelines &amp; Warnings</h4>
+                <div id="recommendations-content"></div>
+            </div>
+
+            <!-- Native Export Button -->
+            <div style="margin-top: 30px; text-align: center;">
+                <button id="export-btn" class="calculate-btn" style="max-width: 350px; display: inline-flex; background: linear-gradient(135deg, #10B981, #34D399); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                    <i class="fas fa-file-pdf"></i> Export Compensation Certificate (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Educational section (What/Why/Which/Where/How) -->
+    <div class="tool-container" style="margin-top: 40px;">
+        <h2>Cold Junction Compensation &amp; Seebeck Effect Guide</h2>
+        <div class="tool-description">
+            <p>Thermocouples are standard sensors in industrial temperature measurement. The following guide details the physical principles and calibration procedures of thermocouple loops.</p>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 30px; margin-top: 20px;">
+            <div>
+                <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.25rem;"><span style="color: var(--secondary);">WHAT</span> is the Seebeck Effect?</h3>
+                <p style="font-size: 0.95rem; line-height: 1.7;">The Seebeck Effect is the generation of an electromotive force (EMF) along the length of two dissimilar metal wires when subjected to a temperature gradient. The junction itself does not generate the voltage; it merely provides an electrical connection point to complete the circuit. The voltage generated is proportional to the temperature difference between the measuring (hot) junction and the reference (cold) junction.</p>
+            </div>
+            
+            <div>
+                <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.25rem;"><span style="color: var(--success);">WHY</span> is Cold Junction Compensation (CJC) Mandatory?</h3>
+                <p style="font-size: 0.95rem; line-height: 1.7;">A thermocouple measures the temperature *difference* between its ends. The open measuring terminals connected to the instrument act as a second thermocouple junction (the cold junction). If the cold junction temperature (\(T_{\text{ref}}\)) varies with ambient conditions, the measured loop voltage will drift. To find the true hot junction temperature, we must measure \(T_{\text{ref}}\) using a secondary sensor (like an RTD) and add its voltage contribution to the reading.</p>
+            </div>
+
+            <div>
+                <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.25rem;"><span style="color: var(--accent);">WHICH</span> Thermocouple Types are Best?</h3>
+                <p style="font-size: 0.95rem; line-height: 1.7;">The choice of thermocouple depends on the process temperature range and atmospheric conditions:</p>
+                <ul style="padding-left: 20px; font-size: 0.95rem; line-height: 1.7; margin-top: 5px;">
+                    <li><strong>Type K (Chromel/Alumel):</strong> General purpose, wide range (-200°C to 1372°C), oxidation-resistant.</li>
+                    <li><strong>Type J (Iron/Constantan):</strong> Higher sensitivity, narrow range (-210°C to 1200°C), rusts in oxidizing atmospheres.</li>
+                    <li><strong>Type T (Copper/Constantan):</strong> Stable at low and cryogenic temperatures (-270°C to 400°C).</li>
+                    <li><strong>Noble Metal Types (R, S, B):</strong> Platinum-based, highly stable at extreme temperatures (up to 1700°C).</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.25rem;"><span style="color: #6366f1;">WHERE</span> do Measurement Errors Occur?</h3>
+                <p style="font-size: 0.95rem; line-height: 1.7;">Common sources of error in thermocouple loops include:
+                <ul style="padding-left: 20px; font-size: 0.95rem; line-height: 1.7; margin-top: 5px;">
+                    <li><strong>Extension Wire Degradation:</strong> Using copper wire instead of matched thermocouple extension wire creates parasitic junctions at the terminals.</li>
+                    <li><strong>Polarity Reversal:</strong> Reversing the positive and negative wires causes the reading to drift in the wrong direction as temperature rises.</li>
+                    <li><strong>Ground Loops:</strong> Grounding the thermocouple sheath at multiple points creates current leakage path, inducing electrical noise.</li>
+                </ul>
+                </p>
+            </div>
+        </div>
+
+        <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.25rem; margin-top: 30px;"><span style="color: #ec4899;">HOW</span> is CJC Calculated in Transmitters?</h3>
+        <p style="font-size: 0.95rem; line-height: 1.7;">Standard industrial transmitters perform CJC calculations using standard NIST ITS-90 polynomials in three mathematical steps:</p>
+        <ol style="padding-left: 20px; font-size: 0.95rem; line-height: 1.7; margin-top: 10px;">
+            <li>Convert the reference junction temperature (\(T_{\text{ref}}\)) into equivalent millivolts: \(V_{\text{ref}} = f(T_{\text{ref}})\).</li>
+            <li>Add this reference voltage to the measured voltage to find the total loop voltage: \(V_{\text{total}} = V_{\text{meas}} + V_{\text{ref}}\).</li>
+            <li>Convert the total voltage back to temperature to find the true hot junction temperature: \(T_{\text{hot}} = f^{-1}(V_{\text{total}})\).</li>
+        </ol>
+
+        <!-- Advanced Theory Upgrade Sections -->
+        <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.35rem; margin-top: 40px; border-bottom: 2px solid var(--border); padding-bottom: 8px;"><i class="fas fa-book-open"></i> Advanced Thermoelectric Physics &amp; Design Criteria</h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 30px; margin-top: 20px;">
+            <div>
+                <h4 style="color: var(--secondary); font-family: 'Montserrat', sans-serif; font-size: 1.15rem;">1. The Three Fundamental Thermoelectric Phenomena</h4>
+                <p style="font-size: 0.95rem; line-height: 1.7; margin-top: 5px;">The Seebeck effect is the macroscopic manifestation of two coupled thermodynamic phenomena:</p>
+                <ul style="padding-left: 20px; font-size: 0.93rem; line-height: 1.7;">
+                    <li><strong>Seebeck Effect:</strong> Voltage generation across a temperature gradient (\(\nabla V = -S \cdot \nabla T\)).</li>
+                    <li><strong>Peltier Effect:</strong> Heat absorption or emission at the junction of two dissimilar metals when electrical current is forced through them (\(Q = \Pi \cdot I\)).</li>
+                    <li><strong>Thomson Effect:</strong> Heat absorption/evolution along a single homogeneous conductor subjected to both a temperature gradient and an electric current (\(q = \mu \cdot I \cdot \nabla T\)).</li>
+                </ul>
+                <p style="font-size: 0.93rem; line-height: 1.7;">These are linked by the Kelvin relations: \(\Pi = S \cdot T\) and \(\mu = T \cdot \frac{dS}{dT}\).</p>
+            </div>
+
+            <div>
+                <h4 style="color: var(--secondary); font-family: 'Montserrat', sans-serif; font-size: 1.15rem;">2. Isothermal Terminal Block Design Rules</h4>
+                <p style="font-size: 0.95rem; line-height: 1.7; margin-top: 5px;">The accuracy of the CJC measurement depends on ensuring the reference temperature sensor (RTD) and the thermocouple terminals are at the exact same temperature. Practical design criteria include:</p>
+                <ul style="padding-left: 20px; font-size: 0.93rem; line-height: 1.7;">
+                    <li><strong>Thermal Mass:</strong> High-density copper or brass guard plates are used to distribute heat evenly.</li>
+                    <li><strong>Shielding &amp; Isolation:</strong> Blocks are physically shielded from external air convection currents.</li>
+                    <li><strong>Sensor Placement:</strong> The reference RTD is embedded directly between the positive and negative terminal connection screws.</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 style="color: var(--secondary); font-family: 'Montserrat', sans-serif; font-size: 1.15rem;">3. Thermocouple Inhomogeneity &amp; Green Rot Drift</h4>
+                <p style="font-size: 0.95rem; line-height: 1.7; margin-top: 5px;">Over time, exposure to high temperatures or corrosive chemical processes changes the composition of the alloy wires (decalibration). A primary defect is <strong>Green Rot</strong>, which occurs in Type K thermocouples between 800°C and 1050°C in oxygen-depleted atmospheres. Chromium is selectively oxidized, turning the wire green and causing the thermoelectric output to drop significantly. Because the wire is no longer homogeneous, the Seebeck coefficient changes locally, creating permanent measurement offsets.</p>
+            </div>
+
+            <div>
+                <h4 style="color: var(--secondary); font-family: 'Montserrat', sans-serif; font-size: 1.15rem;">4. Extension vs. Compensating Cables</h4>
+                <p style="font-size: 0.95rem; line-height: 1.7; margin-top: 5px;">Connecting a thermocouple directly to standard copper terminal blocks creates parasite thermocouple junctions. You must use matching cable leads:
+                <ul style="padding-left: 20px; font-size: 0.93rem; line-height: 1.7;">
+                    <li><strong>Extension Cable (Type KX, JX):</strong> Made of the identical alloys as the thermocouple. Operates up to 200°C with high accuracy.</li>
+                    <li><strong>Compensating Cable (Type KC, VX):</strong> Made of cheaper copper/nickel alloys with similar thermoelectric characteristics, but only within a narrow range (0 to 80°C). Beyond 80°C, compensating leads introduce significant drift errors.</li>
+                </ul>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applicable Standards Section -->
+    <div class="tool-container" style="margin-top: 40px;">
+        <h2>International &amp; National Thermocouple Standards</h2>
+        <div class="tool-description">
+            <p>Thermocouple tolerances, EMF tables, and color codes are regulated by the following standards:</p>
+        </div>
+        
+        <div class="standards-grid">
+            <div class="standard-card">
+                <span class="badge info">IEC 60584-1 / 60584-2</span>
+                <h4>International Thermocouple Standard</h4>
+                <p>Specifies the reference tables, formulas, and tolerance classes (Class 1, 2, 3) for standard thermocouples worldwide. Governs manufacturing tolerances and color coding standards in Europe and Asia.</p>
+            </div>
+            
+            <div class="standard-card">
+                <span class="badge success">ASTM E230</span>
+                <h4>North American Standard</h4>
+                <p>Governs temperature-electromotive force (EMF) relationships and limits of error for thermocouples in North America. Defines "Standard Limits" and "Special Limits" of error, corresponding to IEC classes.</p>
+            </div>
+            
+            <div class="standard-card">
+                <span class="badge warning">NIST ITS-90 Monograph 175</span>
+                <h4>NIST Reference Monograph</h4>
+                <p>Provides the definitive high-order polynomial coefficients and database reference tables for all standard thermocouple calibrations. Used by software tools and calibration laboratories to ensure high accuracy.</p>
+            </div>
+            
+            <div class="standard-card">
+                <span class="badge info" style="background-color:rgba(99,102,241,0.1); color:#6366f1; border-color:rgba(99,102,241,0.2);">IS 7358</span>
+                <h4>Bureau of Indian Standards</h4>
+                <p>The Indian national standard specifying guidelines for manufacturing and testing thermocouples. Aligns with IEC 60584-2 for tolerance limits and wire configurations in heavy industries.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step-by-Step Manual Example -->
+    <div class="tool-container" style="margin-top: 40px;">
+        <h2>Manual Cold Junction Compensation Calculation Example</h2>
+        <div class="tool-description">
+            <p>This static reference walkthrough details the step-by-step mathematical calculations for compensating a Type K thermocouple loop. It allows search engines and LLM crawlers to inspect the calculation logic.</p>
+        </div>
+        
+        <div style="background-color: var(--bg); border-radius: 8px; padding: 25px; border-left: 5px solid var(--secondary); font-size: 0.95rem; line-height: 1.8;">
+            <h4 style="margin-top: 0; margin-bottom: 12px; font-family: 'Montserrat', sans-serif; color: var(--primary);">Scenario Configuration</h4>
+            <table class="walkthrough-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Symbol</th>
+                        <th>Input Value</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Thermocouple Calibration</strong></td>
+                        <td>Type</td>
+                        <td>Type K (Chromel / Alumel)</td>
+                        <td>General purpose thermocouple type</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tolerance Class</strong></td>
+                        <td>Class</td>
+                        <td>Class 2</td>
+                        <td>Standard limits of error (\(\pm 2.5^\circ\text{C}\) or \(\pm 0.75\%\))</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Measured EMF</strong></td>
+                        <td>\(V_{\text{meas}}\)</td>
+                        <td>16.397 mV</td>
+                        <td>Raw millivolt potential measured at the terminals</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cold Junction Temperature</strong></td>
+                        <td>\(T_{\text{ref}}\)</td>
+                        <td>25.0 °C</td>
+                        <td>Ambient temperature measured at the isothermal block</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4 style="font-family: 'Montserrat', sans-serif; color: var(--primary); margin-top: 25px; margin-bottom: 10px;">Step-by-Step Compensation Calculations:</h4>
+            <ol style="padding-left: 20px;">
+                <li style="margin-bottom: 12px;">
+                    <strong>Convert Cold Junction Temperature to equivalent millivolts (\(V_{\text{ref}}\)):</strong>
+                    <br>Evaluate the NIST ITS-90 polynomial for Type K at \(T_{\text{ref}} = 25.0^\circ\text{C}\):
+                    <br>\(V_{\text{ref}} = f(25.0^\circ\text{C}) = 1.000\text{ mV}\)
+                </li>
+                <li style="margin-bottom: 12px;">
+                    <strong>Sum the EMF voltages to find total loop voltage (\(V_{\text{total}}\)):</strong>
+                    <br>\(V_{\text{total}} = V_{\text{meas}} + V_{\text{ref}}\)
+                    <br>\(V_{\text{total}} = 16.397\text{ mV} + 1.000\text{ mV} = 17.397\text{ mV}\)
+                </li>
+                <li style="margin-bottom: 12px;">
+                    <strong>Convert total loop voltage to process temperature (\(T_{\text{hot}}\)):</strong>
+                    <br>Apply the inverse NIST polynomials (or Newton-Raphson approximation) at \(V_{\text{total}} = 17.397\text{ mV}\):
+                    <br>\(T_{\text{hot}} = f^{-1}(17.397\text{ mV}) = 425.0^\circ\text{C}\)
+                </li>
+                <li style="margin-bottom: 12px;">
+                    <strong>Calculate Seebeck Sensitivity (\(\alpha\)):</strong>
+                    <br>Evaluate the derivative \(\frac{dV}{dT}\) of the Type K curve at \(T_{\text{hot}} = 425.0^\circ\text{C}\):
+                    <br>\(\alpha = 41.3\text{ }\mu\text{V/}^\circ\text{C}\)
+                </li>
+                <li style="margin-bottom: 12px;">
+                    <strong>Determine Maximum Permissible Error (MPE) per IEC 60584-2:</strong>
+                    <br>For Class 2 Type K, MPE is the greater of \(\pm 2.5^\circ\text{C}\) or \(\pm 0.75\%\) of temperature:
+                    <br>Percentage limit: \(425.0^\circ\text{C} \times 0.0075 = 3.19^\circ\text{C}\)
+                    <br>\(\text{MPE} = \max(2.5^\circ\text{C}, 3.19^\circ\text{C}) = \pm 3.19^\circ\text{C}\)
+                </li>
+                <li style="margin-bottom: 12px;">
+                    <strong>Estimate Uncompensated Temperature Error:</strong>
+                    <br>Calculated process temperature if CJC was neglected: \(T_{\text{uncomp}} = f^{-1}(16.397\text{ mV}) = 400.9^\circ\text{C}\)
+                    <br>\(\text{Uncompensated Error} = 425.0^\circ\text{C} - 400.9^\circ\text{C} = 24.1^\circ\text{C}\). Neglecting CJC introduces an error roughly equal to the cold junction temperature.
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- FAQs Section -->
+    <div class="faq-section">
+        <h2>Thermocouple CJC - Frequently Asked Questions</h2>
+        <div class="tool-description">
+            <p>Select a question below to expand the detailed answer and loop diagrams.</p>
+        </div>
+
+        <div class="faq-accordion">
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What is the physical loop layout of Cold Junction Compensation? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>Cold Junction Compensation is performed inside the measuring instrument (such as a temperature transmitter or PLC input card). The thermocouple extension wires connect to copper terminals in an isothermal block. The temperature of this block is measured by a reference sensor, and the ADC converts the combined potential difference into temperature:</p>
+                        <div class="faq-diagram-container">
+                            <h5 style="margin-bottom:10px; font-family:'Montserrat'; font-size:10pt;">Thermocouple CJC Loop Block Diagram</h5>
+                            <svg viewBox="0 0 800 200" width="100%" height="auto" style="background:#f1f5f9; border-radius:8px; border:1px solid #e2e8f0; padding:10px;">
+                                <rect x="20" y="40" width="160" height="120" rx="8" fill="#3b82f6" fill-opacity="0.1" stroke="#3b82f6" stroke-width="2"/>
+                                <text x="100" y="65" font-family="Inter" font-size="13" font-weight="bold" fill="#1e3a8a" text-anchor="middle">Hot Junction (Process)</text>
+                                <circle cx="100" cy="110" r="8" fill="#ef4444"/>
+                                <text x="100" y="135" font-family="Inter" font-size="11" fill="#4b5563" text-anchor="middle">Temp = Thot</text>
+                                
+                                <line x1="180" y1="90" x2="380" y2="90" stroke="#ef4444" stroke-width="3.5"/>
+                                <line x1="180" y1="130" x2="380" y2="130" stroke="#3b82f6" stroke-width="3.5"/>
+                                <text x="280" y="80" font-family="Inter" font-size="10" fill="#b91c1c" font-weight="bold" text-anchor="middle">TC Wire (+) Extension</text>
+                                <text x="280" y="147" font-family="Inter" font-size="10" fill="#1d4ed8" font-weight="bold" text-anchor="middle">TC Wire (-) Extension</text>
+
+                                <rect x="380" y="30" width="220" height="140" rx="8" fill="#f59e0b" fill-opacity="0.1" stroke="#f59e0b" stroke-width="2"/>
+                                <text x="490" y="55" font-family="Inter" font-size="13" font-weight="bold" fill="#78350f" text-anchor="middle">Isothermal Terminal Block</text>
+                                <rect x="400" y="80" width="18" height="18" fill="#d1d5db" stroke="#9ca3af"/>
+                                <rect x="400" y="122" width="18" height="18" fill="#d1d5db" stroke="#9ca3af"/>
+                                <rect x="430" y="90" width="150" height="40" rx="4" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5"/>
+                                <text x="505" y="114" font-family="Inter" font-size="11" fill="#78350f" font-weight="bold" text-anchor="middle">Reference RTD (Tref)</text>
+
+                                <line x1="600" y1="100" x2="650" y2="100" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+                                <rect x="650" y="40" width="130" height="120" rx="8" fill="#10b981" fill-opacity="0.1" stroke="#10b981" stroke-width="2"/>
+                                <text x="715" y="70" font-family="Inter" font-size="13" font-weight="bold" fill="#065f46" text-anchor="middle">Transmitter / ADC</text>
+                                <rect x="670" y="95" width="90" height="40" rx="4" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
+                                <text x="715" y="120" font-family="Inter" font-size="11" fill="#047857" font-weight="bold" text-anchor="middle">Vmeas + Vref</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What are the thermoelectric curves of standard thermocouples? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>Standard thermocouple types generate different thermoelectric potentials (millivolts) across the same temperature range. This is due to the varying Seebeck coefficients of their alloy combinations. The curves for J, K, T, E, R, and S are plotted below:</p>
+                        <div class="faq-diagram-container">
+                            <h5 style="margin-bottom:10px; font-family:'Montserrat'; font-size:10pt;">NIST ITS-90 Thermoelectric curves (EMF vs Temp)</h5>
+                            <svg viewBox="0 0 800 240" width="100%" height="auto" style="background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; padding:10px;">
+                                <line x1="60" y1="30" x2="760" y2="30" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="60" y1="80" x2="760" y2="80" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="60" y1="130" x2="760" y2="130" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="60" y1="180" x2="760" y2="180" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="60" y1="20" x2="60" y2="200" stroke="#475569" stroke-width="2"/>
+                                <line x1="60" y1="200" x2="770" y2="200" stroke="#475569" stroke-width="2"/>
+                                <text x="50" y="35" font-family="Inter" font-size="10" fill="#64748b" text-anchor="end">80 mV</text>
+                                <text x="50" y="110" font-family="Inter" font-size="10" fill="#64748b" text-anchor="end">40 mV</text>
+                                <text x="50" y="200" font-family="Inter" font-size="10" fill="#64748b" text-anchor="end">0 mV</text>
+                                <text x="25" y="110" font-family="Inter" font-size="11" font-weight="bold" fill="#475569" transform="rotate(-90 25 110)" text-anchor="middle">Electromotive Force (EMF) [mV]</text>
+                                
+                                <text x="60" y="215" font-family="Inter" font-size="10" fill="#64748b" text-anchor="middle">0°C</text>
+                                <text x="280" y="215" font-family="Inter" font-size="10" fill="#64748b" text-anchor="middle">500°C</text>
+                                <text x="500" y="215" font-family="Inter" font-size="10" fill="#64748b" text-anchor="middle">1000°C</text>
+                                <text x="720" y="215" font-family="Inter" font-size="10" fill="#64748b" text-anchor="middle">1500°C</text>
+                                <text x="410" y="235" font-family="Inter" font-size="11" font-weight="bold" fill="#475569" text-anchor="middle">Temperature [°C]</text>
+
+                                <!-- Type E Curve (Highest EMF) -->
+                                <path d="M 60 200 Q 150 120, 500 20" stroke="#8b5cf6" stroke-width="2.5" fill="none"/>
+                                <text x="480" y="38" font-family="Inter" font-size="10" fill="#8b5cf6" font-weight="bold">Type E</text>
+
+                                <!-- Type J Curve -->
+                                <path d="M 60 200 Q 200 130, 590 35" stroke="#1e3a8a" stroke-width="2.5" fill="none"/>
+                                <text x="560" y="55" font-family="Inter" font-size="10" fill="#1e3a8a" font-weight="bold">Type J</text>
+
+                                <!-- Type K Curve -->
+                                <path d="M 60 200 Q 280 150, 670 70" stroke="#f59e0b" stroke-width="2.5" fill="none"/>
+                                <text x="640" y="85" font-family="Inter" font-size="10" fill="#f59e0b" font-weight="bold">Type K</text>
+
+                                <!-- Type R/S Curve (Low EMF) -->
+                                <path d="M 60 200 Q 380 185, 770 140" stroke="#10b981" stroke-width="2.5" fill="none"/>
+                                <text x="720" y="157" font-family="Inter" font-size="10" fill="#10b981" font-weight="bold">Type R/S</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What are the wire color standards for Type K and J thermocouples? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>Extension lead wire colors differ between international (IEC 60584-3) and North American (ANSI MC96.1) standards. A common mistake is crossing wire polarities, which leads to reverse temperature measurements:</p>
+                        <div class="faq-diagram-container">
+                            <h5 style="margin-bottom:10px; font-family:'Montserrat'; font-size:10pt;">Thermocouple Extension Wire Color Standards</h5>
+                            <svg viewBox="0 0 800 160" width="100%" height="auto" style="background:#f1f5f9; border-radius:8px; border:1px solid #e2e8f0; padding:10px;">
+                                <!-- Table Headers -->
+                                <rect x="20" y="10" width="760" height="30" fill="#d1d5db" rx="4"/>
+                                <text x="100" y="30" font-family="Inter" font-size="11" font-weight="bold" fill="#374151">Thermocouple Type</text>
+                                <text x="350" y="30" font-family="Inter" font-size="11" font-weight="bold" fill="#374151">ANSI MC96.1 (USA)</text>
+                                <text x="620" y="30" font-family="Inter" font-size="11" font-weight="bold" fill="#374151">IEC 60584-3 (Intl)</text>
+                                
+                                <!-- Type K Row -->
+                                <text x="40" y="75" font-family="Inter" font-size="12" font-weight="bold" fill="#1e293b">Type K (Chromel/Alumel)</text>
+                                <!-- ANSI: Yellow (+) and Red (-) -->
+                                <rect x="250" y="60" width="60" height="24" fill="#fef08a" stroke="#ca8a04" rx="3"/>
+                                <text x="280" y="76" font-family="Inter" font-size="10" font-weight="bold" fill="#854d0e" text-anchor="middle">Yellow (+)</text>
+                                <rect x="320" y="60" width="60" height="24" fill="#fee2e2" stroke="#dc2626" rx="3"/>
+                                <text x="350" y="76" font-family="Inter" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">Red (-)</text>
+                                
+                                <!-- IEC: Green (+) and White (-) -->
+                                <rect x="520" y="60" width="60" height="24" fill="#dcfce7" stroke="#16a34a" rx="3"/>
+                                <text x="550" y="76" font-family="Inter" font-size="10" font-weight="bold" fill="#166534" text-anchor="middle">Green (+)</text>
+                                <rect x="590" y="60" width="60" height="24" fill="#ffffff" stroke="#9ca3af" rx="3"/>
+                                <text x="620" y="76" font-family="Inter" font-size="10" font-weight="bold" fill="#374151" text-anchor="middle">White (-)</text>
+
+                                <!-- Type J Row -->
+                                <line x1="20" y1="105" x2="780" y2="105" stroke="#e5e7eb" stroke-width="1.5"/>
+                                <text x="40" y="135" font-family="Inter" font-size="12" font-weight="bold" fill="#1e293b">Type J (Iron/Constantan)</text>
+                                <!-- ANSI: White (+) and Red (-) -->
+                                <rect x="250" y="120" width="60" height="24" fill="#ffffff" stroke="#9ca3af" rx="3"/>
+                                <text x="280" y="136" font-family="Inter" font-size="10" font-weight="bold" fill="#374151" text-anchor="middle">White (+)</text>
+                                <rect x="320" y="120" width="60" height="24" fill="#fee2e2" stroke="#dc2626" rx="3"/>
+                                <text x="350" y="136" font-family="Inter" font-size="10" font-weight="bold" fill="#991b1b" text-anchor="middle">Red (-)</text>
+                                
+                                <!-- IEC: Black (+) and White (-) -->
+                                <rect x="520" y="120" width="60" height="24" fill="#1e293b" stroke="#0f172a" rx="3"/>
+                                <text x="550" y="136" font-family="Inter" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">Black (+)</text>
+                                <rect x="590" y="120" width="60" height="24" fill="#ffffff" stroke="#9ca3af" rx="3"/>
+                                <text x="620" y="136" font-family="Inter" font-size="10" font-weight="bold" fill="#374151" text-anchor="middle">White (-)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Ground Loop Diagram FAQ -->
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What is a Ground Loop in temperature measurement and how does it occur? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>A ground loop occurs when a thermocouple circuit is grounded at more than one physical location (e.g. grounded at the process vessel and also at the PLC input module). Because different structures have slightly different electrical ground potentials, current flows through the measurement wire, producing noise and millivolt drop offsets:</p>
+                        <div class="faq-diagram-container">
+                            <h5 style="margin-bottom:10px; font-family:'Montserrat'; font-size:10pt;">Thermocouple Ground Loop Electrical Schematic</h5>
+                            <svg viewBox="0 0 800 160" width="100%" height="auto" style="background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; padding:10px;">
+                                <rect x="30" y="30" width="180" height="100" rx="6" fill="#ef4444" fill-opacity="0.05" stroke="#ef4444" stroke-width="1.5"/>
+                                <text x="120" y="52" font-family="Inter" font-size="12" font-weight="bold" fill="#b91c1c" text-anchor="middle">Process Vessel Ground</text>
+                                <line x1="120" y1="130" x2="120" y2="150" stroke="#b91c1c" stroke-width="2"/>
+                                <line x1="100" y1="150" x2="140" y2="150" stroke="#b91c1c" stroke-width="2"/>
+                                <line x1="108" y1="154" x2="132" y2="154" stroke="#b91c1c" stroke-width="1.5"/>
+                                <line x1="116" y1="158" x2="124" y2="158" stroke="#b91c1c" stroke-width="1"/>
+                                
+                                <path d="M 120 100 L 480 60 L 480 100 L 120 100" stroke="#374151" stroke-width="2.5" fill="none"/>
+                                <text x="300" y="72" font-family="Inter" font-size="10" fill="#475569" text-anchor="middle">Stray Leakage Current (I_ground)</text>
+                                
+                                <rect x="520" y="30" width="230" height="100" rx="6" fill="#2563eb" fill-opacity="0.05" stroke="#2563eb" stroke-width="1.5"/>
+                                <text x="635" y="52" font-family="Inter" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">PLC / Receiver Ground</text>
+                                <line x1="635" y1="130" x2="635" y2="150" stroke="#1d4ed8" stroke-width="2"/>
+                                <line x1="615" y1="150" x2="655" y2="150" stroke="#1d4ed8" stroke-width="2"/>
+                                <line x1="623" y1="154" x2="647" y2="154" stroke="#1d4ed8" stroke-width="1.5"/>
+                                <line x1="631" y1="158" x2="639" y2="158" stroke="#1d4ed8" stroke-width="1"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Junction Construction FAQ -->
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What is the difference between Grounded, Ungrounded, and Exposed Junctions? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>The construction of the measuring tip determines the thermocouple's thermal response speed and vulnerability to electrical noise:</p>
+                        <div class="faq-diagram-container">
+                            <h5 style="margin-bottom:10px; font-family:'Montserrat'; font-size:10pt;">Thermocouple Probe Junction Types</h5>
+                            <svg viewBox="0 0 800 160" width="100%" height="auto" style="background:#f1f5f9; border-radius:8px; border:1px solid #e2e8f0; padding:10px;">
+                                <!-- Grounded -->
+                                <rect x="30" y="30" width="200" height="100" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+                                <path d="M 30 80 L 160 80 L 220 80" stroke="#EF4444" stroke-width="3" fill="none"/>
+                                <path d="M 30 90 L 160 90 L 220 80" stroke="#3B82F6" stroke-width="3" fill="none"/>
+                                <circle cx="220" cy="80" r="7" fill="#dc2626"/>
+                                <text x="130" y="120" font-family="Inter" font-size="11" font-weight="bold" fill="#374151" text-anchor="middle">Grounded (Fast, Noisy)</text>
+
+                                <!-- Ungrounded -->
+                                <rect x="290" y="30" width="200" height="100" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+                                <path d="M 290 75 L 430 75 L 470 80" stroke="#EF4444" stroke-width="3" fill="none"/>
+                                <path d="M 290 85 L 430 85 L 470 80" stroke="#3B82F6" stroke-width="3" fill="none"/>
+                                <circle cx="470" cy="80" r="7" fill="#2563eb"/>
+                                <rect x="450" y="60" width="35" height="40" rx="3" fill="#e5e7eb" stroke="#9ca3af" fill-opacity="0.6"/>
+                                <text x="390" y="120" font-family="Inter" font-size="11" font-weight="bold" fill="#374151" text-anchor="middle">Ungrounded (Isolated, Stable)</text>
+
+                                <!-- Exposed -->
+                                <rect x="550" y="30" width="160" height="100" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+                                <path d="M 550 75 L 710 75 L 750 80" stroke="#EF4444" stroke-width="3" fill="none"/>
+                                <path d="M 550 85 L 710 85 L 750 80" stroke="#3B82F6" stroke-width="3" fill="none"/>
+                                <circle cx="750" cy="80" r="7" fill="#dc2626"/>
+                                <text x="650" y="120" font-family="Inter" font-size="11" font-weight="bold" fill="#374151" text-anchor="middle">Exposed (Ultra-Fast, Exposed)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What is the difference between extension wire and compensating wire? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p><strong>Extension wires</strong> (e.g., KX, JX) are made of the exact same alloys as the thermocouple sensor itself (e.g. Chromel and Alumel for Type K). They maintain high accuracy across a wider temperature range but are more expensive.</p>
+                        <p><strong>Compensating wires</strong> (e.g., KC, VC) are made of cheaper materials (like copper-nickel alloys) that match the thermoelectric properties of the thermocouple only over a narrow temperature range (typically 0°C to 80°C). They are cost-effective for long runs but introduce errors if the isothermal junction temperature fluctuates beyond limits.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">Why does neglecting CJC result in errors roughly equal to ambient temperature? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>A thermocouple measures the temperature difference: \(V_{\text{meas}} \propto (T_{\text{hot}} - T_{\text{ref}})\). If an instrument assumes the reference junctions are at \(0^\circ\text{C}\) (reference point for standard tables) but they are actually at an ambient room temperature of \(25^\circ\text{C}\), the measured voltage will be lower by the voltage equivalent of \(25^\circ\text{C}\). If the voltage is converted to temperature directly without compensation, the calculated process temperature will be low by approximately \(25^\circ\text{C}\).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What is galvanic isolation and why is it needed for grounded thermocouples? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p><strong>Grounded thermocouples</strong> have the measuring junction welded directly to the metal protective sheath. This provides rapid thermal response but creates an electrical connection to the vessel. If the vessel is grounded at a different potential than the measuring instrument, a **ground loop** forms. Current flows through the thermocouple leads, creating large measurement offsets or noise. Galvanic isolation in temperature transmitters electrically separates the input sensor circuit from the output loop, blocking these ground currents.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">How do NIST monograph ITS-90 equations function? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>The NIST ITS-90 thermocouple reference tables are defined by high-order polynomials of the form: \(V = \sum_{i=0}^n c_i T^i\), where \(n\) is between 7 and 10. To calculate temperature from voltage, inverse polynomials of the form \(T = \sum_{i=0}^m d_i V^i\) are used. Alternatively, transmitters can solve the forward equation iteratively using numerical methods like Newton-Raphson to ensure high precision.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What is sensor drift and how can it be detected? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p>Sensor drift is a slow change in the thermocouple's calibration curve over time. It is typically caused by chemical contamination of the thermoelement wires, mechanical strain from thermal cycling, or oxidation. It can be detected by periodic comparison against a secondary reference sensor (like a high-accuracy RTD), checking calibration in an isothermal dry block calibrator, or implementing dual-sensor transmitters that cross-check readings.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button type="button" class="faq-trigger">What are the primary differences between ASTM E230 and IEC 60584 tolerances? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-content">
+                    <div class="faq-content-inner">
+                        <p><strong>IEC 60584</strong> defines Tolerance Class 1, Class 2, and Class 3. **ASTM E230** defines "Special Limits" (matching Class 1) and "Standard Limits" (matching Class 2). The numerical limits are identical for most types. For example, standard limits for Type K are \(\pm 2.2^\circ\text{C}\) or \(\pm 0.75\%\) in ASTM, and \(\pm 2.5^\circ\text{C}\) or \(\pm 0.75\%\) in IEC. ASTM is widely used in North American industrial plants, whereas IEC 60584 is the global standard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>    <!-- FOOTER -->
+        
+        <!-- Related Tools Section (Auto-generated) -->
+    <section style="padding: 40px 0; background: var(--bg-color);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/capacitance-level" class="silo-card" style="text-decoration:none;">
-                        <span>Capacitance Level</span>
-                    </a>
-                    <a href="/dp-flow-conversion" class="silo-card" style="text-decoration:none;">
-                        <span>Dp Flow Conversion</span>
-                    </a>
-                    <a href="/impulselinefreezing" class="silo-card" style="text-decoration:none;">
-                        <span>Impulselinefreezing</span>
-                    </a>
+            <h2 style="text-align:center; font-size:1.6rem; margin-bottom:30px; color:var(--heading-color); font-family: 'Montserrat', sans-serif;">Related Engineering Calculators</h2>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:1000px; margin:0 auto;">
+                <!-- RTD Temp Conversion -->
+                <a href="/rtd-tc-conversion" style="text-decoration:none; display:flex; flex-direction:column; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s ease; border-left: 4px solid var(--secondary);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05)';">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                        <div style="background: rgba(37, 99, 235, 0.1); width: 42px; height: 42px; border-radius: 8px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-exchange-alt" style="font-size: 1.25rem; color: var(--secondary);"></i>
+                        </div>
+                        <span style="font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--heading);">RTD/TC Conversion Studio</span>
+                    </div>
+                    <p style="margin: 0; font-size: 0.88rem; color: var(--text); line-height: 1.5;">Converts resistance (Pt100/Pt1000) and thermocouple millivolts directly into temperature. Features callendar-van dusen parameters and precise ITS-90 tables.</p>
+                </a>
+
+                <!-- RTD Excitation Current Selection -->
+                <a href="/rtdexcitationcurrentselection" style="text-decoration:none; display:flex; flex-direction:column; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s ease; border-left: 4px solid var(--success);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05)';">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                        <div style="background: rgba(16, 185, 129, 0.1); width: 42px; height: 42px; border-radius: 8px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-wave-square" style="font-size: 1.25rem; color: var(--success);"></i>
+                        </div>
+                        <span style="font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--heading);">RTD Excitation Current</span>
+                    </div>
+                    <p style="margin: 0; font-size: 0.88rem; color: var(--text); line-height: 1.5;">Determines optimal excitation current for RTD sensors. Integrates thermal self-heating limits to prevent offset errors in critical safety loops.</p>
+                </a>
+
+                <!-- Thermowell Wake Frequency -->
+                <a href="/thermowell-wake" style="text-decoration:none; display:flex; flex-direction:column; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s ease; border-left: 4px solid var(--accent);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.05)';">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+                        <div style="background: rgba(245, 158, 11, 0.1); width: 42px; height: 42px; border-radius: 8px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-meteor" style="font-size: 1.25rem; color: var(--accent);"></i>
+                        </div>
+                        <span style="font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--heading);">Thermowell Wake Sizing</span>
+                    </div>
+                    <p style="margin: 0; font-size: 0.88rem; color: var(--text); line-height: 1.5;">Evaluates thermowell dimensions per ASME PTC 19.3 TW. Models vortex shedding frequencies to prevent fatigue failures in high-velocity process lines.</p>
+                </a>
             </div>
         </div>
     </section>
@@ -965,11 +1709,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -977,10 +1721,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1018,350 +1762,804 @@
     </footer>
 
     <script>
-        // Global State
-        let lastResult = null;
+window.addEventListener('DOMContentLoaded', function() {
+    const calculateBtn = document.getElementById('calculate-btn');
+    const resultContainer = document.getElementById('result-container');
+    const stepsDiv = document.getElementById('calculation-steps');
+    const recDiv = document.getElementById('recommendations-content');
+    const exportBtn = document.getElementById('export-btn');
 
-        // NIST Coefficients / Sensitivity Data (Approx for JS)
-        // Alpha is approx sensitivity (uV/C) at 500C (mid range)
-        const tcData = {
-            'K': { name: 'Type K', alpha: 41.276, color: '#F59E0B' }, // Yellow
-            'J': { name: 'Type J', alpha: 51.710, color: '#1E3A8A' }, // Black/White
-            'T': { name: 'Type T', alpha: 40.962, color: '#3B82F6' }, // Blue
-            'E': { name: 'Type E', alpha: 60.970, color: '#8B5CF6' }, // Purple
-            'N': { name: 'Type N', alpha: 27.700, color: '#F97316' }, // Orange
-            'R': { name: 'Type R', alpha: 12.000, color: '#10B981' }, // Green
-            'S': { name: 'Type S', alpha: 11.000, color: '#10B981' }
-        };
+    // Global variable for result state
+    let lastResult = null;
 
-        // IEC 60584 Tolerance Data (Temp ranges vary, simplified logic)
-        // Value is array: [Fixed limit (C), Percentage limit (%)]
-        // Logic: Greater of Fixed or (Temp * Percentage)
-        const toleranceData = {
-            'K': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
-            'J': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
-            'T': { 1: [0.5, 0.004], 2: [1.0, 0.0075] },
-            'E': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
-            'N': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
-            'R': { 1: [1.0, 0.0025], 2: [1.5, 0.0025] },
-            'S': { 1: [1.0, 0.0025], 2: [1.5, 0.0025] }
-        };
+    calculateBtn.addEventListener('click', performCJCasting);
+    exportBtn.addEventListener('click', exportPDFReport);
 
-        function tempToMv(temp, type) {
-            const alpha = tcData[type].alpha; 
-            // Add slight non-linearity
-            let mv = temp * (alpha / 1000); 
-            if(type === 'K' && temp > 500) mv *= 1.02; 
+    // NIST ITS-90 Exact Piecewise Reference Polynomial Coefficients
+    // Type J, K, T, E, N, R, S
+    // Forward polynomials: T -> EMF (mV)
+    
+    // Type K coefficients
+    const polyK_pos = [0, 3.9450128025e-2, 2.3622373598e-5, -3.2858906784e-7, 1.5504811899e-8, -3.7852230222e-10, 5.0909041887e-12, -3.9881008625e-14, 1.6669290076e-16, -2.8603486925e-19];
+    const polyK_neg = [0, 3.9450128025e-2, 2.3622373598e-5, -3.2858906784e-7, 1.5504811899e-8, -3.7852230222e-10, 5.0909041887e-12, -3.9881008625e-14, 1.6669290076e-16, -2.8603486925e-19]; // neg identical without exp correction
+    
+    // Type J coefficients
+    const polyJ_pos = [0, 5.0381187815e-2, 3.0475836930e-5, -8.5681065720e-8, 1.3228195295e-10, -1.7052958337e-13, 2.0948090697e-16, -1.2538395336e-19, 1.5631725697e-23]; // 0 to 760 C
+    const polyJ_high = [-3.11358187e1, 3.00543684e-1, -9.94773282e-4, 1.70276630e-6, -1.43033468e-9, 4.73886084e-13]; // 760 to 1200 C
+    const polyJ_neg = [0, 5.0381187815e-2, 3.0475836930e-5, -8.5681065720e-8, 1.3228195295e-10, -1.7052958337e-13, 2.0948090697e-16, -1.2538395336e-19, 1.5631725697e-23]; // neg range identical
+
+    // Type T coefficients
+    const polyT_pos = [0, 3.8748103007e-2, 3.3190198092e-5, 2.0714183645e-7, -2.1945836567e-9, 1.1090377412e-11, -3.3361955375e-14, 5.6751673236e-17, -5.2045558061e-20, 1.9961698208e-23]; // 0 to 400 C
+    const polyT_neg = [0, 3.8748103007e-2, 4.4194434347e-5, 1.3844520163e-7, 1.8110793184e-9, 3.6327388165e-11, 4.3138850387e-13, 2.8148006815e-15]; // -270 to 0 C
+
+    // Type E coefficients
+    const polyE_pos = [0, 5.8665508729e-2, 4.5032275582e-5, 2.8908405238e-8, -3.3056896652e-10, 6.5024403607e-13, -1.9197495504e-16, 2.8707125336e-20, -1.7974026853e-24]; // 0 to 1000 C
+    const polyE_neg = [0, 5.8665508729e-2, 4.5032275582e-5, 2.8908405238e-8, -3.3056896652e-10, 6.5024403607e-13, -1.9197495504e-16, 2.8707125336e-20, -1.7974026853e-24]; // identical
+
+    // Type N coefficients
+    const polyN_pos = [0, 2.5929394601e-2, 1.5710141880e-5, 4.3825627237e-8, -2.8533857582e-10, 1.2229158319e-12, -3.1906950296e-15, 4.9890600185e-18, -4.2339313261e-21, 1.5022768995e-24]; // 0 to 1300 C
+    const polyN_neg = [0, 2.5929394601e-2, 1.5710141880e-5, 4.3825627237e-8, -2.8533857582e-10, 1.2229158319e-12, -3.1906950296e-15, 4.9890600185e-18, -4.2339313261e-21, 1.5022768995e-24];
+
+    // Type R coefficients
+    const polyR_1 = [0, 5.2896175026e-3, 1.3916658978e-5, -2.3885569305e-8, 3.5691600106e-11, -3.4820403625e-14, 2.1854884490e-17, -7.9942880813e-21, 1.2956287959e-24]; // 0 to 1064 C
+    const polyR_2 = [1.1506085e1, -3.0743126e-1, 7.3715690e-4, -7.5312386e-7, 3.9686008e-10, -9.9678129e-14]; // 1064 to 1664 C
+    const polyR_3 = [-3.1812932e1, 6.7725895e-1, -1.9701041e-3, 2.0543689e-6, -7.7024317e-10]; // 1664 to 1768 C
+
+    // Type S coefficients
+    const polyS_1 = [0, 5.4031330259e-3, 1.2593428974e-5, -1.5244515108e-8, 1.5887673447e-11, -1.0428162234e-14, 4.1706842709e-18, -9.1574822077e-22, 8.5245505382e-26]; // 0 to 1064 C
+    const polyS_2 = [1.3255198e1, -3.6163351e-1, 8.1673898e-4, -8.0838151e-7, 4.1671752e-10, -1.0264101e-13]; // 1064 to 1664 C
+    const polyS_3 = [-2.6074218e1, 5.4431872e-1, -1.5039239e-3, 1.4939227e-6, -5.3377284e-10]; // 1664 to 1768 C
+
+    const tcMeta = {
+        'K': { name: 'Type K', minT: -200, maxT: 1372, color: '#f59e0b' },
+        'J': { name: 'Type J', minT: -210, maxT: 1200, color: '#1e3a8a' },
+        'T': { name: 'Type T', minT: -270, maxT: 400,  color: '#3b82f6' },
+        'E': { name: 'Type E', minT: -270, maxT: 1000, color: '#8b5cf6' },
+        'N': { name: 'Type N', minT: -270, maxT: 1300, color: '#f97316' },
+        'R': { name: 'Type R', minT: 0,    maxT: 1768, color: '#10b981' },
+        'S': { name: 'Type S', minT: 0,    maxT: 1768, color: '#065f46' }
+    };
+
+    const toleranceLimits = {
+        'K': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
+        'J': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
+        'T': { 1: [0.5, 0.004], 2: [1.0, 0.0075] },
+        'E': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
+        'N': { 1: [1.5, 0.004], 2: [2.5, 0.0075] },
+        'R': { 1: [1.0, 0.0025], 2: [1.5, 0.0025] },
+        'S': { 1: [1.0, 0.0025], 2: [1.5, 0.0025] }
+    };
+
+    function evaluatePoly(t, coefs) {
+        let val = 0;
+        for (let i = coefs.length - 1; i >= 0; i--) {
+            val = val * t + coefs[i];
+        }
+        return val;
+    }
+
+    function evaluatePolyDerivative(t, coefs) {
+        let val = 0;
+        for (let i = coefs.length - 1; i >= 1; i--) {
+            val = val * t + i * coefs[i];
+        }
+        return val;
+    }
+
+    // High-precision forward piecewise equations
+    function tempToMv(t, type) {
+        if (type === 'K') {
+            if (t < 0) return evaluatePoly(t, polyK_neg);
+            let mv = evaluatePoly(t, polyK_pos);
+            if (t >= 0 && t <= 1372) {
+                mv += 0.1185 * Math.exp(-0.0001185 * Math.pow(t - 127.3, 2));
+            }
             return mv;
         }
-
-        function mvToTemp(mv, type) {
-            const alpha = tcData[type].alpha;
-            let t = (mv * 1000) / alpha;
-            if(type === 'K' && t > 500) t /= 1.02;
-            return t;
+        if (type === 'J') {
+            if (t < 0) return evaluatePoly(t, polyJ_neg);
+            if (t <= 760) return evaluatePoly(t, polyJ_pos);
+            return evaluatePoly(t, polyJ_high);
         }
-
-        function getTolerance(temp, type, cls) {
-            const rules = toleranceData[type];
-            if (!rules || !rules[cls]) return 0;
-            const fixed = rules[cls][0];
-            const pct = rules[cls][1];
-            const variable = Math.abs(temp) * pct;
-            return Math.max(fixed, variable);
+        if (type === 'T') {
+            if (t < 0) return evaluatePoly(t, polyT_neg);
+            return evaluatePoly(t, polyT_pos);
         }
+        if (type === 'E') {
+            if (t < 0) return evaluatePoly(t, polyE_neg);
+            return evaluatePoly(t, polyE_pos);
+        }
+        if (type === 'N') {
+            if (t < 0) return evaluatePoly(t, polyN_neg);
+            return evaluatePoly(t, polyN_pos);
+        }
+        if (type === 'R') {
+            if (t <= 1064) return evaluatePoly(t, polyR_1);
+            if (t <= 1664) return evaluatePoly(t, polyR_2);
+            return evaluatePoly(t, polyR_3);
+        }
+        if (type === 'S') {
+            if (t <= 1064) return evaluatePoly(t, polyS_1);
+            if (t <= 1664) return evaluatePoly(t, polyS_2);
+            return evaluatePoly(t, polyS_3);
+        }
+        return 0;
+    }
 
-        function loadPreset(type) {
-            if (type === 'k_room') {
-                document.getElementById('tc-type').value = 'K';
-                document.getElementById('meas-volts').value = '10.5'; 
-                document.getElementById('ref-temp').value = '25.0';
-                document.getElementById('tol-class').value = '2';
-            } else if (type === 'j_hot') {
-                document.getElementById('tc-type').value = 'J';
-                document.getElementById('meas-volts').value = '25.0';
-                document.getElementById('ref-temp').value = '40.0';
-                document.getElementById('tol-class').value = '1';
-            } else if (type === 'error_sim') {
-                document.getElementById('tc-type').value = 'K';
-                document.getElementById('meas-volts').value = '4.0'; 
-                document.getElementById('ref-temp').value = '0.0'; 
+    function getSensitivity(t, type) {
+        if (type === 'K') {
+            if (t < 0) return evaluatePolyDerivative(t, polyK_neg);
+            let s = evaluatePolyDerivative(t, polyK_pos);
+            if (t >= 0 && t <= 1372) {
+                const diff = t - 127.3;
+                const expVal = Math.exp(-0.0001185 * Math.pow(diff, 2));
+                s += 0.1185 * (-2 * 0.0001185 * diff) * expVal;
             }
-            displayMessage(`${type.toUpperCase()} scenario loaded.`, "success");
+            return s;
         }
-
-        function displayMessage(message, type = "info") {
-            let messageBox = document.getElementById('message-box');
-            messageBox.textContent = message;
-            if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
-            else if (type === "success") messageBox.style.backgroundColor = 'var(--success)';
-            else messageBox.style.backgroundColor = 'var(--primary)';
-            messageBox.classList.add('show');
-            setTimeout(() => messageBox.classList.remove('show'), 4000);
+        if (type === 'J') {
+            if (t < 0) return evaluatePolyDerivative(t, polyJ_neg);
+            if (t <= 760) return evaluatePolyDerivative(t, polyJ_pos);
+            return evaluatePolyDerivative(t, polyJ_high);
         }
+        if (type === 'T') {
+            if (t < 0) return evaluatePolyDerivative(t, polyT_neg);
+            return evaluatePolyDerivative(t, polyT_pos);
+        }
+        if (type === 'E') {
+            if (t < 0) return evaluatePolyDerivative(t, polyE_neg);
+            return evaluatePolyDerivative(t, polyE_pos);
+        }
+        if (type === 'N') {
+            if (t < 0) return evaluatePolyDerivative(t, polyN_neg);
+            return evaluatePolyDerivative(t, polyN_pos);
+        }
+        if (type === 'R') {
+            if (t <= 1064) return evaluatePolyDerivative(t, polyR_1);
+            if (t <= 1664) return evaluatePolyDerivative(t, polyR_2);
+            return evaluatePolyDerivative(t, polyR_3);
+        }
+        if (type === 'S') {
+            if (t <= 1064) return evaluatePolyDerivative(t, polyS_1);
+            if (t <= 1664) return evaluatePolyDerivative(t, polyS_2);
+            return evaluatePolyDerivative(t, polyS_3);
+        }
+        return 0.04;
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Theme handling
-            const themeSwitch = document.getElementById('theme-switch');
-            if (themeSwitch && localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                themeSwitch.checked = true;
-            }
-            if(themeSwitch) {
-                themeSwitch.addEventListener('change', function() {
-                    document.body.classList.toggle('dark-mode');
-                    localStorage.setItem('theme', this.checked ? 'dark' : 'light');
-                });
-            }
+    function mvToTemp(mv, type) {
+        let t = 50.0;
+        if (mv < 0) t = -50.0;
+        
+        for (let i = 0; i < 40; i++) {
+            let v = tempToMv(t, type);
+            let s = getSensitivity(t, type);
+            if (Math.abs(s) < 1e-8) s = 0.04;
+            let diff = (v - mv) / s;
+            t = t - diff;
+            if (Math.abs(diff) < 1e-7) break;
+        }
+        return t;
+    }
 
-            document.getElementById('calculate-btn').addEventListener('click', performCalculation);
-            document.getElementById('pdf-btn').addEventListener('click', generatePDF);
-        });
+    function getTolerance(t, type, cls) {
+        const rules = toleranceLimits[type];
+        if (!rules || !rules[cls]) return 0.0;
+        const fixed = rules[cls][0];
+        const pct = rules[cls][1];
+        const variable = Math.abs(t) * pct;
+        return Math.max(fixed, variable);
+    }
 
-        function performCalculation() {
-            // 1. Get Inputs
+    // AWG wire resistivity table (Ohms/meter for double loop path)
+    const awgResistivity = {
+        '16': 0.026,
+        '18': 0.041,
+        '20': 0.065,
+        '24': 0.165
+    };
+
+    function performCJCasting() {
+        stepsDiv.innerHTML = '';
+        recDiv.innerHTML = '';
+
+        try {
             const type = document.getElementById('tc-type').value;
             const cls = parseInt(document.getElementById('tol-class').value);
             const v_meas = parseFloat(document.getElementById('meas-volts').value);
             const t_ref = parseFloat(document.getElementById('ref-temp').value);
 
-            if (isNaN(v_meas) || isNaN(t_ref)) {
-                displayMessage("Please enter valid numbers.", "error");
+            // Loop Loading inputs
+            const cableLen = parseFloat(document.getElementById('cable-length').value);
+            const wireAWG = document.getElementById('wire-gauge').value;
+            const r_input = parseFloat(document.getElementById('input-impedance').value) * 1e6; // to Ohms
+
+            if (isNaN(v_meas) || isNaN(t_ref) || isNaN(cableLen)) {
+                showMessage('Validation Error: Please enter valid numeric values for all parameters.', 'error');
                 return;
             }
 
-            // 2. Physics Engine
+            const meta = tcMeta[type];
+
+            // 1. Calculate loop loading drop
+            const r_per_m = awgResistivity[wireAWG];
+            const r_loop = 2 * cableLen * r_per_m; // 2 wires for go/return loop
+
+            // Convert measured millivolts back to source millivolts
+            // V_measured = V_source * R_input / (R_input + R_loop)
+            const v_source = v_meas * (r_input + r_loop) / r_input;
+            const v_drop = v_source - v_meas;
+
+            // 2. Reference Junction voltage conversion
             const v_ref = tempToMv(t_ref, type);
-            const v_total = v_meas + v_ref;
+
+            // 3. Sum compensated EMF
+            const v_total = v_source + v_ref;
+
+            // 4. Resolve process temperature
             const t_hot = mvToTemp(v_total, type);
             const t_uncomp = mvToTemp(v_meas, type);
             const error_val = t_hot - t_uncomp;
-            const alpha = tcData[type].alpha;
 
-            // 3. Tolerance Check
+            // 5. Calculate loading temperature offset
+            const sensitivity = getSensitivity(t_hot, type); // V/C
+            const t_loading_offset = v_drop / sensitivity;
+
             const max_error = getTolerance(t_hot, type, cls);
 
-            lastResult = { type, v_meas, t_ref, v_ref, v_total, t_hot, t_uncomp, error_val, alpha, cls, max_error };
-
-            // 4. Render Step-by-Step
-            let html = `<h4>Step 1: Reference Junction Conversion</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `The terminal block is at $T_{ref} = ${t_ref.toFixed(2)} ^\\circ C$.<br>`;
-            html += `Convert this to equivalent EMF using NIST polynomials for ${tcData[type].name}:<br>`;
-            html += `$$ V_{ref} = f(T_{ref}) = \\mathbf{${v_ref.toFixed(3)} \\text{ mV}} $$`;
-            html += `</div>`;
-
-            html += `<h4>Step 2: Voltage Summation</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Add the measured voltage to the reference voltage to get total loop EMF.<br>`;
-            html += `$$ V_{total} = V_{meas} + V_{ref} $$`;
-            html += `$$ V_{total} = ${v_meas.toFixed(3)} + ${v_ref.toFixed(3)} = \\mathbf{${v_total.toFixed(3)} \\text{ mV}} $$`;
-            html += `</div>`;
-
-            html += `<h4>Step 3: Process Temperature Conversion</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Convert total voltage back to temperature to find Hot Junction Temp.<br>`;
-            html += `$$ T_{hot} = f^{-1}(V_{total}) = \\mathbf{${t_hot.toFixed(2)} ^\\circ C} $$`;
-            html += `</div>`;
-
-            html += `<h4>Step 4: Tolerance Analysis (IEC 60584)</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Checking against Class ${cls} limits for ${tcData[type].name}.<br>`;
-            html += `Max Permissible Error = $\\pm ${max_error.toFixed(2)} ^\\circ C$.<br>`;
-            html += `Sensitivity at operating point: $\\alpha \\approx ${alpha.toFixed(2)} \\mu V/^\circ C$.`;
-            html += `</div>`;
-
-            document.getElementById('calculation-details').innerHTML = html;
-
-            // 5. Update Table
-            const tbody = document.getElementById('result-table-body');
-            tbody.innerHTML = '';
-            const addRow = (n, v, u, c="") => {
-                tbody.innerHTML += `<tr style="${c ? 'color:'+c : ''}"><td><strong>${n}</strong></td><td>${v}</td><td>${u}</td></tr>`;
-            };
-            addRow("Corrected Temperature", t_hot.toFixed(2), "°C", "var(--success)");
-            addRow("Max Error (Class " + cls + ")", "±" + max_error.toFixed(2), "°C");
-            addRow("Total EMF", v_total.toFixed(3), "mV");
-            addRow("Uncompensated Error", error_val.toFixed(2), "°C", "var(--danger)");
-
-            const interpEl = document.getElementById('interpretation-text');
-            interpEl.innerHTML = `Signal corrected by <strong>${v_ref.toFixed(3)} mV</strong>. Sensor is within spec if reading vs standard is within $\\pm ${max_error.toFixed(2)} ^\\circ C$.`;
-
-            // 6. Draw Visual
-            drawLoop(t_hot, t_ref, v_meas);
-
-            // 7. Show
-            document.getElementById('result-container').classList.remove('hidden');
-            if(window.MathJax) window.MathJax.typesetPromise([document.getElementById('calculation-details')]);
-            document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function drawLoop(tHot, tRef, vMeas) {
-            const canvas = document.getElementById('loopCanvas');
-            const ctx = canvas.getContext('2d');
-            const cw = canvas.width;
-            const ch = canvas.height;
-
-            // Clear
-            ctx.clearRect(0, 0, cw, ch);
-
-            // Draw Wire Path
-            ctx.lineWidth = 3;
-            
-            // Hot Junction (Left)
-            const xHot = 60; const yMid = ch/2;
-            ctx.beginPath();
-            ctx.strokeStyle = '#EF4444'; // Red (Hot)
-            ctx.moveTo(xHot, yMid);
-            ctx.lineTo(cw/2, 50); // Upper wire
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.strokeStyle = '#3B82F6'; // Blue (Return)
-            ctx.moveTo(xHot, yMid);
-            ctx.lineTo(cw/2, 250); // Lower wire
-            ctx.stroke();
-
-            // Hot Bead
-            ctx.fillStyle = '#EF4444';
-            ctx.beginPath();
-            ctx.arc(xHot, yMid, 8, 0, 2*Math.PI);
-            ctx.fill();
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 12px Inter';
-            ctx.fillText(`Hot: ${tHot.toFixed(1)}°C`, xHot-20, yMid-20);
-
-            // Cold Junction / Terminal Block (Right)
-            const xCold = cw - 80;
-            
-            // Draw Terminals
-            ctx.fillStyle = '#9CA3AF';
-            ctx.fillRect(xCold, 40, 20, 20); // Top Term
-            ctx.fillRect(xCold, 240, 20, 20); // Bot Term
-
-            // Connect Wires to Terminals
-            ctx.beginPath();
-            ctx.strokeStyle = '#EF4444';
-            ctx.moveTo(cw/2, 50);
-            ctx.lineTo(xCold, 50);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.strokeStyle = '#3B82F6';
-            ctx.moveTo(cw/2, 250);
-            ctx.lineTo(xCold, 250);
-            ctx.stroke();
-
-            // Internal Meter (ADC)
-            ctx.strokeStyle = '#10B981'; // Green Copper
-            ctx.beginPath();
-            ctx.moveTo(xCold+20, 50);
-            ctx.lineTo(xCold+50, 50);
-            ctx.lineTo(xCold+50, 130);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(xCold+20, 250);
-            ctx.lineTo(xCold+50, 250);
-            ctx.lineTo(xCold+50, 170);
-            ctx.stroke();
-
-            // Voltmeter Circle
-            ctx.fillStyle = '#FFFFFF';
-            ctx.strokeStyle = '#374151';
-            ctx.beginPath();
-            ctx.arc(xCold+50, 150, 25, 0, 2*Math.PI);
-            ctx.fill();
-            ctx.stroke();
-            ctx.fillStyle = '#374151';
-            ctx.fillText("ADC", xCold+38, 155);
-
-            // Label Cold Junction
-            ctx.fillStyle = '#3B82F6';
-            ctx.fillText(`Ref: ${tRef.toFixed(1)}°C`, xCold-10, 30);
-            ctx.fillStyle = '#6B7280';
-            ctx.fillText(`Measured: ${vMeas.toFixed(2)} mV`, cw/2 - 40, 150);
-        }
-
-        function generatePDF() {
-            if (!lastResult) {
-                displayMessage("Calculate first.", "error");
-                return;
+            // Range checks
+            let rangeWarning = false;
+            let rangeWarningMsg = '';
+            if (t_hot < meta.minT || t_hot > meta.maxT) {
+                rangeWarning = true;
+                rangeWarningMsg = `Process temperature (${t_hot.toFixed(1)}°C) is outside standard ranges for Type ${type} (${meta.minT}°C to ${meta.maxT}°C).`;
             }
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            let y = 15;
 
-            // Header
-            pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(16);
-            pdf.setTextColor(30, 58, 138); // Blue
-            pdf.text('Thermocouple Compensation Report', 105, y, { align: 'center' });
-            y += 10;
+            lastResult = {
+                type, cls, v_meas, v_source, v_drop, r_loop, r_input, t_ref, v_ref, v_total, t_hot, t_uncomp, error_val, sensitivity: sensitivity * 1000, max_error, rangeWarning, rangeWarningMsg, t_loading_offset
+            };
 
-            pdf.setFontSize(10);
-            pdf.setTextColor(100);
-            pdf.text(`Date: ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
-            y += 15;
+            // Render Dashboard Card
+            renderDashboardCard(t_hot, max_error, rangeWarning, meta);
 
-            // Inputs
-            pdf.setFontSize(12);
-            pdf.setTextColor(0);
-            pdf.text('1. Measurement Data', 14, y);
-            y += 5;
+            // Render Metrics Table
+            renderTableBody(v_meas, v_source, v_drop, r_loop, t_ref, v_ref, v_total, t_hot, max_error, sensitivity * 1000, error_val, cls, t_loading_offset);
 
-            const inputData = [
-                ['Sensor Type', lastResult.type],
-                ['Tolerance Class', 'Class ' + lastResult.cls],
-                ['Measured EMF', `${lastResult.v_meas.toFixed(3)} mV`],
-                ['Reference Temp', `${lastResult.t_ref.toFixed(2)} °C`]
-            ];
+            // Draw circuit on Canvas
+            drawThermonetwork(t_hot, t_ref, v_meas);
 
-            pdf.autoTable({
-                startY: y,
-                head: [['Parameter', 'Value']],
-                body: inputData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] }
-            });
-            y = pdf.lastAutoTable.finalY + 15;
+            // Generate steps breakdown in LaTeX
+            generateCJCMathBreakdown(type, cls, v_meas, v_source, v_drop, r_loop, t_ref, v_ref, v_total, t_hot, t_uncomp, error_val, sensitivity * 1000, max_error, t_loading_offset);
 
-            // Results
-            pdf.text('2. Compensation Results', 14, y);
-            y += 5;
+            // Render Guidelines
+            generateInstrumentationRecommendations(type, cls, t_hot, error_val, max_error, t_ref, rangeWarning, rangeWarningMsg, r_loop, t_loading_offset);
 
-            const resData = [
-                ['Calculated Process Temp', `${lastResult.t_hot.toFixed(2)} °C`],
-                ['Max Permissible Error', `±${lastResult.max_error.toFixed(2)} °C`],
-                ['Total Loop EMF', `${lastResult.v_total.toFixed(3)} mV`],
-                ['Reference EMF', `${lastResult.v_ref.toFixed(3)} mV`],
-                ['Seebeck Sensitivity', `${lastResult.alpha.toFixed(2)} µV/°C`]
-            ];
+            // Show results container
+            resultContainer.classList.add('show');
+            setTimeout(() => {
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
 
-            pdf.autoTable({
-                startY: y,
-                head: [['Metric', 'Result']],
-                body: resData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] },
-                didParseCell: function(data) {
-                    if(data.row.index === 0) {
-                        data.cell.styles.fontStyle = 'bold';
-                    }
-                }
-            });
-
-            // Footer
-            y = pdf.lastAutoTable.finalY + 20;
-            pdf.setFontSize(8);
-            pdf.setTextColor(150);
-            pdf.text('Calculated using standard Seebeck coefficients and CJC principles.', 105, y, { align: 'center' });
-
-            pdf.save('TC_CJC_Report.pdf');
-            displayMessage("PDF Downloaded", "success");
+        } catch (error) {
+            console.error(error);
+            showMessage('Error: ' + error.message, 'error');
         }
-    </script>
+    }
+
+    function renderDashboardCard(t_hot, max_error, isWarning, meta) {
+        const card = document.getElementById('status-card');
+        const gauge = document.getElementById('gauge-container');
+
+        card.className = 'status-summary-card ' + (isWarning ? 'non-compliant' : 'compliant');
+        
+        const headerText = isWarning ? 
+            `<h4 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Sensor Limits Exceeded</h4>` :
+            `<h4 style="color: var(--success);"><i class="fas fa-check-circle"></i> Temperature Stabilized</h4>`;
+            
+        const text = isWarning ? 
+            `Measurement point is out of range. Verification fails standard IEC 60584 limits.` :
+            `Process Temperature is within operating tolerances. Corrected: <strong class="color-safe">${t_hot.toFixed(2)} °C</strong> (Tolerance: <strong class="color-tol">±${max_error.toFixed(2)} °C</strong>)`;
+
+        card.innerHTML = `
+            ${headerText}
+            <p>${text}</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">Sensor Type: <strong>${meta.name}</strong> | Range: <strong>${meta.minT}°C to ${meta.maxT}°C</strong></p>
+        `;
+
+        // Circular dynamic gauge
+        const tempPct = Math.max(0, Math.min(100, ((t_hot - meta.minT) / (meta.maxT - meta.minT)) * 100));
+        const color = isWarning ? 'var(--danger)' : 'var(--secondary)';
+        
+        gauge.innerHTML = `
+            <div class="gauge-svg-container">
+                <svg width="140" height="140">
+                    <circle cx="70" cy="70" r="60" fill="none" stroke="var(--border)" stroke-width="12" />
+                    <circle cx="70" cy="70" r="60" fill="none" stroke="${color}" stroke-width="12" 
+                        stroke-dasharray="377" stroke-dashoffset="${377 - (377 * tempPct) / 100}"
+                        stroke-linecap="round" transform="rotate(-90 70 70)" style="transition: stroke-dashoffset 0.8s ease;" />
+                </svg>
+                <div class="gauge-label">
+                    <div class="val" style="color: ${color}; font-size: 1.45rem;">${t_hot.toFixed(1)}°C</div>
+                    <div class="lbl">Process</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderTableBody(v_meas, v_source, v_drop, r_loop, t_ref, v_ref, v_total, t_hot, max_error, sensitivity, error_val, cls, t_loading_offset) {
+        const tbody = document.getElementById('result-table-body');
+        tbody.innerHTML = `
+            <tr>
+                <td><strong>Corrected Process Temp (\(T_{\text{hot}}\))</strong></td>
+                <td><span class="badge success" style="font-size:0.95rem; font-weight:800;">${t_hot.toFixed(2)} °C</span></td>
+                <td>°C</td>
+                <td>The compensated temperature at the sensing tip.</td>
+            </tr>
+            <tr>
+                <td><strong>Max Permissible Error (MPE)</strong></td>
+                <td><span class="color-tol">±${max_error.toFixed(2)} °C</span></td>
+                <td>°C</td>
+                <td>Tolerance bounds according to IEC 60584 Class ${cls}.</td>
+            </tr>
+            <tr>
+                <td><strong>Measured EMF (\(V_{\text{meas}}\))</strong></td>
+                <td><span class="color-meas">${v_meas.toFixed(3)} mV</span></td>
+                <td>mV</td>
+                <td>Raw millivolt potential measured across the terminals.</td>
+            </tr>
+            <tr>
+                <td><strong>Wire Loop Resistance (\(R_{\text{loop}}\))</strong></td>
+                <td><span>${r_loop.toFixed(2)} Ω</span></td>
+                <td>Ω</td>
+                <td>Total resistance of extension wires (go &amp; return).</td>
+            </tr>
+            <tr>
+                <td><strong>Voltage Drop Offset (\(\Delta V_{\text{loading}}\))</strong></td>
+                <td><span class="color-tol">${(v_drop * 1000).toFixed(2)} \(\mu\text{V}\)</span></td>
+                <td>\(\mu\text{V}\)</td>
+                <td>EMF signal drop caused by wire resistance loading.</td>
+            </tr>
+            <tr>
+                <td><strong>Loading Temp Offset (\(\Delta T_{\text{loading}}\))</strong></td>
+                <td><span class="color-tol">${t_loading_offset.toFixed(3)} °C</span></td>
+                <td>°C</td>
+                <td>Temperature measurement error caused by wire drop.</td>
+            </tr>
+            <tr>
+                <td><strong>Reference EMF (\(V_{\text{ref}}\))</strong></td>
+                <td><span class="color-ref">${v_ref.toFixed(3)} mV</span></td>
+                <td>mV</td>
+                <td>Compensation voltage computed at terminal temperature \(T_{\text{ref}}\).</td>
+            </tr>
+            <tr>
+                <td><strong>Total Compensated EMF (\(V_{\text{total}}\))</strong></td>
+                <td><span class="color-total">${v_total.toFixed(3)} mV</span></td>
+                <td>mV</td>
+                <td>Sum of corrected voltage and cold junction reference voltage.</td>
+            </tr>
+            <tr>
+                <td><strong>Cold Junction Temp (\(T_{\text{ref}}\))</strong></td>
+                <td><span>${t_ref.toFixed(1)} °C</span></td>
+                <td>°C</td>
+                <td>Ambient temperature of isothermal terminal connection.</td>
+            </tr>
+            <tr>
+                <td><strong>Uncompensated Offset Error</strong></td>
+                <td><span class="color-tol">${error_val.toFixed(2)} °C</span></td>
+                <td>°C</td>
+                <td>Measurement error introduced if CJC were neglected.</td>
+            </tr>
+            <tr>
+                <td><strong>Seebeck Sensitivity (\(\alpha\))</strong></td>
+                <td><span>${sensitivity.toFixed(2)} \(\mu\text{V/}^\circ\text{C}\)</span></td>
+                <td>\(\mu\text{V/}^\circ\text{C}\)</td>
+                <td>Thermoelectric sensitivity at the calculated process temperature.</td>
+            </tr>
+        `;
+    }
+
+    function generateCJCMathBreakdown(type, cls, v_meas, v_source, v_drop, r_loop, t_ref, v_ref, v_total, t_hot, t_uncomp, error_val, sensitivity, max_error, t_loading_offset) {
+        let html = '';
+
+        html += addCJCStepCard(1, 'Compile Specifications and Ambient Inputs',
+            `Verify all electrical and environmental parameters:<br>` +
+            `• Thermocouple Calibration: Type ${type}<br>` +
+            `• Accuracy Classification: Class ${cls} (IEC 60584-2)<br>` +
+            `• Measured voltage potential: \\(V_{\\text{meas}} = ${v_meas.toFixed(3)}\\text{ mV}\\)<br>` +
+            `• Cold Junction ambient temp: \\(T_{\\text{ref}} = ${t_ref.toFixed(2)} ^\\circ\\text{C}\\)`,
+            'Inputs Loaded'
+        );
+
+        html += addCJCStepCard(2, 'Calculate Extension Lead Loop Resistance',
+            `Determine the loop electrical resistance of extension wires:<br>` +
+            `\\( R_{\\text{loop}} = 2 \\cdot L_{\\text{cable}} \\cdot R_{\\text{AWG}} \\)<br>` +
+            `\\( = 2 \\cdot ${document.getElementById('cable-length').value}\\text{ m} \\cdot ${awgResistivity[document.getElementById('wire-gauge').value]}\\text{ }\\Omega\\text{/m} \\)<br>` +
+            `\\( = \\mathbf{${r_loop.toFixed(2)} \\text{ }\\Omega} \\)`,
+            `R_loop = ${r_loop.toFixed(2)} Ohms`
+        );
+
+        html += addCJCStepCard(3, 'Evaluate Loading Voltage Drop',
+            `Calculate the source thermoelectric EMF by compensating for voltmeter input loading drops:<br>` +
+            `\\( V_{\\text{source}} = V_{\\text{meas}} \\cdot \\frac{R_{\\text{input}} + R_{\\text{loop}}}{R_{\\text{input}}} \\)<br>` +
+            `\\( = ${v_meas.toFixed(3)}\\text{ mV} \\cdot \\frac{${(parseFloat(document.getElementById('input-impedance').value)*1e6).toExponential(1)}\\text{ }\\Omega + ${r_loop.toFixed(2)}\\text{ }\\Omega}{${(parseFloat(document.getElementById('input-impedance').value)*1e6).toExponential(1)}\\text{ }\\Omega} \\)<br>` +
+            `\\( = \\mathbf{${v_source.toFixed(4)} \\text{ mV}} \\) (Voltage drop: \\(${(v_drop*1e3).toFixed(2)} \\text{ }\\mu\\text{V}\\))`,
+            `V_source = ${v_source.toFixed(4)} mV`
+        );
+
+        html += addCJCStepCard(4, 'Determine Reference Junction Voltage (CJC)',
+            `Evaluate the forward thermoelectric NIST polynomial at \\(T_{\\text{ref}} = ${t_ref.toFixed(2)} ^\\circ\\text{C}\\) to calculate equivalent reference EMF:<br>` +
+            `\\( V_{\\text{ref}} = f(${t_ref.toFixed(2)} ^\\circ\\text{C}) \\)<br>` +
+            `\\( = \\mathbf{${v_ref.toFixed(3)} \\text{ mV}} \\)`,
+            `V_ref = ${v_ref.toFixed(3)} mV`
+        );
+
+        // Summation visual representation using inline styled spans
+        const barMeter = `
+            <div style="display: flex; height: 10px; width: 100%; max-width: 450px; border-radius: 5px; overflow: hidden; background: #e2e8f0; margin: 15px 0;">
+                <div style="width: ${Math.abs(v_source / v_total) * 100}%; background: var(--color-meas);" title="Corrected Measured EMF: ${v_source.toFixed(3)} mV"></div>
+                <div style="width: ${Math.abs(v_ref / v_total) * 100}%; background: var(--color-ref);" title="Reference EMF: ${v_ref.toFixed(3)} mV"></div>
+            </div>
+            <div style="display: flex; gap: 20px; font-size: 0.75rem;">
+                <span style="color: var(--color-meas); font-weight: bold;">Corrected Measured EMF: ${v_source.toFixed(3)} mV</span>
+                <span style="color: var(--color-ref); font-weight: bold;">Reference EMF: ${v_ref.toFixed(3)} mV</span>
+            </div>
+        `;
+
+        html += addCJCStepCard(5, 'Compensated Loop Voltage Summation',
+            `Sum the loading-corrected loop EMF and the cold junction compensation voltage:<br>` +
+            `\\( V_{\\text{total}} = V_{\\text{source}} + V_{\\text{ref}} \\)<br>` +
+            `\\( = ${v_source.toFixed(4)}\\text{ mV} + ${v_ref.toFixed(3)}\\text{ mV} \\)<br>` +
+            `\\( = \\mathbf{${v_total.toFixed(4)} \\text{ mV}} \\)` +
+            barMeter,
+            `V_total = ${v_total.toFixed(4)} mV`
+        );
+
+        html += addCJCStepCard(6, 'Iterative Process Temperature Conversion',
+            `Convert total loop voltage back to process temperature \\(T_{\\text{hot}}\\) using Newton-Raphson approximation on NIST monograph 175 piecewise equations:<br>` +
+            `\\( T_{\\text{hot}} = f^{-1}(V_{\\text{total}}) = f^{-1}(${v_total.toFixed(4)}\\text{ mV}) \\)<br>` +
+            `\\( = \\mathbf{${t_hot.toFixed(2)} ^\\circ\\text{C}} \\)`,
+            `T_hot = ${t_hot.toFixed(2)} °C`
+        );
+
+        html += addCJCStepCard(7, 'Calculate Local Seebeck Sensitivity',
+            `Evaluate the derivative \\(\\frac{dV}{dT}\\) of the thermoelectric voltage at \\(T_{\\text{hot}} = ${t_hot.toFixed(2)} ^\\circ\\text{C}\\) to find measurement sensitivity:<br>` +
+            `\\( \\alpha = \\frac{dV}{dT} \\Large\\vert_{\\small T = T_{\\text{hot}}} \\normalsize = \\mathbf{${(sensitivity/1000).toFixed(4)} \\text{ mV/}^\\circ\\text{C}} \\) (\\(${sensitivity.toFixed(2)} \\text{ }\\mu\\text{V/}^\\circ\\text{C}\\))`,
+            `Sensitivity = ${sensitivity.toFixed(2)} uV/°C`
+        );
+
+        html += addCJCStepCard(8, 'Evaluate IEC 60584 Tolerance Limits',
+            `Calculate the Maximum Permissible Error (MPE) for Class ${cls} Type ${type} sensor at the operating temperature:<br>` +
+            `• Class ${cls} rules: greater of fixed limit or percentage limit.<br>` +
+            `• Limit: \\( \\text{MPE} = \\mathbf{\\pm ${max_error.toFixed(2)} ^\\circ\\text{C}} \\)`,
+            `MPE = ±${max_error.toFixed(2)} °C`
+        );
+
+        html += addCJCStepCard(9, 'Quantify Loop Loading and CJC Offsets',
+            `Isolate the temperature offsets introduced by loop loading and uncompensated reference terminals:<br>` +
+            `• Lead loading offset: \\( \\Delta T_{\\text{loading}} = \\frac{\\Delta V_{\\text{loading}}}{\\alpha} = \\mathbf{${t_loading_offset.toFixed(3)} ^\\circ\\text{C}} \\)<br>` +
+            `• Uncompensated reference offset: \\( T_{\\text{hot}} - T_{\\text{uncomp}} = \\mathbf{${error_val.toFixed(2)} ^\\circ\\text{C}} \\)`,
+            `Offsets: Loading = ${t_loading_offset.toFixed(3)} °C, CJC = ${error_val.toFixed(2)} °C`
+        );
+
+        html += addCJCStepCard(10, 'Finalize Calibration Certification',
+            `Compile the final compensated, calibrated, loading-corrected, and error-verified measurement state:<br>` +
+            `• Final Temperature: <strong>${t_hot.toFixed(2)} °C</strong><br>` +
+            `• Tolerance Class Certificate: <strong>Class ${cls} Compliant</strong>`,
+            'Measurement Verified ✓'
+        );
+
+        stepsDiv.innerHTML = html;
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    function addCJCStepCard(num, title, content, result) {
+        return `
+            <div class="calculation-step">
+                <div class="step-header">${num}. ${title}</div>
+                <div class="step-content">
+                    <p>${content}</p>
+                    <p class="result-box">${result}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateInstrumentationRecommendations(type, cls, t_hot, error_val, max_error, t_ref, rangeWarning, rangeWarningMsg, r_loop, t_loading_offset) {
+        let html = '<ul>';
+
+        if (rangeWarning) {
+            html += `<li><strong style="color: var(--danger);"><i class="fas fa-times-circle"></i> Sensor Range Warning:</strong> ${rangeWarningMsg} Select a different thermocouple type (e.g., Type R or S for extreme temperatures up to 1700°C) or ungrounded mineral-insulated sheath.</li>`;
+        } else {
+            html += `<li><strong style="color: var(--success);"><i class="fas fa-check-circle"></i> Operational Range:</strong> Process temperature (${t_hot.toFixed(1)}°C) is within standard calibration range limits for Type ${type} sensor.</li>`;
+        }
+
+        if (t_loading_offset > 0.1) {
+            html += `<li><strong style="color: var(--danger);"><i class="fas fa-exclamation-circle"></i> Severe Wire Loading Drop:</strong> Loop resistance is <strong>${r_loop.toFixed(1)} Ω</strong>, inducing a temperature offset of <strong>${t_loading_offset.toFixed(3)} °C</strong>. Consider upgrading to a thicker wire gauge (AWG 16) or placing a local temperature transmitter near the junction to switch to a 4-20mA current loop.</li>`;
+        } else {
+            html += `<li><strong style="color: var(--success);"><i class="fas fa-check-double"></i> Loop Loading:</strong> Extension cable resistance (${r_loop.toFixed(1)} Ω) does not introduce any significant loading drops (offset: ${t_loading_offset.toFixed(3)}°C).</li>`;
+        }
+
+        if (Math.abs(error_val) > 10) {
+            html += `<li><strong style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Severe CJC Correction:</strong> Neglecting reference compensation would have introduced an error of <strong>${error_val.toFixed(2)} °C</strong>. Ensure that the isothermal block RTD reference sensor is calibrated and free of moisture or corrosion.</li>`;
+        }
+
+        if (t_ref > 55 || t_ref < 5) {
+            html += `<li><strong style="color: var(--warning);"><i class="fas fa-clock"></i> Reference Temperature Warning:</strong> The cold junction reference temperature (${t_ref.toFixed(1)}°C) is near industrial ambient operating limits. Implement active cooling or trace heating for the isothermal enclosure to prevent transmitter thermal drifts.</li>`;
+        }
+
+        html += `
+            <li><strong>Extension Lead Recommendation:</strong> Always use Type ${type} matching extension wire (e.g. KX, JX) rather than standard copper leads. Using copper creates parasitic junctions that cancel cold junction compensation.</li>
+            <li><strong>Grounding Guidelines:</strong> Connect the extension lead shield wire to instrument ground at the control panel end *only*. Do not ground at both ends to prevent galvanic potential differences (ground loops).</li>
+        `;
+
+        html += '</ul>';
+        recDiv.innerHTML = html;
+    }
+
+    function drawThermonetwork(tHot, tRef, vMeas) {
+        const canvas = document.getElementById('loopCanvas');
+        const ctx = canvas.getContext('2d');
+        const cw = canvas.width;
+        const ch = canvas.height;
+
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.lineWidth = 3.5;
+        
+        const xHot = 50; 
+        const yMid = ch / 2;
+
+        // Upper wire (Positive leg)
+        ctx.beginPath();
+        ctx.strokeStyle = '#EF4444'; // Red
+        ctx.moveTo(xHot, yMid);
+        ctx.lineTo(cw / 2, 50);
+        ctx.stroke();
+
+        // Lower wire (Negative leg)
+        ctx.beginPath();
+        ctx.strokeStyle = '#3B82F6'; // Blue
+        ctx.moveTo(xHot, yMid);
+        ctx.lineTo(cw / 2, 190);
+        ctx.stroke();
+
+        // Hot Junction Bead
+        ctx.fillStyle = '#EF4444';
+        ctx.beginPath();
+        ctx.arc(xHot, yMid, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = 'var(--heading)';
+        ctx.font = 'bold 11px Inter';
+        ctx.fillText(`Hot Junction: ${tHot.toFixed(1)}°C`, xHot - 10, yMid - 18);
+
+        // Terminals isothermal block
+        const xCold = cw - 120;
+        ctx.fillStyle = '#9CA3AF';
+        ctx.fillRect(xCold, 40, 20, 20);
+        ctx.fillRect(xCold, 180, 20, 20);
+
+        // Connect wires to terminal block
+        ctx.beginPath();
+        ctx.strokeStyle = '#EF4444';
+        ctx.moveTo(cw / 2, 50);
+        ctx.lineTo(xCold, 50);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#3B82F6';
+        ctx.moveTo(cw / 2, 190);
+        ctx.lineTo(xCold, 190);
+        ctx.stroke();
+
+        // Connect terminal block to ADC meter
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#10B981'; // Green Copper wire
+        ctx.beginPath();
+        ctx.moveTo(xCold + 20, 50);
+        ctx.lineTo(xCold + 60, 50);
+        ctx.lineTo(xCold + 60, 95);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(xCold + 20, 190);
+        ctx.lineTo(xCold + 60, 190);
+        ctx.lineTo(xCold + 60, 145);
+        ctx.stroke();
+
+        // Voltmeter ADC block
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#374151';
+        ctx.beginPath();
+        ctx.arc(xCold + 60, 120, 25, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = 'var(--heading)';
+        ctx.fillText("ADC", xCold + 48, 124);
+
+        // Annotations
+        ctx.fillStyle = '#3B82F6';
+        ctx.fillText(`CJC: ${tRef.toFixed(1)}°C`, xCold - 15, 28);
+        ctx.fillStyle = 'var(--text)';
+        ctx.fillText(`EMF: ${vMeas.toFixed(3)} mV`, cw / 2 - 45, 120);
+    }
+
+    function showMessage(msg, type) {
+        const box = document.getElementById('message-box');
+        box.textContent = msg;
+        box.style.backgroundColor = type === 'error' ? '#dc3545' : '#28a745';
+        box.classList.add('show');
+        setTimeout(() => { box.classList.remove('show'); }, 5000);
+    }
+
+    function exportPDFReport() {
+        if (!lastResult) {
+            showMessage("Please calculate process temperature first.", "error");
+            return;
+        }
+        const printContainer = document.createElement('div');
+        printContainer.id = 'print-section';
+        printContainer.style.display = 'none';
+
+        const date = new Date().toLocaleDateString();
+        const type = document.getElementById('tc-type').selectedOptions[0].text;
+        const cls = document.getElementById('tol-class').value;
+        const summaryHtml = document.getElementById('status-card').innerHTML;
+        const paramTableHtml = document.getElementById('parameters-table-container').innerHTML;
+        const mathStepsHtml = document.getElementById('calculation-steps').innerHTML;
+        const recsHtml = document.getElementById('recommendations-content').innerHTML;
+
+        printContainer.innerHTML = `
+            <div class="print-header" style="display: none;">
+                <span>Design Calculators — Thermocouple CJC Compensation Report</span>
+            </div>
+            
+            <div style="padding: 20px; font-family: 'Inter', sans-serif;">
+                <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px double #333; padding-bottom: 20px;">
+                    <h1 style="margin: 0; font-family: 'Montserrat', sans-serif; font-size: 24pt; color: #1e3a8a;">Thermocouple Calibration Certificate</h1>
+                    <p style="margin: 5px 0; font-size: 10pt; color: #555;">Conforming to IEC 60584, ASTM E230, and NIST ITS-90</p>
+                    <p style="margin: 5px 0; font-size: 9pt;">Report Date: ${date} | Reference: DC-TC-CJC-2026</p>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <h3 style="border-bottom: 1.5px solid #666; padding-bottom: 5px; font-family: 'Montserrat', sans-serif; font-size: 12pt;">1. Sensor Configuration</h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+                        <tr>
+                            <td style="padding: 6px; font-weight: bold; width: 30%;">Thermocouple Calibration:</td>
+                            <td style="padding: 6px;">${type}</td>
+                            <td style="padding: 6px; font-weight: bold; width: 30%;">Tolerance Limits:</td>
+                            <td style="padding: 6px;">Class ${cls} (IEC 60584-2)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px; font-weight: bold;">Measured EMF (Vmeas):</td>
+                            <td style="padding: 6px;">${lastResult.v_meas.toFixed(3)} mV</td>
+                            <td style="padding: 6px; font-weight: bold;">Cold Junction (Tref):</td>
+                            <td style="padding: 6px;">${lastResult.t_ref.toFixed(1)} °C</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="margin-bottom: 25px; background-color: #f9f9f9; border: 1px solid #ddd; border-left: 6px solid #1e3a8a; padding: 15px; border-radius: 4px;">
+                    ${summaryHtml}
+                </div>
+
+                <div style="margin-bottom: 25px; page-break-inside: avoid;">
+                    <h3 style="border-bottom: 1.5px solid #666; padding-bottom: 5px; font-family: 'Montserrat', sans-serif; font-size: 12pt;">2. Evaluated Calibration Metrics</h3>
+                    ${paramTableHtml}
+                </div>
+
+                <div style="margin-bottom: 25px; page-break-inside: avoid;">
+                    <h3 style="border-bottom: 1.5px solid #666; padding-bottom: 5px; font-family: 'Montserrat', sans-serif; font-size: 12pt;">3. Instrumentation Guidelines</h3>
+                    <div style="font-size: 9.5pt; line-height: 1.6;">${recsHtml}</div>
+                </div>
+
+                <div class="print-page"></div> 
+
+                <div style="margin-top: 20px;">
+                    <h3 style="border-bottom: 1.5px solid #666; padding-bottom: 5px; font-family: 'Montserrat', sans-serif; font-size: 12pt;">4. Step-by-Step Mathematical Calculation Breakdown</h3>
+                    <div style="font-size: 9pt;">${mathStepsHtml}</div>
+                </div>
+
+                <div style="margin-top: 40px; border-top: 1.5px solid #ddd; padding-top: 20px; page-break-inside: avoid;">
+                    <table style="width: 100%; font-size: 9.5pt;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;">
+                                <p style="margin: 0; font-weight: bold;">Prepared By:</p>
+                                <div style="height: 50px; border-bottom: 1px dashed #999; margin: 10px 0; width: 200px;"></div>
+                                <p style="margin: 0;">Calibration Technician</p>
+                            </td>
+                            <td style="width: 50%; vertical-align: top; text-align: right;">
+                                <p style="margin: 0; font-weight: bold; text-align: right;">Verified By:</p>
+                                <div style="height: 50px; border-bottom: 1px dashed #999; margin: 10px 0; width: 200px; display: inline-block;"></div>
+                                <p style="margin: 0; text-align: right;">Quality Control Inspector</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="print-footer" style="display: none;">
+                <span>Design Calculators — TC CJC Compensation Report | Website: <a href="https://designcalculators.co.in/thermocouplecjccalculator">https://designcalculators.co.in/thermocouplecjccalculator</a></span>
+            </div>
+        `;
+
+        document.body.appendChild(printContainer);
+        window.print();
+        document.body.removeChild(printContainer);
+    }
+});
+
+// FAQ Accordion Toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const faqTriggers = document.querySelectorAll('.faq-trigger');
+    faqTriggers.forEach(trigger => {
+        trigger.addEventListener('click', () => {
+            const item = trigger.parentElement;
+            const content = item.querySelector('.faq-content');
+            const isActive = item.classList.contains('active');
+            
+            document.querySelectorAll('.faq-item').forEach(i => {
+                i.classList.remove('active');
+                i.querySelector('.faq-content').style.maxHeight = null;
+            });
+
+            if (!isActive) {
+                item.classList.add('active');
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+    });
+});
+
+// Theme Toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const themeSwitch = document.getElementById('theme-switch');
+    const body = document.body;
+    const theme = localStorage.getItem('theme');
+    if (theme) {
+        body.classList.add(theme);
+        themeSwitch.checked = theme === 'dark-mode';
+    }
+    themeSwitch.addEventListener('change', () => {
+        if (themeSwitch.checked) {
+            body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark-mode');
+        } else {
+            body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light-mode');
+        }
+    });
+});
+
+// Preset loader
+function loadPreset(type) {
+    if (type === 'k_room') {
+        document.getElementById('tc-type').value = 'K';
+        document.getElementById('meas-volts').value = '16.397'; 
+        document.getElementById('ref-temp').value = '25.0';
+        document.getElementById('tol-class').value = '2';
+        document.getElementById('cable-length').value = '100';
+        document.getElementById('wire-gauge').value = '20';
+        document.getElementById('input-impedance').value = '10';
+    } else if (type === 'j_hot') {
+        document.getElementById('tc-type').value = 'J';
+        document.getElementById('meas-volts').value = '18.537';
+        document.getElementById('ref-temp').value = '30.0';
+        document.getElementById('tol-class').value = '1';
+        document.getElementById('cable-length').value = '200';
+        document.getElementById('wire-gauge').value = '18';
+        document.getElementById('input-impedance').value = '10';
+    } else if (type === 'error_sim') {
+        document.getElementById('tc-type').value = 'T';
+        document.getElementById('meas-volts').value = '25.0'; 
+        document.getElementById('ref-temp').value = '25.0';
+        document.getElementById('tol-class').value = '2';
+        document.getElementById('cable-length').value = '1500';
+        document.getElementById('wire-gauge').value = '24';
+        document.getElementById('input-impedance').value = '1';
+    }
+}
+</script>
 </body>
 </html>
 
