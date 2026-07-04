@@ -128,6 +128,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
 
+    // --- HERO STATS COUNTER ANIMATION ---
+    const statsSection = document.querySelector('.hero-stats');
+    const counters = document.querySelectorAll('.counter');
+
+    if (statsSection && counters.length > 0) {
+        let animated = false;
+
+        const countUp = () => {
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'), 10);
+                const duration = 2000; // Animation duration in ms
+                let startTime = null;
+
+                const animate = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    
+                    // Easing out function for smooth deceleration
+                    const easeOutQuad = t => t * (2 - t);
+                    const currentValue = Math.floor(easeOutQuad(progress) * target);
+                    
+                    // Format number with commas (e.g. 50000 -> 50,000)
+                    counter.textContent = currentValue.toLocaleString();
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        counter.textContent = target.toLocaleString();
+                    }
+                };
+
+                requestAnimationFrame(animate);
+            });
+        };
+
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !animated) {
+                    countUp();
+                    animated = true;
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        statsObserver.observe(statsSection);
+    }
+
+
     // Back to Top Button
     const backToTopBtn = document.getElementById('back-to-top');
     if (backToTopBtn) {
