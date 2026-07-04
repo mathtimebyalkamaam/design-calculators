@@ -848,6 +848,10 @@
             opacity: 1;
             transform: translateY(-1px);
         }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="RTD Self-Heating Error Calculator - Industrial Grade Analysis">
@@ -1213,24 +1217,94 @@
             </div>
             <div class="info-card" style="border-top: 4px solid #7c3aed;">
                 <h3>Theoretical Heat Transfer Fundamentals in Sheathed RTDs</h3>
-                <p>The steady-state temperature of an RTD element immersed in a fluid is governed by a localized thermal energy balance. The heat generated internally by Joule heating must equal the heat dissipated to the environment:</p>
-                <p>\[ P_{Joule} = q_{convection} + q_{conduction} \]</p>
-                <p>Expanding these terms using Fourier's Law of Conduction and Newton's Law of Cooling, we obtain the thermal equilibrium relation:</p>
-                <p>\[ I^2 R = h \cdot A_s \cdot (T_s - T_\infty) + \frac{k \cdot A_c}{L} \cdot (T_s - T_{head}) \]</p>
-                <p>Where:</p>
-                <ul style="padding-left: 20px; line-height: 1.6; color: var(--text-muted);">
-                    <li>\(I\) is the excitation current sourced through the platinum coil [A].</li>
-                    <li>\(R\) is the temperature-dependent resistance of the sensor element [\(\Omega\)].</li>
-                    <li>\(h\) is the convective heat transfer coefficient of the surrounding process fluid [\(\text{W}/(\text{m}^2\text{·K})\)].</li>
-                    <li>\(A_s\) is the effective surface area of the sheathed probe boundary [\(\text{m}^2\)].</li>
-                    <li>\(T_s\) is the core temperature of the platinum element [K].</li>
-                    <li>\(T_\infty\) is the true process fluid ambient temperature [K].</li>
-                    <li>\(k\) is the thermal conductivity of the sheathed lead wire materials [\(\text{W}/(\text{m·K})\)].</li>
-                    <li>\(A_c\) is the cross-sectional area of the sheathed lead wires [\(\text{m}^2\)].</li>
-                    <li>\(L\) is the probe immersion depth from sheathed element to connection head [\(\text{m}\)].</li>
-                    <li>\(T_{head}\) is the connection head boundary temperature [K].</li>
-                </ul>
-                <p>This balance reveals that the self-heating error \(\Delta T = T_s - T_\infty\) is minimized not only by reducing current \(I\), but also by ensuring high convective cooling coefficients (high velocity \(v\)) and sufficient immersion depth \(L\) to prevent lead-conduction heat leakage.</p>
+                <p>The steady-state temperature of an RTD element immersed in a fluid is governed by a localized thermal energy balance. The heat generated internally by Joule heating must equal the heat dissipated to the environment via convection and conduction:</p>
+
+                <!-- Heat Flow SVG Schematic Diagram -->
+                <div style="display: flex; justify-content: center; margin: 25px 0;">
+                    <svg width="450" height="200" viewBox="0 0 450 200" style="background: rgba(30, 58, 138, 0.03); border-radius: 8px; border: 1px solid var(--border);">
+                        <defs>
+                            <marker id="red-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#DC2626" />
+                            </marker>
+                            <marker id="blue-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB" />
+                            </marker>
+                            <marker id="teal-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#0D9488" />
+                            </marker>
+                        </defs>
+                        <rect x="20" y="80" width="280" height="40" rx="6" fill="rgba(148, 163, 184, 0.2)" stroke="#94A3B8" stroke-width="2" />
+                        <rect x="230" y="90" width="50" height="20" rx="3" fill="#FBBF24" stroke="#F59E0B" stroke-width="2" />
+                        <text x="255" y="103" text-anchor="middle" fill="#78350F" font-size="8" font-weight="bold" font-family="sans-serif">RTD Core</text>
+
+                        <!-- Heat generation -->
+                        <path d="M 255,90 L 255,45" fill="none" stroke="#DC2626" stroke-width="2" marker-end="url(#red-arrow)" />
+                        <text x="255" y="35" text-anchor="middle" fill="#DC2626" font-size="10" font-weight="bold" font-family="sans-serif">Joule Heat (I²R)</text>
+
+                        <!-- Convection path -->
+                        <path d="M 280,100 L 350,100" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#blue-arrow)" />
+                        <text x="360" y="103" fill="#2563EB" font-size="9" font-weight="bold" font-family="sans-serif">Convection (h•As)</text>
+
+                        <!-- Conduction path -->
+                        <path d="M 230,100 L 100,100" fill="none" stroke="#0D9488" stroke-width="2" marker-end="url(#teal-arrow)" />
+                        <text x="110" y="115" fill="#0D9488" font-size="9" font-weight="bold" font-family="sans-serif">Conduction (k•Ac/L)</text>
+                        
+                        <!-- Sheath boundary labels -->
+                        <text x="30" y="70" fill="#94A3B8" font-size="8" font-weight="bold" font-family="sans-serif">Sheath Stem</text>
+                        <text x="30" y="145" fill="#94A3B8" font-size="8" font-family="sans-serif">Immersion Depth (L)</text>
+                        <line x1="20" y1="135" x2="300" y2="135" stroke="#94A3B8" stroke-width="1" stroke-dasharray="4" />
+                    </svg>
+                </div>
+
+                <!-- Equation box styled professionally -->
+                <div class="theory-equation-box" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(37, 99, 235, 0.05)); border-left: 5px solid #7c3aed; padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);">
+                    <p style="margin-top:0; font-weight:800; color:#7c3aed; font-size: 1.05rem;"><i class="fas fa-balance-scale"></i> Conservation of Energy Equation</p>
+                    <div style="font-size: 1.2rem; margin: 15px 0;">
+                        \[ P_{\text{Joule}} = q_{\text{convection}} + q_{\text{conduction}} \]
+                    </div>
+                    <p style="margin-bottom:10px; margin-top:15px; font-size:0.92rem; color:var(--text-muted);">Expanding terms using Fourier's Law and Newton's Law of Cooling:</p>
+                    <div style="font-size: 1.2rem; margin: 15px 0;">
+                        \[ I^2 R = h \cdot A_s \cdot (T_s - T_\infty) + \frac{k \cdot A_c}{L} \cdot (T_s - T_{\text{head}}) \]
+                    </div>
+                </div>
+
+                <p style="font-weight:700; margin-top:20px; margin-bottom:10px; color:var(--primary);">System Variable Definitions:</p>
+                <div class="theory-variables-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#7c3aed; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">I</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Excitation current sourced through platinum element [A].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#7c3aed; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">R</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Temperature-dependent resistance of the sensor element [\(\Omega\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#2563EB; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">h</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Convective heat transfer coefficient of surrounding process fluid [\(\text{W}/(\text{m}^2\text{·K})\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#2563EB; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">A_s</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Convective heat transfer surface area of sheathed probe [\(\text{m}^2\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#0D9488; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">k</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Thermal conductivity coefficient of lead wires [\(\text{W}/(\text{m·K})\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#0D9488; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">A_c</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Conductive cross-sectional area of lead wires [\(\text{m}^2\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#0D9488; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">L</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Sheathed probe insertion depth from tip to connection head [\(\text{m}\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:#F59E0B; color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">T_s</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Internal core temperature of the platinum sensor [K].</span>
+                    </div>
+                </div>
+
+                <p style="margin-top:20px; font-size:0.95rem; line-height:1.65; color:var(--text-muted);">This thermal equation details why self-heating error \(\Delta T = T_s - T_\infty\) increases quadratically with excitation current \(I\), but drops significantly in fluids with high convective heat transfer coefficients (such as flowing liquids) and in configurations providing sufficient immersion depth to limit thermal conduction loss.</p>
             </div>
             <div class="info-card" style="border-top: 4px solid var(--success);">
                 <h3>Where are Self-Heating Errors Most Critical?</h3>
