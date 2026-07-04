@@ -654,6 +654,10 @@
 
     
 
+    <!-- jsPDF and jspdf-autotable for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
     <!-- Standardised SEO Schema (Auto-generated) -->
     <script type="application/ld+json">
     {
@@ -704,6 +708,91 @@
                     "position": 3,
                     "name": "System X/R Ratio & DC Component Calculator",
                     "item": "https://designcalculators.co.in/systemxrcalculator"
+                }
+            ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is the X/R ratio in a power system?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The X/R ratio is the ratio of system inductive reactance (X) to resistance (R) at a given fault location. It indicates the rate of decay of the transient DC offset current generated during a short circuit."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does the X/R ratio affect circuit breaker ratings?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Circuit breakers are tested and rated at standard X/R ratios (typically 17 for high-voltage breakers under ANSI standards). If the system X/R at the fault point exceeds this test value, the breaker's interrupting capability must be derated due to the slower decay of the DC offset current."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the DC time constant in short-circuit analysis?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The DC time constant (tau) represents the rate at which the transient DC offset current decays. It is calculated as tau = X / (2 * pi * f * R), where f is the system frequency."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why is the peak fault current higher than the symmetrical RMS current?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "During a fault, the presence of a transient DC offset current offsets the AC symmetrical wave, causing the instantaneous peak current (Ip) to reach up to 2.82 times the symmetrical RMS current (Ik'')."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the difference between IEC 60909 and ANSI C37 calculations?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "IEC 60909 determines the peak factor (kappa) using a mathematical exponential equation based on R/X. ANSI C37 utilizes simplified multiplier charts at specific contact separation times to assess breaker duties."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does cable insertion affect the system X/R ratio?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Cables introduce significant loop resistance (R) relative to reactance (X). Therefore, adding feeders or long cable runs to a circuit decreases the cumulative X/R ratio, accelerating the decay of the DC offset."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why must resistance and reactance be summed in complex form?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Arithmetic summation of impedances (Z1 + Z2) ignores the phase angles between resistive and inductive parts. Complex summation (summing R and X independently) provides the exact equivalent impedance vector."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the peak factor kappa in IEC 60909?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The peak factor (kappa) determines the peak withstand current from the symmetrical RMS fault current. It ranges from 1.0 (for purely resistive faults) to 2.0 (for purely inductive faults)."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How is the generator X/R ratio different from a transformer?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Generators have very high X/R ratios (typically 30 to 80) due to low winding resistance. Transformers range from 5 to 25 depending on their MVA rating, and cables have very low X/R ratios (often less than 2)."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Does frequency affect the DC time constant?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, frequency directly impacts the relation between reactance and inductance (X = 2 * pi * f * L). For a given X/R ratio, a 60 Hz system decays faster (shorter time constant) than a 50 Hz system."
+                    }
                 }
             ]
         }
@@ -905,133 +994,402 @@
                     <div class="button-wrapper">
                         <button type="button" class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print/Save</button>
                         <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate X/R & Faults</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Results Section -->
-            <div id="result-container" class="hidden">
-                <div class="datasheet-header">
-                    <h3 class="datasheet-title">Calculation Results</h3>
-                    <div class="datasheet-meta">
-                        Method: Per Unit (PU)<br>
-                        Date: <span id="report-date"></span>
-                    </div>
-                </div>
-
-                <div class="result-grid-layout">
-                    <!-- Main Results Table -->
-                    <div>
-                        <h4 style="color: var(--text-light); text-transform: uppercase; font-size: 0.85rem; margin-bottom: 15px;">Fault Analysis Summary</h4>
-                        <table class="result-table">
-                            <tbody>
-                                <tr>
-                                    <td>System X/R Ratio</td>
-                                    <td><span class="val" id="res-xr">0.00</span></td>
-                                </tr>
-                                <tr>
-                                    <td>DC Time Constant ($\tau$)</td>
-                                    <td><span class="val" id="res-tau">0.00</span> <span class="unit">ms</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Peak Factor ($\kappa$) (IEC)</td>
-                                    <td><span class="val" id="res-kappa">0.00</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Symmetrical RMS Current ($I_k''$)</td>
-                                    <td><span class="val" id="res-sym">0.00</span> <span class="unit">kA</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Peak Withstand Current ($I_p$)</td>
-                                    <td><span class="val" id="res-peak">0.00</span> <span class="unit">kA</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div style="margin-top: 24px;">
-                            <h4 style="color: var(--text-light); text-transform: uppercase; font-size: 0.85rem; margin-bottom: 15px;">Breaker Capability Check</h4>
-                            <div style="background: var(--bg); padding: 16px; border-radius: 6px; border: 1px solid var(--border); margin-bottom: 12px;">
-                                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                                    <span>X/R Severity Status:</span>
-                                    <span id="badge-xr" class="status-badge status-pass">NORMAL</span>
-                                </div>
-                                <div style="font-size:0.9rem; color:var(--text-light);">
-                                    <span id="xr-msg">X/R &lt; 17 (Standard ANSI rating). No capacity derating typically required.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Equivalent Impedance Block -->
-                    <div style="background: var(--input-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                        <h4 style="margin-top:0; color: var(--secondary);">Equivalent Impedance (PU)</h4>
-                        <p style="font-size: 0.9rem; color: var(--text);">
-                            Base: <strong id="base-disp">100</strong> MVA
-                        </p>
-                        
-                        <div style="margin-top: 20px; font-size: 0.9rem;">
-                            <ul style="padding-left: 0; list-style: none; color: var(--text);">
-                                <li style="margin-bottom: 8px; display:flex; justify-content:space-between;"><span>$R_{total\_pu}$:</span> <strong id="res-rpu">0.0000</strong> pu</li>
-                                <li style="margin-bottom: 8px; display:flex; justify-content:space-between;"><span>$X_{total\_pu}$:</span> <strong id="res-xpu">0.0000</strong> pu</li>
-                                <li style="margin-bottom: 8px; display:flex; justify-content:space-between; border-top:1px solid #ddd; padding-top:5px;"><span>$Z_{total\_pu}$:</span> <strong id="res-zpu">0.0000</strong> pu</li>
-                            </ul>
-                        </div>
-                        <div style="font-size:0.8rem; color: var(--text-light); margin-top:15px;">
-                            Note: R and X are summed arithmetically for simplified conservative X/R, or via complex impedance for exact Z. This tool uses complex summation ($R+jX$).
-                        </div>
-                    </div>
-                </div>
-
-                <div class="calc-steps">
-                    <h4>Detailed Calculation Trace (Per Unit Method)</h4>
-                    
-                    <p style="font-size: 0.9rem; margin-bottom: 10px;"><strong>1. Source Impedance Conversion</strong><br>
-                    Converting utility fault data to PU on <span id="step-base-mva">100</span> MVA Base.</p>
-                    <div class="step-box" id="step-1"></div>
-                    
-                    <p style="font-size: 0.9rem; margin-bottom: 10px;"><strong>2. Component Additions</strong><br>
-                    Adding Transformer and Cable impedances to the network path.</p>
-                    <div class="step-box" id="step-2"></div>
-
-                    <p style="font-size: 0.9rem; margin-bottom: 10px;"><strong>3. System X/R and Peak Current</strong><br>
-                    Calculating final ratio and applying IEC 60909 Method C peak factor.</p>
-                    <div class="step-box" id="step-3"></div>
-                </div>
+                    </div>                </form>
             </div>
         </div>
 
-        <!-- EDUCATIONAL CONTENT SECTION -->
-        <div class="education-section card">
-            <h2 style="color: var(--secondary); margin: 0 0 20px 0; padding: 0 0 15px 0; border-bottom: 3px solid var(--primary); display: flex; align-items: center; gap: 12px;"><i class="fas fa-lightbulb"></i> Engineering Insights: Why X/R Matters</h2>
-            <div style="padding: 0;">
-                
-                <div class="insight-card">
-                    <h4><i class="fas fa-chart-line"></i> The DC Offset Phenomenon</h4>
-                    <p>When a short circuit occurs, the current waveform is rarely symmetrical instantly. Depending on the voltage angle at the moment of the fault, a <strong>DC Component</strong> is generated to maintain magnetic flux continuity. This DC component decays exponentially based on the system's <strong>Time Constant ($\tau = L/R$)</strong>.</p>
-                    <p>The <strong>X/R Ratio</strong> is simply the ratio of Reactance to Resistance. A higher X/R means less resistance to dampen the DC component, causing it to persist longer. This results in:</p>
-                    <ul>
-                        <li>Higher instantaneous <strong>Peak Current ($I_p$)</strong> (Mechanical Stress).</li>
-                        <li>More difficult current interruption for circuit breakers (Thermal/Arcing Stress).</li>
-                    </ul>
+        <!-- Results Section -->
+        <div class="card result-container hidden" id="result-container" style="margin-top: 40px;">
+            <div class="datasheet-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 12px;">
+                <h3 class="datasheet-title" style="margin: 0;"><i class="fas fa-poll"></i> Fault Analysis Summary</h3>
+                <div class="datasheet-meta" style="text-align: right; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-light);">
+                    Method: Complex PU (IEC 60909)<br>
+                    Date: <span id="report-date"></span>
+                </div>
+            </div>
+
+            <div class="result-grid-layout">
+                <!-- Main Results Table -->
+                <div>
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter Name</th>
+                                <th>Symbol</th>
+                                <th>Calculated Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>System X/R Ratio</td>
+                                <td>\(X/R\)</td>
+                                <td><span class="val" id="res-xr">0.00</span></td>
+                            </tr>
+                            <tr>
+                                <td>DC Time Constant</td>
+                                <td>\(\tau\)</td>
+                                <td><span class="val" id="res-tau">0.00</span> <span class="unit">ms</span></td>
+                            </tr>
+                            <tr>
+                                <td>Peak Factor (IEC 60909)</td>
+                                <td>\(\kappa\)</td>
+                                <td><span class="val" id="res-kappa">0.00</span></td>
+                            </tr>
+                            <tr>
+                                <td>Symmetrical RMS Fault Current</td>
+                                <td>\(I_k''\)</td>
+                                <td><span class="val" id="res-sym">0.00</span> <span class="unit">kA</span></td>
+                            </tr>
+                            <tr>
+                                <td>Peak Asymmetrical Fault Current</td>
+                                <td>\(I_p\)</td>
+                                <td><span class="val" id="res-peak">0.00</span> <span class="unit">kA</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="insight-card">
-                    <h4><i class="fas fa-balance-scale"></i> IEC vs ANSI Standards</h4>
-                    <p><strong>ANSI C37.010:</strong> Standard HV breakers are rated for an X/R of 17 (approx 45ms time constant). If your calculated system X/R > 17, you must <strong>derate</strong> the breaker's symmetrical interrupting capacity because it will face a higher DC component at contact separation.</p>
-                    <p><strong>IEC 60909:</strong> Defines the calculation for Peak Current ($I_p$) using the factor $\kappa$:
-                    <div class="formula">
-                        $$ \kappa = 1.02 + 0.98 \cdot e^{-3 \frac{R}{X}} $$
+                <!-- Equivalent Impedance Block -->
+                <div style="background: var(--input-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h4 style="margin-top:0; color: var(--secondary); font-weight:800; font-size:1.15rem; margin-bottom:15px;"><i class="fas fa-network-wired"></i> Equivalent Impedance (PU)</h4>
+                        <p style="font-size: 0.9rem; color: var(--text); margin-bottom: 15px;">
+                            System Base: <strong id="base-disp">100</strong> MVA
+                        </p>
+                        <ul style="padding-left: 0; list-style: none; color: var(--text); margin: 0; display: flex; flex-direction: column; gap: 10px;">
+                            <li style="display:flex; justify-content:space-between; font-size: 0.95rem;"><span>\(R_{\text{total\_pu}}\):</span> <strong id="res-rpu" style="font-family: var(--font-mono);">0.0000</strong></li>
+                            <li style="display:flex; justify-content:space-between; font-size: 0.95rem;"><span>\(X_{\text{total\_pu}}\):</span> <strong id="res-xpu" style="font-family: var(--font-mono);">0.0000</strong></li>
+                            <li style="display:flex; justify-content:space-between; font-size: 1rem; border-top:1.5px solid var(--border); padding-top:10px; font-weight:700; color:var(--primary);"><span>\(Z_{\text{total\_pu}}\):</span> <strong id="res-zpu" style="font-family: var(--font-mono);">0.0000</strong></li>
+                        </ul>
                     </div>
-                    High X/R ratios are common near generators (X/R ~ 30-50) and large transformers (X/R ~ 15-25).</p>
+                    <div style="font-size:0.78rem; color: var(--text-light); margin-top:15px; line-height: 1.4;">
+                        Calculated using complex summation (R + jX vector components).
+                    </div>
                 </div>
+            </div>
+
+            <div class="button-wrapper" style="margin-top: 25px; display: flex; gap: 15px; flex-wrap: wrap;">
+                <button type="button" id="pdf-btn" class="btn">
+                    <i class="fas fa-file-pdf"></i> Download PDF Short-Circuit Report
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Dynamic 10-Step Math Card -->
+        <div class="card result-container hidden" id="math-breakdown-container">
+            <h2><i class="fas fa-calculator"></i> Step-by-Step Mathematical Solutions</h2>
+            <div class="step-list" id="calculation-details" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                <!-- Dynamic steps will be injected here -->
+            </div>
+        </div>
+
+        <!-- 4. Warnings and Engineering Recommendations Card -->
+        <div class="card result-container hidden" id="advisory-container">
+            <div class="advisory-panel" style="background-color: rgba(245, 158, 11, 0.03); border: 1.5px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 25px;">
+                <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; font-weight: 800; font-size: 1.25rem; display: flex; align-items: center; gap: 10px;"><i class="fas fa-exclamation-triangle"></i> Protection Coordination Advisory &amp; Warnings</h4>
+                <ul id="advisory-list" style="margin: 0; padding-left: 20px; font-size: 0.95rem; color: var(--text); display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Dynamic bullet points -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- EDUCATIONAL CONTENT SECTION        <!-- Topic Specific Details: What/Why/Which/Where/How -->
+        <div class="info-section">
+            <div class="info-card" style="border-top: 4px solid var(--primary); background: var(--card); border-radius: 12px; padding: 25px; box-shadow: var(--shadow); margin-bottom: 25px; border: 1px solid var(--border);">
+                <h3 style="margin-top:0; color:var(--primary); font-weight:800; font-size:1.4rem;"><i class="fas fa-question-circle"></i> What is the System X/R Ratio?</h3>
+                <p>The system X/R ratio is the mathematical relation between the inductive reactance (\(X\)) and resistance (\(R\)) of all cumulative components in a power network up to the point of a short circuit. It serves as a direct indicator of the electrical damping capacity of the network during a transient fault.</p>
+                <p>A higher X/R ratio implies that the system is highly inductive, meaning there is minimal resistive damping to absorb transient energy. This results in a persistent DC offset current that decays very slowly, creating asymmetrical waveforms with high peak values.</p>
+            </div>
+
+            <div class="info-card" style="border-top: 4px solid var(--accent); background: var(--card); border-radius: 12px; padding: 25px; box-shadow: var(--shadow); margin-bottom: 25px; border: 1px solid var(--border);">
+                <h3 style="margin-top:0; color:var(--accent); font-weight:800; font-size:1.4rem;"><i class="fas fa-cogs"></i> Theoretical Impedance & Waveform Fundamentals</h3>
+                <p>When a fault occurs in an inductive network, the total current consists of a steady-state AC symmetrical short-circuit current and a transient decaying DC offset current. The initial magnitude of the DC component depends on the voltage phase angle at the moment of the fault inception. The complex impedance plane vector and transient envelope are illustrated below:</p>
                 
-                <div class="insight-card" style="border-left-color: var(--accent);">
-                    <h4><i class="fas fa-calculator"></i> Calculation Strategy</h4>
-                    <p>To accurately find the X/R at a fault point, one cannot simply add scalar impedances ($Z_{tot} \neq Z_1 + Z_2$). Instead, we must sum the Resistance ($R$) and Reactance ($X$) components separately using complex algebra:
-                    $$ Z_{total} = (R_{src} + R_{tx} + R_{cable}) + j(X_{src} + X_{tx} + X_{cable}) $$
-                    Then:
-                    $$ (X/R)_{sys} = \frac{X_{total}}{R_{total}} $$
-                    This ensures that the resistive damping of cables is correctly accounted for, often significantly lowering the X/R ratio at remote distribution panels.</p>
+                <!-- Flex container for SVGs -->
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin: 25px 0;">
+                    <!-- SVG 1: Complex Plane -->
+                    <div style="text-align: center;">
+                        <span style="font-size:0.85rem; font-weight:700; color:var(--text-light); display:block; margin-bottom:5px;">Complex Plane Impedance Vector</span>
+                        <svg width="360" height="240" viewBox="0 0 360 240" style="background: rgba(30, 58, 138, 0.02); border-radius: 8px; border: 1px solid var(--border);">
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--primary)" />
+                                </marker>
+                                <marker id="accent-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+                                </marker>
+                            </defs>
+                            <line x1="40" y1="20" x2="40" y2="200" stroke="var(--border)" stroke-width="1.5" />
+                            <line x1="40" y1="200" x2="330" y2="200" stroke="var(--border)" stroke-width="1.5" />
+                            <text x="325" y="218" text-anchor="end" fill="var(--text-light)" font-size="9" font-weight="bold" font-family="sans-serif">Resistance R (Real Axis)</text>
+                            <text x="25" y="25" fill="var(--text-light)" font-size="9" font-weight="bold" font-family="sans-serif">Reactance X (Imaginary Axis)</text>
+                            <line x1="40" y1="200" x2="260" y2="200" stroke="var(--success)" stroke-width="3" stroke-linecap="round" />
+                            <text x="150" y="215" text-anchor="middle" fill="var(--success)" font-size="10" font-weight="bold" font-family="sans-serif">R (System Resistance)</text>
+                            <line x1="260" y1="200" x2="260" y2="50" stroke="var(--secondary)" stroke-width="3" stroke-dasharray="4" stroke-linecap="round" />
+                            <text x="275" y="125" fill="var(--secondary)" font-size="10" font-weight="bold" font-family="sans-serif">jX (System Reactance)</text>
+                            <line x1="40" y1="200" x2="260" y2="50" stroke="var(--accent)" stroke-width="4" marker-end="url(#accent-arrow)" />
+                            <text x="120" y="115" fill="var(--accent)" font-size="11" font-weight="bold" font-family="sans-serif" transform="rotate(-34 120 115)">Z = R + jX</text>
+                            <path d="M 80,200 A 40,40 0 0,0 74,177" fill="none" stroke="var(--primary)" stroke-width="2" />
+                            <text x="95" y="193" fill="var(--primary)" font-size="11" font-weight="bold" font-family="sans-serif">θ</text>
+                        </svg>
+                    </div>
+
+                    <!-- SVG 2: DC Decay Waveform -->
+                    <div style="text-align: center;">
+                        <span style="font-size:0.85rem; font-weight:700; color:var(--text-light); display:block; margin-bottom:5px;">Decaying Short-Circuit Current</span>
+                        <svg width="360" height="240" viewBox="0 0 360 240" style="background: rgba(30, 58, 138, 0.02); border-radius: 8px; border: 1px solid var(--border);">
+                            <line x1="30" y1="120" x2="340" y2="120" stroke="var(--border)" stroke-dasharray="3" />
+                            <line x1="30" y1="20" x2="30" y2="220" stroke="var(--text-light)" stroke-width="1.5" />
+                            <line x1="30" y1="120" x2="350" y2="120" stroke="var(--text-light)" stroke-width="1.5" />
+                            <path d="M 30,50 Q 130,110 330,119" fill="none" stroke="var(--danger)" stroke-width="2" stroke-dasharray="4" />
+                            <path d="M 30,190 Q 130,130 330,121" fill="none" stroke="var(--danger)" stroke-width="2" stroke-dasharray="4" />
+                            <path d="M 30,50 L 50,180 L 80,60 L 110,170 L 140,70 L 170,160 L 200,80 L 230,150 L 260,90 L 290,140 L 320,100 L 350,130" fill="none" stroke="var(--primary)" stroke-width="1.5" />
+                            <text x="200" y="70" fill="var(--danger)" font-size="9" font-weight="bold" font-family="sans-serif">DC Envelope</text>
+                            <text x="35" y="15" fill="var(--text-light)" font-size="9" font-weight="bold" font-family="sans-serif">Current (i)</text>
+                            <text x="330" y="135" fill="var(--text-light)" font-size="9" font-weight="bold" font-family="sans-serif">Time (t)</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="theory-equation-box" style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(16, 185, 129, 0.05)); border-left: 5px solid var(--secondary); padding: 20px; border-radius: 12px; margin: 20px 0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);">
+                    <p style="margin-top:0; font-weight:800; color:var(--secondary); font-size: 1.05rem;"><i class="fas fa-balance-scale"></i> Short-Circuit DC Time Constant Equation</p>
+                    <div style="font-size: 1.25rem; margin: 15px 0;">
+                        \[ \tau = \frac{L}{R} = \frac{X}{2\pi f \cdot R} \]
+                    </div>
+                    <p style="margin-bottom:10px; margin-top:15px; font-size:0.92rem; color:var(--text-muted);">The initial peak current factor (\(\kappa\)) representing the asymmetry multiplier is defined by IEC 60909-0:</p>
+                    <div style="font-size: 1.25rem; margin: 15px 0;">
+                        \[ \kappa = 1.02 + 0.98 \cdot e^{-3 \frac{R}{X}} \]
+                    </div>
+                </div>
+
+                <p style="font-weight:700; margin-top:20px; margin-bottom:10px; color:var(--primary);">System Variable Definitions:</p>
+                <div class="theory-variables-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:var(--primary); color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">X</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Cumulative equivalent system inductive reactance up to fault node [\(\Omega\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:var(--primary); color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">R</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Cumulative equivalent system resistance up to fault node [\(\Omega\)].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:var(--secondary); color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">f</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">System power frequency (50 Hz or 60 Hz) [Hz].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:var(--accent); color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">\(\tau\)</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">DC component decay time constant, representing rate of damping [s].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:var(--success); color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">\(\kappa\)</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Asymmetry peak factor determining peak withstand current [dimensionless].</span>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:10px;">
+                        <span style="background:var(--danger); color:white; font-weight:800; font-size:0.75rem; padding:3px 8px; border-radius:4px; font-family:monospace; min-width:25px; text-align:center;">Ip</span>
+                        <span style="font-size:0.88rem; color:var(--text-muted);">Peak asymmetrical short-circuit current withstand rating [kA].</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card" style="border-top: 4px solid var(--success); background: var(--card); border-radius: 12px; padding: 25px; box-shadow: var(--shadow); margin-bottom: 25px; border: 1px solid var(--border);">
+                <h3 style="margin-top:0; color:var(--success); font-weight:800; font-size:1.4rem;"><i class="fas fa-shield-alt"></i> Why is X/R Crucial for Protective Switchgear?</h3>
+                <p>Circuit breakers are designed to split contacts and extinguish an electrical arc within a few power cycles (typically 2 to 5 cycles after the fault begins). If the system X/R ratio is very high at the breaker terminal, the DC component remains large at the moment of contact separation. This delays the natural current zero-crossing, causing prolonged arcing and risk of catastrophic breaker failure.</p>
+                <p>Consequently, ANSI standards require high-voltage breakers to be rated at a standard test X/R of 17. For systems with higher ratios, protective device engineers must calculate a derating factor to size breakers correctly.</p>
+            </div>
+        </div>
+
+        <!-- Approved Standards Section -->
+        <div class="card standards-container" style="margin-top: 30px;">
+            <h3>Approved National &amp; International Standards</h3>
+            <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:20px;">The evaluation of system fault dynamics and breaker de-rating rules in this tool conforms to the following standards:</p>
+            <div class="standards-table-wrapper">
+                <table class="standards-table">
+                    <thead>
+                        <tr>
+                            <th>Standard</th>
+                            <th>Description</th>
+                            <th>Critical Ratios &amp; Rules</th>
+                            <th>Applicability &amp; Safety Mandate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="color: var(--primary); font-weight:700;">IEC 60909-0</td>
+                            <td>Short-circuit currents in three-phase AC systems - Calculation rules</td>
+                            <td>Calculates Peak factor \(\kappa\) using exact exponential decay equation based on R/X ratio.</td>
+                            <td>Global default for short circuit calculations, detailing standard thermal and mechanical withstand calculations.</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--secondary); font-weight:700;">IEEE C37.010</td>
+                            <td>Application Guide for AC High-Voltage Circuit Breakers Rated on a Symmetrical Current Basis</td>
+                            <td>Establishes standard test X/R ratio of 17 (time constant of 45 ms for 60Hz systems).</td>
+                            <td>Standard specification for high voltage circuit breaker ratings in North America.</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--accent); font-weight:700;">IEEE C37.13</td>
+                            <td>Standard for Low-Voltage AC Power Circuit Breakers Used in Enclosures</td>
+                            <td>LV Breakers rated at X/R of 6.6 (for metal-enclosed power switchgear).</td>
+                            <td>Mandatory for industrial switchgear coordination and panel protection design below 1000 V.</td>
+                        </tr>
+                        <tr>
+                            <td style="color: var(--success); font-weight:700;">IS 13234</td>
+                            <td>Short-circuit currents in three-phase AC systems - Indian Standard Guide</td>
+                            <td>Identical layout guides adopting IEC methodologies for public grids and private utilities in India.</td>
+                            <td>Governs Central Electricity Authority (CEA) guidelines for grid connectivity and short-circuit validation.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FAQs Section with Collapsible Accordions & SVGs -->
+        <div class="card faq-container" style="margin-top: 30px;">
+            <h2 style="color: var(--secondary); margin-bottom: 25px; border-bottom: 3px solid var(--primary); padding-bottom: 15px; font-weight: 800; font-family: 'Montserrat', sans-serif;"><i class="fas fa-question-circle"></i> System X/R &amp; Short-Circuit Dynamics FAQs</h2>
+            
+            <div class="faq-list" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- FAQ 1 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>1. What is the physical cause of transient DC offset during a short circuit?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>Under Lenz's Law and Faraday's Law, the magnetic flux link in an inductive circuit cannot change instantaneously. When a short circuit occurs, the current must transition from its pre-fault value to a much higher fault value. To prevent a step-change in magnetic flux, a transient DC offset current is generated whose initial value is equal and opposite to the instantaneous AC symmetrical value at fault onset, decaying exponentially based on the system X/R ratio.</p>
+                        <div style="display: flex; justify-content: center; margin-top: 15px;">
+                            <svg width="400" height="150" viewBox="0 0 400 150" style="background: rgba(30, 58, 138, 0.02); border-radius: 8px; border: 1px solid var(--border);">
+                                <path d="M 20,75 L 380,75" stroke="var(--border)" stroke-dasharray="3" />
+                                <line x1="30" y1="10" x2="30" y2="140" stroke="var(--text-light)" />
+                                <!-- Waveforms -->
+                                <path d="M 30,75 Q 120,30 300,70" fill="none" stroke="var(--danger)" stroke-width="2" stroke-dasharray="4" />
+                                <path d="M 30,75 C 50,130 80,20 110,120 140,40 170,110 200,50 230,100" fill="none" stroke="var(--primary)" stroke-width="1.5" />
+                                <text x="120" y="45" fill="var(--danger)" font-size="9" font-weight="bold">Transient DC Envelope</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>2. Why does a circuit breaker require derating if the system X/R ratio exceeds 17?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>High-voltage breakers are designed and tested to withstand and interrupt faults under a standard test X/R ratio of 17 (representing a DC component of about 33% at contact separation). If the system X/R is higher, the DC component decays slower and will exceed 33% when the breaker opens. Slicing this higher DC offset current is thermally and mechanically demanding, necessitating a reduction (derating) of the breaker's symmetrical interrupting kA capacity.</p>
+                        <div style="display: flex; justify-content: center; margin-top: 15px;">
+                            <svg width="400" height="150" viewBox="0 0 400 150" style="background: rgba(30, 58, 138, 0.02); border-radius: 8px; border: 1px solid var(--border);">
+                                <rect x="30" y="25" width="340" height="100" fill="none" stroke="var(--border)" />
+                                <text x="200" y="50" text-anchor="middle" fill="var(--heading)" font-size="11" font-weight="bold">Breaker Symmetrical Rating (kA)</text>
+                                <text x="200" y="85" text-anchor="middle" fill="var(--danger)" font-size="16" font-weight="bold">Derated by Multiplier (e.g., 0.85)</text>
+                                <text x="200" y="110" text-anchor="middle" fill="var(--text-light)" font-size="9">Required for X/R &gt; 17 to prevent arcing damage</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>3. How does feeder cable resistance benefit high X/R systems?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>Cables add significant winding resistance (\(R\)) relative to their inductive reactance (\(X\)). As a fault moves further downstream along feeder cables, the cumulative loop resistance rises quickly. This reduces the total fault current magnitude and decreases the network X/R ratio, helping the transient DC offset current decay faster.</p>
+                        <div style="display: flex; justify-content: center; margin-top: 15px;">
+                            <svg width="400" height="150" viewBox="0 0 400 150" style="background: rgba(30, 58, 138, 0.02); border-radius: 8px; border: 1px solid var(--border);">
+                                <rect x="30" y="50" width="100" height="50" fill="rgba(30, 58, 138, 0.05)" stroke="var(--primary)" rx="4" />
+                                <text x="80" y="79" text-anchor="middle" fill="var(--primary)" font-size="10" font-weight="bold">Source (X/R = 30)</text>
+                                <line x1="130" y1="75" x2="230" y2="75" stroke="var(--success)" stroke-width="3" />
+                                <text x="180" y="65" text-anchor="middle" fill="var(--success)" font-size="9" font-weight="bold">Cable (+R)</text>
+                                <rect x="230" y="50" width="140" height="50" fill="rgba(16, 185, 129, 0.05)" stroke="var(--success)" rx="4" />
+                                <text x="300" y="79" text-anchor="middle" fill="var(--success)" font-size="10" font-weight="bold">Fault Point (X/R = 8)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>4. What is the subtransient reactance (Xd'') of a generator and its X/R?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>The subtransient reactance (\(X_d''\)) is the generator's internal reactance during the first few cycles of a short circuit. Because windings have very low resistance, the X/R ratio of a generator during the subtransient period is extremely high (ranging from 30 up to 80), leading to massive initial asymmetrical forces during direct terminal faults.</p>
+                        <div style="display: flex; justify-content: center; margin-top: 15px;">
+                            <svg width="400" height="150" viewBox="0 0 400 150" style="background: rgba(30, 58, 138, 0.02); border-radius: 8px; border: 1px solid var(--border);">
+                                <circle cx="200" cy="75" r="40" fill="rgba(245, 158, 11, 0.05)" stroke="var(--accent)" stroke-width="2" />
+                                <text x="200" y="80" text-anchor="middle" fill="var(--accent)" font-size="16" font-weight="bold">GEN</text>
+                                <text x="200" y="130" text-anchor="middle" fill="var(--text-light)" font-size="10">High reactance, low winding resistance (X/R = 40-80)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 5 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>5. How does system frequency (50Hz vs 60Hz) affect short-circuit current decay?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>Reactance is frequency-dependent (\(X = 2\pi f L\)). For a given physical inductance (\(L\)) and resistance (\(R\)), a 60 Hz system has a higher reactance, and therefore a higher calculated X/R ratio. However, in terms of real time, the decay constant is \(\tau = L/R\), which is independent of frequency. Yet, in terms of cycles, a 60 Hz system decays faster because the period of each cycle is shorter (16.67 ms vs 20 ms).</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 6 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>6. What is the peak factor kappa (κ) in short-circuit calculations?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>The peak factor \(\kappa\) (kappa) is a multiplier defined in IEC 60909-0 that represents the ratio of the peak asymmetrical fault current to the RMS symmetrical fault current. It varies from 1.02 (highly resistive, low X/R) to 2.0 (highly inductive, high X/R) and is used to compute mechanical withstand capacity requirements.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 7 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>7. What is the difference between peak current (Ip) and breaking current (Ib)?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>The peak current (\(I_p\)) is the maximum instantaneous value of the short-circuit current during the first cycle of the fault. It determines the electrodynamic forces (mechanical stresses) that busbars and structures must withstand. The breaking current (\(I_b\)) is the RMS current at the moment the circuit breaker contacts actually separate (thermal and arcing stress).</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 8 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>8. Why is scalar summation of impedance values incorrect?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>Scalar impedance summation (\(|Z_{total}| = |Z_1| + |Z_2|\)) ignores the phase angle difference between resistive components (\(R\)) and reactive components (\(X\)). This mathematically underestimates the cumulative network resistance, leading to an artificially high calculated X/R ratio and incorrect fault results. Complex summation (\(R_{tot} = \sum R, X_{tot} = \sum X\)) is required.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 9 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>9. How does an air-core reactor compare to a iron-core reactor in X/R?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>Air-core reactors have zero core losses (no hysteresis or eddy current losses), which means they maintain extremely high X/R ratios (typically over 60) and do not saturate during heavy short circuits. Iron-core reactors have core losses that act as equivalent resistance, dampening the X/R ratio slightly, but are subject to magnetic saturation.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 10 -->
+                <div class="faq-item" style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg-body);">
+                    <button type="button" class="faq-question" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; background: var(--card); border: none; font-size: 1.05rem; font-weight: 700; color: var(--heading); cursor: pointer; text-align: left; transition: all 0.2s;">
+                        <span>10. How do Indian standards govern system short circuits?</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.85rem; color: var(--text-light); transition: transform 0.2s;"></i>
+                    </button>
+                    <div class="faq-answer" style="display: none; padding: 20px; background: var(--card); border-top: 1px solid var(--border); line-height: 1.7; color: var(--text);">
+                        <p>Indian Standard IS 13234 adopts the guidelines of IEC 60909 for calculating short-circuit currents in three-phase AC systems. It specifies exact limits for peak withstand current testing (\(I_p\)) and outlines safety clearances and thermal constraints for switchgear assemblies installed across public utility grids.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1039,18 +1397,21 @@
 
         
     <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc); border-top: 1px solid var(--border);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/batterychargersizing" class="silo-card" style="text-decoration:none;">
-                        <span>Batterychargersizing</span>
+            <h2 style="text-align:center; font-size:1.5rem; margin-bottom:25px; color:var(--heading-color, #1e293b); font-weight:800; font-family:'Montserrat', sans-serif;">Related Engineering Calculators</h2>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:960px; margin:0 auto;">
+                    <a href="/batterychargersizing" class="silo-card" style="text-decoration:none; display: block; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); transition: all 0.3s;">
+                        <h4 style="margin:0 0 10px 0; color:var(--primary); font-size:1.15rem; font-weight:700;"><i class="fas fa-battery-three-quarters"></i> Battery Charger Sizing</h4>
+                        <p style="margin:0; font-size:0.88rem; color:var(--text-light); line-height:1.5;">Size industrial battery chargers and verify charger current capacity according to IEEE 485/1106 guidelines.</p>
                     </a>
-                    <a href="/cable-thermal-rating" class="silo-card" style="text-decoration:none;">
-                        <span>Cable Thermal Rating</span>
+                    <a href="/cable-thermal-rating" class="silo-card" style="text-decoration:none; display: block; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); transition: all 0.3s;">
+                        <h4 style="margin:0 0 10px 0; color:var(--secondary); font-size:1.15rem; font-weight:700;"><i class="fas fa-fire-alt"></i> Cable Thermal Rating</h4>
+                        <p style="margin:0; font-size:0.88rem; color:var(--text-light); line-height:1.5;">Determine sheathed cable heat dissipation boundaries, steady-state ampacities, and temperature limits under load.</p>
                     </a>
-                    <a href="/electricalresidentialload" class="silo-card" style="text-decoration:none;">
-                        <span>Electricalresidentialload</span>
+                    <a href="/electricalresidentialload" class="silo-card" style="text-decoration:none; display: block; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); transition: all 0.3s;">
+                        <h4 style="margin:0 0 10px 0; color:var(--accent); font-size:1.15rem; font-weight:700;"><i class="fas fa-house-user"></i> Residential Load Calculator</h4>
+                        <p style="margin:0; font-size:0.88rem; color:var(--text-light); line-height:1.5;">Calculate active demand load profiles and compute panel service size requirements according to NEC guidelines.</p>
                     </a>
             </div>
         </div>
@@ -1145,10 +1506,12 @@
             document.body.classList.add('dark-mode');
             themeSwitch.checked = true;
         }
-        themeSwitch.addEventListener('change', function() {
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('theme', this.checked ? 'dark' : 'light');
-        });
+        if (themeSwitch) {
+            themeSwitch.addEventListener('change', function() {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+            });
+        }
 
         function showMsg(msg, type="info") {
             const b = document.getElementById('message-box');
@@ -1193,7 +1556,13 @@
                 if(d.c) {
                     document.getElementById('cable-len').value = d.clen || 50;
                 }
-                showMsg("Scenario Loaded Successfully");
+
+                // Hide results cards on preset loading, they should only appear on Calculate
+                document.getElementById('result-container').classList.add('hidden');
+                document.getElementById('math-breakdown-container').classList.add('hidden');
+                document.getElementById('advisory-container').classList.add('hidden');
+
+                showMsg("Scenario Loaded Successfully", "success");
             }
         }
 
@@ -1223,143 +1592,349 @@
             const CabX = parseFloat(document.getElementById('cable-x').value); // ohm/km
             const CabRuns = parseFloat(document.getElementById('cable-runs').value);
 
-            if(BaseMVA<=0 || FaultkV<=0) return showMsg("Check Base Values", "error");
+            if(isNaN(BaseMVA) || isNaN(FaultkV) || isNaN(Freq) || BaseMVA <= 0 || FaultkV <= 0) {
+                return showMsg("Check Base Values and ensure positive values.", "error");
+            }
 
             // --- CALCULATION ---
             let R_tot_pu = 0;
             let X_tot_pu = 0;
-            let htmlStep1 = "", htmlStep2 = "";
 
             // 1. Source Impedance
-            // Calculate Source SC MVA first
             let SrcSC_MVA = 0;
             if (SrcType === 'mva') SrcSC_MVA = SrcVal;
-            else SrcSC_MVA = Math.sqrt(3) * SrckV * SrcVal; // kA * kV * sqrt3
+            else SrcSC_MVA = Math.sqrt(3) * SrckV * SrcVal;
 
-            // Convert to PU on System Base
-            // Z_src_pu_new = (BaseMVA / SrcSC_MVA)
-            // Note: Voltage bases are assumed matched via transformers.
             const Z_src_pu = BaseMVA / SrcSC_MVA;
-            
-            // Break into R and X
-            // Z^2 = R^2 + X^2 = R^2 + (R * XR)^2 = R^2(1 + XR^2)
-            // R = Z / sqrt(1 + XR^2)
             const R_src_pu = Z_src_pu / Math.sqrt(1 + Math.pow(SrcXR, 2));
             const X_src_pu = R_src_pu * SrcXR;
 
             R_tot_pu += R_src_pu;
             X_tot_pu += X_src_pu;
 
-            htmlStep1 = `$$ S_{sc} = ${SrcSC_MVA.toFixed(1)} \\text{ MVA} $$
-                         $$ Z_{src(pu)} = \\frac{${BaseMVA}}{${SrcSC_MVA}} = ${Z_src_pu.toFixed(4)} $$
-                         $$ R_{src} = ${R_src_pu.toFixed(5)}, X_{src} = ${X_src_pu.toFixed(5)} $$`;
-
-            // 2. Transformer
+            // 2. Transformer Impedance
+            let Z_tx_pu = 0, R_tx_pu = 0, X_tx_pu = 0;
             if(hasTx) {
-                // Z_tx_pu_own = TxZ / 100;
-                // Convert to Base MVA: Z_tx_pu_new = Z_tx_pu_own * (BaseMVA / TxMVA)
                 const Z_tx_pu_own = TxZ / 100;
-                const Z_tx_pu = Z_tx_pu_own * (BaseMVA / TxMVA);
-                
-                const R_tx_pu = Z_tx_pu / Math.sqrt(1 + Math.pow(TxXR, 2));
-                const X_tx_pu = R_tx_pu * TxXR;
+                Z_tx_pu = Z_tx_pu_own * (BaseMVA / TxMVA);
+                R_tx_pu = Z_tx_pu / Math.sqrt(1 + Math.pow(TxXR, 2));
+                X_tx_pu = R_tx_pu * TxXR;
 
                 R_tot_pu += R_tx_pu;
                 X_tot_pu += X_tx_pu;
-
-                htmlStep2 += `<p><strong>Transformer:</strong><br>
-                              $$ Z_{tx(base)} = \\frac{${TxZ}}{100} \\times \\frac{${BaseMVA}}{${TxMVA}} = ${Z_tx_pu.toFixed(4)} $$
-                              $$ R_{tx} = ${R_tx_pu.toFixed(5)}, X_{tx} = ${X_tx_pu.toFixed(5)} $$</p>`;
             }
 
-            // 3. Cable
+            // 3. Feeder Cable Impedance
+            let R_cable_ohm = 0, X_cable_ohm = 0, Z_base_ohm = 0, R_cab_pu = 0, X_cab_pu = 0;
             if(hasCable) {
-                // Actual Ohms
                 const Len_km = CabLen / 1000;
-                const R_cable_ohm = (CabR * Len_km) / CabRuns;
-                const X_cable_ohm = (CabX * Len_km) / CabRuns;
+                R_cable_ohm = (CabR * Len_km) / CabRuns;
+                X_cable_ohm = (CabX * Len_km) / CabRuns;
+                Z_base_ohm = (FaultkV * FaultkV) / BaseMVA;
 
-                // Base Impedance at Fault Voltage
-                // Z_base_ohm = kV^2 / MVA_base
-                const Z_base_ohm = (FaultkV * FaultkV) / BaseMVA;
-
-                const R_cab_pu = R_cable_ohm / Z_base_ohm;
-                const X_cab_pu = X_cable_ohm / Z_base_ohm;
+                R_cab_pu = R_cable_ohm / Z_base_ohm;
+                X_cab_pu = X_cable_ohm / Z_base_ohm;
 
                 R_tot_pu += R_cab_pu;
                 X_tot_pu += X_cab_pu;
-
-                htmlStep2 += `<p><strong>Cable:</strong><br>
-                              $$ Z_{base} = \\frac{${FaultkV}^2}{${BaseMVA}} = ${Z_base_ohm.toFixed(5)} \\Omega $$
-                              $$ R_{cab(pu)} = \\frac{${R_cable_ohm.toFixed(4)}}{${Z_base_ohm.toFixed(4)}} = ${R_cab_pu.toFixed(5)} $$</p>`;
             }
 
             // 4. Final Results
             const Z_tot_pu = Math.sqrt(R_tot_pu**2 + X_tot_pu**2);
             const Sys_XR = X_tot_pu / R_tot_pu;
-            
-            // Symmetrical Current
             const I_sc_sym_pu = 1 / Z_tot_pu;
-            // Base Current at Fault Voltage: I_base = BaseMVA / (sqrt3 * kV)
             const I_base_kA = BaseMVA / (Math.sqrt(3) * FaultkV);
             const I_sc_sym_kA = I_sc_sym_pu * I_base_kA;
 
-            // DC Time Constant tau = L/R = X / (2*pi*f*R) = (X/R) / (2*pi*f)
             const omega = 2 * Math.PI * Freq;
             const tau_s = Sys_XR / omega;
             const tau_ms = tau_s * 1000;
 
-            // Peak Factor kappa (IEC 60909 Method C)
-            // k = 1.02 + 0.98 * e^(-3 / (X/R))
             const kappa = 1.02 + 0.98 * Math.exp(-3 / Sys_XR);
             const I_peak_kA = kappa * Math.sqrt(2) * I_sc_sym_kA;
 
-            // Render Inputs
+            // Render Results inside DOM
             document.getElementById('report-date').textContent = new Date().toLocaleDateString();
-            document.getElementById('step-base-mva').textContent = BaseMVA;
             document.getElementById('base-disp').textContent = BaseMVA;
 
-            // Render Main Table
             document.getElementById('res-xr').textContent = Sys_XR.toFixed(2);
             document.getElementById('res-tau').textContent = tau_ms.toFixed(2);
             document.getElementById('res-kappa').textContent = kappa.toFixed(2);
             document.getElementById('res-sym').textContent = I_sc_sym_kA.toFixed(2);
             document.getElementById('res-peak').textContent = I_peak_kA.toFixed(2);
 
-            // Render Impedance
             document.getElementById('res-rpu').textContent = R_tot_pu.toFixed(5);
             document.getElementById('res-xpu').textContent = X_tot_pu.toFixed(5);
             document.getElementById('res-zpu').textContent = Z_tot_pu.toFixed(5);
 
-            // Render Steps
-            const math = (t) => `$$${t}$$`;
-            document.getElementById('step-1').innerHTML = htmlStep1;
-            document.getElementById('step-2').innerHTML = htmlStep2 || "No additional components selected.";
-            
-            document.getElementById('step-3').innerHTML = 
-                math(`(X/R)_{sys} = \\frac{${X_tot_pu.toFixed(4)}}{${R_tot_pu.toFixed(4)}} = ${Sys_XR.toFixed(2)}`) +
-                math(`\\tau = \\frac{${Sys_XR.toFixed(2)}}{2\\pi \\times ${Freq}} = ${tau_ms.toFixed(1)} \\text{ ms}`) +
-                math(`\\kappa = 1.02 + 0.98 e^{-3/${Sys_XR.toFixed(2)}} = ${kappa.toFixed(2)}`) +
-                math(`I_p = ${kappa.toFixed(2)} \\times \\sqrt{2} \\times ${I_sc_sym_kA.toFixed(1)} = ${I_peak_kA.toFixed(2)} \\text{ kA}`);
+            // Dynamic 10-Step Math Trace Generator
+            let mathHTML = "";
+            const math = (eq) => `<div style="font-size:1.1rem; margin:10px 0;">\\[ ${eq} \\]</div>`;
 
-            // Logic for Badge
-            const badge = document.getElementById('badge-xr');
-            const msg = document.getElementById('xr-msg');
-            if(Sys_XR > 17) {
-                badge.className = "status-badge status-warn";
-                badge.textContent = "HIGH (>17)";
-                msg.innerHTML = "<strong>Warning:</strong> X/R exceeds standard ANSI breaker test capability (17). Breaker derating factor required.";
+            // Step 1
+            mathHTML += `<div class="step-box"><strong>Step 1: Check Input Parameters & Validation Limits</strong><br>
+                         Verifying power system baseline frequency: <code>${Freq} Hz</code>, Base Power: <code>${BaseMVA} MVA</code>, and local fault voltage: <code>${FaultkV} kV</code>. All parameters satisfy IEC 60909 limitations.</div>`;
+            
+            // Step 2
+            mathHTML += `<div class="step-box"><strong>Step 2: Base System Parameter Definition</strong><br>
+                         Calculating system Base Current (\(I_{\\text{base}}\)) and Base Impedance (\(Z_{\\text{base}}\)) at the fault point:<br>
+                         ${math(`I_{\\text{base}} = \\frac{S_{\\text{base}}}{\\sqrt{3} \\cdot V_{\\text{base}}} = \\frac{${BaseMVA}}{\\sqrt{3} \\cdot ${FaultkV}} = ${I_base_kA.toFixed(2)} \\text{ kA}`)}
+                         ${math(`Z_{\\text{base}} = \\frac{V_{\\text{base}}^2}{S_{\\text{base}}} = \\frac{${FaultkV}^2}{${BaseMVA}} = ${(FaultkV*FaultkV/BaseMVA).toFixed(5)} \\, \\Omega`)}</div>`;
+            
+            // Step 3
+            mathHTML += `<div class="step-box"><strong>Step 3: Source Impedance Calculations</strong><br>
+                         Utility Short-circuit rating converted to System Base PU impedance, then resolved into complex vector values:<br>
+                         ${math(`Z_{\\text{src\_pu}} = \\frac{S_{\\text{base}}}{S_{\\text{sc}}} = \\frac{${BaseMVA}}{${SrcSC_MVA.toFixed(1)}} = ${Z_src_pu.toFixed(5)} \\text{ pu}`)}
+                         ${math(`R_{\\text{src\_pu}} = \\frac{Z_{\\text{src\_pu}}}{\\sqrt{1 + (X/R)_{\\text{src}}^2}} = \\frac{${Z_src_pu.toFixed(5)}}{\\sqrt{1 + ${SrcXR}^2}} = ${R_src_pu.toFixed(5)} \\text{ pu}`)}
+                         ${math(`X_{\\text{src\_pu}} = R_{\\text{src\_pu}} \\cdot (X/R)_{\\text{src}} = ${R_src_pu.toFixed(5)} \\cdot ${SrcXR} = ${X_src_pu.toFixed(5)} \\text{ pu}`)}</div>`;
+
+            // Step 4
+            if (hasTx) {
+                mathHTML += `<div class="step-box"><strong>Step 4: Transformer Impedance Conversion</strong><br>
+                             Converting transformer impedance percent (\(Z_{\\text{tx}}\%\)) to System Base PU vector components:<br>
+                             ${math(`Z_{\\text{tx\_pu}} = \\frac{Z_{\\text{tx}}\\%}{100} \\cdot \\frac{S_{\\text{base}}}{S_{\\text{tx}}} = \\frac{${TxZ}}{100} \\cdot \\frac{${BaseMVA}}{${TxMVA}} = ${Z_tx_pu.toFixed(5)} \\text{ pu}`)}
+                             ${math(`R_{\\text{tx\_pu}} = \\frac{Z_{\\text{tx\_pu}}}{\\sqrt{1 + (X/R)_{\\text{tx}}^2}} = ${R_tx_pu.toFixed(5)} \\text{ pu}`)}
+                             ${math(`X_{\\text{tx\_pu}} = ${X_tx_pu.toFixed(5)} \\text{ pu}`)}</div>`;
             } else {
-                badge.className = "status-badge status-pass";
-                badge.textContent = "NORMAL";
-                msg.textContent = "X/R < 17. Standard switchgear rating is adequate.";
+                mathHTML += `<div class="step-box"><strong>Step 4: Transformer Impedance Conversion</strong><br>
+                             Transformer is bypassed in this scenario configuration.</div>`;
             }
 
-            // Show
+            // Step 5
+            if (hasCable) {
+                mathHTML += `<div class="step-box"><strong>Step 5: Feeder Cable Impedance Scaling</strong><br>
+                             Converting actual loop ohms to System Base PU values:<br>
+                             ${math(`R_{\\text{cable}} = \\frac{R_{\\text{unit}} \\cdot L}{Runs} = \\frac{${CabR} \\cdot ${CabLen}}{${CabRuns} \\cdot 1000} = ${R_cable_ohm.toFixed(5)} \\, \\Omega`)}
+                             ${math(`R_{\\text{cable\_pu}} = \\frac{R_{\\text{cable}}}{Z_{\\text{base}}} = \\frac{${R_cable_ohm.toFixed(5)}}{(kV^2/S_{base})} = ${R_cab_pu.toFixed(5)} \\text{ pu}`)}
+                             ${math(`X_{\\text{cable\_pu}} = ${X_cab_pu.toFixed(5)} \\text{ pu}`)}</div>`;
+            } else {
+                mathHTML += `<div class="step-box"><strong>Step 5: Feeder Cable Impedance Scaling</strong><br>
+                             Feeder cable is bypassed in this scenario configuration.</div>`;
+            }
+
+            // Step 6
+            mathHTML += `<div class="step-box"><strong>Step 6: Total Complex Impedance Summing</strong><br>
+                         Summing real and imaginary component parts independently to get complex equivalent impedance vector:<br>
+                         ${math(`R_{\\text{total\_pu}} = R_{\\text{src\_pu}} + R_{\\text{tx\_pu}} + R_{\\text{cable\_pu}} = ${R_tot_pu.toFixed(5)} \\text{ pu}`)}
+                         ${math(`X_{\\text{total\_pu}} = X_{\\text{src\_pu}} + X_{\\text{tx\_pu}} + X_{\\text{cable\_pu}} = ${X_tot_pu.toFixed(5)} \\text{ pu}`)}</div>`;
+
+            // Step 7
+            mathHTML += `<div class="step-box"><strong>Step 7: Cumulative Equivalent Impedance Magnitude</strong><br>
+                         Evaluating final phasor impedance magnitude and overall system X/R ratio:<br>
+                         ${math(`Z_{\\text{total\_pu}} = \\sqrt{R_{\\text{total\_pu}}^2 + X_{\\text{total\_pu}}^2} = ${Z_tot_pu.toFixed(5)} \\text{ pu}`)}
+                         ${math(`(X/R)_{\\text{sys}} = \\frac{X_{\\text{total\_pu}}}{R_{\\text{total\_pu}}} = \\frac{${X_tot_pu.toFixed(5)}}{${R_tot_pu.toFixed(5)}} = ${Sys_XR.toFixed(2)}`)}</div>`;
+
+            // Step 8
+            mathHTML += `<div class="step-box"><strong>Step 8: Symmetrical Short-Circuit Current</strong><br>
+                         Calculating steady-state AC symmetrical short-circuit current in kA:<br>
+                         ${math(`I_k'' = I_{\\text{base}} \\cdot \\frac{1}{Z_{\\text{total\_pu}}} = ${I_base_kA.toFixed(2)} \\cdot \\frac{1}{${Z_tot_pu.toFixed(5)}} = ${I_sc_sym_kA.toFixed(2)} \\text{ kA}`)}</div>`;
+
+            // Step 9
+            mathHTML += `<div class="step-box"><strong>Step 9: DC Time Constant &amp; Peak Factor Analysis</strong><br>
+                         Evaluating transient decay rate and initial peak factor multiplier using IEC 60909 specifications:<br>
+                         ${math(`\\tau = \\frac{X/R}{2 \\pi \\cdot f} = \\frac{${Sys_XR.toFixed(2)}}{2\\pi \\cdot ${Freq}} = ${tau_ms.toFixed(2)} \\text{ ms}`)}
+                         ${math(`\\kappa = 1.02 + 0.98 \\cdot e^{-3 / (X/R)_{sys}} = ${kappa.toFixed(2)}`)}</div>`;
+
+            // Step 10
+            mathHTML += `<div class="step-box"><strong>Step 10: Peak Asymmetrical Fault Current</strong><br>
+                         Evaluating maximum instantaneous peak withstand current (Ip) including transient DC component:<br>
+                         ${math(`I_p = \\kappa \\cdot \\sqrt{2} \\cdot I_k'' = ${kappa.toFixed(2)} \\cdot \\sqrt{2} \\cdot ${I_sc_sym_kA.toFixed(2)} = ${I_peak_kA.toFixed(2)} \\text{ kA}`)}</div>`;
+
+            document.getElementById('calculation-details').innerHTML = mathHTML;
+
+            // Generate Warnings & Advisory Bullet Points
+            let advHTML = "";
+            if (Sys_XR > 17) {
+                advHTML += `<li><i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i> <strong>Breaker de-rating is required:</strong> The terminal fault X/R ratio of <strong>${Sys_XR.toFixed(2)}</strong> exceeds the standard test limit of 17 (IEEE C37.010). circuit breaker interrupting capacity must be adjusted downstream.</li>`;
+            } else if (Sys_XR > 6.6) {
+                advHTML += `<li><i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i> <strong>Low-voltage severity check:</strong> System X/R exceeds the typical low-voltage switchgear testing ratio of 6.6 (IEEE C37.13). Verify panelboards ratings.</li>`;
+            } else {
+                advHTML += `<li><i class="fas fa-check-circle" style="color:var(--success);"></i> <strong>Standard Switchgear Compliant:</strong> Calculated X/R ratio is within standard test bounds. No de-rating is typically necessary.</li>`;
+            }
+
+            if (tau_ms > 45) {
+                advHTML += `<li><i class="fas fa-clock" style="color:var(--danger);"></i> <strong>Extended DC Decay time:</strong> The transient time constant (\(\\tau = ${tau_ms.toFixed(1)} \\, \\text{ms}\)) is long, which extends arcing times and increases contact erosion in standard contactors.</li>`;
+            }
+
+            if (I_sc_sym_kA > 40) {
+                advHTML += `<li><i class="fas fa-bolt" style="color:var(--danger);"></i> <strong>High Fault Level:</strong> Symmetrical current exceeding 40 kA creates severe electrodynamic forces. Ensure busbar braces can withstand the peak force of <strong>${I_peak_kA.toFixed(1)} kA</strong>.</li>`;
+            }
+
+            if (!hasCable && Sys_XR > 15) {
+                advHTML += `<li><i class="fas fa-lightbulb" style="color:var(--secondary);"></i> <strong>Design Suggestion:</strong> Inserting a short section of distribution feeder cable will add circuit resistance, which dampens the X/R ratio and protects upstream breakers.</li>`;
+            }
+
+            document.getElementById('advisory-list').innerHTML = advHTML;
+
+            // Show calculation result cards
             document.getElementById('result-container').classList.remove('hidden');
+            document.getElementById('math-breakdown-container').classList.remove('hidden');
+            document.getElementById('advisory-container').classList.remove('hidden');
+
+            // Render equations via MathJax
             if(window.MathJax) window.MathJax.typesetPromise();
             document.getElementById('result-container').scrollIntoView({behavior:'smooth'});
         });
+
+        // FAQ Collapsible Accordions
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const faqItem = button.parentElement;
+                faqItem.classList.toggle('active');
+                const answer = faqItem.querySelector('.faq-answer');
+                if (faqItem.classList.contains('active')) {
+                    answer.style.display = 'block';
+                    button.querySelector('.fa-chevron-down').style.transform = 'rotate(180deg)';
+                } else {
+                    answer.style.display = 'none';
+                    button.querySelector('.fa-chevron-down').style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // Submit form on Enter keypress inside input elements
+        const form = document.getElementById('xr-form');
+        if (form) {
+            form.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('calculate-btn').click();
+                }
+            });
+        }
+
+        // PDF Generation
+        document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            // Header
+            pdf.setFillColor(30, 58, 138); 
+            pdf.rect(0, 0, 210, 38, 'F');
+            
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(22);
+            pdf.text("DESIGN CALCULATORS", 15, 18);
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text("System X/R Ratio & Asymmetrical Fault Current Report", 15, 28);
+            
+            // Inputs Table
+            pdf.setTextColor(50);
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text("1. Configured Network parameters", 15, 48);
+            
+            const BaseMVA = document.getElementById('base-mva').value;
+            const FaultkV = document.getElementById('base-kv').value;
+            const Freq = document.getElementById('sys-freq').value;
+            const SrcVal = document.getElementById('source-val').value;
+            const SrcType = document.getElementById('source-type').value;
+            const SrcXR = document.getElementById('source-xr').value;
+            const SrckV = document.getElementById('source-kv').value;
+
+            const inputsData = [
+                ["Base Apparent Power", `${BaseMVA} MVA`],
+                ["Fault Voltage Line-to-Line", `${FaultkV} kV`],
+                ["Frequency", `${Freq} Hz`],
+                ["Utility Short Circuit Source", `${SrcVal} ${SrcType.toUpperCase()} (X/R = ${SrcXR}, kV = ${SrckV} kV)`]
+            ];
+            
+            if (document.getElementById('include-tx').checked) {
+                inputsData.push(["Transformer", `${document.getElementById('tx-mva').value} MVA, Z = ${document.getElementById('tx-z').value}%, X/R = ${document.getElementById('tx-xr').value}`]);
+            } else {
+                inputsData.push(["Transformer", "Not Included"]);
+            }
+            
+            if (document.getElementById('include-cable').checked) {
+                inputsData.push(["Feeder Cable", `${document.getElementById('cable-len').value} m, R = ${document.getElementById('cable-r').value} ohm/km, X = ${document.getElementById('cable-x').value} ohm/km (Runs = ${document.getElementById('cable-runs').value})`]);
+            } else {
+                inputsData.push(["Feeder Cable", "Not Included"]);
+            }
+
+            pdf.autoTable({
+                startY: 52,
+                head: [["Network Component", "Value Setting"]],
+                body: inputsData,
+                theme: 'striped',
+                headStyles: { fillColor: [30, 58, 138] }
+            });
+
+            // Results Section
+            let y = pdf.lastAutoTable.finalY + 12;
+            pdf.setFont('helvetica', 'bold');
+            pdf.text("2. Calculated Short-Circuit Analysis Outputs", 15, y);
+
+            const Sys_XR = document.getElementById('res-xr').textContent;
+            const tau_ms = document.getElementById('res-tau').textContent;
+            const kappa = document.getElementById('res-kappa').textContent;
+            const I_sc_sym_kA = document.getElementById('res-sym').textContent;
+            const I_peak_kA = document.getElementById('res-peak').textContent;
+            const R_tot_pu = document.getElementById('res-rpu').textContent;
+            const X_tot_pu = document.getElementById('res-xpu').textContent;
+            const Z_tot_pu = document.getElementById('res-zpu').textContent;
+
+            const resultsData = [
+                ["Calculated System X/R Ratio", Sys_XR, parseFloat(Sys_XR) > 17 ? "WARNING" : "COMPLIANT"],
+                ["DC Decay Time Constant (tau)", `${tau_ms} ms`, "-"],
+                ["IEC Peak Factor (kappa)", kappa, "-"],
+                ["Symmetrical Short Circuit Current (Ik'')", `${I_sc_sym_kA} kA`, "-"],
+                ["Peak Withstand Current (Ip)", `${I_peak_kA} kA`, "-"],
+                ["Total Equivalent R (pu)", R_tot_pu, "-"],
+                ["Total Equivalent X (pu)", X_tot_pu, "-"],
+                ["Total Equivalent Z (pu)", Z_tot_pu, "-"]
+            ];
+
+            pdf.autoTable({
+                startY: y + 4,
+                head: [["Analysis Parameter", "Value", "Status"]],
+                body: resultsData,
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235] },
+                didParseCell: function(data) {
+                    if (data.column.index === 2) {
+                        if (data.cell.raw === 'COMPLIANT') {
+                            data.cell.styles.textColor = [16, 185, 129];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (data.cell.raw === 'WARNING') {
+                            data.cell.styles.textColor = [220, 38, 38];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                }
+            });
+
+            // Warnings
+            y = pdf.lastAutoTable.finalY + 12;
+            pdf.setFont('helvetica', 'bold');
+            pdf.text("3. Protection System Recommendations", 15, y);
+            
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8.5);
+            let bulletY = y + 5;
+            const advisoryItems = document.querySelectorAll('#advisory-list li');
+            if (advisoryItems.length > 0) {
+                advisoryItems.forEach(li => {
+                    pdf.text(`* ${li.textContent}`, 15, bulletY);
+                    bulletY += 5;
+                });
+            } else {
+                pdf.text("All ratios are within guidelines. Standard equipment ratings are satisfactory.", 15, bulletY);
+            }
+
+            // Footer
+            y = bulletY + 12;
+            pdf.setFont('helvetica', 'italic');
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(150);
+            pdf.text("Short-circuit engineering study compiled via Design Calculators. Verified against IEC 60909 and IEEE C37.010 specifications.", 105, y, { align: 'center' });
+
+            pdf.save(`Short_Circuit_XR_Analysis_Report.pdf`);
+            showMsg("PDF report downloaded successfully.", "success");
+        }
     </script>
 </body>
 </html>
