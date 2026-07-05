@@ -139,6 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (animated) return;
             animated = true;
 
+            // CRITICAL FIX: ensure the stats block is visible on mobile
+            // fade-in-up starts at opacity:0 — add .visible to make it opaque
+            statsSection.classList.add('visible');
+
             counters.forEach(counter => {
                 const target = parseInt(counter.getAttribute('data-target'), 10);
                 const duration = 2000; // Animation duration in ms
@@ -147,11 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const animate = (timestamp) => {
                     if (!startTime) startTime = timestamp;
                     const progress = Math.min((timestamp - startTime) / duration, 1);
-                    
+
                     // Easing out function for smooth deceleration
                     const easeOutQuad = t => t * (2 - t);
                     const currentValue = Math.floor(easeOutQuad(progress) * target);
-                    
+
                     // Format number with commas (e.g. 50000 -> 50,000)
                     counter.textContent = currentValue.toLocaleString();
 
@@ -177,9 +181,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         statsObserver.observe(statsSection);
 
-        // Fallback: trigger after 1.5s in case IntersectionObserver doesn't fire on mobile
-        setTimeout(countUp, 1500);
+        // Fallback: trigger quickly so mobile users never see stuck zeros.
+        // Also ensures .visible is added even if IntersectionObserver never fires.
+        setTimeout(countUp, 800);
     }
+
+    // --- MARQUEE MOBILE FIX ---
+    // Ensure the marquee animation runs on mobile by forcing a reflow
+    const marqueeEls = document.querySelectorAll('.marquee-content');
+    marqueeEls.forEach(el => {
+        el.style.animationPlayState = 'running';
+    });
 
 
     // Back to Top Button
