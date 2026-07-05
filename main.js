@@ -136,6 +136,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let animated = false;
 
         const countUp = () => {
+            if (animated) return;
+            animated = true;
+
             counters.forEach(counter => {
                 const target = parseInt(counter.getAttribute('data-target'), 10);
                 const duration = 2000; // Animation duration in ms
@@ -165,15 +168,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const statsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting && !animated) {
+                if (entry.isIntersecting) {
                     countUp();
-                    animated = true;
                     statsObserver.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.01 });
 
         statsObserver.observe(statsSection);
+
+        // Fallback: trigger after 1.5s in case IntersectionObserver doesn't fire on mobile
+        setTimeout(countUp, 1500);
     }
 
 

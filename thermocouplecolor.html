@@ -104,6 +104,48 @@
           "@type": "Answer",
           "text": "Accuracy depends on the purity of the wire alloys (Standard vs. Special Limits of Error) and the quality of the cold junction compensation. Standard Type K error is roughly ±2.2°C, while Special Limits wire improves this to ±1.1°C."
         }
+      }, {
+        "@type": "Question",
+        "name": "Can I mix ANSI and IEC thermocouple cables and connectors?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Never mix color code standards in a thermocouple circuit. ANSI Type K uses a Yellow jacket and Red negative leg, while IEC Type K uses a Green jacket and White negative leg. Mixing them leads to polarity errors and installation mistakes that corrupt the loop temperature reading."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is the difference between standard and Special Limits of Error (SLE) wire?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Special Limits of Error (SLE) wire uses premium-purified alloys to halve the measurement tolerance. For instance, standard Type K wire has a tolerance of +/-2.2°C or 0.75%, whereas SLE Type K wire has a tolerance of +/-1.1°C or 0.4%, which is critical for high-precision operations."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What causes Green Rot in Type K thermocouples?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Green Rot is a corrosion effect that occurs when Chromel positive wire is exposed to a low-oxygen, reducing atmosphere at 800°C to 1050°C. Chromium oxidizes preferentially, turning the wire green and causing severe drift (reading low). It is mitigated by using ventilated thermowells or upgrading to Type N."
+        }
+      }, {
+        "@type": "Question",
+        "name": "How do I test if a thermocouple is broken (burned out)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can check the health of a thermocouple using a standard digital multimeter. Switch the multimeter to Resistance/Continuity mode and measure across the positive and negative legs. A healthy thermocouple will show very low resistance (usually less than 10-20 ohms). If it displays 'Open Loop' (OL) or infinite resistance, the junction or wire is severed (burned out)."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What is the difference between a Grounded and Ungrounded thermocouple junction?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In a grounded thermocouple, the junction is physically welded directly to the outer metal protective sheath, providing the fastest thermal response time but making it vulnerable to electrical noise and ground loops. In an ungrounded thermocouple, the junction is completely isolated from the outer metal sheath by magnesium oxide powder, which prevents ground loops but slightly slows the response speed."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Why does my thermocouple read backwards (temperature goes down when heated)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If the temperature reading drops as heat is applied, the positive and negative wire connections are swapped at either the sensor block, the junction box, or the controller terminals. Swapping polarity reverses the sign of the measured relative millivolt gradient (EMF), prompting the instrument to calculate a negative temperature offset relative to ambient."
+        }
       }]
     }
     </script>
@@ -372,6 +414,20 @@
             align-items: center;
             position: relative;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 520px) {
+            .cable-assembly {
+                transform: scale(0.75);
+                transform-origin: center;
+            }
+        }
+        @media (max-width: 400px) {
+            .cable-assembly {
+                transform: scale(0.6);
+                transform-origin: center;
+            }
         }
         
         .jacket {
@@ -786,7 +842,7 @@
 
     <main class="container">
         <div class="card">
-            <h2><i class="fas fa-eye"></i> Thermocouple Intelligence Hub</h2>
+            <h1 style="font-size:1.8rem; font-family:'Montserrat',sans-serif; color:var(--primary); margin:0 0 10px 0; display:flex; align-items:center; gap:12px; border-bottom:2px solid var(--border); padding-bottom:15px; letter-spacing:-0.5px;"><i class="fas fa-eye"></i> Thermocouple Color Codes & NIST EMF Calculator</h1>
             <div class="tool-description">
                 <p>This industrial tool serves two purposes: <strong>1. Visual Identification</strong> of thermocouple wiring standards (ANSI, IEC, BS), and <strong>2. NIST ITS-90 Calculation</strong> of EMF (mV) output with Cold Junction Compensation.</p>
             </div>
@@ -846,6 +902,9 @@
                             Calculated per NIST ITS-90 Coefficients with CJC.
                         </div>
                     </div>
+                    <button type="button" id="pdf-btn" onclick="generatePDF()" style="width:100%; margin-top:15px; padding:12px; background:var(--primary); color:white; border:none; border-radius:8px; font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow: 0 4px 6px rgba(37,99,235,0.2);">
+                        <i class="fas fa-file-pdf"></i> Export Technical Datasheet (PDF)
+                    </button>
                 </div>
             </div>
 
@@ -866,6 +925,54 @@
                                 <span class="conductor-label">-</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Live Loop Schematic Diagram -->
+                <div class="card" style="margin-bottom: 25px; padding: 20px;">
+                    <h4 style="margin-top:0; font-family:'Montserrat',sans-serif; color:var(--primary); font-size:1.15rem; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                        <i class="fas fa-project-diagram"></i> Live Loop Signal Path
+                    </h4>
+                    <p style="font-size:0.85rem; color:var(--text); margin-bottom:12px; margin-top:0; line-height:1.4;">
+                        Interactive signal path mapping the physical Hot Junction, CJC Terminal block, and the measured thermoelectric EMF.
+                    </p>
+                    <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; justify-content:center; align-items:center;">
+                        <svg id="loop-svg" viewBox="0 0 500 170" style="width:100%; height:auto;">
+                            <!-- Hot Junction (Process) -->
+                            <circle cx="60" cy="85" r="10" fill="url(#heat-grad)" stroke="#DC2626" stroke-width="2" />
+                            <text x="60" y="55" text-anchor="middle" font-size="11" font-weight="800" fill="var(--heading)">Hot Junction</text>
+                            <text x="60" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="var(--primary)" id="svg-tproc-val">100.0°C</text>
+                            
+                            <!-- Thermocouple positive/negative legs -->
+                            <path d="M 60 85 C 130 50, 230 50, 300 70" fill="none" stroke="#2563EB" stroke-width="3" id="svg-pos-wire" />
+                            <path d="M 60 85 C 130 120, 230 120, 300 100" fill="none" stroke="#DC2626" stroke-width="3" id="svg-neg-wire" />
+                            
+                            <text x="180" y="45" text-anchor="middle" font-size="9.5" fill="var(--secondary)" font-weight="700" id="svg-pos-label">+ Leg (Chromel)</text>
+                            <text x="180" y="130" text-anchor="middle" font-size="9.5" fill="var(--danger)" font-weight="700" id="svg-neg-label">- Leg (Alumel)</text>
+                            
+                            <!-- Cold Junction (Reference block) -->
+                            <rect x="300" y="55" width="40" height="60" rx="4" fill="var(--card)" stroke="var(--border)" stroke-width="2" />
+                            <circle cx="320" cy="70" r="5" fill="#64748B" />
+                            <circle cx="320" cy="100" r="5" fill="#64748B" />
+                            <text x="320" y="45" text-anchor="middle" font-size="9.5" font-weight="bold" fill="var(--heading)">CJC Block</text>
+                            
+                            <!-- Terminal copper extensions to Voltmeter -->
+                            <path d="M 340 70 C 370 70, 370 75, 400 75" fill="none" stroke="#B45309" stroke-width="2.5" />
+                            <path d="M 340 100 C 370 100, 370 95, 400 95" fill="none" stroke="#B45309" stroke-width="2.5" stroke-dasharray="2,2" />
+                            
+                            <!-- Digital Voltmeter -->
+                            <rect x="400" y="50" width="90" height="70" rx="8" fill="#0F172A" stroke="#334155" stroke-width="2" />
+                            <text x="445" y="78" text-anchor="middle" font-size="14" font-weight="800" fill="#10B981" id="svg-vnet-val">3.096 mV</text>
+                            <text x="445" y="93" text-anchor="middle" font-size="8" fill="#64748B" font-weight="700">Ref Junction</text>
+                            <text x="445" y="106" text-anchor="middle" font-size="8.5" fill="#10B981" font-weight="700" id="svg-tref-val">T_ref = 25.0°C</text>
+                            
+                            <defs>
+                                <radialGradient id="heat-grad" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="#F59E0B" />
+                                    <stop offset="100%" stop-color="#DC2626" />
+                                </radialGradient>
+                            </defs>
+                        </svg>
                     </div>
                 </div>
 
@@ -899,119 +1006,447 @@
             </div>
         </div>
 
-        <!-- NEW EDUCATIONAL SECTION -->
-        <div class="card education-section" style="margin-top: 40px;">
-            <h2><i class="fas fa-book-open"></i> Thermocouple Engineering Reference</h2>
+        <!-- PROFESSIONAL INTERACTIVE REFERENCE SECTION -->
+        <div class="card education-section" style="margin-top: 40px; border-top: 4px solid var(--primary); padding: 35px;">
+            <h2 style="font-size: 2rem; font-family: 'Montserrat', sans-serif; color: var(--primary); display: flex; align-items: center; gap: 12px; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 15px;">
+                <i class="fas fa-university" style="color: var(--secondary);"></i> Thermocouple Engineering Reference
+            </h2>
+            
             <div class="article-content">
                 
-                <div class="article-block">
-                    <h3>1. Theory of Operation: The Seebeck Effect</h3>
-                    <p>A thermocouple is not a resistor. It is an active generator of voltage. The <strong>Seebeck Effect</strong> describes how a voltage (Electromotive Force or EMF) is generated when there is a temperature gradient along a conductive wire.</p>
-                    <p>Crucially, the voltage is generated <strong>along the length of the wires</strong> where the temperature gradient exists, not just at the junction. The junction connects the two dissimilar metals to complete the circuit. The net voltage measured at the open ends is the difference between the Seebeck voltages of the two different alloys.</p>
-                    <div class="formula">$$ V_{measured} = \int_{T_{ref}}^{T_{hot}} (S_A(T) - S_B(T)) dT $$</div>
-                    <p>Where $S_A$ and $S_B$ are the Seebeck coefficients of the two wire materials.</p>
+                <!-- 1. Seebeck Effect -->
+                <div class="article-block" style="background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.01)); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: var(--shadow);">
+                    <h3 style="margin-top:0; color:var(--primary); font-family:'Montserrat',sans-serif; border-left:5px solid var(--accent); padding-left:15px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-bolt" style="color: var(--accent);"></i> 1. The Seebeck Effect: Physics of Temperature-to-EMF
+                    </h3>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:25px; align-items:center; margin-top:20px;">
+                        <div>
+                            <p style="text-align:justify; margin-top:0; line-height:1.7;">
+                                A thermocouple does not operate like an RTD or thermistor; it does not change resistance. Instead, it acts as a thermoelectric generator. The <strong>Seebeck Effect</strong> states that when a conductor is subjected to a temperature gradient ($dT/dx$), a microvoltage is generated along the length of the wire.
+                            </p>
+                            <p style="text-align:justify; line-height:1.7;">
+                                Crucially, the voltage is <strong>not generated at the hot junction tip</strong>, but rather along the temperature gradient of the wires. The hot junction simply links two dissimilar metals (Alloys A and B), enabling the difference in their relative thermoelectric potentials to be measured at the cold junction terminals:
+                            </p>
+                            <div class="formula" style="background:var(--bg); padding:15px; border-radius:8px; font-weight:700; border:1px solid var(--border);">
+                                $$ V_{measured} = \int_{T_{ref}}^{T_{hot}} (S_A(T) - S_B(T)) dT $$
+                            </div>
+                            <p style="font-size:0.85rem; color:var(--text); margin-bottom:0;">
+                                Where $S_A(T)$ and $S_B(T)$ are the non-linear Seebeck coefficients ($\mu\text{V}/^\circ\text{C}$) of the positive and negative wire materials.
+                            </p>
+                        </div>
+                        <div style="background:var(--bg); border:1px dashed var(--border); border-radius:10px; padding:15px; text-align:center;">
+                            <span style="font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--heading); display:block; margin-bottom:10px;">Physical Thermal Gradient EMF Generation</span>
+                            <svg viewBox="0 0 400 180" style="width:100%; height:auto;">
+                                <!-- Heat source graphic -->
+                                <circle cx="40" cy="90" r="25" fill="rgba(239, 68, 68, 0.2)" />
+                                <circle cx="40" cy="90" r="15" fill="rgba(239, 68, 68, 0.4)" />
+                                <circle cx="40" cy="90" r="8" fill="#EF4444" />
+                                <text x="40" y="130" text-anchor="middle" font-size="10" font-weight="bold" fill="#EF4444">T_hot (Heat)</text>
+                                
+                                <!-- Conductors -->
+                                <path d="M 40 85 C 100 45, 250 45, 320 75" fill="none" stroke="#D97706" stroke-width="4" />
+                                <path d="M 40 95 C 100 135, 250 135, 320 105" fill="none" stroke="#64748B" stroke-width="4" />
+                                
+                                <text x="180" y="35" text-anchor="middle" font-size="10" fill="#D97706" font-weight="bold">Alloy A (+)</text>
+                                <text x="180" y="155" text-anchor="middle" font-size="10" fill="#475569" font-weight="bold">Alloy B (-)</text>
+                                
+                                <!-- EMF Gradient arrows -->
+                                <path d="M 100 52 L 120 54" stroke="#D97706" stroke-width="2" marker-end="url(#arrow)" />
+                                <path d="M 200 57 L 220 62" stroke="#D97706" stroke-width="2" marker-end="url(#arrow)" />
+                                
+                                <!-- Voltmeter -->
+                                <rect x="320" y="60" width="60" height="60" rx="4" fill="#0F172A" stroke="#334155" />
+                                <text x="350" y="85" text-anchor="middle" font-size="11" font-weight="bold" fill="#10B981">V_meas</text>
+                                <text x="350" y="105" text-anchor="middle" font-size="8.5" fill="#94A3B8">T_ref (Cold)</text>
+                                
+                                <defs>
+                                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#EF4444" />
+                                    </marker>
+                                </defs>
+                            </svg>
+                            <span style="font-size:0.8rem; color:var(--text); display:block; margin-top:10px; line-height:1.3;">
+                                Micro-voltages add up along the wires where the temperature drop occurs.
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="article-block">
-                    <h3>2. Cold Junction Compensation (CJC)</h3>
-                    <p>A thermocouple measures the <strong>difference</strong> in temperature between the Hot Junction (Process) and the Cold Junction (Instrument Terminals). It does NOT measure absolute temperature directly.</p>
-                    <p><strong>The Law of Intermediate Temperatures:</strong> To find the process temperature, the instrument must know the temperature of the terminal block where the TC wires land. This is the "Reference Junction". The instrument measures this using a precision thermistor or RTD, calculates the equivalent millivoltage for that ambient temperature, and adds it to the measured thermocouple millivoltage.</p>
-                    <p><em>Example:</em> If a Type K TC is in 100°C water, and the meter is in a 25°C room, the TC generates approx 3.0 mV (equivalent to 75°C difference). The meter measures 25°C CJC (approx 1.0 mV). Total = 4.0 mV, which corresponds to 100°C in the NIST tables.</p>
-                </div>
-
-                <div class="article-block">
-                    <h3>3. Wire Grades: Extension (X) vs. Compensating (C)</h3>
-                    <p>Running high-purity thermocouple wire thousands of feet to a control room is prohibitively expensive. Industry uses specific cable grades to save cost.</p>
-                    <ul>
-                        <li><strong>Extension Grade (e.g., KX, JX, EX):</strong> Uses the <strong>exact same alloys</strong> as the thermocouple but with wider purity tolerances. It is usually limited to 200°C (392°F) due to insulation limits. The "X" denotes Extension.</li>
-                        <li><strong>Compensating Cable (e.g., KCB, RCA, SCA):</strong> Uses <strong>completely different alloys</strong> (usually copper/copper-nickel) that mimic the EMF curve of the expensive thermocouple (like Platinum Type R/S) over a limited ambient range (0-100°C). This saves massive costs on noble metal installations.</li>
-                    </ul>
-                    <p><strong>Warning:</strong> Never use standard copper wire to extend a thermocouple signal. This creates new "parasitic junctions" at the connection point, causing massive errors equal to the temperature difference between the connection and the instrument.</p>
-                </div>
-
-                <div class="article-block">
-                    <h3>4. Detailed Type Analysis</h3>
+                <!-- 2. Cold Junction Compensation Sandbox -->
+                <div class="article-block" style="background: linear-gradient(135deg, var(--card), rgba(16,185,129,0.01)); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: var(--shadow);">
+                    <h3 style="margin-top:0; color:var(--primary); font-family:'Montserrat',sans-serif; border-left:5px solid var(--success); padding-left:15px; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-sliders-h" style="color: var(--success);"></i> 2. Cold Junction Compensation (CJC) Sandbox
+                    </h3>
+                    <p style="text-align:justify; line-height:1.7;">
+                        Because a thermocouple only measures the <strong>relative temperature difference</strong> between the measurement end and the voltmeter terminals, absolute measurement is impossible without CJC. The instrument measures the ambient temperature at its terminal block (the "Cold Junction") using a thermistor or RTD, calculates its equivalent EMF, and sums it to compensate:
+                    </p>
                     
-                    <h4>Type K (Chromel / Alumel)</h4>
-                    <ul>
-                        <li><strong>Range:</strong> -200°C to 1250°C.</li>
-                        <li><strong>Pros:</strong> Most common, cheap, good linearity, decent oxidation resistance.</li>
-                        <li><strong>Cons (Green Rot):</strong> Between 800°C and 1050°C in low-oxygen (reducing) atmospheres, the Chromium in the positive leg oxidizes preferentially, turning the wire green and causing a massive drift (reading low).</li>
-                        <li><strong>Magnetism:</strong> The negative leg is magnetic. Handy for ID.</li>
-                    </ul>
-
-                    <h4>Type J (Iron / Constantan)</h4>
-                    <ul>
-                        <li><strong>Range:</strong> 0°C to 750°C.</li>
-                        <li><strong>Pros:</strong> Very high sensitivity (~50 µV/°C). Good for reducing atmospheres.</li>
-                        <li><strong>Cons:</strong> The iron leg rusts. Not recommended below 0°C due to embrittlement.</li>
-                        <li><strong>Magnetism:</strong> The positive (Iron) leg is strongly magnetic.</li>
-                    </ul>
-
-                    <h4>Type N (Nicrosil / Nisil)</h4>
-                    <ul>
-                        <li><strong>Range:</strong> -270°C to 1300°C.</li>
-                        <li><strong>Pros:</strong> Designed by NASA/compatriots to fix Type K's flaws. Silicon is added to create a protective oxide layer. Much more stable at high temps. Immune to Green Rot.</li>
-                        <li><strong>Cons:</strong> Slightly more expensive and less available than K.</li>
-                    </ul>
+                    <!-- Sandbox Widget -->
+                    <div class="cjc-widget" style="background: var(--bg); border: 1px dashed var(--border); border-radius: 10px; padding: 20px; margin: 20px 0;">
+                        <span style="font-weight:800; font-size:0.85rem; color:var(--primary); text-transform:uppercase; display:block; margin-bottom:15px; letter-spacing:0.5px;">
+                            <i class="fas fa-flask"></i> Interactive CJC Simulation Loop (Type K)
+                        </span>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:25px; align-items: center;">
+                            <div>
+                                <div style="margin-bottom: 15px;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem; font-weight:700;">
+                                        <span>Process Temperature (T_hot):</span>
+                                        <span id="cjc-sandbox-thot-label" style="color:var(--secondary);">100.0°C</span>
+                                    </div>
+                                    <input type="range" id="cjc-sandbox-thot" min="0" max="500" value="100" style="width:100%; cursor:pointer;" oninput="updateCjcSandbox()">
+                                </div>
+                                <div>
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem; font-weight:700;">
+                                        <span>Reference Terminal Temp (T_ref):</span>
+                                        <span id="cjc-sandbox-tref-label" style="color:var(--warning);">25.0°C</span>
+                                    </div>
+                                    <input type="range" id="cjc-sandbox-tref" min="0" max="75" value="25" style="width:100%; cursor:pointer;" oninput="updateCjcSandbox()">
+                                </div>
+                            </div>
+                            <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:15px; font-size:0.88rem; box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                    <span>V(T_hot) at 0°C Ref:</span>
+                                    <span id="cjc-sandbox-vhot" style="font-weight:700; color:var(--secondary);">4.0962 mV</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                    <span>V(T_ref) Compensated:</span>
+                                    <span id="cjc-sandbox-vref" style="font-weight:700; color:var(--warning);">1.0000 mV</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                    <span style="font-weight:600;">Net EMF Generated:</span>
+                                    <span id="cjc-sandbox-vnet" style="font-weight:700; color:var(--heading);">3.0962 mV</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                                    <span style="font-weight:700; color:var(--success);">Calculated T_process:</span>
+                                    <span id="cjc-sandbox-treconstructed" style="font-weight:800; font-size:1.1rem; color:var(--success);">100.00 °C</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
+                <!-- 3. Wire Grades Comparison -->
                 <div class="article-block">
-                    <h3>5. Troubleshooting: Ground Loops & Noise</h3>
-                    <p>Thermocouple signals are small DC voltages (often < 20mV). They are easily corrupted by AC noise from VFDs, motors, or ground loops.</p>
-                    <ul>
-                        <li><strong>Ground Loops:</strong> Occur when the sensor is grounded at the pipe (Grounded Junction) AND the shield is grounded at the panel. Current flows through the shield. <strong>Solution:</strong> Ground the shield at ONE END ONLY (typically the instrument side). Use Ungrounded Junction probes if noise persists.</li>
-                        <li><strong>Burnout:</strong> If a wire breaks, the circuit opens. Most transmitters inject a tiny "Burnout Current" (nano-amps) to drive the reading to full scale (Upscale Burnout) or zero (Downscale Burnout) to alert the operator.</li>
-                    </ul>
+                    <h3 style="margin-top:0; color:var(--primary); font-family:'Montserrat',sans-serif; border-left:5px solid var(--secondary); padding-left:15px; display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+                        <i class="fas fa-compress-arrows-alt" style="color: var(--secondary);"></i> 3. Wire Grades: Extension vs. Compensating Cables
+                    </h3>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-bottom:15px;">
+                        <!-- Extension Grade Card -->
+                        <div style="background:var(--card); border:1px solid var(--border); border-left:5px solid var(--primary); border-radius:8px; padding:20px; box-shadow:var(--shadow);">
+                            <span style="display:block; font-size:1.1rem; font-weight:700; color:var(--primary); margin-bottom:8px;">
+                                <i class="fas fa-link"></i> Extension Grade (e.g. JX, KX, TX)
+                            </span>
+                            <p style="margin:0 0 12px 0; font-size:0.9rem; line-height:1.5;">
+                                Made from the <strong>exact same alloys</strong> as the thermocouple itself, but processed to slightly wider tolerances to lower production costs. 
+                            </p>
+                            <ul style="margin:0; padding-left:20px; font-size:0.85rem; line-height:1.5; color:var(--text);">
+                                <li><strong>Limits:</strong> Suitable for temperatures up to 200°C due to PVC/Teflon insulation sheathing.</li>
+                                <li><strong>Use Case:</strong> Running loop cabling from probe heads to nearby junction boxes.</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Compensating Grade Card -->
+                        <div style="background:var(--card); border:1px solid var(--border); border-left:5px solid var(--accent); border-radius:8px; padding:20px; box-shadow:var(--shadow);">
+                            <span style="display:block; font-size:1.1rem; font-weight:700; color:var(--accent); margin-bottom:8px;">
+                                <i class="fas fa-exchange-alt"></i> Compensating Grade (e.g. KCB, SCA)
+                            </span>
+                            <p style="margin:0 0 12px 0; font-size:0.9rem; line-height:1.5;">
+                                Uses <strong>completely different, cheaper alloys</strong> (e.g. copper-nickel pairs) that closely mirror the EMF curve of expensive thermocouples (Platinum R/S) over a narrow temperature bounds.
+                            </p>
+                            <ul style="margin:0; padding-left:20px; font-size:0.85rem; line-height:1.5; color:var(--text);">
+                                <li><strong>Limits:</strong> Strict ambient range (0°C to 100°C) limits where they can be routed.</li>
+                                <li><strong>Use Case:</strong> Long cables from junction enclosures to control cabinets for expensive Type R/S noble metals.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="background:rgba(220,38,38,0.08); border-left:4px solid var(--danger); border-radius:4px; padding:15px; font-size:0.9rem; font-weight:600; color:var(--danger); display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:1.2rem;"></i>
+                        <span>Never connect thermocouple wires with standard copper extensions. Doing so creates intermediate parasitic junctions, causing temperature reading offset errors.</span>
+                    </div>
                 </div>
 
-                <div class="article-block">
-                    <h3>6. Frequently Asked Questions (FAQ)</h3>
+                <!-- 4. Detailed Type Analysis -->
+                <div class="article-block" style="margin-top:40px;">
+                    <h3 style="margin-top:0; color:var(--primary); font-family:'Montserrat',sans-serif; border-left:5px solid var(--primary); padding-left:15px; display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+                        <i class="fas fa-sliders-h" style="color: var(--primary);"></i> 4. Detailed Type-by-Type Engineering Analysis
+                    </h3>
                     
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">Why is the RED wire negative in thermocouples? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">In the ANSI (American) standard, the RED wire is ALWAYS the negative leg. This is a common source of confusion because in DC electrical power, red is positive. In IEC (International) standards, the negative leg is usually White.</div>
-                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+                        <!-- Type K Card -->
+                        <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; box-shadow:var(--shadow); transition:all 0.3s;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <span style="font-size:1.25rem; font-weight:800; color:var(--primary);">Type K (Chromel / Alumel)</span>
+                                <span style="background:#FF0; color:black; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:12px; border:1px solid #ccc;">ANSI: YELLOW</span>
+                            </div>
+                            <div style="font-size:0.85rem; margin-bottom:10px; color:var(--text);">
+                                <strong>Range Limits:</strong> -200°C to 1250°C
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text); margin-bottom:3px; font-weight:700;">
+                                    <span>Operating Temperature Span</span>
+                                    <span>72% of max</span>
+                                </div>
+                                <div style="background:var(--border); height:6px; border-radius:3px; overflow:hidden;">
+                                    <div style="background:var(--secondary); width:72%; height:100%;"></div>
+                                </div>
+                            </div>
+                            <p style="margin:0 0 10px 0; font-size:0.88rem; line-height:1.5;">
+                                <strong>Pros:</strong> Excellent general-purpose sensor, cheap, linear response, very common.
+                            </p>
+                            <p style="margin:0; font-size:0.88rem; line-height:1.5; color:var(--danger); font-weight:600;">
+                                <strong>Cons (Green Rot):</strong> Under low-oxygen, reducing environments at 800-1050°C, the chromium oxidizes, turning the wire green and causing severe low-reading drift.
+                            </p>
+                        </div>
+                        
+                        <!-- Type J Card -->
+                        <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; box-shadow:var(--shadow); transition:all 0.3s;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <span style="font-size:1.25rem; font-weight:800; color:var(--primary);">Type J (Iron / Constantan)</span>
+                                <span style="background:#000; color:white; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:12px;">ANSI: BLACK</span>
+                            </div>
+                            <div style="font-size:0.85rem; margin-bottom:10px; color:var(--text);">
+                                <strong>Range Limits:</strong> 0°C to 750°C
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text); margin-bottom:3px; font-weight:700;">
+                                    <span>Operating Temperature Span</span>
+                                    <span>45% of max</span>
+                                </div>
+                                <div style="background:var(--border); height:6px; border-radius:3px; overflow:hidden;">
+                                    <div style="background:var(--accent); width:45%; height:100%;"></div>
+                                </div>
+                            </div>
+                            <p style="margin:0 0 10px 0; font-size:0.88rem; line-height:1.5;">
+                                <strong>Pros:</strong> High sensitivity (~50 µV/°C), safe in vacuum and reducing environments.
+                            </p>
+                            <p style="margin:0; font-size:0.88rem; line-height:1.5; color:var(--danger); font-weight:600;">
+                                <strong>Cons:</strong> The iron positive leg rusts in moist/oxidizing environments. Not recommended below 0°C.
+                            </p>
+                        </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">Can I use copper wire to extend a thermocouple? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">No. Connecting standard copper wire to thermocouple wire creates two new "parasitic" junctions at the connection points. This will introduce massive measurement errors equivalent to the temperature difference between the connection point and the instrument.</div>
-                    </div>
+                        <!-- Type N Card -->
+                        <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; box-shadow:var(--shadow); transition:all 0.3s;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <span style="font-size:1.25rem; font-weight:800; color:var(--primary);">Type N (Nicrosil / Nisil)</span>
+                                <span style="background:#FFA500; color:white; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:12px;">ANSI: ORANGE</span>
+                            </div>
+                            <div style="font-size:0.85rem; margin-bottom:10px; color:var(--text);">
+                                <strong>Range Limits:</strong> -270°C to 1300°C
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text); margin-bottom:3px; font-weight:700;">
+                                    <span>Operating Temperature Span</span>
+                                    <span>80% of max</span>
+                                </div>
+                                <div style="background:var(--border); height:6px; border-radius:3px; overflow:hidden;">
+                                    <div style="background:var(--success); width:80%; height:100%;"></div>
+                                </div>
+                            </div>
+                            <p style="margin:0 0 10px 0; font-size:0.88rem; line-height:1.5;">
+                                <strong>Pros:</strong> NASA engineered to resolve Type K drift flaws. Added silicon provides oxidation defense. Very stable.
+                            </p>
+                            <p style="margin:0; font-size:0.88rem; line-height:1.5; color:var(--text);">
+                                <strong>Cons:</strong> Slightly less available and more expensive than Type K.
+                            </p>
+                        </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What is Cold Junction Compensation (CJC)? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">Thermocouples measure the difference in temperature between the process end and the instrument end. To find the absolute process temperature, the instrument must measure its own terminal temperature (the "Cold Junction") using a thermistor and add that value to the thermocouple signal.</div>
+                        <!-- Type T Card -->
+                        <div style="background:var(--card); border:1px solid var(--border); border-radius:8px; padding:20px; box-shadow:var(--shadow); transition:all 0.3s;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+                                <span style="font-size:1.25rem; font-weight:800; color:var(--primary);">Type T (Copper / Constantan)</span>
+                                <span style="background:#00f; color:white; font-size:0.75rem; font-weight:800; padding:2px 8px; border-radius:12px;">ANSI: BLUE</span>
+                            </div>
+                            <div style="font-size:0.85rem; margin-bottom:10px; color:var(--text);">
+                                <strong>Range Limits:</strong> -270°C to 400°C
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text); margin-bottom:3px; font-weight:700;">
+                                    <span>Operating Temperature Span</span>
+                                    <span>25% of max</span>
+                                </div>
+                                <div style="background:var(--border); height:6px; border-radius:3px; overflow:hidden;">
+                                    <div style="background:var(--secondary); width:25%; height:100%;"></div>
+                                </div>
+                            </div>
+                            <p style="margin:0 0 10px 0; font-size:0.88rem; line-height:1.5;">
+                                <strong>Pros:</strong> Highly stable in sub-zero cryogenics and food processing. Copper wire positive simplifies terminal connections.
+                            </p>
+                            <p style="margin:0; font-size:0.88rem; line-height:1.5; color:var(--danger); font-weight:600;">
+                                <strong>Cons:</strong> Lower temperature limits; copper leg oxidizes quickly above 370°C.
+                            </p>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What is the difference between Type K and Type N? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">Type K is the most common general-purpose type but suffers from "Green Rot" (drift) at high temperatures in low-oxygen environments. Type N uses similar alloys but with Silicon added to the mix, making it much more stable and resistant to oxidation at high temperatures (up to 1200°C).</div>
+                <!-- 5. Troubleshooting -->
+                <div class="article-block" style="margin-top:40px;">
+                    <h3 style="margin-top:0; color:var(--primary); font-family:'Montserrat',sans-serif; border-left:5px solid var(--danger); padding-left:15px; display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+                        <i class="fas fa-tools" style="color: var(--danger);"></i> 5. Troubleshooting Ground Loops & Electrical Noise
+                    </h3>
+                    <p style="text-align:justify; line-height:1.7; margin-top:0;">
+                        Because thermocouple signals are millivolts, they are vulnerable to electromagnetic induction (EMI) from motors and VFDs.
+                    </p>
+                    
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:15px;">
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:20px;">
+                            <span style="display:block; font-size:1rem; font-weight:700; color:var(--heading); margin-bottom:10px;">
+                                <i class="fas fa-times-circle" style="color:var(--danger);"></i> Ground Loop Path (Avoid)
+                            </span>
+                            <p style="margin:0; font-size:0.85rem; line-height:1.5; color:var(--text);">
+                                When a thermocouple sheathing is grounded to the metal pipe and the shield wire is also grounded at the transmitter enclosure. This allows ground current potentials to run through the sheathing, introducing voltage offsets and signal spikes.
+                            </p>
+                        </div>
+                        <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:20px;">
+                            <span style="display:block; font-size:1rem; font-weight:700; color:var(--success); margin-bottom:10px;">
+                                <i class="fas fa-check-circle" style="color:var(--success);"></i> Single-Point Grounding (Best Practice)
+                            </span>
+                            <p style="margin:0; font-size:0.85rem; line-height:1.5; color:var(--text);">
+                                Ground the shield wire at <strong>one end only</strong> (usually at the instrument controller panel) and cut off the shield wire at the field end. If sheathing grounding persists, install an isolated transmitter or ungrounded thermocouple probes.
+                            </p>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">How do I check if a thermocouple is working? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">A basic check is to measure resistance (Continuity). It should be a low resistance (ohms). If it reads Open (OL), the wire is broken. To check accuracy, measure the millivolts (mV) and compare it to a standard table for the ambient temperature.</div>
+                <!-- 6. Frequently Asked Questions (FAQ) -->
+                <div class="article-block" style="margin-top:40px;">
+                    <h3 style="margin-top:0; color:var(--primary); font-family:'Montserrat',sans-serif; border-left:5px solid var(--accent); padding-left:15px; display:flex; align-items:center; gap:8px; margin-bottom:20px;">
+                        <i class="fas fa-question-circle" style="color: var(--accent);"></i> 6. Frequently Asked Questions (FAQ)
+                    </h3>
+                    
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                Why is the RED wire negative in thermocouples? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                In the ANSI (American) standard, the RED wire is ALWAYS the negative leg. This is a common source of confusion because in DC electrical power, red is positive. In IEC (International) standards, the negative leg is usually White.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                Can I use copper wire to extend a thermocouple? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                No. Connecting standard copper wire to thermocouple wire creates two new "parasitic" junctions at the connection points. This will introduce massive measurement errors equivalent to the temperature difference between the connection point and the instrument.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                What is Cold Junction Compensation (CJC)? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                Thermocouples measure the difference in temperature between the process end and the instrument end. To find the absolute process temperature, the instrument must measure its own terminal temperature (the "Cold Junction") using a thermistor and add that value to the thermocouple signal.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                What is the difference between Type K and Type N? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                Type K is the most common general-purpose type but suffers from "Green Rot" (drift) at high temperatures in low-oxygen environments. Type N uses similar alloys but with Silicon added to the mix, making it much more stable and resistant to oxidation at high temperatures (up to 1200°C).
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                Can I mix ANSI and IEC thermocouple cables and connectors? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                Never mix color code standards in a thermocouple circuit. ANSI Type K uses a Yellow jacket and Red negative leg, while IEC Type K uses a Green jacket and White negative leg. Mixing them leads to polarity errors and installation mistakes that corrupt the loop temperature reading.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                What is the difference between standard and Special Limits of Error (SLE) wire? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                Special Limits of Error (SLE) wire uses premium-purified alloys to halve the measurement tolerance. For instance, standard Type K wire has a tolerance of &plusmn;2.2&deg;C or 0.75%, whereas SLE Type K wire has a tolerance of &plusmn;1.1&deg;C or 0.4%, which is critical for high-precision operations.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                What causes Green Rot in Type K thermocouples? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                Green Rot is a corrosion effect that occurs when Chromel positive wire is exposed to a low-oxygen, reducing atmosphere at 800&deg;C to 1050&deg;C. Chromium oxidizes preferentially, turning the wire green and causing severe drift (reading low). It is mitigated by using ventilated thermowells or upgrading to Type N.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                How do I test if a thermocouple is broken (burned out)? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                You can check the health of a thermocouple using a standard digital multimeter. Switch the multimeter to Resistance/Continuity mode and measure across the positive and negative legs. A healthy thermocouple will show very low resistance (usually less than 10-20 ohms). If it displays "Open Loop" (OL) or infinite resistance, the junction or wire is severed (burned out).
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                What is the difference between a Grounded and Ungrounded thermocouple junction? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                In a grounded thermocouple, the junction is physically welded directly to the outer metal protective sheath, providing the fastest thermal response time but making it vulnerable to electrical noise and ground loops. In an ungrounded thermocouple, the junction is completely isolated from the outer metal sheath by magnesium oxide powder, which prevents ground loops but slightly slows the response speed.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" style="background:var(--card); border:1px solid var(--border); border-left:4px solid var(--secondary); border-radius:6px; padding:15px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:all 0.2s;">
+                            <div class="faq-question" onclick="toggleFaq(this)" style="font-weight:700; font-size:1.02rem; color:var(--heading); display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+                                Why does my thermocouple read backwards (temperature goes down when heated)? <i class="fas fa-chevron-down faq-icon" style="color:var(--secondary); font-size:0.9rem;"></i>
+                            </div>
+                            <div class="faq-answer" style="margin-top:10px; font-size:0.9rem; line-height:1.6; color:var(--text); border-top:1px dashed var(--border); padding-top:10px;">
+                                If the temperature reading drops as heat is applied, the positive and negative wire connections are swapped at either the sensor block, the junction box, or the controller terminals. Swapping polarity reverses the sign of the measured relative millivolt gradient (EMF), prompting the instrument to calculate a negative temperature offset relative to ambient.
+                            </div>
+                        </div>
+
                     </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What is a Ground Loop in thermocouples? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">A ground loop occurs when the sensor is grounded at the pipe (Grounded Junction) AND the instrument input is also grounded. Current flows through the wire shielding, adding noise to the signal. Solution: Use ungrounded probes or an isolated transmitter.</div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What temperature range does Type T cover? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">Type T (Copper/Constantan) is ideal for low temperatures and cryogenics, ranging from -270°C to 370°C. It is very stable and often used in food processing and laboratory applications.</div>
-                    </div>
-
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What determines the accuracy of a thermocouple? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">Accuracy depends on the purity of the wire alloys (Standard vs. Special Limits of Error) and the quality of the cold junction compensation. Standard Type K error is roughly ±2.2°C, while Special Limits wire improves this to ±1.1°C.</div>
-                    </div>
-
                 </div>
             </div>
         </div>
     </main>
+
+    <!-- Related Tools Section -->
+    <section style="padding: 45px 0; background: var(--bg); border-top: 1px solid var(--border);">
+        <div class="container">
+            <h2 style="text-align:center; font-size:1.6rem; font-family:'Montserrat', sans-serif; margin-bottom:30px; color:var(--primary); display:flex; align-items:center; justify-content:center; gap:10px;">
+                <i class="fas fa-cubes" style="color:var(--secondary);"></i> Related Instrumentation Calculators
+            </h2>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; max-width:1050px; margin:0 auto;">
+                    <a href="/thermocouplecjccalculator" class="silo-card" style="text-decoration:none; display:block; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); transition:all 0.3s ease;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                            <i class="fas fa-microchip" style="color:var(--secondary); font-size:1.3rem;"></i>
+                            <span style="font-weight:700; color:var(--heading); font-size:1.05rem;">Thermocouple CJC Calculator</span>
+                        </div>
+                        <p style="margin:0; font-size:0.88rem; color:var(--text); line-height:1.4;">
+                            Evaluate Cold Junction Compensation offsets and voltage sums. Highly recommended for debugging hardware terminal temperature mismatches.
+                        </p>
+                    </a>
+                    <a href="/rtd-tc-conversion" class="silo-card" style="text-decoration:none; display:block; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); transition:all 0.3s ease;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                            <i class="fas fa-exchange-alt" style="color:var(--secondary); font-size:1.3rem;"></i>
+                            <span style="font-weight:700; color:var(--heading); font-size:1.05rem;">RTD/TC Conversion Tool</span>
+                        </div>
+                        <p style="margin:0; font-size:0.88rem; color:var(--text); line-height:1.4;">
+                            Quickly translate between temperature and resistance for RTDs (Pt100, Pt1000) or voltage for thermocouples. Excellent for checking control loop indicators.
+                        </p>
+                    </a>
+                    <a href="/thermocoupleextensioncable" class="silo-card" style="text-decoration:none; display:block; padding:20px; background:var(--card); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow); transition:all 0.3s ease;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                            <i class="fas fa-bezier-curve" style="color:var(--secondary); font-size:1.3rem;"></i>
+                            <span style="font-weight:700; color:var(--heading); font-size:1.05rem;">TC Extension Cable Sizer</span>
+                        </div>
+                        <p style="margin:0; font-size:0.88rem; color:var(--text); line-height:1.4;">
+                            Analyze cable resistance, loop impedance, and ambient temperature degradation along long thermocouple wire runs to prevent signal loss.
+                        </p>
+                    </a>
+            </div>
+        </div>
+    </section>
 
         <footer>
         <div class="container">
@@ -1044,11 +1479,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1056,10 +1491,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1183,21 +1618,394 @@
             }
         };
 
-        // Simplified NIST Coefficients (Linear approximation for responsiveness)
-        // For full precision, a 10th order polynomial is needed. This uses linear segments for speed.
-        const NIST_APPROX = {
-            'K': { slope: 0.041, intercept: 0 }, // ~41 µV/C
-            'J': { slope: 0.052, intercept: 0 }, // ~52 µV/C
-            'T': { slope: 0.043, intercept: 0 }, // ~43 µV/C
-            'E': { slope: 0.061, intercept: 0 }, // ~61 µV/C (Highest)
-            'N': { slope: 0.027, intercept: 0 }, // ~27 µV/C (Lower but stable)
-            'R': { slope: 0.012, intercept: 0 }, // ~12 µV/C (Noble)
-            'S': { slope: 0.011, intercept: 0 }, 
-            'B': { slope: 0.008, intercept: 0 }  // Very low output
+        // NIST ITS-90 Reference Polynomial Coefficients (millivolts)
+        const TC_COEFFS = {
+          "B": [
+            {
+              "min": 0.0,
+              "max": 630.615,
+              "coefs": [
+                6.2990347094e-19,
+                -1.694452924e-15,
+                1.5668291901e-12,
+                -1.3257931636e-09,
+                5.9040421171e-06,
+                -0.00024650818346,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 630.615,
+              "max": 1820.0,
+              "coefs": [
+                -9.3791330289e-25,
+                9.8975640821e-21,
+                -4.4515431033e-17,
+                1.1109794013e-13,
+                -1.6835344864e-10,
+                1.5785280164e-07,
+                -8.4885104785e-05,
+                0.02857174747,
+                -3.8938168621
+              ],
+              "exp": null
+            }
+          ],
+          "E": [
+            {
+              "min": -270.0,
+              "max": 0.0,
+              "coefs": [
+                -3.4657842013e-29,
+                -5.5827328721e-26,
+                -3.9673619516e-23,
+                -1.6414776355e-20,
+                -4.3979497391e-18,
+                -8.0370123621e-16,
+                -1.0287605534e-13,
+                -9.3214058667e-12,
+                -5.9452583057e-10,
+                -2.5800160843e-08,
+                -7.7998048686e-07,
+                4.5410977124e-05,
+                0.058665508708,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 0.0,
+              "max": 1000.0,
+              "coefs": [
+                3.5960899481e-28,
+                -1.4388041782e-24,
+                2.1489217569e-21,
+                -1.2536600497e-18,
+                -1.9197495504e-16,
+                6.502440327e-13,
+                -3.3056896652e-10,
+                2.8908407212e-08,
+                4.5032275582e-05,
+                0.05866550871,
+                0.0
+              ],
+              "exp": null
+            }
+          ],
+          "J": [
+            {
+              "min": -210.0,
+              "max": 760.0,
+              "coefs": [
+                1.5631725697e-23,
+                -1.2538395336e-19,
+                2.0948090697e-16,
+                -1.7052958337e-13,
+                1.3228195295e-10,
+                -8.568106572e-08,
+                3.047583693e-05,
+                0.050381187815,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 760.0,
+              "max": 1200.0,
+              "coefs": [
+                -3.0691369056e-13,
+                1.5720819004e-09,
+                -3.1847686701e-06,
+                0.0031787103924,
+                -1.4976127786,
+                296.45625681
+              ],
+              "exp": null
+            }
+          ],
+          "K": [
+            {
+              "min": -270.0,
+              "max": 0.0,
+              "coefs": [
+                -1.6322697486e-23,
+                -1.9889266878e-20,
+                -1.0451609365e-17,
+                -3.1088872894e-15,
+                -5.7410327428e-13,
+                -6.7509059173e-11,
+                -4.9904828777e-09,
+                -3.2858906784e-07,
+                2.3622373598e-05,
+                0.039450128025,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 0.0,
+              "max": 1372.0,
+              "coefs": [
+                -1.2104721275e-26,
+                9.7151147152e-23,
+                -3.2020720003e-19,
+                5.6075059059e-16,
+                -5.6072844889e-13,
+                3.1840945719e-10,
+                -9.9457592874e-08,
+                1.8558770032e-05,
+                0.038921204975,
+                -0.017600413686
+              ],
+              "exp": [
+                0.1185976,
+                -0.0001183432,
+                126.9686
+              ]
+            }
+          ],
+          "N": [
+            {
+              "min": -270.0,
+              "max": 0.0,
+              "coefs": [
+                -9.3419667835e-20,
+                -7.6089300791e-17,
+                -2.2653438003e-14,
+                -2.6303357716e-12,
+                -4.6412039759e-11,
+                -9.3841111554e-08,
+                1.0957484228e-05,
+                0.026159105962,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 0.0,
+              "max": 1300.0,
+              "coefs": [
+                -3.0682196151e-29,
+                2.0849229339e-25,
+                -6.0863245607e-22,
+                9.9745338992e-19,
+                -1.0063471519e-15,
+                6.4311819339e-13,
+                -2.5261169794e-10,
+                4.3825627237e-08,
+                1.571014188e-05,
+                0.025929394601,
+                0.0
+              ],
+              "exp": null
+            }
+          ],
+          "R": [
+            {
+              "min": -50.0,
+              "max": 1064.18,
+              "coefs": [
+                -2.81038625251e-27,
+                1.57716482367e-23,
+                -3.73105886191e-20,
+                5.00777441034e-17,
+                -4.62347666298e-14,
+                3.56916001063e-11,
+                -2.38855693017e-08,
+                1.39166589782e-05,
+                0.00528961729765,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 1064.18,
+              "max": 1664.5,
+              "coefs": [
+                -2.93359668173e-16,
+                2.05305291024e-12,
+                -7.64085947576e-09,
+                1.59564501865e-05,
+                -0.00252061251332,
+                2.95157925316
+              ],
+              "exp": null
+            },
+            {
+              "min": 1664.5,
+              "max": 1768.1,
+              "coefs": [
+                -9.34633971046e-15,
+                -3.45895706453e-08,
+                0.000171280280471,
+                -0.268819888545,
+                152.232118209
+              ],
+              "exp": null
+            }
+          ],
+          "S": [
+            {
+              "min": -50.0,
+              "max": 1064.18,
+              "coefs": [
+                2.71443176145e-24,
+                -1.25068871393e-20,
+                2.55744251786e-17,
+                -3.31465196389e-14,
+                3.22028823036e-11,
+                -2.32477968689e-08,
+                1.2593428974e-05,
+                0.00540313308631,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 1064.18,
+              "max": 1664.5,
+              "coefs": [
+                1.29989605174e-14,
+                -1.64856259209e-09,
+                6.54805192818e-06,
+                0.00334509311344,
+                1.32900444085
+              ],
+              "exp": null
+            },
+            {
+              "min": 1664.5,
+              "max": 1768.1,
+              "coefs": [
+                -9.43223690612e-15,
+                -3.30439046987e-08,
+                0.000163693574641,
+                -0.258430516752,
+                146.628232636
+              ],
+              "exp": null
+            }
+          ],
+          "T": [
+            {
+              "min": -270.0,
+              "max": 0.0,
+              "coefs": [
+                7.9795153927e-31,
+                1.3945027062e-27,
+                1.079553927e-24,
+                4.8768662286e-22,
+                1.4251594779e-19,
+                2.8213521925e-17,
+                3.8493939883e-15,
+                3.6071154205e-13,
+                2.2651156593e-11,
+                9.0138019559e-10,
+                2.0032973554e-08,
+                1.1844323105e-07,
+                4.4194434347e-05,
+                0.038748106364,
+                0.0
+              ],
+              "exp": null
+            },
+            {
+              "min": 0.0,
+              "max": 400.0,
+              "coefs": [
+                -2.7512901673e-20,
+                4.547913529e-17,
+                -3.0815758772e-14,
+                1.0996880928e-11,
+                -2.1882256846e-09,
+                2.0618243404e-07,
+                3.329222788e-05,
+                0.038748106364,
+                0.0
+              ],
+              "exp": null
+            }
+          ]
         };
-
         let currentType = 'K';
         let tcChart = null;
+
+        // Evaluates thermocouple EMF relative to 0C
+        function getEMF(type, temp) {
+            const ranges = TC_COEFFS[type];
+            if (!ranges) return 0;
+            
+            let range = null;
+            for (let r of ranges) {
+                if (temp >= r.min && temp <= r.max) {
+                    range = r;
+                    break;
+                }
+            }
+            
+            // Boundary fallbacks
+            if (!range) {
+                if (temp < ranges[0].min) range = ranges[0];
+                else range = ranges[ranges.length - 1];
+            }
+            
+            let v = 0;
+            for (let i = 0; i < range.coefs.length; i++) {
+                v = v * temp + range.coefs[i];
+            }
+            
+            if (range.exp) {
+                v += range.exp[0] * Math.exp(range.exp[1] * Math.pow(temp - range.exp[2], 2));
+            }
+            
+            return v;
+        }
+
+        // Solves temperature from a given EMF (mV) using numerical bisection
+        function getTempFromEMF(type, mv) {
+            const ranges = TC_COEFFS[type];
+            const minT = ranges[0].min;
+            const maxT = ranges[ranges.length - 1].max;
+            
+            let low = minT;
+            let high = maxT;
+            let temp = (low + high) / 2;
+            let iterations = 0;
+            
+            while (high - low > 0.001 && iterations < 30) {
+                const estMV = getEMF(type, temp);
+                if (estMV < mv) {
+                    low = temp;
+                } else {
+                    high = temp;
+                }
+                temp = (low + high) / 2;
+                iterations++;
+            }
+            return temp;
+        }
+
+        // Sandbox Simulator updater for CJC card
+        function updateCjcSandbox() {
+            const tHot = parseFloat(document.getElementById('cjc-sandbox-thot').value) || 0;
+            const tRef = parseFloat(document.getElementById('cjc-sandbox-tref').value) || 0;
+            
+            document.getElementById('cjc-sandbox-thot-label').innerText = tHot.toFixed(1) + "°C";
+            document.getElementById('cjc-sandbox-tref-label').innerText = tRef.toFixed(1) + "°C";
+            
+            const vHot = getEMF('K', tHot);
+            const vRef = getEMF('K', tRef);
+            const vNet = vHot - vRef;
+            
+            // Recalculated temperature block
+            const tReconstructed = getTempFromEMF('K', vNet + vRef);
+            
+            document.getElementById('cjc-sandbox-vhot').innerText = vHot.toFixed(4) + " mV";
+            document.getElementById('cjc-sandbox-vref').innerText = vRef.toFixed(4) + " mV";
+            document.getElementById('cjc-sandbox-vnet').innerText = vNet.toFixed(4) + " mV";
+            document.getElementById('cjc-sandbox-treconstructed').innerText = tReconstructed.toFixed(2) + " °C";
+        }
 
         // Initialization
         document.addEventListener('DOMContentLoaded', () => {
@@ -1215,8 +2023,10 @@
             updateVisuals();
             calculateEMF();
             updateChart();
+            if (document.getElementById('cjc-sandbox-thot')) {
+                updateCjcSandbox();
+            }
         });
-
         // FAQ Toggle
         function toggleFaq(element) {
             const item = element.parentElement;
@@ -1277,63 +2087,202 @@
                 </tr>
             `;
             document.getElementById('error-limits').innerText = specs.error;
+
+            // Also update wire colors in dynamic SVG diagram
+            const posWire = document.getElementById('svg-pos-wire');
+            const negWire = document.getElementById('svg-neg-wire');
+            if (posWire) posWire.style.stroke = data.pos;
+            if (negWire) negWire.style.stroke = data.neg;
+
+            const posLabel = document.getElementById('svg-pos-label');
+            const negLabel = document.getElementById('svg-neg-label');
+            if (posLabel) posLabel.textContent = "+ Leg (" + specs.posMat.split(" (")[0] + ")";
+            if (negLabel) negLabel.textContent = "- Leg (" + specs.negMat.split(" (")[0] + ")";
         }
 
         function calculateEMF() {
-            const tProcess = parseFloat(document.getElementById('process-temp').value);
-            const tRef = parseFloat(document.getElementById('ref-temp').value);
-            const coeffs = NIST_APPROX[currentType];
-
-            // V_meas = V(t_proc) - V(t_ref)
-            // Using linear approx V = T * Slope (in mV)
-            // Slope is roughly constant for this quick tool
+            const tProcess = parseFloat(document.getElementById('process-temp').value) || 0;
+            const tRef = parseFloat(document.getElementById('ref-temp').value) || 0;
             
-            const vProc = tProcess * coeffs.slope;
-            const vRef = tRef * coeffs.slope;
+            const vProc = getEMF(currentType, tProcess);
+            const vRef = getEMF(currentType, tRef);
             const vNet = vProc - vRef;
 
-            document.getElementById('calc-emf').innerText = vNet.toFixed(3) + " mV";
-            document.getElementById('calc-seebeck').innerText = (coeffs.slope * 1000).toFixed(1) + " µV/°C";
+            // Numerical differentiation for localized Seebeck coefficient (Sensitivity) in µV/°C
+            const vHigh = getEMF(currentType, tProcess + 0.1);
+            const vLow = getEMF(currentType, tProcess - 0.1);
+            const seebeck = ((vHigh - vLow) / 0.2) * 1000;
+
+            document.getElementById('calc-emf').innerText = vNet.toFixed(4) + " mV";
+            document.getElementById('calc-seebeck').innerText = seebeck.toFixed(2) + " µV/°C";
+
+            // Update live labels in SVG
+            const svgTproc = document.getElementById('svg-tproc-val');
+            const svgTref = document.getElementById('svg-tref-val');
+            const svgVnet = document.getElementById('svg-vnet-val');
+            
+            if (svgTproc) svgTproc.textContent = tProcess.toFixed(1) + "°C";
+            if (svgTref) svgTref.textContent = "T_ref = " + tRef.toFixed(1) + "°C";
+            if (svgVnet) svgVnet.textContent = vNet.toFixed(4) + " mV";
         }
 
         function updateChart() {
             const ctx = document.getElementById('tcChart').getContext('2d');
             if (tcChart) tcChart.destroy();
 
-            // Generate Curve Data (Sensitivity vs Temp)
-            // This is a simplified representation of the Seebeck coefficient curve
-            const labels = [-200, -100, 0, 100, 200, 400, 600, 800, 1000, 1200];
-            const data = labels.map(t => {
-                // Mock variations to show characteristic curves
-                let base = NIST_APPROX[currentType].slope * 1000; 
-                if (currentType === 'K') base += (t > 500 ? 2 : -2); // K varies
-                if (currentType === 'T') base += (t/100); 
-                return base;
-            });
+            // Generate Curve Data (Sensitivity vs Temp) from actual ITS-90 equation values
+            const ranges = TC_COEFFS[currentType];
+            const minT = Math.max(-200, ranges[0].min);
+            const maxT = Math.min(1200, ranges[ranges.length - 1].max);
+            
+            const labels = [];
+            const data = [];
+            const steps = 24;
+            const stepSize = (maxT - minT) / steps;
+
+            for (let i = 0; i <= steps; i++) {
+                const t = minT + i * stepSize;
+                const vHigh = getEMF(currentType, t + 0.1);
+                const vLow = getEMF(currentType, t - 0.1);
+                const seebeck = ((vHigh - vLow) / 0.2) * 1000;
+                labels.push(Math.round(t));
+                data.push(seebeck);
+            }
 
             tcChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: `Type ${currentType} Sensitivity (µV/°C)`,
+                        label: `Type ${currentType} Seebeck Coefficient (µV/°C)`,
                         data: data,
                         borderColor: '#2563EB',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        borderWidth: 2,
+                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                        borderWidth: 2.5,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.35,
+                        pointRadius: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, labels: { font: { family: 'Inter', size: 11 } } }
+                    },
                     scales: {
-                        y: { title: { display: true, text: 'Seebeck Coeff (µV/°C)' } },
-                        x: { title: { display: true, text: 'Temperature (°C)' } }
+                        y: { title: { display: true, text: 'Sensitivity (µV/°C)', font: { weight: 'bold' } } },
+                        x: { title: { display: true, text: 'Temperature (°C)', font: { weight: 'bold' } } }
                     }
                 }
             });
+        }
+
+        // Technical PDF Report Generator
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header Banner
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, 210, 40, 'F');
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("Design Calculators", 15, 18);
+            doc.setFontSize(10);
+            doc.setFont("Helvetica", "normal");
+            doc.text("Thermocouple Analysis & NIST ITS-90 Verification Report", 15, 26);
+            doc.text("Created by Anil Sharma", 15, 33);
+            
+            // Report metadata
+            doc.setTextColor(51, 65, 85);
+            doc.setFontSize(9);
+            const dateStr = new Date().toLocaleString();
+            doc.text(`Generated: ${dateStr}`, 145, 48);
+            doc.text(`Reference: NIST Monograph 175 (ITS-90)`, 145, 53);
+
+            // Left Column: Configuration title
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(13);
+            doc.text("Thermocouple Configuration Details", 15, 58);
+            
+            const stdSelect = document.getElementById('standard-select');
+            const stdText = stdSelect.options[stdSelect.selectedIndex].text;
+            const specs = TECH_SPECS[currentType];
+            const std = stdSelect.value;
+            const wireColors = TC_DATA[std][currentType] || { jacket: 'N/A', pos: 'N/A', neg: 'N/A', label: 'N/A' };
+
+            const configRows = [
+                ["Thermocouple Type", `Letter Designation: Type ${currentType}`],
+                ["Color Standard", stdText],
+                ["Cable Jacket Color", wireColors.jacket],
+                ["Positive Wire Color (+)", wireColors.pos],
+                ["Negative Wire Color (-)", wireColors.neg],
+                ["Positive Alloy Material", specs.posMat],
+                ["Negative Alloy Material", specs.negMat],
+                ["Positive Leg Magnetism", specs.posMag ? "Magnetic" : "Non-Magnetic"],
+                ["Negative Leg Magnetism", specs.negMag ? "Magnetic" : "Non-Magnetic"]
+            ];
+            
+            doc.autoTable({
+                startY: 63,
+                head: [["Parameter Specification", "Standard Value"]],
+                body: configRows,
+                theme: 'striped',
+                headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 9.5 }
+            });
+
+            // Calibration & NIST EMF Data table
+            let currentY = doc.lastAutoTable.finalY + 12;
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(13);
+            doc.text("NIST ITS-90 Polynomial Calculations", 15, currentY);
+
+            const tProcess = parseFloat(document.getElementById('process-temp').value) || 0;
+            const tRef = parseFloat(document.getElementById('ref-temp').value) || 0;
+            const vProcess = getEMF(currentType, tProcess);
+            const vRef = getEMF(currentType, tRef);
+            const vNet = vProcess - vRef;
+
+            const vHigh = getEMF(currentType, tProcess + 0.1);
+            const vLow = getEMF(currentType, tProcess - 0.1);
+            const seebeck = ((vHigh - vLow) / 0.2) * 1000;
+
+            const calcRows = [
+                ["Input Process Temperature", `${tProcess.toFixed(2)} °C`],
+                ["Input Cold Junction Temperature", `${tRef.toFixed(2)} °C`],
+                ["Calculated Process EMF (relative to 0°C)", `${vProcess.toFixed(4)} mV`],
+                ["Calculated Reference EMF (relative to 0°C)", `${vRef.toFixed(4)} mV`],
+                ["Net Output Millivolts (measured EMF)", `${vNet.toFixed(4)} mV`],
+                ["Local Seebeck Sensitivity Coeff.", `${seebeck.toFixed(2)} µV/°C`],
+                ["Standard Limits of Error", specs.error]
+            ];
+
+            doc.autoTable({
+                startY: currentY + 4,
+                head: [["Thermoelectric Variable", "Calculated Output Value"]],
+                body: calcRows,
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 9.5 }
+            });
+
+            // Add standard disclaimer and brand links on footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8.5);
+                doc.setTextColor(148, 163, 184);
+                doc.setFont("Helvetica", "normal");
+                doc.text("Design Calculators - https://designcalculators.co.in", 105, 287, { align: 'center' });
+                doc.text(`Page ${i} of ${pageCount}`, 190, 287);
+            }
+
+            // Save PDF
+            doc.save(`Thermocouple_Type_${currentType}_NIST_ITS90_Report.pdf`);
         }
     </script>
 </body>
