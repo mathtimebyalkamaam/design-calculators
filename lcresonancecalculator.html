@@ -14,7 +14,7 @@
     <!-- SEO Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced LC Resonance & Filter Calculator - Series/Parallel Analysis | Free Engineering Tool</title>
+    <title>Advanced LC Resonance & Filter Calculator - Series/Parallel Analysis</title>
     <link rel="canonical" href="https://designcalculators.co.in/lcresonancecalculator" />
     <meta name="description" content="Professional LC Resonance Calculator. Analyze Series and Parallel RLC circuits, calculate Resonant Frequency, Q-Factor, Bandwidth, and visualize Impedance/Phase curves.">
     <meta name="keywords" content="LC calculator, resonance frequency, RLC circuit, Q factor, bandwidth calculator, impedance plot, filter design, electrical engineering tools, rf circuits">
@@ -29,6 +29,8 @@
     
     <!-- Chart.js for Bode Plots -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 
     <!-- MathJax for Formulas -->
     <script>
@@ -428,6 +430,42 @@
         body.dark-mode .faq-answer { background: rgba(255, 255, 255, 0.05) !important; color: #e2e8f0 !important; }
         .faq-visual { border-top: 1px solid var(--border); padding-top: 15px; height: 160px; position: relative; }
         .edu-badge { display: inline-block; padding: 2px 8px; background: rgba(37, 99, 235, 0.1); color: var(--secondary); border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+        
+        /* --- MathJax & Table Responsiveness --- */
+        .mjx-container {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .table-responsive table {
+            margin-top: 0 !important;
+        }
+        
+        /* Circuit Visualizer Styles */
+        .visualizer-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        svg#circuit-svg {
+            max-width: 100%;
+            height: auto;
+        }
     </style>
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Advanced LC Resonance & Filter Calculator - Series/Parallel Analysis">
@@ -561,7 +599,7 @@
         <div class="container">
             <nav class="navbar">
                 <a href="/" class="logo-container">
-<img src="/logo.webp" alt="Design Calculators Logo" class="logo">
+<img src="/logo.png" alt="Design Calculators Logo" class="logo">
                     <div class="logo-text-group">
                         <span class="logo-text">Design Calculators</span>
                         <p class="logo-subtitle">Inspired by standards such as IEC, IEEE, ISA, ASME, and API.</p>
@@ -645,122 +683,180 @@
                         </div>
                     </div>
 
-                    <!-- CIRCUIT CONFIG -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="circuit-type">Topology
-                                <div class="tooltip-container">
-                                    <i class="fas fa-info-circle info-icon"></i>
-                                    <span class="tooltip-text">Series: Band-Pass (Acceptor). Parallel: Band-Stop (Rejector). Both are modeled with realistic parasitic resistance.</span>
+                    <!-- Split Form Columns for Responsive UI/UX -->
+                    <div class="form-grid-responsive" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; margin-top: 15px;">
+                        
+                        <!-- Left Column: Inputs -->
+                        <div>
+                            <!-- CIRCUIT CONFIG -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="circuit-type">Topology
+                                        <div class="tooltip-container">
+                                            <i class="fas fa-info-circle info-icon"></i>
+                                            <span class="tooltip-text">Series: Band-Pass (Acceptor). Parallel: Band-Stop (Rejector). Both are modeled with realistic parasitic resistance.</span>
+                                        </div>
+                                    </label>
+                                    <select id="circuit-type" onchange="updateCircuitSchematic();">
+                                        <option value="series">Series RLC (Band-Pass)</option>
+                                        <option value="parallel">Parallel RLC (Band-Stop)</option>
+                                    </select>
                                 </div>
-                            </label>
-                            <select id="circuit-type">
-                                <option value="series">Series RLC (Band-Pass)</option>
-                                <option value="parallel">Parallel RLC (Band-Stop)</option>
-                            </select>
+                            </div>
+
+                            <!-- COMPONENTS -->
+                            <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                                <!-- Inductance -->
+                                <div class="form-group">
+                                    <label>Inductance ($L$) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Primary inductive element.</span></div></label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="number" id="l-val" value="10" step="0.01">
+                                        <select id="l-unit" style="width: 80px;"><option value="1e-6">µH</option><option value="1e-3">mH</option><option value="1">H</option></select>
+                                    </div>
+                                </div>
+
+                                <!-- Capacitance -->
+                                <div class="form-group">
+                                    <label>Capacitance ($C$) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Primary capacitive element.</span></div></label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="number" id="c-val" value="100" step="0.01">
+                                        <select id="c-unit" style="width: 80px;"><option value="1e-12">pF</option><option value="1e-9">nF</option><option value="1e-6">µF</option></select>
+                                    </div>
+                                </div>
+
+                                <!-- Series Resistance (DCR) -->
+                                <div class="form-group">
+                                    <label>Series Res ($R_s$/DCR) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">DC Resistance of the inductor coil + Wiring resistance. Crucial for Q calculation.</span></div></label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="number" id="rs-val" value="0.5" step="0.01">
+                                        <select id="rs-unit" style="width: 80px;"><option value="1">Ω</option><option value="1e-3">mΩ</option></select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PARALLEL LOAD -->
+                            <div class="form-row" id="parallel-row">
+                                <div class="form-group">
+                                    <label>Parallel Load ($R_p$) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">External load resistance or leakage. Use 1e9 for open circuit/unloaded.</span></div></label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="number" id="rp-val" value="10000" step="1">
+                                        <select id="rp-unit" style="width: 80px;"><option value="1">Ω</option><option value="1e3">kΩ</option><option value="1e6">MΩ</option></select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OPERATIONAL INPUTS -->
+                            <div class="form-row" style="grid-template-columns: 1fr 1fr;">
+                                <!-- Source Voltage -->
+                                <div class="form-group">
+                                    <label for="v-val">Source Voltage ($V_{in}$) 
+                                        <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">System operating voltage (RMS). Used for component voltage stress, current sizing, and kVAR calculations.</span></div>
+                                    </label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="number" id="v-val" value="10" step="0.1">
+                                        <select id="v-unit" style="width: 80px;"><option value="1">V</option><option value="1e3">kV</option></select>
+                                    </div>
+                                </div>
+
+                                <!-- Target Operating Frequency -->
+                                <div class="form-group">
+                                    <label for="fop-val">Target Freq ($f_{op}$)
+                                        <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Evaluate filter impedance, phase angle, and stresses at a specific harmonic or operating frequency.</span></div>
+                                    </label>
+                                    <div style="display:flex; gap:5px;">
+                                        <input type="number" id="fop-val" value="50" step="0.1">
+                                        <select id="fop-unit" style="width: 80px;"><option value="1">Hz</option><option value="1e3">kHz</option><option value="1e6">MHz</option></select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Right Column: Live Schematic -->
+                        <div style="display: flex; flex-direction: column; justify-content: flex-start; align-self: stretch;">
+                            <label style="font-weight: 600; color: var(--primary); margin-bottom: 5px;"><i class="fas fa-project-diagram"></i> Circuit Schematic (Lossy Model)</label>
+                            <div class="visualizer-container" style="flex: 1; min-height: 200px;">
+                                <svg id="circuit-svg" viewBox="0 0 350 200" width="100%"></svg>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <!-- COMPONENTS -->
-                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                        <!-- Inductance -->
-                        <div class="form-group">
-                            <label>Inductance ($L$) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Primary inductive element.</span></div></label>
-                            <div style="display:flex; gap:5px;">
-                                <input type="number" id="l-val" value="10" step="0.01">
-                                <select id="l-unit" style="width: 80px;"><option value="1e-6">ÂµH</option><option value="1e-3">mH</option><option value="1">H</option></select>
-                            </div>
-                        </div>
-
-                        <!-- Capacitance -->
-                        <div class="form-group">
-                            <label>Capacitance ($C$) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">Primary capacitive element.</span></div></label>
-                            <div style="display:flex; gap:5px;">
-                                <input type="number" id="c-val" value="100" step="0.01">
-                                <select id="c-unit" style="width: 80px;"><option value="1e-12">pF</option><option value="1e-9">nF</option><option value="1e-6">ÂµF</option></select>
-                            </div>
-                        </div>
-
-                        <!-- Series Resistance (DCR) -->
-                        <div class="form-group">
-                            <label>Series Res ($R_s$/DCR) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">DC Resistance of the inductor coil + Wiring resistance. Crucial for Q calculation.</span></div></label>
-                            <div style="display:flex; gap:5px;">
-                                <input type="number" id="rs-val" value="0.5" step="0.01">
-                                <select id="rs-unit" style="width: 80px;"><option value="1">Î©</option><option value="1e-3">mÎ©</option></select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PARALLEL LOAD -->
-                    <div class="form-row" id="parallel-row">
-                        <div class="form-group">
-                            <label>Parallel Load ($R_p$) <div class="tooltip-container"><i class="fas fa-info-circle info-icon"></i><span class="tooltip-text">External load resistance or leakage. Use 1e9 for open circuit/unloaded.</span></div></label>
-                            <div style="display:flex; gap:5px;">
-                                <input type="number" id="rp-val" value="10000" step="1">
-                                <select id="rp-unit" style="width: 80px;"><option value="1">Î©</option><option value="1e3">kÎ©</option><option value="1e6">MÎ©</option></select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="button-wrapper">
+                    <div class="button-wrapper" style="margin-top: 20px;">
                         <button type="button" id="calculate-btn" class="btn"><i class="fas fa-calculator"></i> Calculate & Simulate</button>
                     </div>
                 </form>
             </div>
 
+            
             <!-- Results Section -->
-            <div id="result-container" class="card hidden" style="margin-top: 40px;">
-                <h3><i class="fas fa-poll"></i> Simulation Results</h3>
+            <div id="result-container" class="card hidden" style="margin-top: 40px; border: 1px solid var(--border);">
+                <h3 style="color: var(--primary); display: flex; align-items: center; gap: 10px; margin-top:0;"><i class="fas fa-poll" style="color:var(--accent);"></i> Simulation Results & Stress Sizing Verification</h3>
                 
-                <div class="results-grid">
-                    <!-- Left Col: Table -->
+                <!-- Sizing Alerts / Warnings Callout -->
+                <div id="stress-alert-box" style="margin-bottom: 25px; padding: 15px; border-radius: 8px; display: none;">
+                    <strong id="stress-alert-header" style="display: block; margin-bottom: 5px; font-size: 1.05rem;"></strong>
+                    <span id="stress-alert-desc" style="font-size: 0.95rem; line-height: 1.5;"></span>
+                </div>
+
+                <div class="results-grid" style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 30px;">
+                    <!-- Left Col: Expanded Table -->
                     <div>
-                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px;">Circuit Parameters</h4>
-                        <table class="results-table">
-                            <thead>
-                                <tr><th>Parameter</th><th>Value</th><th>Unit</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Resonant Freq ($f_0$)</td><td id="res-fr" class="font-mono">0.00</td><td id="unit-fr">MHz</td></tr>
-                                <tr><td>Natural Freq ($f_n$)</td><td id="res-fn" class="font-mono">0.00</td><td id="unit-fn">MHz</td></tr>
-                                <tr><td>Angular Freq ($\omega_0$)</td><td id="res-omega" class="font-mono">0.00</td><td>rad/s</td></tr>
-                                <tr><td>Characteristic Imp ($Z_0$)</td><td id="res-z0" class="font-mono">0.00</td><td>Î©</td></tr>
-                                <tr><td>Q-Factor (Loaded)</td><td id="res-q" class="font-mono">0.00</td><td>-</td></tr>
-                                <tr><td>Bandwidth (-3dB)</td><td id="res-bw" class="font-mono">0.00</td><td id="unit-bw">kHz</td></tr>
-                                <tr><td>Damping Ratio ($\zeta$)</td><td id="res-zeta" class="font-mono">0.00</td><td>-</td></tr>
-                                <tr><td>Resonant Impedance</td><td id="res-zr" class="font-mono">0.00</td><td>Î©</td></tr>
-                            </tbody>
-                        </table>
-                        <div style="margin-top: 15px; font-size: 0.9rem; color: var(--text);">
-                            <i class="fas fa-info-circle info-icon"></i> <span id="status-text">Critically Damped</span>
+                        <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 15px; display:flex; align-items:center; gap:8px;"><i class="fas fa-list-ul"></i> Circuit Parameters & Sizing</h4>
+                        <div class="table-responsive">
+                            <table class="results-table" style="width: 100%;">
+                                <thead>
+                                    <tr><th>Parameter</th><th>Value</th><th>Unit</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Resonant Frequency ($f_r$ / lossy)</td><td id="res-fr" class="font-mono" style="font-weight: 700;">0.00</td><td id="unit-fr">kHz</td></tr>
+                                    <tr><td>Ideal Resonance ($f_0$ / lossless)</td><td id="res-f0" class="font-mono">0.00</td><td id="unit-f0">kHz</td></tr>
+                                    <tr><td>Damped Natural Freq ($f_d$)</td><td id="res-fn" class="font-mono">0.00</td><td id="unit-fn">kHz</td></tr>
+                                    <tr><td>Q-Factor (Loaded / Overall)</td><td id="res-q" class="font-mono" style="font-weight: 700; color: var(--secondary);">0.00</td><td>-</td></tr>
+                                    <tr><td>Bandwidth (-3dB)</td><td id="res-bw" class="font-mono">0.00</td><td id="unit-bw">kHz</td></tr>
+                                    <tr><td>Lower Cutoff Freq ($f_1$)</td><td id="res-f1" class="font-mono">0.00</td><td id="unit-f1">kHz</td></tr>
+                                    <tr><td>Upper Cutoff Freq ($f_2$)</td><td id="res-f2" class="font-mono">0.00</td><td id="unit-f2">kHz</td></tr>
+                                    <tr><td>Damping Ratio ($zeta$)</td><td id="res-zeta" class="font-mono">0.00</td><td>-</td></tr>
+                                    <tr><td>Characteristic Imp ($Z_0$)</td><td id="res-z0" class="font-mono">0.00</td><td>Ω</td></tr>
+                                    <tr><td>Resonant Impedance ($Z_r$)</td><td id="res-zr" class="font-mono" style="font-weight: 600;">0.00</td><td>Ω</td></tr>
+                                    <tr><td>Impedance magnitude at $f_{op}$</td><td id="res-zmag-op" class="font-mono">0.00</td><td>Ω</td></tr>
+                                    <tr><td>Phase Angle at $f_{op}$</td><td id="res-phase-op" class="font-mono">0.00</td><td>deg</td></tr>
+                                    <tr><td>Capacitor Voltage at $f_r$</td><td id="res-vc" class="font-mono">0.00</td><td>V RMS</td></tr>
+                                    <tr><td>Inductor Voltage at $f_r$</td><td id="res-vl" class="font-mono">0.00</td><td>V RMS</td></tr>
+                                    <tr><td>Reactive Power at $f_r$ ($Q_{var}$)</td><td id="res-qvar" class="font-mono">0.00</td><td>Var</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top: 15px; font-size: 0.95rem; color: var(--text); padding: 12px; background: rgba(37,99,235,0.05); border-left: 3px solid var(--secondary); border-radius: 4px;">
+                            <i class="fas fa-info-circle info-icon"></i> <strong>Damping Regime:</strong> <span id="status-text">Critically Damped</span>
                         </div>
                     </div>
 
                     <!-- Right Col: Charts -->
                     <div style="display: flex; flex-direction: column; gap: 20px;">
                         <div>
-                            <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;">Frequency Response (Impedance)</h4>
-                            <div class="chart-container">
-                                <canvas id="magChart" role="img" aria-label="Mag  Analysis Chart"><p class="sr-only">Interactive data visualization for Mag  Analysis Chart</p></canvas>
+                            <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-chart-area"></i> Frequency Response (Magnitude)</h4>
+                            <div class="chart-container" style="height: 220px;">
+                                <canvas id="magChart" role="img" aria-label="Mag Analysis Chart"><p class="sr-only">Interactive data visualization for Mag Analysis Chart</p></canvas>
                             </div>
                         </div>
                         <div>
-                            <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;">Step Response (Time Domain)</h4>
-                            <div class="chart-container" style="height: 200px;">
-                                <canvas id="transientChart" role="img" aria-label="Transient  Analysis Chart"><p class="sr-only">Interactive data visualization for Transient  Analysis Chart</p></canvas>
+                            <h4 style="margin-top: 0; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-history"></i> Step Response (Time Domain Ringing)</h4>
+                            <div class="chart-container" style="height: 180px;">
+                                <canvas id="transientChart" role="img" aria-label="Transient Analysis Chart"><p class="sr-only">Interactive data visualization for Transient Analysis Chart</p></canvas>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <h4 style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">Mathematical Derivation</h4>
+                <h4 style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; color: var(--primary);"><i class="fas fa-subscript"></i> MathJax Step-by-Step Calculation Breakdown</h4>
                 <div id="calculation-details"></div>
 
-                <div class="standard-reference" style="margin-top: 20px; font-style: italic; color: var(--text);">
-                     Calculations utilize full parasitic model including series DCR and parallel load resistance.
+                <div class="button-wrapper" style="margin-top: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button type="button" id="pdf-btn" class="btn" style="background: var(--secondary);"><i class="fas fa-file-pdf"></i> Download Premium Verification Report (PDF)</button>
                 </div>
             </div>
-        </div>
+
+        </div> <!-- Closing class="card" -->
 
         <!-- NEW VISUAL EDUCATION SECTION -->
         <div class="education-section">
@@ -780,7 +876,7 @@
                 <article class="theory-module">
                     <span class="edu-badge">Quality Analysis</span>
                     <h3><i class="fas fa-chart-line"></i> The Q-Factor & Selectivity</h3>
-                    <p>The <strong>Quality Factor (Q)</strong> represents the efficiency of the resonator. A high Q ($Q > 10$) indicates very low energy loss and a extremely sharp frequency response, whereas a low Q ($Q < 1$) suggests rapid energy dissipation and a "mushy" selectivity.</p>
+                    <p>The <strong>Quality Factor (Q)</strong> represents the efficiency of the resonator. A high Q ($Q &gt; 10$) indicates very low energy loss and a extremely sharp frequency response, whereas a low Q ($Q &lt; 1$) suggests rapid energy dissipation and a "mushy" selectivity.</p>
                     <div class="theory-chart-container">
                         <canvas id="theoryChart2" role="img" aria-label="Theory  Analysis Chart2"><p class="sr-only">Interactive data visualization for Theory  Analysis Chart2</p></canvas>
                     </div>
@@ -810,7 +906,222 @@
                 </article>
             </div>
 
-            <!-- VISUAL FAQ SECTION -->
+            
+        <!-- Section A: Switchgear & RLC Standards Compliance Reference Table -->
+        <div class="card" style="border: 1px solid var(--border); margin-top: 30px;">
+            <h3 style="color: var(--primary); font-family: Montserrat, sans-serif; font-size: 1.6rem; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;"><i class="fas fa-book" style="color: var(--accent);"></i> Approved International Standards & Applicability Rules</h3>
+            <p style="font-size: 1rem; color: var(--text); line-height: 1.7;">
+                RLC resonators and harmonic filters are configured to filter system distortion and avoid power system resonance. Sizing is governed by the following international and Indian codes:
+            </p>
+            
+            <div class="table-responsive">
+                <table class="results-table" style="margin-top: 15px; width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Standard Designation</th>
+                            <th>Scope / Core Mandate</th>
+                            <th>Applicability Rules & Design Limits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>IEEE Std 18</strong></td>
+                            <td>IEEE Standard for Shunt Power Capacitors. Dictates capacitor overload thresholds.</td>
+                            <td>Mandatory for filter design. Limits continuous capacitor voltage to $\le 110\%\text{ RMS}$, peak voltage to $\le 120\%\text{ peak}$, current to $\le 180\%\text{ RMS}$, and kVAR to $\le 135\%$.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>IEC 61642</strong></td>
+                            <td>Industrial AC networks affected by harmonics. Focuses on filter application and detuned reactors.</td>
+                            <td>Applies to selection and tuning of harmonic filters. Helps avoid unwanted resonance between substation transformer reactance and capacitor banks.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>IEEE Std 519</strong></td>
+                            <td>Recommended Practice and Requirements for Harmonic Control in Electric Power Systems.</td>
+                            <td>Sets voltage and current harmonic limits at the Point of Common Coupling (PCC) to prevent disturbance on utility grids.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>IS 13925</strong></td>
+                            <td>Indian Standard for Shunt capacitors for AC power systems having a rated voltage up to and including 1000V.</td>
+                            <td>Required for industrial installations in India. Outlines safety, insulation, temperature drift, and discharge device standards.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section B: Complete Engineering Reference Section -->
+        <div class="card" style="border: 1px solid var(--border); margin-top: 30px;">
+            <h3 style="color: var(--primary); font-family: Montserrat, sans-serif; font-size: 1.6rem; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;"><i class="fas fa-info-circle" style="color: var(--accent);"></i> Filter Design Engineering Reference</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div>
+                    <h4 style="color: var(--secondary); margin-top: 0;"><i class="fas fa-graduation-cap"></i> What This Tool Does</h4>
+                    <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text);">
+                        It performs a multi-physics verification of series and parallel RLC filter networks. It models realistic loss elements ($R_s$ coil DCR, $R_p$ load/leakage) to compute true resonant peaks, damping factors, cut-off bandwidth, and off-resonance system impedance profiles.
+                    </p>
+                </div>
+                <div>
+                    <h4 style="color: var(--secondary); margin-top: 0;"><i class="fas fa-users-cog"></i> Who Uses This Tool</h4>
+                    <ul style="font-size: 0.95rem; line-height: 1.6; color: var(--text); padding-left: 20px; margin: 0;">
+                        <li><strong>Power Quality Engineers</strong>: Sizing detuned reactor filter banks for substations.</li>
+                        <li><strong>RF Antenna designers</strong>: tuning bandpass/notch filtering elements.</li>
+                        <li><strong>Switchgear designers</strong>: Sizing RC snubber elements to suppress breaker switching transients.</li>
+                        <li><strong>Instrumentation engineers</strong>: Verifying sensor signal filter tuning.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: var(--secondary); margin-top: 0;"><i class="fas fa-medal"></i> Industrial Usefulness</h4>
+                    <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text);">
+                        Prevents design failures where filter components explode during switching or operation. Sizing voltages across L and C against insulation ratings avoids sparkover hazards, and Q-factor calculation ensures the filter rejects harmonics properly.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section C: Step-by-Step Mock Calculation Reference Walk-through (For LLMs / Scrapers) -->
+        <div class="card" style="border: 1px solid var(--border); background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.02)); padding: 30px; border-radius: 12px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+            <h3 style="color: var(--primary); font-family: Montserrat, sans-serif; font-size: 1.7rem; border-bottom: 2px solid var(--primary); padding-bottom: 12px; margin-top: 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-calculator" style="color: var(--accent);"></i> Step-by-Step Mock Calculation Reference Walk-through</h3>
+            <p style="font-size: 1rem; color: var(--text); line-height: 1.8; margin-bottom: 25px;">
+                To assist computational models and design engineers in verifying calculations, this manual walk-through showcases the exact logic for a standard lossy RLC filter case.
+            </p>
+            
+            <div style="background: var(--bg); border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 5px solid var(--secondary);">
+                <strong style="color: var(--primary); font-size: 1.1rem; display: block; margin-bottom: 10px;"><i class="fas fa-sliders-h"></i> Input Parameters for the Reference Case:</strong>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; font-size: 0.95rem; color: var(--text); line-height: 1.6;">
+                    <div>• <strong>Inductance ($L$):</strong> $10\,\mu\text{H}$ ($10^{-5}\,\text{H}$)</div>
+                    <div>• <strong>Capacitance ($C$):</strong> $100\,\text{nF}$ ($10^{-7}\,\text{F}$)</div>
+                    <div>• <strong>Series Resistance ($R_s$):</strong> $0.5\,\Omega$ (DCR)</div>
+                    <div>• <strong>Parallel Load ($R_p$):</strong> $10\,\text{k}\Omega$ ($10^4\,\Omega$)</div>
+                    <div>• <strong>Source Voltage ($V_{in}$):</strong> $10\,\text{V}$ (RMS)</div>
+                    <div>• <strong>Target Frequency ($f_{op}$):</strong> $50\,\text{Hz}$</div>
+                    <div>• <strong>Circuit Topology:</strong> Series RLC</div>
+                </div>
+            </div>
+
+            <!-- Steps Grid -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                
+                <!-- Step 1 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #2563EB;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #2563EB; font-size: 1.1rem;"><span style="background: rgba(37,99,235,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 1</span> Ideal Resonant Frequency ($f_0$)</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-wave-square"></i> Frequency Equation</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        The ideal resonant frequency is the point where the inductive reactance and capacitive reactance cancel each other out.
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ f_0 = \frac{1}{2\pi\sqrt{LC}} = \frac{1}{2\pi\sqrt{10^{-5} \cdot 10^{-7}}} = \mathbf{159.15\,\text{kHz}} $$
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #0891B2;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #0891B2; font-size: 1.1rem;"><span style="background: rgba(8,145,178,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 2</span> Characteristic Impedance ($Z_0$)</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-ruler"></i> Component Ratio</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        Characteristic impedance represents the surge impedance of the filter network, indicating energy density ratio between magnetic and electric branches.
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ Z_0 = \sqrt{\frac{L}{C}} = \sqrt{\frac{10^{-5}}{10^{-7}}} = \mathbf{10\,\Omega} $$
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #059669;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #059669; font-size: 1.1rem;"><span style="background: rgba(5,150,105,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 3</span> Coil Quality Factor ($Q_s$)</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-tachometer-alt"></i> Quality Value</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        Calculates the selectivity quality factor of the inductor winding coil. High coil resistance lowers this selectivity index.
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ Q_s = \frac{Z_0}{R_s} = \frac{10}{0.5} = \mathbf{20} $$
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #4F46E5;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #4F46E5; font-size: 1.1rem;"><span style="background: rgba(79,70,229,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 4</span> System Bandwidth ($BW$)</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-arrows-alt-h"></i> Frequency Band width</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        Bandwidth represents the frequency spectrum width between the lower and upper half-power (-3dB) points.
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ BW = \frac{f_0}{Q} = \frac{159.15\,\text{kHz}}{20} = \mathbf{7.96\,\text{kHz}} $$
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #EA580C;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #EA580C; font-size: 1.1rem;"><span style="background: rgba(234,88,12,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 5</span> Damping Ratio ($\zeta$)</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-wind"></i> Damping Coefficient</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        Damping ratio defines the decay speed of transients. A damping ratio $\zeta &lt; 1.0$ is underdamped and will cause transient ringing.
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ \zeta = \frac{1}{2Q} = \frac{1}{40} = \mathbf{0.025} \quad (\text{Underdamped}) $$
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #DB2777;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #DB2777; font-size: 1.1rem;"><span style="background: rgba(219,39,119,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 6</span> Resonant Impedance ($Z_r$)</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-compress-arrows-alt"></i> Minimum Resistance</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        At series resonance, inductive and capacitive reactances cancel out, leaving the impedance equal to the winding resistance $R_s$.
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ Z_r = R_s = \mathbf{0.5\,\Omega} $$
+                    </div>
+                </div>
+
+                <!-- Step 7 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #10B981;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #10B981; font-size: 1.1rem;"><span style="background: rgba(16,185,129,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 7</span> Capacitor Voltage Stress at Resonance ($V_{C,res}$)</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-bolt"></i> Voltage Magnification</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        Under resonance, current is maximum. Voltage across the capacitor rises to $Q$ times the input source voltage.
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ V_{C,res} = Q \cdot V_{in} = 20 \cdot 10\,\text{V} = \mathbf{200\,\text{V RMS}} $$
+                    </div>
+                    <div style="display: inline-block; background: rgba(220,38,38,0.08); color: #DC2626; padding: 4px 12px; border-radius: 4px; font-size: 0.9rem; font-weight: 700;">
+                        Verdict: Overvoltage Risk! $200\,\text{V} &gt; 1.1 \cdot 10\,\text{V} \Rightarrow \text{FAIL}$
+                    </div>
+                </div>
+
+                <!-- Step 8 -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border-left: 4px solid #7C3AED;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-weight: 700; color: #7C3AED; font-size: 1.1rem;"><span style="background: rgba(124,58,237,0.1); padding: 4px 10px; border-radius: 4px; margin-right: 8px;">STEP 8</span> Impedance Evaluation at Target $f_{op} = 50\,\text{Hz}$</span>
+                        <span style="font-size: 0.85rem; color: #64748B; font-weight: 600;"><i class="fas fa-subway"></i> Off-Resonance Sizing</span>
+                    </div>
+                    <p style="font-size: 0.95rem; color: var(--text); line-height: 1.6; margin: 0 0 12px 0;">
+                        Calculates the complex filter impedance magnitude at the operating line frequency (50 Hz).
+                    </p>
+                    <div style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace; font-size: 1rem; margin-bottom: 10px;">
+                        $$ \omega = 2\pi \cdot 50 = 314.16\,\text{rad/s} $$
+                        $$ X = \omega L - \frac{1}{\omega C} = 3.14\cdot 10^{-3} - 31830.98 = -31830.98\,\Omega $$
+                        $$ |Z(j\omega)| = \sqrt{R_s^2 + X^2} = \mathbf{31,831\,\Omega} \quad (\text{Capacitive}) $$
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VISUAL FAQ SECTION -->
             <div class="faq-section card">
                 <h2><i class="fas fa-question-circle"></i> Industrial Resonance FAQ</h2>
                 <div class="faq-grid">
@@ -836,7 +1147,7 @@
                     <div class="faq-card">
                         <h4><i class="fas fa-wave-square"></i> 3. How does Damping Ratio ($\zeta$) affect ringing?</h4>
                         <div class="faq-answer">
-                            The damping ratio ($\zeta$) determines the transient "ring-down" time. <strong>Underdamped ($\zeta < 1$)</strong> circuits oscillate before settling. <strong>Critical Damping ($\zeta = 1$)</strong> returns to zero in the shortest possible time without crossing the axis, which is the "Gold Standard" for sensor and instrument design.
+                            The damping ratio ($\zeta$) determines the transient "ring-down" time. <strong>Underdamped ($\zeta &lt; 1$)</strong> circuits oscillate before settling. <strong>Critical Damping ($\zeta = 1$)</strong> returns to zero in the shortest possible time without crossing the axis, which is the "Gold Standard" for sensor and instrument design.
                         </div>
                         <div class="faq-visual"><canvas id="faqChart3" role="img" aria-label="Faq  Analysis Chart3"><p class="sr-only">Interactive data visualization for Faq  Analysis Chart3</p></canvas></div>
                     </div>
@@ -885,26 +1196,99 @@
                         </div>
                         <div class="faq-visual"><canvas id="faqChart8" role="img" aria-label="Faq  Analysis Chart8"><p class="sr-only">Interactive data visualization for Faq  Analysis Chart8</p></canvas></div>
                     </div>
+
+
+                    <!-- Q9 -->
+                    <div class="faq-card">
+                        <h4><i class="fas fa-shield-virus"></i> 9. How does capacitor ESR affect overall filter Q-factor?</h4>
+                        <div class="faq-answer">
+                            Capacitor Equivalent Series Resistance (ESR) adds directly in series with the inductor coil resistance ($R_s$). The total active resistance becomes $R_{tot} = R_{coil_dcr} + R_{cap_esr}$. In high-frequency RF filters, ESR is the leading cause of filter detuning and internal heating.
+                        </div>
+                        <div class="faq-visual"><canvas id="faqChart9" role="img" aria-label="Faq Analysis Chart9"><p class="sr-only">Interactive data visualization for Faq Analysis Chart9</p></canvas></div>
+                    </div>
+
+                    <!-- Q10 -->
+                    <div class="faq-card">
+                        <h4><i class="fas fa-balance-scale"></i> 10. How do component tolerances detune LC harmonic filters?</h4>
+                        <div class="faq-answer">
+                            Manufacturing tolerances (typically $\pm 5\%$ or $\pm 10\%$) shift the actual inductance and capacitance values. This shifts the resonant frequency, causing detuning. Detuned filters block less harmonics, causing higher currents to flow to ground, which overloads the capacitors.
+                        </div>
+                        <div class="faq-visual"><canvas id="faqChart10" role="img" aria-label="Faq Analysis Chart10"><p class="sr-only">Interactive data visualization for Faq Analysis Chart10</p></canvas></div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </main>
 
         
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
-        <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/batterychargersizing" class="silo-card" style="text-decoration:none;">
-                        <span>Batterychargersizing</span>
+    <!-- Related Tools Section (Upgraded & Redesigned) -->
+    <section style="padding: 50px 0; background: linear-gradient(to bottom, var(--bg-color, #f8fafc), var(--card-bg, #ffffff)); border-top: 1px solid var(--border-color, #e2e8f0);">
+        <div class="container" style="max-width: 1050px; margin: 0 auto; padding: 0 15px;">
+            <h2 style="text-align:center; font-size:1.6rem; margin-bottom:10px; font-family: Montserrat, sans-serif; color:var(--primary); font-weight:700;">Explore Related Electrical Engineering Tools</h2>
+            <p style="text-align:center; font-size:1rem; color:var(--text); margin-bottom:35px; max-width:650px; margin-left:auto; margin-right:auto;">
+                Complement your filter tuning design with industrial-grade tools for battery banks, cable sizing, and load distributions.
+            </p>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:25px;">
+                
+                <!-- Card 1: Battery Charger Sizing -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease; border-top: 4px solid #2563EB;" class="related-card">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+                            <span style="background: rgba(37,99,235,0.1); color: #2563EB; width: 40px; height: 40px; border-radius: 8px; display:flex; justify-content:center; align-items:center; font-size:1.25rem;"><i class="fas fa-battery-three-quarters"></i></span>
+                            <h3 style="margin:0; font-size:1.2rem; font-family: Montserrat, sans-serif; color:var(--primary);">Battery Charger Sizing</h3>
+                        </div>
+                        <p style="font-size:0.92rem; line-height:1.6; color:var(--text); margin:0 0 12px 0;">
+                            <strong>What it does:</strong> Sizes industrial DC battery chargers and rectifier banks according to <strong>IEEE Std 946</strong> and <strong>IEEE Std 485</strong>.
+                        </p>
+                        <p style="font-size:0.92rem; line-height:1.6; color:var(--text); margin:0 0 20px 0;">
+                            <strong>How it helps:</strong> Calculates optimal charger current rating to simultaneously supply continuous DC control loads while recharging the substation battery banks, preventing switchgear trip failures during blackouts.
+                        </p>
+                    </div>
+                    <a href="/batterychargersizing" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; background:rgba(37,99,235,0.08); color:#2563EB; border-radius:6px; font-weight:700; text-decoration:none; font-size:0.9rem; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='#2563EB'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(37,99,235,0.08)'; this.style.color='#2563EB';">
+                        Open Charger Calculator <i class="fas fa-arrow-right"></i>
                     </a>
-                    <a href="/cable-thermal-rating" class="silo-card" style="text-decoration:none;">
-                        <span>Cable Thermal Rating</span>
+                </div>
+
+                <!-- Card 2: Cable Thermal Rating -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease; border-top: 4px solid #10B981;" class="related-card">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+                            <span style="background: rgba(16,185,129,0.1); color: #10B981; width: 40px; height: 40px; border-radius: 8px; display:flex; justify-content:center; align-items:center; font-size:1.25rem;"><i class="fas fa-fire-alt"></i></span>
+                            <h3 style="margin:0; font-size:1.2rem; font-family: Montserrat, sans-serif; color:var(--primary);">Cable Thermal Ampacity</h3>
+                        </div>
+                        <p style="font-size:0.92rem; line-height:1.6; color:var(--text); margin:0 0 12px 0;">
+                            <strong>What it does:</strong> Computes the continuous current-carrying capacity (ampacity) of underground and tray cables as per <strong>IEC 60287</strong>.
+                        </p>
+                        <p style="font-size:0.92rem; line-height:1.6; color:var(--text); margin:0 0 20px 0;">
+                            <strong>How it helps:</strong> Factors in dynamic thermal soil resistivity, ambient temperature, and cable group derating to prevent conductor insulation melting and thermal runaway degradation.
+                        </p>
+                    </div>
+                    <a href="/cable-thermal-rating" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; background:rgba(16,185,129,0.08); color:#10B981; border-radius:6px; font-weight:700; text-decoration:none; font-size:0.9rem; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='#10B981'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(16,185,129,0.08)'; this.style.color='#10B981';">
+                        Open Thermal Calculator <i class="fas fa-arrow-right"></i>
                     </a>
-                    <a href="/electricalresidentialload" class="silo-card" style="text-decoration:none;">
-                        <span>Electricalresidentialload</span>
+                </div>
+
+                <!-- Card 3: Electrical Residential Load -->
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s ease; border-top: 4px solid #F59E0B;" class="related-card">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+                            <span style="background: rgba(245,158,11,0.1); color: #F59E0B; width: 40px; height: 40px; border-radius: 8px; display:flex; justify-content:center; align-items:center; font-size:1.25rem;"><i class="fas fa-home"></i></span>
+                            <h3 style="margin:0; font-size:1.2rem; font-family: Montserrat, sans-serif; color:var(--primary);">Residential Load Calculator</h3>
+                        </div>
+                        <p style="font-size:0.92rem; line-height:1.6; color:var(--text); margin:0 0 12px 0;">
+                            <strong>What it does:</strong> Computes the total connected and demand electrical load for multi-family residential structures based on the <strong>NEC Code</strong>.
+                        </p>
+                        <p style="font-size:0.92rem; line-height:1.6; color:var(--text); margin:0 0 20px 0;">
+                            <strong>How it helps:</strong> Correctly sizes incoming service conductors, feeder panels, main circuit breakers, and metering banks, avoiding fire hazards and over-design costs.
+                        </p>
+                    </div>
+                    <a href="/electricalresidentialload" style="display:inline-flex; align-items:center; justify-content:center; padding:10px 18px; background:rgba(245,158,11,0.08); color:#F59E0B; border-radius:6px; font-weight:700; text-decoration:none; font-size:0.9rem; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='#F59E0B'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(245,158,11,0.08)'; this.style.color='#F59E0B';">
+                        Open Load Calculator <i class="fas fa-arrow-right"></i>
                     </a>
+                </div>
+
             </div>
         </div>
     </section>
@@ -939,11 +1323,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -951,10 +1335,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -992,452 +1376,995 @@
     </footer>
 
     <script>
-        // Theme
-        const themeSwitch = document.getElementById('theme-switch');
-        if (themeSwitch && localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            themeSwitch.checked = true;
+// Theme
+const themeSwitch = document.getElementById('theme-switch');
+if (themeSwitch && localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeSwitch.checked = true;
+}
+if(themeSwitch) {
+    themeSwitch.addEventListener('change', function() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', this.checked ? 'dark' : 'light');
+        updateCircuitSchematic();
+    });
+}
+
+// Init Visuals on Load
+document.addEventListener('DOMContentLoaded', () => {
+    initTheoryCharts();
+    initFaqCharts();
+    updateCircuitSchematic();
+    
+    // Connect calculation buttons
+    document.getElementById('calculate-btn').addEventListener('click', performCalculations);
+    document.getElementById('pdf-btn').addEventListener('click', generatePDF);
+});
+
+// --- DYNAMIC SCHEMATIC DRAWER ---
+function updateCircuitSchematic() {
+    const svg = document.getElementById('circuit-svg');
+    if(!svg) return;
+    const type = document.getElementById('circuit-type').value;
+    
+    let html = '';
+    
+    // Defs for styling
+    html += `
+        <defs>
+            <style>
+                .wire { stroke: var(--text, #1e293b); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+                .component { stroke: var(--secondary, #0891b2); stroke-width: 2.5; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+                .source { stroke: var(--accent, #f59e0b); stroke-width: 2.5; fill: none; }
+                .text-label { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; fill: var(--text, #1e293b); text-anchor: middle; }
+                .title-label { font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; fill: var(--primary, #2563eb); text-anchor: middle; }
+                body.dark-mode .wire { stroke: #cbd5e1; }
+                body.dark-mode .text-label { fill: #cbd5e1; }
+            </style>
+        </defs>
+    `;
+    
+    // Common Ground Symbol
+    const drawGround = (x, y) => `
+        <line x1="${x}" y1="${y}" x2="${x}" y2="${y+10}" class="wire" />
+        <line x1="${x-10}" y1="${y+10}" x2="${x+10}" y2="${y+10}" class="wire" style="stroke-width:2;" />
+        <line x1="${x-6}" y1="${y+14}" x2="${x+6}" y2="${y+14}" class="wire" style="stroke-width:1.5;" />
+        <line x1="${x-2}" y1="${y+18}" x2="${x+2}" y2="${y+18}" class="wire" style="stroke-width:1;" />
+    `;
+    
+    // Common AC Source Symbol
+    const drawACSource = (x, y) => `
+        <circle cx="${x}" cy="${y}" r="15" class="source" />
+        <path d="M ${x-8} ${y} C ${x-4} ${y-8}, ${x-4} ${y-8}, ${x} ${y} C ${x+4} ${y+8}, ${x+4} ${y+8}, ${x+8} ${y}" class="source" />
+        <text x="${x}" y="${y+28}" class="text-label">Vin</text>
+    `;
+    
+    // Common Resistor Symbol (zigzag) - Horizontal
+    const drawResistorH = (x, y, label) => `
+        <path d="M ${x} ${y} L ${x+5} ${y} L ${x+9} ${y-7} L ${x+15} ${y+7} L ${x+21} ${y-7} L ${x+27} ${y+7} L ${x+33} ${y-7} L ${x+37} ${y} L ${x+42} ${y}" class="component" />
+        <text x="${x+21}" y="${y-12}" class="text-label">${label}</text>
+    `;
+    
+    // Common Resistor Symbol (zigzag) - Vertical
+    const drawResistorV = (x, y, label) => `
+        <path d="M ${x} ${y} L ${x} ${y+5} L ${x-7} ${y+9} L ${x+7} ${y+14} L ${x-7} ${y+19} L ${x+7} ${y+24} L ${x-7} ${y+29} L ${x} ${y+34} L ${x} ${y+40}" class="component" fill="none" />
+        <text x="${x+24}" y="${y+24}" class="text-label" style="text-anchor: start;">${label}</text>
+    `;
+    
+    // Common Inductor Symbol (coils) - Horizontal
+    const drawInductorH = (x, y, label) => `
+        <path d="M ${x} ${y} Q ${x+5} ${y-12} ${x+10} ${y} Q ${x+15} ${y-12} ${x+20} ${y} Q ${x+25} ${y-12} ${x+30} ${y} Q ${x+35} ${y-12} ${x+40} ${y}" class="component" />
+        <text x="${x+20}" y="${y-12}" class="text-label">${label}</text>
+    `;
+    
+    // Common Inductor Symbol (coils) - Vertical
+    const drawInductorV = (x, y, label) => `
+        <path d="M ${x} ${y} Q ${x-12} ${y+5} ${x} ${y+10} Q ${x-12} ${y+15} ${x} ${y+20} Q ${x-12} ${y+25} ${x} ${y+30} Q ${x-12} ${y+35} ${x} ${y+40}" class="component" />
+        <text x="${x+22}" y="${y+24}" class="text-label" style="text-anchor: start;">${label}</text>
+    `;
+    
+    // Common Capacitor Symbol - Horizontal
+    const drawCapacitorH = (x, y, label) => `
+        <line x1="${x}" y1="${y}" x2="${x+18}" y2="${y}" class="wire" />
+        <line x1="${x+18}" y1="${y-12}" x2="${x+18}" y2="${y+12}" class="component" />
+        <line x1="${x+24}" y1="${y-12}" x2="${x+24}" y2="${y+12}" class="component" />
+        <line x1="${x+24}" y1="${y}" x2="${x+42}" y2="${y}" class="wire" />
+        <text x="${x+21}" y="${y-16}" class="text-label">${label}</text>
+    `;
+    
+    // Common Capacitor Symbol - Vertical
+    const drawCapacitorV = (x, y, label) => `
+        <line x1="${x}" y1="${y}" x2="${x}" y2="${y+18}" class="wire" />
+        <line x1="${x-12}" y1="${y+18}" x2="${x+12}" y2="${y+18}" class="component" />
+        <line x1="${x-12}" y1="${y+24}" x2="${x+12}" y2="${y+24}" class="component" />
+        <line x1="${x}" y1="${y+24}" x2="${x}" y2="${y+42}" class="wire" />
+        <text x="${x+20}" y="${y+24}" class="text-label" style="text-anchor: start;">${label}</text>
+    `;
+    
+    if(type === 'series') {
+        html += `<text x="175" y="25" class="title-label">Series RLC Filter Network</text>`;
+        html += drawACSource(40, 110);
+        
+        // Wires & Components
+        html += `<line x1="40" y1="95" x2="40" y2="60" class="wire" />`;
+        html += `<line x1="40" y1="60" x2="60" y2="60" class="wire" />`;
+        
+        html += drawResistorH(60, 60, "R_s (DCR)");
+        html += `<line x1="102" y1="60" x2="120" y2="60" class="wire" />`;
+        
+        html += drawInductorH(120, 60, "L");
+        html += `<line x1="160" y1="60" x2="185" y2="60" class="wire" />`;
+        
+        html += drawCapacitorH(185, 60, "C");
+        html += `<line x1="227" y1="60" x2="280" y2="60" class="wire" />`;
+        
+        // Parallel Load Rp
+        html += `<line x1="280" y1="60" x2="280" y2="75" class="wire" />`;
+        html += drawResistorV(280, 75, "R_p (Load)");
+        html += `<line x1="280" y1="115" x2="280" y2="160" class="wire" />`;
+        
+        html += `<line x1="40" y1="125" x2="40" y2="160" class="wire" />`;
+        html += `<line x1="40" y1="160" x2="280" y2="160" class="wire" />`;
+        html += drawGround(160, 160);
+    } else {
+        html += `<text x="175" y="25" class="title-label">Parallel RLC Filter Network</text>`;
+        html += drawACSource(40, 110);
+        
+        // Top Wires & branches
+        html += `<line x1="40" y1="95" x2="40" y2="60" class="wire" />`;
+        html += `<line x1="40" y1="60" x2="280" y2="60" class="wire" />`;
+        
+        // L + Rs branch
+        html += `<line x1="110" y1="60" x2="110" y2="70" class="wire" />`;
+        html += drawInductorV(110, 70, "L");
+        html += drawResistorV(110, 110, "R_s (DCR)");
+        html += `<line x1="110" y1="150" x2="110" y2="160" class="wire" />`;
+        
+        // Capacitor branch
+        html += `<line x1="190" y1="60" x2="190" y2="75" class="wire" />`;
+        html += drawCapacitorV(190, 75, "C");
+        html += `<line x1="190" y1="117" x2="190" y2="160" class="wire" />`;
+        
+        // Parallel Load branch
+        html += `<line x1="270" y1="60" x2="270" y2="75" class="wire" />`;
+        html += drawResistorV(270, 75, "R_p (Load)");
+        html += `<line x1="270" y1="115" x2="270" y2="160" class="wire" />`;
+        
+        // Return wires
+        html += `<line x1="40" y1="125" x2="40" y2="160" class="wire" />`;
+        html += `<line x1="40" y1="160" x2="270" y2="160" class="wire" />`;
+        html += drawGround(160, 160);
+    }
+    
+    svg.innerHTML = html;
+}
+
+// --- SOLVE RLC SOLVER FUNCTION ---
+function solveRLC(f, L, C, Rs, Rp, Vin, type) {
+    const w = 2 * Math.PI * f;
+    let Zmag = 0, phase = 0;
+    let I_tot = 0, I_L = 0, I_C = 0, I_Rp = 0;
+    let V_L = 0, V_C = 0, V_Rs = 0;
+    
+    if (type === 'series') {
+        const X_L = w * L;
+        const X_C = (w === 0) ? 1e12 : 1 / (w * C);
+        const X = X_L - X_C;
+        
+        // Rs in series with LC. Rp is load in parallel to output
+        Zmag = Math.sqrt(Rs * Rs + X * X);
+        phase = Math.atan2(X, Rs) * 180 / Math.PI;
+        
+        I_tot = Vin / Zmag;
+        I_L = I_tot;
+        I_C = I_tot;
+        I_Rp = Vin / Rp;
+        
+        V_L = I_tot * X_L;
+        V_C = I_tot * X_C;
+        V_Rs = I_tot * Rs;
+    } else {
+        // Parallel RLC Tank
+        const ZL_sq = Rs * Rs + w * w * L * L;
+        const G_L = Rs / ZL_sq;
+        const B_L = - (w * L) / ZL_sq;
+        
+        const G_C = 1 / Rp;
+        const B_C = w * C;
+        
+        const G_tot = G_L + G_C;
+        const B_tot = B_L + B_C;
+        
+        const Ymag = Math.sqrt(G_tot * G_tot + B_tot * B_tot);
+        Zmag = (Ymag === 0) ? 1e12 : 1 / Ymag;
+        phase = - Math.atan2(B_tot, G_tot) * 180 / Math.PI;
+        
+        I_tot = Vin / Zmag;
+        I_L = Vin / Math.sqrt(ZL_sq);
+        I_C = Vin * w * C;
+        I_Rp = Vin / Rp;
+        
+        V_L = I_L * (w * L);
+        V_C = Vin;
+        V_Rs = I_L * Rs;
+    }
+    
+    // Power sizing calculations
+    const P = Vin * I_tot * Math.cos(phase * Math.PI / 180); // W
+    const S = Vin * I_tot; // VA
+    const Q_var = Vin * I_tot * Math.sin(phase * Math.PI / 180); // Var
+    
+    return {
+        Zmag, phase, I_tot, I_L, I_C, I_Rp, V_L, V_C, V_Rs, P, Q_var, S
+    };
+}
+
+// --- PERFORM SIZING VERIFICATIONS ---
+let magChartInstance = null;
+let transChartInstance = null;
+let lastResult = null;
+
+function performCalculations() {
+    // Inputs
+    const L_val = parseFloat(document.getElementById('l-val').value);
+    const L_unit = parseFloat(document.getElementById('l-unit').value);
+    const L_unit_label = document.getElementById('l-unit').options[document.getElementById('l-unit').selectedIndex].text;
+    const L = L_val * L_unit;
+
+    const C_val = parseFloat(document.getElementById('c-val').value);
+    const C_unit = parseFloat(document.getElementById('c-unit').value);
+    const C_unit_label = document.getElementById('c-unit').options[document.getElementById('c-unit').selectedIndex].text;
+    const C = C_val * C_unit;
+
+    const Rs_val = parseFloat(document.getElementById('rs-val').value);
+    const Rs_unit = parseFloat(document.getElementById('rs-unit').value);
+    const Rs_unit_label = document.getElementById('rs-unit').options[document.getElementById('rs-unit').selectedIndex].text;
+    const Rs = Rs_val * Rs_unit;
+
+    const Rp_val = parseFloat(document.getElementById('rp-val').value);
+    const Rp_unit = parseFloat(document.getElementById('rp-unit').value);
+    const Rp_unit_label = document.getElementById('rp-unit').options[document.getElementById('rp-unit').selectedIndex].text;
+    const Rp = Rp_val * Rp_unit;
+
+    const Vin_val = parseFloat(document.getElementById('v-val').value);
+    const Vin_unit = parseFloat(document.getElementById('v-unit').value);
+    const Vin_unit_label = document.getElementById('v-unit').options[document.getElementById('v-unit').selectedIndex].text;
+    const Vin = Vin_val * Vin_unit;
+
+    const Fop_val = parseFloat(document.getElementById('fop-val').value);
+    const Fop_unit = parseFloat(document.getElementById('fop-unit').value);
+    const Fop_unit_label = document.getElementById('fop-unit').options[document.getElementById('fop-unit').selectedIndex].text;
+    const Fop = Fop_val * Fop_unit;
+
+    const type = document.getElementById('circuit-type').value;
+
+    // Simple Validations
+    if (L <= 0 || C <= 0 || Rs < 0 || Rp <= 0 || Vin <= 0 || Fop <= 0) {
+        displayMessage("Check input parameter boundaries. All parameters must be positive.", "error");
+        return;
+    }
+
+    // Ideal parameters
+    const w0 = 1 / Math.sqrt(L * C);
+    const f0 = w0 / (2 * Math.PI);
+    const Z0 = Math.sqrt(L / C);
+    const Q_s = (Rs === 0) ? 1e9 : Z0 / Rs;
+    const Q_p = Rp / Z0;
+
+    // Practical/Lossy resonant frequency
+    let fr = f0;
+    let far_impossible = false;
+    if (type === 'parallel') {
+        const term = (1 / (L * C)) - (Rs * Rs) / (L * L);
+        if (term >= 0) {
+            fr = Math.sqrt(term) / (2 * Math.PI);
+        } else {
+            fr = f0;
+            far_impossible = true;
         }
-        if(themeSwitch) {
-            themeSwitch.addEventListener('change', function() {
-                document.body.classList.toggle('dark-mode');
-                localStorage.setItem('theme', this.checked ? 'dark' : 'light');
-            });
-        }
+    }
 
-        // Init Visuals
-        document.addEventListener('DOMContentLoaded', () => {
-            initTheoryCharts();
-            initFaqCharts();
-        });
+    // Quality and Bandwidth calculations
+    let Q = 0;
+    if (type === 'series') {
+        Q = Q_s;
+    } else {
+        const Rd = (Rs === 0) ? 1e9 : L / (C * Rs);
+        const Req = (Rd * Rp) / (Rd + Rp);
+        Q = Req / Z0;
+    }
 
-        function initTheoryCharts() {
-            const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, elements: { point: { radius: 0 } } };
-            
-            // 1. Resonance Dynamics (Energy)
-            new Chart(document.getElementById('theoryChart1'), {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 50}, (_, i) => i),
-                    datasets: [
-                        { label: 'Inductor (Magnetic)', data: Array.from({length: 50}, (_, i) => Math.pow(Math.sin(i/5), 2)), borderColor: '#2563EB', fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' },
-                        { label: 'Capacitor (Electric)', data: Array.from({length: 50}, (_, i) => Math.pow(Math.cos(i/5), 2)), borderColor: '#F59E0B', fill: true, backgroundColor: 'rgba(245, 158, 11, 0.1)' }
-                    ]
+    const BW = fr / Q;
+    const zeta = 1 / (2 * Q);
+    
+    const f1 = fr * (Math.sqrt(1 + 1 / (4 * Q * Q)) - 1 / (2 * Q));
+    const f2 = fr * (Math.sqrt(1 + 1 / (4 * Q * Q)) + 1 / (2 * Q));
+
+    // Solve at resonance
+    const resData = solveRLC(fr, L, C, Rs, Rp, Vin, type);
+    // Solve at operating frequency
+    const opData = solveRLC(Fop, L, C, Rs, Rp, Vin, type);
+
+    // Damped natural frequency
+    const isOscillatory = zeta < 1;
+    const fd = isOscillatory ? fr * Math.sqrt(1 - zeta * zeta) : 0;
+
+    // Formatting helper
+    const fmt = (v) => {
+        if (v >= 1e6) return [(v / 1e6).toFixed(3), "MHz"];
+        if (v >= 1e3) return [(v / 1e3).toFixed(3), "kHz"];
+        return [v.toFixed(1), "Hz"];
+    };
+
+    const [fr_disp, fr_unit] = fmt(fr);
+    const [f0_disp, f0_unit] = fmt(f0);
+    const [fd_disp, fd_unit] = fmt(fd);
+    const [bw_disp, bw_unit] = fmt(BW);
+    const [f1_disp, f1_unit] = fmt(f1);
+    const [f2_disp, f2_unit] = fmt(f2);
+
+    // Populate table in UI
+    document.getElementById('res-fr').textContent = fr_disp + " " + fr_unit;
+    document.getElementById('res-f0').textContent = f0_disp + " " + f0_unit;
+    document.getElementById('res-fn').textContent = isOscillatory ? fd_disp + " " + fd_unit : "N/A";
+    document.getElementById('res-q').textContent = Q.toFixed(2);
+    document.getElementById('res-bw').textContent = bw_disp + " " + bw_unit;
+    document.getElementById('res-f1').textContent = f1_disp + " " + f1_unit;
+    document.getElementById('res-f2').textContent = f2_disp + " " + f2_unit;
+    document.getElementById('res-zeta').textContent = zeta.toFixed(3);
+    document.getElementById('res-z0').textContent = Z0.toFixed(2);
+    document.getElementById('res-zr').textContent = resData.Zmag.toExponential(2);
+    document.getElementById('res-zmag-op').textContent = opData.Zmag.toExponential(2);
+    document.getElementById('res-phase-op').textContent = opData.phase.toFixed(1);
+    document.getElementById('res-vc').textContent = resData.V_C.toFixed(1);
+    document.getElementById('res-vl').textContent = resData.V_L.toFixed(1);
+    document.getElementById('res-qvar').textContent = resData.Q_var.toFixed(1);
+
+    // Damping state text
+    let dMode = "";
+    if (zeta < 1) dMode = "Underdamped (Transient Ringing)";
+    else if (zeta === 1) dMode = "Critically Damped (Shortest Settling)";
+    else dMode = "Overdamped (Slower Rise)";
+    document.getElementById('status-text').textContent = dMode;
+
+    // IEEE Std 18 Sizing Stress Check Alert logic
+    const alertBox = document.getElementById('stress-alert-box');
+    const alertHeader = document.getElementById('stress-alert-header');
+    const alertDesc = document.getElementById('stress-alert-desc');
+    
+    let isViolated = false;
+    let alertMsg = "";
+    let stress_verdict = "COMPLIANT";
+
+    if (type === 'series' && resData.V_C > 1.1 * Vin) {
+        isViolated = true;
+        stress_verdict = "NON-COMPLIANT (Capacitor Overvoltage)";
+        alertMsg += `• IEEE Std 18 Violation: Capacitor Voltage at Resonance (${resData.V_C.toFixed(0)} V RMS) exceeds 110% of rated operating voltage (${(1.1*Vin).toFixed(0)} V). Risk of dielectric puncture. <br>`;
+    }
+    if (resData.Q_var > 10000) {
+        isViolated = true;
+        alertMsg += `• High Reactive Power: Resonant Var (${(resData.Q_var/1000).toFixed(2)} kVAR) exceeds normal limits for passive elements. <br>`;
+    }
+    if (far_impossible) {
+        isViolated = true;
+        alertMsg += `• Parallel Resonance Blocked: Winding resistance Rs (${Rs_val} Ω) is too high. Reactive cancellation is mathematically impossible. <br>`;
+    }
+
+    if (isViolated) {
+        alertBox.style.backgroundColor = "rgba(239, 68, 68, 0.12)";
+        alertBox.style.borderLeft = "5px solid #EF4444";
+        alertBox.style.color = "#991B1B";
+        alertHeader.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Sizing Warnings & Recommendations`;
+        alertDesc.innerHTML = alertMsg + "<strong>Recommendation:</strong> Select components with lower series resistance (DCR), adjust inductance/capacitance ratio (L/C), or increase the capacitor voltage rating.";
+        alertBox.style.display = "block";
+    } else {
+        alertBox.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+        alertBox.style.borderLeft = "5px solid #10B981";
+        alertBox.style.color = "#065F46";
+        alertHeader.innerHTML = `<i class="fas fa-check-circle"></i> Sizing Verifications (Pass)`;
+        alertDesc.innerHTML = `All sizing verifications compliant with IEEE Std 18 limits. Capacitor voltage (${resData.V_C.toFixed(0)} V RMS <= 110% limit) and thermal margins are within guidelines.`;
+        alertBox.style.display = "block";
+    }
+
+    // Save results to global lastResult object
+    lastResult = {
+        type, L_val, L_unit_label, C_val, C_unit_label, Rs_val, Rs_unit_label, Rp_val, Rp_unit_label, Vin_val, Vin_unit_label, Fop_val, Fop_unit_label,
+        L, C, Rs, Rp, Vin, Fop,
+        fr, f0, Z0, Q_s, Q_p, Q, BW, zeta, f1, f2, resData, opData, isOscillatory, fd, fr_disp, fr_unit, f0_disp, f0_unit, bw_disp, bw_unit, f1_disp, f1_unit, f2_disp, f2_unit,
+        Vc_res: resData.V_C, Ic_res: resData.I_C, Q_var_res: resData.Q_var, Zmag_fop: opData.Zmag, phase_fop: opData.phase, stress_verdict
+    };
+
+    // Build dynamic MathJax Steps
+    let stepsHtml = "";
+    const stepBox = (num, title, mathEq, desc) => `
+        <div style="background: var(--bg, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 15px; margin-bottom: 12px;">
+            <strong style="color: var(--primary, #2563eb);"><span style="background: rgba(37,99,235,0.08); padding: 2px 8px; border-radius: 4px; margin-right: 5px;">Step ${num}</span> ${title}</strong>
+            <div style="margin: 10px 0;">$$ ${mathEq} $$</div>
+            <span style="font-size:0.9rem; color: var(--text); line-height:1.5;">${desc}</span>
+        </div>
+    `;
+
+    stepsHtml += stepBox(1, "Ideal Lossless Resonant Frequency ($f_0$)", 
+        `f_0 = \\frac{1}{2\\pi\\sqrt{LC}} = \\frac{1}{2\\pi\\sqrt{${L.toExponential(2)}\\text{ H} \\cdot ${C.toExponential(2)}\\text{ F}}} = \\mathbf{${f0_disp}\\ \\text{${f0_unit}}}`,
+        "The ideal resonant frequency where reactive branch impedances cancel out completely under zero loss."
+    );
+
+    if (type === 'parallel') {
+        stepsHtml += stepBox(2, "Practical Parallel Resonant Frequency ($f_r$ / lossy)", 
+            `f_r = \\frac{1}{2\\pi}\\sqrt{\\frac{1}{LC} - \\frac{R_s^2}{L^2}} = \\frac{1}{2\\pi}\\sqrt{\\frac{1}{${L.toExponential(2)}\\cdot${C.toExponential(2)}} - \\frac{${Rs.toFixed(2)}^2}{${L.toExponential(2)}^2}} = \\mathbf{${fr_disp}\\ \\text{${fr_unit}}}`,
+            "In practical parallel inductors, winding DCR shifts the resonant peak downwards, detuning the filter."
+        );
+    } else {
+        stepsHtml += stepBox(2, "Series Resonant Frequency ($f_r$)",
+            `f_r = f_0 = \\mathbf{${fr_disp}\\ \\text{${fr_unit}}}`,
+            "In series systems, resistance does not shift the reactive cancelation point, keeping tuning at f0."
+        );
+    }
+
+    stepsHtml += stepBox(3, "Characteristic Surge Impedance ($Z_0$)", 
+        `Z_0 = \\sqrt{\\frac{L}{C}} = \\sqrt{\\frac{${L.toExponential(2)}}{${C.toExponential(2)}}} = \\mathbf{${Z0.toFixed(2)}\\ \\Omega}`,
+        "The ratio of current to voltage waves travelling along the LC network branches."
+    );
+
+    stepsHtml += stepBox(4, "Coil Quality Selectivity Index ($Q_{coil}$)", 
+        `Q_{coil} = \\frac{Z_0}{R_s} = \\frac{${Z0.toFixed(2)}}{${Rs.toFixed(3)}} = \\mathbf{${Q_s.toFixed(2)}}`,
+        "Selectivity rating of the inductor coil windings. Reduced series resistance increases coil quality."
+    );
+
+    if (type === 'parallel') {
+        stepsHtml += stepBox(5, "Equivalent Parallel Resistance ($R_{eq}$)", 
+            `R_d = \\frac{L}{C\\cdot R_s} = ${((Rs===0)?1e9:(L/(C*Rs))).toExponential(2)}\\ \\Omega \\Rightarrow R_{eq} = R_d \\parallel R_p = \\mathbf{${resData.Zmag.toExponential(2)}\\ \\Omega}`,
+            "Calculates the parallel combination of capacitor leakage load (Rp) and coil loss impedance (Rd)."
+        );
+    } else {
+        stepsHtml += stepBox(5, "Series Total Resistance ($R_{eq}$)", 
+            `R_{eq} = R_s = \\mathbf{${Rs.toFixed(2)}\\ \\Omega}`,
+            "Winding DCR forms the dominant series damping resistance at resonance."
+        );
+    }
+
+    stepsHtml += stepBox(6, "Overall System Quality Factor ($Q_{sys}$)", 
+        `Q_{sys} = \\mathbf{${Q.toFixed(2)}}`,
+        "The actual loaded selectivity factor, accounting for winding, load, and parallel resistance branches."
+    );
+
+    stepsHtml += stepBox(7, "Bandwidth & Half-Power Points ($BW$)", 
+        `BW = \\frac{f_r}{Q_{sys}} = \\mathbf{${bw_disp}\\ \\text{${bw_unit}}}`,
+        `The selectivity bandwidth between lower cutoff f1 = ${f1_disp} ${f1_unit} and upper cutoff f2 = ${f2_disp} ${f2_unit}.`
+    );
+
+    stepsHtml += stepBox(8, "System Damping Ratio ($\\zeta$)", 
+        `\\zeta = \\frac{1}{2Q_{sys}} = \\mathbf{${zeta.toFixed(4)}}`,
+        `Damping coefficient determines transient decay behavior. Zeta = ${zeta.toFixed(4)} indicates the circuit is ${zeta < 1 ? 'Underdamped (will ring)' : 'Overdamped (no ringing)'}.`
+    );
+
+    stepsHtml += stepBox(9, "Filter Impedance & Phase at operating Freq ($f_{op}$)", 
+        `Z(j\\omega_{op}) = \\mathbf{${opData.Zmag.toExponential(3)}\\ \\Omega}\\ \\text{at phase}\\ \\mathbf{${opData.phase.toFixed(1)}^\\circ}`,
+        `Evaluates the impedance magnitude and phase angle at the target operating frequency (fop = ${Fop_val} ${Fop_unit_label}).`
+    );
+
+    stepsHtml += stepBox(10, "IEEE Std 18 Capacitor Sizing Stress Check", 
+        `V_{C,res} = ${type === 'series' ? 'Q \\cdot V_{in}' : 'V_{in}'} = \\mathbf{${resData.V_C.toFixed(1)}\\text{ V RMS}} \\quad (\\text{Limit: } 1.1\\cdot V_{in} = ${(1.1*Vin).toFixed(1)}\\text{ V})`,
+        `Stress Check Verdict: **${stress_verdict}**`
+    );
+
+    document.getElementById('calculation-details').innerHTML = stepsHtml;
+    document.getElementById('result-container').classList.remove('hidden');
+
+    // Trigger MathJax typeset
+    if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([document.getElementById('result-container')]);
+    }
+
+    // Draw Charts
+    drawBodePlot(L, C, Rs, Rp, fr, type);
+    drawTransient(fr, zeta, w0);
+}
+
+// --- DRAW BODE PLOTS (DUAL AXIS IMPEDANCE AND PHASE) ---
+function drawBodePlot(L, C, Rs, Rp, fr, type) {
+    const ctx = document.getElementById('magChart').getContext('2d');
+    if(magChartInstance) magChartInstance.destroy();
+
+    const pointsZ = [];
+    const pointsPhase = [];
+    const labels = [];
+    const steps = 60;
+    const startF = fr * 0.1;
+    const endF = fr * 10;
+
+    for(let i=0; i<=steps; i++) {
+        const f = startF * Math.pow(endF/startF, i/steps);
+        const w = 2*Math.PI*f;
+        labels.push(f < 1e6 ? (f/1e3).toFixed(1)+'k' : (f/1e6).toFixed(1)+'M');
+
+        const data = solveRLC(f, L, C, Rs, Rp, 10, type);
+        pointsZ.push(data.Zmag);
+        pointsPhase.push(data.phase);
+    }
+
+    const gridColor = 'rgba(0,0,0,0.05)';
+    const axisFont = { size: 9, family: 'Inter' };
+
+    magChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Impedance |Z| (Ω)',
+                    data: pointsZ,
+                    borderColor: '#2563EB',
+                    backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                    fill: true,
+                    pointRadius: 0,
+                    borderWidth: 2.5,
+                    yAxisID: 'y'
                 },
-                options: common
-            });
-
-            // 2. Q-Factor (Selectivity)
-            new Chart(document.getElementById('theoryChart2'), {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 41}, (_, i) => i - 20),
-                    datasets: [
-                        { label: 'High Q', data: Array.from({length: 41}, (_, i) => Math.exp(-Math.pow(i-20, 2)/2)), borderColor: '#10B981', borderWidth: 3 },
-                        { label: 'Low Q', data: Array.from({length: 41}, (_, i) => Math.exp(-Math.pow(i-20, 2)/50)), borderColor: '#94A3B8', borderDash: [5,5] }
-                    ]
-                },
-                options: common
-            });
-
-            // 3. Series vs Parallel
-            new Chart(document.getElementById('theoryChart3'), {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 41}, (_, i) => i - 20),
-                    datasets: [
-                        { label: 'Series (V)', data: Array.from({length: 41}, (_, i) => Math.pow(i-20, 2) + 10), borderColor: '#2563EB' },
-                        { label: 'Parallel (Inverted)', data: Array.from({length: 41}, (_, i) => 100 / (1 + Math.pow(i-20, 2)/10)), borderColor: '#EF4444' }
-                    ]
-                },
-                options: common
-            });
-
-            // 4. Parasitics (SRF)
-            new Chart(document.getElementById('theoryChart4'), {
-                type: 'line',
-                data: {
-                    labels: [1, 10, 50, 80, 100, 120, 150],
-                    datasets: [{
-                        data: [10, 30, 80, 200, 10, 150, 400], // Shows resonance then spike
-                        borderColor: '#6366F1',
-                        tension: 0.4
-                    }]
-                },
-                options: common
-            });
-        }
-
-        function initFaqCharts() {
-            const axisFont = { size: 9, family: 'Inter' };
-            const gridColor = 'rgba(0,0,0,0.06)';
-
-            // 1. Radio Selectivity — High Q vs Low Q resonance peaks
-            new Chart(document.getElementById('faqChart1'), {
-                type: 'line',
-                data: {
-                    labels: Array.from({length: 50}, (_, i) => (0.5 + i * 0.02).toFixed(2)),
-                    datasets: [
-                        { label: 'High Q (Q=50)', data: Array.from({length: 50}, (_, i) => { const x = 0.5 + i*0.02; return 1/(1+Math.pow((x-1)*50,2)); }), borderColor: '#2563EB', borderWidth: 2.5, pointRadius: 0, fill: true, backgroundColor: 'rgba(37,99,235,0.12)' },
-                        { label: 'Low Q (Q=5)', data: Array.from({length: 50}, (_, i) => { const x = 0.5 + i*0.02; return 1/(1+Math.pow((x-1)*5,2)); }), borderColor: '#F59E0B', borderWidth: 2, borderDash: [5,3], pointRadius: 0 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 12 } } }, scales: { x: { display: true, title: { display: true, text: 'f / f₀', font: axisFont }, ticks: { maxTicksLimit: 5, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'Gain', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
-            });
-
-            // 2. Voltage Magnification — Bar chart showing danger
-            new Chart(document.getElementById('faqChart2'), {
-                type: 'bar',
-                data: {
-                    labels: ['Source (Vs)', 'V across L', 'V across C'],
-                    datasets: [{
-                        label: 'Voltage (V)',
-                        data: [230, 2300, 2300],
-                        backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
-                        borderRadius: 6,
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: 'Volts (Q=10)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { ticks: { font: { size: 8, family: 'Inter' } } } } }
-            });
-
-            // 3. Damping Regimes — Underdamped vs Critical vs Overdamped step response
-            const tArr = Array.from({length: 60}, (_, i) => i * 0.1);
-            new Chart(document.getElementById('faqChart3'), {
-                type: 'line',
-                data: {
-                    labels: tArr.map(t => t.toFixed(1)),
-                    datasets: [
-                        { label: 'ζ=0.1 (Under)', data: tArr.map(t => 1 - Math.exp(-0.1*t) * Math.cos(0.995*t)), borderColor: '#EF4444', borderWidth: 2, pointRadius: 0 },
-                        { label: 'ζ=1.0 (Critical)', data: tArr.map(t => 1 - Math.exp(-t)*(1+t)), borderColor: '#10B981', borderWidth: 2.5, pointRadius: 0 },
-                        { label: 'ζ=2.0 (Over)', data: tArr.map(t => 1 - Math.exp(-2*t)), borderColor: '#94A3B8', borderWidth: 2, borderDash: [4,3], pointRadius: 0 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, title: { display: true, text: 'Time (τ)', font: axisFont }, ticks: { maxTicksLimit: 5, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'V(t)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
-            });
-
-            // 4. SRF — Inductor impedance showing inductive→capacitive transition
-            const srfFreq = Array.from({length: 50}, (_, i) => (i+1) * 2);
-            new Chart(document.getElementById('faqChart4'), {
-                type: 'line',
-                data: {
-                    labels: srfFreq.map(f => f + 'M'),
-                    datasets: [{
-                        label: 'Impedance (Ω)',
-                        data: srfFreq.map(f => { const fr = 60; return Math.abs(1 / (1/(2*Math.PI*f*0.01) - 2*Math.PI*f*0.0001))/10 + 5; }),
-                        borderColor: '#6366F1', borderWidth: 2.5, pointRadius: 0,
-                        fill: true, backgroundColor: 'rgba(99,102,241,0.08)',
-                        segment: { borderColor: ctx => ctx.p0DataIndex > 28 ? '#EF4444' : '#6366F1' }
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, annotation: {} }, scales: { x: { display: true, title: { display: true, text: 'Frequency', font: axisFont }, ticks: { maxTicksLimit: 5, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: '|Z| (Ω)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
-            });
-
-            // 5. Wave Trap — Parallel impedance peak blocking carrier frequency
-            const wtFreq = Array.from({length: 50}, (_, i) => 40 + i * 2);
-            new Chart(document.getElementById('faqChart5'), {
-                type: 'line',
-                data: {
-                    labels: wtFreq.map(f => f + 'kHz'),
-                    datasets: [{
-                        label: '|Z| Parallel Tank',
-                        data: wtFreq.map(f => { const fr = 90; const Q = 20; return 1000 / (1 + Math.pow(Q*(f/fr - fr/f), 2)); }),
-                        borderColor: '#1E3A8A', borderWidth: 2.5, pointRadius: 0,
-                        fill: true, backgroundColor: 'rgba(30,58,138,0.1)'
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: true, title: { display: true, text: 'Carrier Freq', font: axisFont }, ticks: { maxTicksLimit: 5, font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: '|Z| (Ω)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
-            });
-
-            // 6. Skin Effect — AC Resistance vs Frequency
-            const seFreq = Array.from({length: 40}, (_, i) => (i+1) * 25);
-            new Chart(document.getElementById('faqChart6'), {
-                type: 'line',
-                data: {
-                    labels: seFreq.map(f => f >= 1000 ? (f/1000)+'G' : f+'M'),
-                    datasets: [
-                        { label: 'Rac/Rdc', data: seFreq.map(f => 1 + 0.8 * Math.sqrt(f/25)), borderColor: '#F59E0B', borderWidth: 2.5, pointRadius: 0, fill: true, backgroundColor: 'rgba(245,158,11,0.1)' },
-                        { label: 'Q Factor', data: seFreq.map(f => 100 / (1 + 0.8 * Math.sqrt(f/25))), borderColor: '#10B981', borderWidth: 2, borderDash: [5,3], pointRadius: 0 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, title: { display: true, text: 'Frequency', font: axisFont }, ticks: { maxTicksLimit: 5, font: axisFont }, grid: { color: gridColor } }, y: { display: true, ticks: { font: axisFont }, grid: { color: gridColor } } }, elements: { point: { radius: 0 } } }
-            });
-
-            // 7. Temperature Drift — Resonant frequency shift vs temperature
-            const temps = Array.from({length: 9}, (_, i) => -40 + i * 20);
-            new Chart(document.getElementById('faqChart7'), {
-                type: 'line',
-                data: {
-                    labels: temps.map(t => t + '°C'),
-                    datasets: [
-                        { label: 'X7R Cap', data: temps.map(t => 1000 + (t-25)*0.8 + Math.pow((t-25)/30, 2)*15), borderColor: '#EF4444', borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#EF4444' },
-                        { label: 'C0G/NPO Cap', data: temps.map(t => 1000 + (t-25)*0.01), borderColor: '#10B981', borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#10B981' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, title: { display: true, text: 'Temperature', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'f₀ (kHz)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
-            });
-
-            // 8. EMI Shielding — Radiated field with and without shielding
-            new Chart(document.getElementById('faqChart8'), {
-                type: 'bar',
-                data: {
-                    labels: ['30MHz', '100MHz', '300MHz', '1GHz'],
-                    datasets: [
-                        { label: 'Unshielded', data: [85, 72, 60, 45], backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4 },
-                        { label: 'Shielded', data: [25, 18, 12, 8], backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 4 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'top', labels: { font: axisFont, boxWidth: 10 } } }, scales: { x: { display: true, ticks: { font: axisFont }, grid: { color: gridColor } }, y: { display: true, title: { display: true, text: 'dBµV/m', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } } } }
-            });
-        }
-
-        function displayMessage(message, type = "info") {
-            let messageBox = document.getElementById('message-box');
-            if (!messageBox) return;
-            messageBox.textContent = message;
-            if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
-            else messageBox.style.backgroundColor = 'var(--primary)';
-            messageBox.classList.add('show');
-            setTimeout(() => messageBox.classList.remove('show'), 4000);
-        }
-
-        function loadPreset(key) {
-            const s = {
-                'rfid': {l:1.0, lu:'1e-6', c:137.7, cu:'1e-12', rs:0.5, ru:'1', rp:1e6, rpu:'1', t:'series'}, 
-                'trap': {l:0.2, lu:'1e-3', c:12.6, cu:'1e-9', rs:0.1, ru:'1', rp:5000, rpu:'1', t:'parallel'}, 
-                'snubber': {l:10, lu:'1e-6', c:100, cu:'1e-9', rs:10, ru:'1', rp:1e6, rpu:'1', t:'series'}
-            };
-            const d = s[key];
-            if(d) {
-                document.getElementById('l-val').value = d.l;
-                document.getElementById('l-unit').value = d.lu;
-                document.getElementById('c-val').value = d.c;
-                document.getElementById('c-unit').value = d.cu;
-                document.getElementById('rs-val').value = d.rs;
-                document.getElementById('rs-unit').value = d.ru;
-                document.getElementById('rp-val').value = d.rp;
-                document.getElementById('rp-unit').value = d.rpu;
-                document.getElementById('circuit-type').value = d.t;
-                displayMessage("Scenario Loaded Successfully", "success");
-            }
-        }
-
-        // --- CALCULATION ENGINE ---
-        let magChartInstance = null;
-        let transChartInstance = null;
-
-        document.getElementById('calculate-btn').addEventListener('click', function() {
-            // 1. Inputs
-            const L = parseFloat(document.getElementById('l-val').value) * parseFloat(document.getElementById('l-unit').value);
-            const C = parseFloat(document.getElementById('c-val').value) * parseFloat(document.getElementById('c-unit').value);
-            const Rs = parseFloat(document.getElementById('rs-val').value) * parseFloat(document.getElementById('rs-unit').value);
-            const Rp = parseFloat(document.getElementById('rp-val').value) * parseFloat(document.getElementById('rp-unit').value);
-            const type = document.getElementById('circuit-type').value;
-
-            if(L<=0 || C<=0 || Rs<0) return displayMessage("Please check inputs. L/C > 0.", "error");
-
-            // 2. Physics
-            const omega0 = 1 / Math.sqrt(L*C);
-            const f0 = omega0 / (2 * Math.PI);
-            const Z0 = Math.sqrt(L/C);
-
-            const Q_s = (Rs === 0) ? 1e9 : Z0 / Rs;
-            const Q_p = Rp / Z0;
-            
-            let Q = 0;
-            if(type === 'series') {
-                Q = Q_s;
-            } else {
-                Q = (Q_s * Q_p) / (Q_s + Q_p);
-            }
-
-            const BW = f0 / Q;
-            const zeta = 1 / (2*Q);
-
-            let Zr = 0;
-            if(type === 'series') Zr = Rs;
-            else {
-                const Rd = (Rs===0) ? 1e9 : L / (C * Rs);
-                Zr = (Rd * Rp) / (Rd + Rp);
-            }
-
-            const isOscillatory = zeta < 1;
-            const fd = isOscillatory ? f0 * Math.sqrt(1 - zeta*zeta) : 0;
-
-            // 3. Formats
-            const formatFreq = (f) => {
-                if(f >= 1e6) return [(f/1e6).toFixed(3), "MHz"];
-                if(f >= 1e3) return [(f/1e3).toFixed(3), "kHz"];
-                return [f.toFixed(1), "Hz"];
-            };
-            const [f0_disp, f0_unit] = formatFreq(f0);
-            const [fn_disp, fn_unit] = formatFreq(fd); // Natural damped
-            const [bw_disp, bw_unit] = formatFreq(BW);
-
-            // 4. Render Text
-            // Ensure elements exist before setting
-            const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
-            
-            setVal('res-fr', f0_disp);
-            setVal('unit-fr', f0_unit);
-            setVal('res-fn', isOscillatory ? fn_disp : "N/A");
-            setVal('unit-fn', isOscillatory ? fn_unit : "");
-            setVal('res-omega', omega0.toExponential(2));
-            setVal('res-z0', Z0.toFixed(2));
-            setVal('res-q', Q.toFixed(2));
-            setVal('res-bw', bw_disp);
-            setVal('unit-bw', bw_unit);
-            setVal('res-zeta', zeta.toFixed(3));
-            setVal('res-zr', Zr.toExponential(2));
-
-            let status = "";
-            if(zeta < 1) status = "Underdamped (Oscillatory)";
-            else if(zeta === 1) status = "Critically Damped";
-            else status = "Overdamped (No Ringing)";
-            setVal('status-text', status);
-
-            // 5. Math Steps
-            const math = (t) => `$$${t}$$`;
-            let html = `<div class="calculation-step">`;
-            html += `<strong>1. Resonance ($f_0$):</strong><br>`;
-            html += math(`f_0 = \\frac{1}{2\\pi\\sqrt{LC}} = \\frac{1}{2\\pi\\sqrt{${L.toExponential(1)} \\cdot ${C.toExponential(1)}}} = \\mathbf{${f0_disp} \\text{ ${f0_unit}}}`);
-            html += `</div>`;
-
-            html += `<div class="calculation-step">`;
-            html += `<strong>2. Quality Factor (Q) & Selectivity:</strong><br>`;
-            html += math(`Z_0 = \\sqrt{L/C} = ${Z0.toFixed(1)} \\Omega`);
-            if(type==='parallel') {
-                html += math(`Q_{coil} = Z_0/R_s = ${(Q_s).toFixed(1)}, \\quad Q_{load} = R_p/Z_0 = ${(Q_p).toFixed(1)}`);
-                html += math(`Q_{sys} = (Q_{coil} || Q_{load}) = \\mathbf{${Q.toFixed(2)}}`);
-            } else {
-                html += math(`Q = Z_0 / R_s = \\mathbf{${Q.toFixed(2)}}`);
-            }
-            html += math(`\\text{Bandwidth} = f_0 / Q = \\mathbf{${bw_disp} \\text{ ${bw_unit}}}`);
-            html += `</div>`;
-
-            html += `<div class="calculation-step">`;
-            html += `<strong>3. Impedance at Resonance ($Z_r$):</strong><br>`;
-            html += math(`Z_r = \\mathbf{${Zr.toExponential(2)} \\Omega} \\quad (${type === 'series' ? 'Minimum' : 'Maximum'})`);
-            html += `</div>`;
-
-            // Inject derivation into DOM
-            document.getElementById('calculation-details').innerHTML = html;
-            document.getElementById('result-container').classList.remove('hidden');
-            if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) { MathJax.typesetPromise(); }
-
-            // --- Draw Impedance Chart ---
-            const ctx = document.getElementById('magChart').getContext('2d');
-            if(magChartInstance) magChartInstance.destroy();
-
-            // Range: 0.1 f0 to 10 f0
-            const points = [];
-            const labels = [];
-            const steps = 100;
-            const startF = f0 * 0.1;
-            const endF = f0 * 10;
-
-            for(let i=0; i<=steps; i++) {
-                const f = startF * Math.pow(endF/startF, i/steps);
-                const w = 2*Math.PI*f;
-                labels.push(f < 1e6 ? (f/1e3).toFixed(1)+'k' : (f/1e6).toFixed(1)+'M');
-
-                // Impedance calc with parasitics
-                let Zmag = 0;
-                if(type === 'series') {
-                    const X = (w*L) - (1/(w*C));
-                    Zmag = Math.sqrt(Rs*Rs + X*X);
-                } else {
-                    const denomCoil = Rs*Rs + w*w*L*L;
-                    const G_coil = Rs / denomCoil;
-                    const B_coil = -(w*L) / denomCoil;
-                    const G_tot = G_coil + (1/Rp);
-                    const B_tot = B_coil + (w*C);
-                    const Ymag = Math.sqrt(G_tot*G_tot + B_tot*B_tot);
-                    Zmag = 1/Ymag;
+                {
+                    label: 'Phase Angle (deg)',
+                    data: pointsPhase,
+                    borderColor: '#F59E0B',
+                    borderDash: [5, 3],
+                    fill: false,
+                    pointRadius: 0,
+                    borderWidth: 2,
+                    yAxisID: 'y1'
                 }
-                points.push(Zmag);
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { ticks: { maxTicksLimit: 8, font: axisFont }, grid: { color: gridColor } },
+                y: { type: 'logarithmic', position: 'left', title: { display: true, text: 'Impedance Magnitude (Ω)', font: axisFont }, ticks: { font: axisFont }, grid: { color: gridColor } },
+                y1: { type: 'linear', position: 'right', title: { display: true, text: 'Phase (degrees)', font: axisFont }, ticks: { font: axisFont }, grid: { drawOnChartArea: false } }
+            },
+            plugins: {
+                legend: { labels: { font: axisFont } }
             }
-
-            magChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Impedance |Z| (Ω)',
-                        data: points,
-                        borderColor: '#2563EB',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        fill: true,
-                        pointRadius: 0,
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { ticks: { maxTicksLimit: 8 } },
-                        y: { type: 'logarithmic', title: {display:true, text:'Ohms'} }
-                    }
-                }
-            });
-
-            // --- Draw Step Response ---
-            drawTransient(f0, zeta, omega0);
-        });
-
-        function drawTransient(f0, zeta, w0) {
-            const ctx = document.getElementById('transientChart').getContext('2d');
-            if(transChartInstance) transChartInstance.destroy();
-
-            const points = [];
-            const labels = [];
-            const T_period = 1/f0;
-            const duration = (zeta < 0.1) ? 20*T_period : 10*T_period;
-            const steps = 200;
-            const wd = w0 * Math.sqrt(1 - zeta*zeta);
-
-            for(let i=0; i<=steps; i++) {
-                const t = (i/steps) * duration;
-                labels.push((t*1e6).toFixed(1)); // us
-
-                let val = 0;
-                if(zeta < 1) {
-                    const decay = Math.exp(-zeta * w0 * t);
-                    const osc = Math.cos(wd*t) + (zeta/Math.sqrt(1-zeta*zeta))*Math.sin(wd*t);
-                    val = 1 - decay * osc;
-                } else if (zeta === 1) {
-                    val = 1 - Math.exp(-w0*t)*(1 + w0*t);
-                } else {
-                    val = 1 - Math.exp(-zeta*w0*t); 
-                }
-                points.push(val);
-            }
-
-            transChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Step Response (Voltage)',
-                        data: points,
-                        borderColor: '#10B981',
-                        borderWidth: 2,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { title: {display:true, text:'Time (Âµs)'}, ticks:{maxTicksLimit: 8} },
-                        y: { title: {display:true, text:'Amplitude (V)'} }
-                    }
-                }
-            });
         }
-    </script>
+    });
+}
+
+// --- DRAW STEP RESPONSE TRANSIENT ---
+function drawTransient(f0, zeta, w0) {
+    const ctx = document.getElementById('transientChart').getContext('2d');
+    if(transChartInstance) transChartInstance.destroy();
+
+    const points = [];
+    const labels = [];
+    const T_period = 1/f0;
+    const duration = (zeta < 0.1) ? 15*T_period : 8*T_period;
+    const steps = 120;
+    const wd = w0 * Math.sqrt(Math.abs(1 - zeta*zeta));
+
+    for(let i=0; i<=steps; i++) {
+        const t = (i/steps) * duration;
+        labels.push((t*1e6).toFixed(1)); // microseconds
+
+        let val = 0;
+        if(zeta < 1) {
+            const decay = Math.exp(-zeta * w0 * t);
+            const osc = Math.cos(wd*t) + (zeta/Math.sqrt(1-zeta*zeta))*Math.sin(wd*t);
+            val = 1 - decay * osc;
+        } else if (zeta === 1) {
+            val = 1 - Math.exp(-w0*t)*(1 + w0*t);
+        } else {
+            val = 1 - Math.exp(-zeta*w0*t); 
+        }
+        points.push(val);
+    }
+
+    const gridColor = 'rgba(0,0,0,0.05)';
+    const axisFont = { size: 9, family: 'Inter' };
+
+    transChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Step Response (Normalized)',
+                data: points,
+                borderColor: '#10B981',
+                borderWidth: 2.5,
+                fill: false,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { title: {display:true, text:'Time (µs)', font: axisFont}, ticks:{maxTicksLimit: 8, font: axisFont}, grid: { color: gridColor } },
+                y: { title: {display:true, text:'Response V(t)', font: axisFont}, ticks: { font: axisFont }, grid: { color: gridColor } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+
+// --- PRESETS LOADING UTILITY ---
+function loadPreset(key) {
+    const s = {
+        'rfid': {l:1.0, lu:'1e-6', c:137.7, cu:'1e-12', rs:0.5, ru:'1', rp:1e6, rpu:'1', v:10, vu:'1', fop:13.56, fopu:'1e6', t:'series'}, 
+        'trap': {l:0.2, lu:'1e-3', c:12.6, cu:'1e-9', rs:0.1, ru:'1', rp:5000, rpu:'1', v:230, vu:'1', fop:50, fopu:'1', t:'parallel'}, 
+        'snubber': {l:10, lu:'1e-6', c:100, cu:'1e-9', rs:10, ru:'1', rp:1e6, rpu:'1', v:100, vu:'1', fop:10, fopu:'1e3', t:'series'}
+    };
+    const d = s[key];
+    if(d) {
+        document.getElementById('l-val').value = d.l;
+        document.getElementById('l-unit').value = d.lu;
+        document.getElementById('c-val').value = d.c;
+        document.getElementById('c-unit').value = d.cu;
+        document.getElementById('rs-val').value = d.rs;
+        document.getElementById('rs-unit').value = d.ru;
+        document.getElementById('rp-val').value = d.rp;
+        document.getElementById('rp-unit').value = d.rpu;
+        document.getElementById('v-val').value = d.v;
+        document.getElementById('v-unit').value = d.vu;
+        document.getElementById('fop-val').value = d.fop;
+        document.getElementById('fop-unit').value = d.fopu;
+        document.getElementById('circuit-type').value = d.t;
+        
+        updateCircuitSchematic();
+        displayMessage("Scenario Preset Loaded Successfully", "success");
+    }
+}
+
+// --- PRE-WARPED CHARTS ---
+function initTheoryCharts() {
+    const common = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, elements: { point: { radius: 0 } }, scales: { x: { display: false }, y: { display: false } } };
+    
+    // 1. Resonance Dynamics
+    new Chart(document.getElementById('theoryChart1'), {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 50}, (_, i) => i),
+            datasets: [
+                { label: 'Inductor', data: Array.from({length: 50}, (_, i) => Math.pow(Math.sin(i/5), 2)), borderColor: '#2563EB', fill: true, backgroundColor: 'rgba(37, 99, 235, 0.08)' },
+                { label: 'Capacitor', data: Array.from({length: 50}, (_, i) => Math.pow(Math.cos(i/5), 2)), borderColor: '#F59E0B', fill: true, backgroundColor: 'rgba(245, 158, 11, 0.08)' }
+            ]
+        },
+        options: common
+    });
+
+    // 2. Q-Factor
+    new Chart(document.getElementById('theoryChart2'), {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 41}, (_, i) => i - 20),
+            datasets: [
+                { label: 'High Q', data: Array.from({length: 41}, (_, i) => Math.exp(-Math.pow(i-20, 2)/2)), borderColor: '#10B981', borderWidth: 2.5 },
+                { label: 'Low Q', data: Array.from({length: 41}, (_, i) => Math.exp(-Math.pow(i-20, 2)/50)), borderColor: '#94A3B8', borderDash: [4,4] }
+            ]
+        },
+        options: common
+    });
+
+    // 3. Series vs Parallel
+    new Chart(document.getElementById('theoryChart3'), {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 41}, (_, i) => i - 20),
+            datasets: [
+                { data: Array.from({length: 41}, (_, i) => Math.pow(i-20, 2) + 10), borderColor: '#2563EB' },
+                { data: Array.from({length: 41}, (_, i) => 100 / (1 + Math.pow(i-20, 2)/10)), borderColor: '#EF4444' }
+            ]
+        },
+        options: common
+    });
+
+    // 4. Real World Parasitics
+    new Chart(document.getElementById('theoryChart4'), {
+        type: 'line',
+        data: {
+            labels: [1, 10, 50, 80, 100, 120, 150],
+            datasets: [{
+                data: [10, 30, 80, 200, 10, 150, 400],
+                borderColor: '#6366F1',
+                tension: 0.4
+            }]
+        },
+        options: common
+    });
+}
+
+function initFaqCharts() {
+    const axisFont = { size: 9, family: 'Inter' };
+    const gridColor = 'rgba(0,0,0,0.05)';
+    const commonOptions = (titleX, titleY) => ({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { display: true, ticks: { font: axisFont, maxTicksLimit: 5 }, grid: { color: gridColor }, title: { display: true, text: titleX, font: axisFont } },
+            y: { display: true, ticks: { font: axisFont }, grid: { color: gridColor }, title: { display: true, text: titleY, font: axisFont } }
+        }
+    });
+
+    // FAQ 1
+    new Chart(document.getElementById('faqChart1'), {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 50}, (_, i) => (0.5 + i * 0.02).toFixed(2)),
+            datasets: [
+                { data: Array.from({length: 50}, (_, i) => { const x = 0.5 + i*0.02; return 1/(1+Math.pow((x-1)*40,2)); }), borderColor: '#2563EB', borderWidth: 2, pointRadius: 0 },
+                { data: Array.from({length: 50}, (_, i) => { const x = 0.5 + i*0.02; return 1/(1+Math.pow((x-1)*4,2)); }), borderColor: '#F59E0B', borderWidth: 2, borderDash: [4,4], pointRadius: 0 }
+            ]
+        },
+        options: commonOptions('f / f₀', 'Gain')
+    });
+
+    // FAQ 2
+    new Chart(document.getElementById('faqChart2'), {
+        type: 'bar',
+        data: {
+            labels: ['Source', 'V_L', 'V_C'],
+            datasets: [{
+                data: [230, 2300, 2300],
+                backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+                borderRadius: 4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { font: axisFont }, grid: { color: gridColor }, title: { display: true, text: 'Voltage (Q=10)', font: axisFont } }, y: { ticks: { font: axisFont } } } }
+    });
+
+    // FAQ 3
+    const tArr = Array.from({length: 60}, (_, i) => i * 0.1);
+    new Chart(document.getElementById('faqChart3'), {
+        type: 'line',
+        data: {
+            labels: tArr.map(t => t.toFixed(1)),
+            datasets: [
+                { data: tArr.map(t => 1 - Math.exp(-0.15*t) * Math.cos(0.99*t)), borderColor: '#EF4444', borderWidth: 2, pointRadius:0 },
+                { data: tArr.map(t => 1 - Math.exp(-t)*(1+t)), borderColor: '#10B981', borderWidth: 2.5, pointRadius:0 }
+            ]
+        },
+        options: commonOptions('Time (τ)', 'V(t)')
+    });
+
+    // FAQ 4
+    const srfFreq = Array.from({length: 50}, (_, i) => i + 1);
+    new Chart(document.getElementById('faqChart4'), {
+        type: 'line',
+        data: {
+            labels: srfFreq.map(f => f + 'M'),
+            datasets: [{
+                data: srfFreq.map(f => { return Math.abs(1 / (1/(2*Math.PI*f*0.01) - 2*Math.PI*f*0.0001))/10 + 5; }),
+                borderColor: '#6366F1', borderWidth: 2, pointRadius: 0
+            }]
+        },
+        options: commonOptions('Frequency', '|Z| (Ω)')
+    });
+
+    // FAQ 5
+    const wtFreq = Array.from({length: 50}, (_, i) => 40 + i * 2);
+    new Chart(document.getElementById('faqChart5'), {
+        type: 'line',
+        data: {
+            labels: wtFreq.map(f => f + 'k'),
+            datasets: [{
+                data: wtFreq.map(f => { const fr = 90; return 1000 / (1 + Math.pow(15*(f/fr - fr/f), 2)); }),
+                borderColor: '#1E3A8A', fill: true, backgroundColor: 'rgba(30,58,138,0.06)', pointRadius: 0
+            }]
+        },
+        options: commonOptions('Frequency', '|Z| (Ω)')
+    });
+
+    // FAQ 6
+    const seFreq = Array.from({length: 40}, (_, i) => i + 1);
+    new Chart(document.getElementById('faqChart6'), {
+        type: 'line',
+        data: {
+            labels: seFreq.map(f => f + 'M'),
+            datasets: [{
+                data: seFreq.map(f => 1 + 0.8 * Math.sqrt(f)),
+                borderColor: '#F59E0B', pointRadius: 0
+            }]
+        },
+        options: commonOptions('Frequency', 'Rac / Rdc')
+    });
+
+    // FAQ 7
+    const temps = Array.from({length: 9}, (_, i) => -40 + i * 20);
+    new Chart(document.getElementById('faqChart7'), {
+        type: 'line',
+        data: {
+            labels: temps.map(t => t + '°'),
+            datasets: [
+                { label: 'X7R', data: temps.map(t => 1000 + (t-25)*0.8 + Math.pow((t-25)/30,2)*10), borderColor: '#EF4444', pointRadius: 2 },
+                { label: 'C0G', data: temps.map(t => 1000 + (t-25)*0.01), borderColor: '#10B981', pointRadius: 2 }
+            ]
+        },
+        options: commonOptions('Temperature', 'Capacitance')
+    });
+
+    // FAQ 8
+    new Chart(document.getElementById('faqChart8'), {
+        type: 'bar',
+        data: {
+            labels: ['Unshielded', 'Shielded'],
+            datasets: [{
+                data: [75, 12],
+                backgroundColor: ['#EF4444', '#10B981']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: axisFont } }, y: { title: { display: true, text: 'EMI (dBµV/m)', font: axisFont }, ticks: { font: axisFont } } } }
+    });
+
+    // FAQ 9: ESR vs Q-factor
+    new Chart(document.getElementById('faqChart9'), {
+        type: 'line',
+        data: {
+            labels: ['0.01', '0.05', '0.1', '0.2', '0.5', '1.0', '2.0'],
+            datasets: [{
+                data: [50, 45, 41, 34, 22, 13, 7],
+                borderColor: '#10B981',
+                borderWidth: 2.5,
+                fill: true,
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                pointRadius: 0
+            }]
+        },
+        options: commonOptions('Capacitor ESR (Ω)', 'Overall Q-Factor')
+    });
+
+    // FAQ 10: Manufacturing detuning
+    new Chart(document.getElementById('faqChart10'), {
+        type: 'line',
+        data: {
+            labels: ['-10%', '-5%', 'Nominal', '+5%', '+10%'],
+            datasets: [{
+                data: [167.3, 163.2, 159.2, 155.3, 151.7],
+                borderColor: '#EF4444',
+                borderWidth: 2.5,
+                fill: true,
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                pointRadius: 0
+            }]
+        },
+        options: commonOptions('Component Tolerance Shift', 'Actual Resonance (kHz)')
+    });
+}
+
+// --- BRANDED PDF REPORT EXPORTER ---
+function generatePDF() {
+    if (!lastResult) {
+        displayMessage("Please perform the simulation calculations first.", "error");
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.width;
+    
+    // Header / Footer callback
+    const addHeaderFooter = (pdfInstance, pageNum, totalPages) => {
+        pdfInstance.setFont("helvetica", "normal");
+        pdfInstance.setFontSize(8);
+        pdfInstance.setTextColor(100, 116, 139);
+        
+        // Header
+        pdfInstance.text("Design Calculators - Industrial RLC Filter Tuning Verification Report", 15, 10);
+        pdfInstance.setDrawColor(226, 232, 240);
+        pdfInstance.line(15, 12, pageWidth - 15, 12);
+        
+        // Footer
+        const footerText = "Page " + pageNum + " of " + totalPages;
+        pdfInstance.text(footerText, pageWidth - 15 - pdfInstance.getTextWidth(footerText), 287);
+        pdfInstance.text("https://designcalculators.co.in/lcresonancecalculator", 15, 287);
+        pdfInstance.line(15, 283, pageWidth - 15, 283);
+    };
+    
+    // Document Title
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.setTextColor(30, 41, 59);
+    pdf.text("RLC Resonance & Harmonic Filter Report", 15, 22);
+    
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.text("Applicable Standards: IEEE Std 18, IEEE 519, IEC 61642, IS 13925", 15, 27);
+    pdf.text("Date of Sizing: " + new Date().toLocaleDateString(), 15, 32);
+    
+    // Section 1: Inputs
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("1. Input Design Parameters", 15, 42);
+    
+    const inputRows = [
+        ["Filter Topology", lastResult.type.toUpperCase() + " RLC"],
+        ["Filter Inductance (L)", lastResult.L_val + " " + lastResult.L_unit_label],
+        ["Filter Capacitance (C)", lastResult.C_val + " " + lastResult.C_unit_label],
+        ["Series coil resistance (Rs)", lastResult.Rs_val + " " + lastResult.Rs_unit_label],
+        ["Parallel Load / Leakage (Rp)", lastResult.Rp_val + " " + lastResult.Rp_unit_label],
+        ["System Nominal Voltage (Vin)", lastResult.Vin_val + " " + lastResult.Vin_unit_label],
+        ["Operating / Target Freq (Fop)", lastResult.Fop_val + " " + lastResult.Fop_unit_label]
+    ];
+    
+    pdf.autoTable({
+        startY: 45,
+        head: [["Filter Parameter", "Design Value"]],
+        body: inputRows,
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235] },
+        margin: { left: 15, right: 15 },
+        styles: { fontSize: 9 }
+    });
+    
+    // Section 2: Results
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("2. Calculated Resonant & Impedance Sizing Results", 15, pdf.lastAutoTable.finalY + 10);
+    
+    const resRows = [
+        ["Resonant Frequency (fr)", lastResult.fr_disp + " " + lastResult.fr_unit],
+        ["Quality Selectivity Index (Q)", lastResult.Q.toFixed(2)],
+        ["Bandwidth (-3dB)", lastResult.bw_disp + " " + lastResult.bw_unit],
+        ["Damping Coefficient (Zeta)", lastResult.zeta.toFixed(4)],
+        ["Resonant Impedance (Zr)", lastResult.Zr.toExponential(3) + " Ohms"],
+        ["Phase Angle at Fop", lastResult.phase_fop.toFixed(2) + " deg"],
+        ["Impedance Magnitude at Fop", lastResult.Zmag_fop.toExponential(3) + " Ohms"],
+        ["Capacitor Voltage at fr", lastResult.Vc_res.toFixed(1) + " V RMS"],
+        ["Inductor Voltage at fr", lastResult.Vc_res.toFixed(1) + " V RMS"],
+        ["Dynamic kVar stress rating", lastResult.Q_var_res.toFixed(1) + " Var"],
+        ["IEEE Std 18 Voltage Compliance", lastResult.stress_verdict]
+    ];
+    
+    pdf.autoTable({
+        startY: pdf.lastAutoTable.finalY + 13,
+        head: [["Performance Metric", "Calculated Value"]],
+        body: resRows,
+        theme: 'grid',
+        headStyles: { fillColor: [8, 145, 178] },
+        margin: { left: 15, right: 15 },
+        styles: { fontSize: 9 }
+    });
+    
+    // Second Page for Step-by-Step breakdown
+    pdf.addPage();
+    
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("3. Mathematical Sizing Calculation Steps", 15, 22);
+    
+    pdf.setFontSize(9);
+    pdf.setFont("helvetica", "normal");
+    
+    const steps = [
+        "Step 1: Ideal Resonant Frequency: f0 = 1 / (2 * pi * sqrt(L * C)) = " + lastResult.f0_disp + " " + lastResult.f0_unit,
+        "Step 2: Coil Quality Selectivity (Qs) = Z0 / Rs = " + lastResult.Q_s.toFixed(2),
+        "Step 3: Load Quality Factor (Qp) = Rp / Z0 = " + lastResult.Q_p.toFixed(2),
+        "Step 4: Overall loaded System Quality Factor (Q) = " + lastResult.Q.toFixed(2),
+        "Step 5: Damping Ratio (Zeta) = 1 / (2 * Q) = " + lastResult.zeta.toFixed(4) + " (Underdamped/Overdamped)",
+        "Step 6: Filter Selectivity Bandwidth = f_r / Q = " + lastResult.bw_disp + " " + lastResult.bw_unit,
+        "Step 7: Resonant Impedance (Zr) = " + lastResult.Zr.toExponential(3) + " Ohms",
+        "Step 8: Off-Resonant Impedance at Fop = " + lastResult.Zmag_fop.toExponential(3) + " Ohms at phase " + lastResult.phase_fop.toFixed(1) + " degrees",
+        "Step 9: RMS Capacitor Voltage at fr = " + lastResult.Vc_res.toFixed(1) + " V (IEEE Std 18 Overvoltage Stress Check)",
+        "Step 10: Sizing Compliance Verdict: " + lastResult.stress_verdict
+    ];
+    
+    let yPos = 28;
+    steps.forEach(step => {
+        pdf.text(step, 15, yPos);
+        yPos += 8;
+    });
+    
+    // Apply headers/footers to all pages
+    const totalPages = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        addHeaderFooter(pdf, i, totalPages);
+    }
+    
+    pdf.save("RLC_Filter_Verification_Report.pdf");
+    displayMessage("Branded PDF Report saved successfully!", "success");
+}
+
+</script>
 </body>
 </html>
-
-
