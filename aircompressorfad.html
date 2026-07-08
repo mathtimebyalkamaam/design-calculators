@@ -828,6 +828,14 @@
             background-color: var(--bg);
         }
 
+        /* Table scrollable wrapper */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container { padding: 0 15px; }
@@ -837,6 +845,24 @@
             .tool-container, .education-section, .result-container { padding: 20px; }
             .footer-content { flex-direction: column; gap: 25px; }
             .long-text p { text-align: left; }
+            
+            /* Constrain tables scrollable behavior on mobile */
+            .table-wrapper {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+            }
+            .table-wrapper table {
+                margin: 0 !important;
+            }
+
+            /* Prevent math equations from overflowing screen bounds */
+            .mjx-container {
+                display: block !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                max-width: 100% !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
         }
     </style>
     <link rel="stylesheet" href="styles.css">
@@ -1045,7 +1071,7 @@
             <div class="calculator-form">
                 <form id="fad-calculator-form">
                     <div class="form-section">
-                        <h3><i class="fas fa-wind"></i> Free Air Delivery (FAD) Conditions</h3>
+                        <h3><i class="fas fa-wind"></i> 1. Intake & Site Ambient Conditions</h3>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="flow-value">Flow Rate Value <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The rated capacity of the compressor at intake conditions.</span></span></label>
@@ -1059,6 +1085,16 @@
                                     <option value="m3min">m³/min</option>
                                     <option value="lmin">L/min</option>
                                 </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inlet-altitude">Intake Altitude <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Altitude above sea level. This will automatically update inlet pressure.</span></span></label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" id="inlet-altitude" step="1" value="0">
+                                    <select id="altitude-unit" style="width: 100px;">
+                                        <option value="meters" selected>Meters</option>
+                                        <option value="feet">Feet</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="inlet-pressure">Inlet Pressure (Abs) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Ambient pressure at compressor intake (1 atm = 1.01325 bar).</span></span></label>
@@ -1090,13 +1126,39 @@
                     </div>
 
                     <div class="form-section">
-                        <h3><i class="fas fa-ruler-vertical"></i> Target Reference Standard</h3>
+                        <h3><i class="fas fa-tachometer-alt"></i> 2. Compressor Discharge & Efficiency Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="discharge-pressure">Discharge Pressure (Gauge) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Operating gauge pressure at compressor discharge.</span></span></label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" id="discharge-pressure" step="0.1" value="7.0" required>
+                                    <select id="discharge-pressure-unit" style="width: 100px;">
+                                        <option value="bar" selected>bar(g)</option>
+                                        <option value="psi">psi(g)</option>
+                                        <option value="kpa">kPa(g)</option>
+                                        <option value="atm">atm(g)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="isentropic-efficiency">Isentropic Efficiency (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Thermodynamic compressor isentropic efficiency (typically 70% to 85%).</span></span></label>
+                                <input type="number" id="isentropic-efficiency" step="1" value="75" min="30" max="98" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="motor-efficiency">Motor Efficiency (%) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Electric motor nominal operating efficiency (typically 85% to 96%).</span></span></label>
+                                <input type="number" id="motor-efficiency" step="0.1" value="92.0" min="50" max="99" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-ruler-vertical"></i> 3. Target Reference Standard</h3>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="standard-def">Reference Condition <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Select the standard you wish to convert TO.</span></span></label>
                                 <select id="standard-def" required>
                                     <option value="normal">Normal (Nm³/hr): 1 atm, 0°C, 0% RH (DIN 1343)</option>
-                                    <option value="scfm_asme">ASME/CAGI (SCFM): 14.7 psi, 68°F, 0% RH</option>
+                                    <option value="scfm_asme" selected>ASME/CAGI (SCFM): 14.7 psi, 68°F, 0% RH</option>
                                     <option value="iso1217">ISO 1217 (FAD): 1 bar, 20°C, 0% RH</option>
                                     <option value="scfm_gas">Standard Gas (US): 14.696 psi, 60°F, 0% RH</option>
                                     <option value="api618">API 618: 14.7 psi, 60°F, 0% RH</option>
@@ -1104,9 +1166,23 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-dollar-sign"></i> 4. Operating Hours & Utility Tariff Settings</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="operating-hours">Annual Run Hours <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Total operating hours per year (e.g. 8000 for continuous 24/7 process).</span></span></label>
+                                <input type="number" id="operating-hours" step="1" value="8000" min="0" max="8760" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="electricity-tariff">Electricity Tariff ($/kWh) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Local electricity cost rate per kilowatt-hour.</span></span></label>
+                                <input type="number" id="electricity-tariff" step="0.001" value="0.120" min="0" required>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="button-wrapper">
-                        <button type="button" id="calculate-btn" class="calculate-btn"><i class="fas fa-calculator"></i> Convert</button>
+                        <button type="button" id="calculate-btn" class="calculate-btn"><i class="fas fa-calculator"></i> Sizing & Convert</button>
                         <button type="button" id="reset-form-btn" class="reset-btn"><i class="fas fa-sync-alt"></i> Reset</button>
                     </div>
                 </form>
@@ -1117,50 +1193,105 @@
             <h3><i class="fas fa-clipboard-check"></i> Conversion Results</h3>
             
             <div class="compressor-diagram">
-                <p style="margin-bottom: 25px; font-weight: bold; color: var(--secondary);">Psychrometric Volume Change</p>
-                <svg viewBox="0 0 500 200" preserveAspectRatio="xMidYMid meet">
+                <p style="margin-bottom: 20px; font-weight: bold; color: var(--secondary); font-family: 'Montserrat', sans-serif;"><i class="fas fa-project-diagram"></i> Dynamic Compression & Utility Sizing Schematic</p>
+                <svg viewBox="0 0 700 280" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: auto; font-family: 'Inter', sans-serif;">
                     <defs>
-                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#f0f0f0" stroke-width="1"/>
-                        </pattern>
-                        <linearGradient id="airGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.2" />
-                            <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.6" />
+                        <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+                            <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+                        </filter>
+                        <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#3b82f6" />
+                            <stop offset="100%" stop-color="#1d4ed8" />
                         </linearGradient>
+                        <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#10b981" />
+                            <stop offset="100%" stop-color="#047857" />
+                        </linearGradient>
+                        <linearGradient id="grayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f1f5f9" />
+                            <stop offset="100%" stop-color="#cbd5e1" />
+                        </linearGradient>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+                        </marker>
                     </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
 
-                    <rect x="50" y="50" width="120" height="100" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5" />
-                    <text x="110" y="40" font-size="12" fill="#3b82f6" text-anchor="middle" font-weight="bold">Inlet (FAD)</text>
-                    <text x="110" y="80" font-size="10" fill="#555" text-anchor="middle" id="svg-p1">P1, T1</text>
-                    <text x="110" y="100" font-size="14" fill="#1e3a8a" text-anchor="middle" font-weight="bold" id="svg-v1">V1</text>
-                    <text x="110" y="120" font-size="10" fill="#dc2626" text-anchor="middle" id="svg-rh">Wet Air</text>
+                    <g transform="translate(15, 45)" filter="url(#shadow)">
+                        <rect x="0" y="0" width="160" height="150" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+                        <rect x="0" y="0" width="160" height="32" rx="8" fill="url(#blueGrad)" />
+                        <rect x="0" y="24" width="160" height="8" fill="#1d4ed8" />
+                        <text x="80" y="20" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">AMBIENT INTAKE</text>
+                        
+                        <text x="80" y="58" fill="#1e3a8a" font-size="13" font-weight="bold" text-anchor="middle" id="svg-v1">500 CFM FAD</text>
+                        <text x="80" y="78" fill="#4b5563" font-size="10" text-anchor="middle" id="svg-p1">0 m | 1.013 bar(a)</text>
+                        <text x="80" y="96" fill="#4b5563" font-size="10" text-anchor="middle" id="svg-temp-rh">35°C | 60% RH</text>
+                        
+                        <rect x="15" y="112" width="130" height="24" rx="12" fill="#dbeafe" />
+                        <text x="80" y="128" fill="#1e40af" font-size="10" font-weight="bold" text-anchor="middle" id="svg-wet-badge">Wet Air Inlet</text>
+                    </g>
 
-                    <path d="M 180 100 L 290 100" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)" />
-                    <polygon points="290,100 280,95 280,105" fill="#333" />
-                    <text x="235" y="90" font-size="10" fill="#666" text-anchor="middle">Thermodynamic Correction</text>
+                    <path d="M 180 120 L 235 120" fill="none" stroke="#64748b" stroke-width="2.5" stroke-dasharray="4,4" marker-end="url(#arrow)" />
 
-                    <rect x="300" y="60" width="100" height="80" fill="url(#airGradient)" stroke="#10b981" stroke-width="2" />
-                    <text x="350" y="40" font-size="12" fill="#10b981" text-anchor="middle" font-weight="bold">Standard</text>
-                    <text x="350" y="80" font-size="10" fill="#555" text-anchor="middle" id="svg-p2">P_std, T_std</text>
-                    <text x="350" y="110" font-size="14" fill="#fff" text-anchor="middle" font-weight="bold" id="svg-v2">V2</text>
+                    <g transform="translate(250, 30)" filter="url(#shadow)">
+                        <rect x="0" y="0" width="180" height="180" rx="12" fill="#f8fafc" stroke="#64748b" stroke-width="2" />
+                        <rect x="0" y="0" width="180" height="32" rx="12" fill="url(#grayGrad)" />
+                        <rect x="0" y="24" width="180" height="8" fill="#cbd5e1" />
+                        <text x="90" y="20" fill="#1e293b" font-size="11" font-weight="bold" text-anchor="middle">ROTARY SCREW STAGE</text>
+                        
+                        <g transform="translate(60, 42)" opacity="0.85">
+                            <circle cx="25" cy="25" r="18" fill="none" stroke="#64748b" stroke-width="2"/>
+                            <circle cx="35" cy="25" r="18" fill="none" stroke="#64748b" stroke-width="2"/>
+                            <path d="M 15 25 L 45 25" stroke="#64748b" stroke-width="2" stroke-dasharray="2,2"/>
+                        </g>
+
+                        <text x="90" y="110" fill="#475569" font-size="10" text-anchor="middle" id="svg-shaft-power">Shaft Power: -- kW</text>
+                        <text x="90" y="128" fill="#0ea5e9" font-size="11" font-weight="bold" text-anchor="middle" id="svg-motor-power">Motor Input: -- kW</text>
+                        <text x="90" y="145" fill="#475569" font-size="10" text-anchor="middle" id="svg-isen-eff">Isentropic Eff: 75%</text>
+
+                        <path d="M 90 152 L 90 166" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)" />
+                        <text x="90" y="174" fill="#0284c7" font-size="9" font-weight="bold" text-anchor="middle" id="svg-water-condensed">Condensation: -- L/hr</text>
+                    </g>
+
+                    <g transform="translate(340, 220)" filter="url(#shadow)">
+                        <rect x="-60" y="0" width="120" height="24" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" />
+                        <text x="0" y="15" fill="#334155" font-size="9" font-weight="bold" text-anchor="middle" id="svg-motor-eff">Motor Eff: 92.0%</text>
+                        <line x1="0" y1="0" x2="0" y2="-7" stroke="#334155" stroke-width="3" />
+                    </g>
+
+                    <path d="M 435 120 L 505 120" fill="none" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)" />
+
+                    <g transform="translate(520, 45)" filter="url(#shadow)">
+                        <rect x="0" y="0" width="165" height="150" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+                        <rect x="0" y="0" width="165" height="32" rx="8" fill="url(#greenGrad)" />
+                        <rect x="0" y="24" width="165" height="8" fill="#047857" />
+                        <text x="82" y="20" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">DRY STANDARD OUTLET</text>
+                        
+                        <text x="82" y="58" fill="#065f46" font-size="13" font-weight="bold" text-anchor="middle" id="svg-v2">-- SCFM</text>
+                        <text x="82" y="78" fill="#374151" font-size="10" text-anchor="middle" id="svg-p2">7.0 bar(g) Discharge</text>
+                        <text x="82" y="96" fill="#374151" font-size="10" text-anchor="middle" id="svg-std-name">ASME PTC 9 Reference</text>
+                        
+                        <rect x="12" y="112" width="141" height="24" rx="12" fill="#d1fae5" />
+                        <text x="82" y="128" fill="#065f46" font-size="9" font-weight="bold" text-anchor="middle" id="svg-sec-val">SEC: -- kW/100 CFM</text>
+                    </g>
                 </svg>
                 <p class="status-display" id="conversion-summary">Calculating...</p>
             </div>
 
             <div id="steps-container" class="steps-container math-content">
-                </div>
+            </div>
 
-            <table class="result-table">
-                <thead>
-                    <tr>
-                        <th>Flow Parameter</th>
-                        <th>Calculated Value</th>
-                    </tr>
-                </thead>
-                <tbody id="result-table-body">
+            <div class="table-wrapper">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Flow Parameter</th>
+                            <th>Calculated Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table-body">
                     </tbody>
-            </table>
+                </table>
+            </div>
             
             <div style="display: flex; justify-content: center; margin-top: 20px;">
                 <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
@@ -1283,24 +1414,194 @@
                 <h4><i class="fas fa-bolt"></i> Energy Implications</h4>
                 <p>While high inlet temperature reduces mass flow, it also reduces the power required to compress the air (less mass = less work). However, the specific energy (kW/100 cfm) usually worsens slightly. Conversely, cold intake air increases mass flow and increases motor power draw. In extremely cold climates, motors must be sized to handle this "dense air" overload.</p>
             </div>
+
+            <hr style="border:0; height:1px; background:var(--border); margin:40px 0;">
+
+            <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.6rem; border-left: 5px solid var(--secondary); padding-left: 15px; margin-bottom: 25px;"><i class="fas fa-question-circle"></i> 10 Most Asked Industrial Compressor Interview Questions</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Q1 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q1. What is Free Air Delivery (FAD) and why do we not size systems directly based on SCFM?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> Free Air Delivery (FAD) is the actual volumetric flow rate of air drawn in at the compressor's intake flange under local ambient conditions (pressure, temperature, humidity). Sizing using SCFM (Standard flow) alone is risky because SCFM represents a theoretical weight/mass of dry air at sea level.</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> If a downstream chemical process requires 500 SCFM, and you buy a 500 CFM FAD compressor operating in a hot desert (45°C, 4000 ft altitude), the air density is low. The compressor will only deliver about 390 SCFM of dry air, causing starvation. Sizing must calculate FAD based on the worst-case site ambient pressure and temperature.</p>
+                </div>
+
+                <!-- Q2 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q2. Why is isothermal compression preferred over adiabatic compression, and how is this approached in multi-stage machines?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> Isothermal compression (constant temperature) requires the minimum possible power input because the heat of compression is removed continuously. Adiabatic compression (no heat loss) leads to a rapid pressure and temperature rise, requiring more energy to squeeze the hot, expanding air.</p>
+                    
+                    <div style="display:flex; justify-content:center;">
+                        <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid meet" style="width:100%; max-width:380px; height:auto; background:var(--bg); border:1px solid var(--border); border-radius:8px; margin: 15px 0;">
+                            <!-- Axes -->
+                            <line x1="50" y1="20" x2="50" y2="200" stroke="#475569" stroke-width="2" />
+                            <line x1="50" y1="200" x2="360" y2="200" stroke="#475569" stroke-width="2" />
+                            <text x="50" y="15" fill="#475569" font-size="10" text-anchor="middle" font-weight="bold">Pressure (P)</text>
+                            <text x="360" y="215" fill="#475569" font-size="10" text-anchor="end" font-weight="bold">Volume (V)</text>
+                            
+                            <!-- Curve 1: Adiabatic (Red) -->
+                            <path d="M 80 40 Q 140 135 320 180" fill="none" stroke="#ef4444" stroke-width="2.5" />
+                            <text x="82" y="32" fill="#ef4444" font-size="9" font-weight="bold">Adiabatic (k=1.4)</text>
+                            
+                            <!-- Curve 2: Polytropic (Orange) -->
+                            <path d="M 80 65 Q 140 145 320 180" fill="none" stroke="#f97316" stroke-width="2" />
+                            <text x="90" y="60" fill="#f97316" font-size="9" font-weight="bold">Polytropic (n=1.2)</text>
+
+                            <!-- Curve 3: Isothermal (Blue) -->
+                            <path d="M 80 95 Q 140 155 320 180" fill="none" stroke="#3b82f6" stroke-width="2.5" />
+                            <text x="95" y="90" fill="#3b82f6" font-size="9" font-weight="bold">Isothermal (n=1.0)</text>
+
+                            <!-- Work Saved Shaded area -->
+                            <path d="M 80 40 Q 140 135 320 180 Q 140 155 80 95 Z" fill="#eff6ff" opacity="0.4" />
+                            <text x="180" y="110" fill="#1e40af" font-size="10" font-weight="bold">Energy Saved</text>
+                            
+                            <!-- State labels -->
+                            <circle cx="320" cy="180" r="4" fill="#475569" />
+                            <text x="330" y="184" fill="#475569" font-size="9">Inlet State 1</text>
+                        </svg>
+                    </div>
+                    
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic; margin-top:8px;"><strong>Example:</strong> In practice, pure isothermal compression is impossible at high speeds. Instead, we use <strong>multi-stage compression with intercoolers</strong>. Air is compressed slightly, cooled back to ambient in a heat exchanger, and then compressed in the next stage. This steps the actual compression path closer to the isothermal curve, saving up to 15% in power costs.</p>
+                </div>
+
+                <!-- Q3 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q3. What is Specific Energy Consumption (SEC) of a compressor, and what is a normal industrial benchmark?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> Specific Energy Consumption (SEC) measures the electrical power input required to deliver a standard unit of flow rate (typically expressed as kW/100 CFM or kW/m³/min). It indicates the overall package energy efficiency.</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> A modern, high-efficiency oil-injected rotary screw compressor running at 7.0 bar(g) has an SEC benchmark of approximately <strong>16 to 18 kW / 100 CFM</strong>. If a system audit reveals a machine running at 24 kW / 100 CFM, it indicates severe wear, clogged filters, or internal blow-by, costing thousands of dollars in excess electricity.</p>
+                </div>
+
+                <!-- Q4 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q4. How does relative humidity (RH) at the intake affect the actual dry air delivery of a compressor?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> Relative humidity represents water vapor mixed with the air. Water vapor occupies space at the intake flange. However, once compressed and cooled, this water vapor condenses into liquid water and is drained out. The volume that was occupied by the water is lost, reducing the dry air mass available to the plant.</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> At 35°C and 80% RH, water vapor accounts for nearly 4.5% of the intake volume. If a compressor sucks in 1000 m³/hr of wet ambient air, 45 m³/hr is water vapor. After condensation, the net standard dry air delivery is reduced by that amount. If humidity is ignored during sizing, pneumatically operated actuators may experience pressure drops.</p>
+                </div>
+
+                <!-- Q5 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q5. What is the difference between Normal flow (Nm³/hr) and Standard flow (Sm³/hr or SCFM)?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> The difference lies entirely in the reference temperature and pressure states defined by different standards. Normal flow is referenced to 0°C (32°F) and 1.01325 bar(a) according to DIN 1343. Standard flow is commonly referenced to 15°C (59°F) or 20°C (68°F) and 1.01325 bar(a) or 1.0 bar(a) according to ISO 1217 or ASME.</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> Because gas expands as temperature rises, 1 Normal cubic meter of air at 0°C contains more mass than 1 Standard cubic meter of air at 20°C. Specifically, <strong>1.0 Nm³/hr = 1.073 Sm³/hr (at 20°C)</strong>. Mixing these up during process calculations leads to a 7.3% error in mass sizing.</p>
+                </div>
+
+                <!-- Q6 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q6. How does altitude affect positive displacement compressors (like screw or piston) versus dynamic compressors (centrifugal)?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> Altitude reduces the atmospheric density. For positive displacement (PD) machines, the volume sucked in remains constant, but the dry mass flow drops because the intake air is less dense. For dynamic compressors (centrifugal), the lower density decreases the pressure ratio capability, shifting the compressor curve and risking surge at lower discharge pressures.</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> A screw compressor at 2000m altitude delivers 100% of its volumetric displacement, but because the air density is only 80% of sea level, the mass flow drops by 20%. A centrifugal compressor, however, might fail to reach the rated system pressure of 7.0 bar(g) altogether, running into bypass or surge limits.</p>
+                </div>
+
+                <!-- Q7 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q7. What is the role of the polytropic index (n) in real-world compressor engineering calculations?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> The polytropic index ($n$) represents real-world compression where heat transfer is partial. If no heat is lost, $n = 1.4$ (isentropic). If heat is lost perfectly, $n = 1.0$ (isothermal). In rotary oil-injected screws, the cooling oil spray absorbs substantial heat, so the polytropic index ranges between <strong>1.15 and 1.25</strong>.</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> In an oil-injected compressor, compressing air from 1 to 8 bar with $n=1.2$ limits the discharge temperature to about 80°C. In contrast, dry oil-free compression (isentropic, $n=1.4$) would elevate the temperature to over 250°C, requiring expensive exotic casing materials and intercooling stages.</p>
+                </div>
+
+                <!-- Q8 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q8. Why are aftercoolers and moisture separators critical in an industrial compressor station, and where are they located?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> Compressed air leaving the screw chamber is extremely hot (80°C - 100°C) and saturated with moisture. The aftercooler cools the air down to within 10°C of ambient, which forces the water vapor to condense. The moisture separator uses mechanical centrifugal force to remove this liquid water before the air enters the piping network.</p>
+                    
+                    <div style="display:flex; justify-content:center;">
+                        <svg viewBox="0 0 600 140" preserveAspectRatio="xMidYMid meet" style="width:100%; max-width:580px; height:auto; background:var(--bg); border:1px solid var(--border); border-radius:8px; margin: 15px 0; font-family:'Inter', sans-serif;">
+                            <rect x="10" y="40" width="80" height="50" rx="4" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+                            <text x="50" y="65" fill="#1e3a8a" font-size="9" font-weight="bold" text-anchor="middle">1. Intake</text>
+                            <text x="50" y="78" fill="#1e3a8a" font-size="8" text-anchor="middle">Air Filter</text>
+
+                            <line x1="90" y1="65" x2="110" y2="65" stroke="#64748b" stroke-width="1.5" />
+                            
+                            <rect x="110" y="40" width="85" height="50" rx="4" fill="#f8fafc" stroke="#64748b" stroke-width="1.5" />
+                            <text x="152" y="65" fill="#1e293b" font-size="9" font-weight="bold" text-anchor="middle">2. Compressor</text>
+                            <text x="152" y="78" fill="#1e293b" font-size="8" text-anchor="middle">Screw Stage</text>
+
+                            <line x1="195" y1="65" x2="215" y2="65" stroke="#64748b" stroke-width="1.5" />
+
+                            <rect x="215" y="40" width="85" height="50" rx="4" fill="#fee2e2" stroke="#ef4444" stroke-width="1.5" />
+                            <text x="257" y="65" fill="#991b1b" font-size="9" font-weight="bold" text-anchor="middle">3. Aftercooler</text>
+                            <text x="257" y="78" fill="#991b1b" font-size="8" text-anchor="middle">(Hot Air Sizing)</text>
+
+                            <line x1="300" y1="65" x2="320" y2="65" stroke="#64748b" stroke-width="1.5" />
+
+                            <rect x="320" y="40" width="85" height="50" rx="4" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="1.5" />
+                            <text x="362" y="60" fill="#0369a1" font-size="9" font-weight="bold" text-anchor="middle">4. Separator</text>
+                            <text x="362" y="72" fill="#0369a1" font-size="8" text-anchor="middle">(Condensate)</text>
+                            <path d="M 362 90 L 362 105" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="2,2" />
+                            <text x="362" y="115" fill="#0284c7" font-size="7" text-anchor="middle">Liquid Water Out</text>
+
+                            <line x1="405" y1="65" x2="425" y2="65" stroke="#64748b" stroke-width="1.5" />
+
+                            <rect x="425" y="40" width="80" height="50" rx="4" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+                            <text x="465" y="65" fill="#065f46" font-size="9" font-weight="bold" text-anchor="middle">5. Receiver</text>
+                            <text x="465" y="78" fill="#065f46" font-size="8" text-anchor="middle">Air Storage</text>
+
+                            <line x1="505" y1="65" x2="525" y2="65" stroke="#64748b" stroke-width="1.5" />
+
+                            <rect x="525" y="40" width="65" height="50" rx="4" fill="#faf5ff" stroke="#a855f7" stroke-width="1.5" />
+                            <text x="557" y="65" fill="#6b21a8" font-size="9" font-weight="bold" text-anchor="middle">6. Dryer</text>
+                            <text x="557" y="78" fill="#6b21a8" font-size="8" text-anchor="middle">Air Drying</text>
+                        </svg>
+                    </div>
+                    
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic; margin-top:8px;"><strong>Example:</strong> Without an aftercooler, the hot wet air will cool inside the plant distribution piping. Condensation will form inside the lines, causing corrosion, rust, and destroying pneumatic tools, control valves, and instrumentation downstream.</p>
+                </div>
+
+                <!-- Q9 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q9. What is the difference between Actual CFM (ACFM) and Free Air Delivery (FAD)?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> FAD is strictly defined at the *ambient intake conditions*. ACFM is the actual volumetric flow rate at *any* specified point in the system (such as the discharge pipe or inside the receiver tank under high pressure and temperature).</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> A compressor sucks in 500 CFM FAD. At the discharge pipe, where the air is compressed to 7.0 bar(g) (8.0 bar absolute) and has cooled back to 40°C, the volume is compressed. The flow rate in the pipe is about <strong>62 ACFM</strong>. Thus, 500 FAD represents the size of the intake filter, while 62 ACFM represents the velocity sizing in the discharge header.</p>
+                </div>
+
+                <!-- Q10 -->
+                <div class="insight-card" style="margin:0;">
+                    <h4 style="font-size: 1.1rem; color: var(--heading); font-weight: bold; margin-bottom: 10px;">Q10. How does a 10°C decrease in intake ambient air temperature affect compressor performance and energy costs?</h4>
+                    <p style="font-size:0.95rem; line-height:1.6; margin-bottom:8px;"><strong>Answer:</strong> Cooler intake air is denser, meaning more air mass is drawn in per stroke/rotation. This increases the mass capacity of the compressor without increasing the volumetric footprint. Since density increases, the specific energy consumption (kW/100 CFM) improves by about 1.5% to 2.0%.</p>
+                    <p style="font-size:0.95rem; line-height:1.6; margin:0; font-style:italic;"><strong>Example:</strong> Piping the compressor intake duct from a hot engine room (45°C) to the outside building air (25°C) reduces intake temperature by 20°C. This changes density by 6.8%, increasing mass capacity by ~6.8% and saving approximately <strong>3% to 4%</strong> on annual energy costs for the same mass of delivered air.</p>
+                </div>
+            </div>
         </div>
     </main>
 
         
     <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc); border-top: 1px solid var(--border);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/asme-vessel" class="silo-card" style="text-decoration:none;">
-                        <span>Asme Vessel</span>
-                    </a>
-                    <a href="/chiller-capacity" class="silo-card" style="text-decoration:none;">
-                        <span>Chiller Capacity</span>
-                    </a>
-                    <a href="/fan-laws" class="silo-card" style="text-decoration:none;">
-                        <span>Fan Laws</span>
-                    </a>
+            <h2 style="text-align:center; font-size:1.5rem; margin-bottom:25px; color:var(--heading-color, #1e293b); font-family: 'Montserrat', sans-serif;"><i class="fas fa-link"></i> Related Engineering Calculators</h2>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:960px; margin:0 auto;">
+                
+                <!-- ASME Pressure Vessel Card -->
+                <a href="/asme-vessel" style="text-decoration:none; display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="background: rgba(37,99,235,0.1); color: var(--primary); padding: 8px; border-radius: 6px; font-size: 1.1rem;"><i class="fas fa-database"></i></span>
+                        <strong style="color: var(--heading); font-size: 1.05rem; font-family: 'Montserrat', sans-serif;">ASME Pressure Vessel</strong>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text); line-height: 1.4; margin: 0 0 8px 0;"><strong>What it does:</strong> Sizes shells, nozzles, and heads to estimate structural thickness for high pressure containers.</p>
+                    <p style="font-size: 0.85rem; color: var(--text); line-height: 1.4; margin: 0; font-style: italic;"><strong style="color: var(--secondary);">Why it is useful:</strong> Crucial for downstream air receiver tanks, ensuring code compliance and preventing catastrophic burst failures.</p>
+                </a>
+                
+                <!-- Chiller Sizing Card -->
+                <a href="/chiller-capacity" style="text-decoration:none; display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="background: rgba(16,185,129,0.1); color: var(--success); padding: 8px; border-radius: 6px; font-size: 1.1rem;"><i class="fas fa-snowflake"></i></span>
+                        <strong style="color: var(--heading); font-size: 1.05rem; font-family: 'Montserrat', sans-serif;">Chiller Capacity</strong>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text); line-height: 1.4; margin: 0 0 8px 0;"><strong>What it does:</strong> Computes the thermal heat load and tonnage requirement for process cooling utility systems.</p>
+                    <p style="font-size: 0.85rem; color: var(--text); line-height: 1.4; margin: 0; font-style: italic;"><strong style="color: var(--secondary);">Why it is useful:</strong> Helps design water-cooled intercoolers/aftercoolers for large multi-stage industrial compressor systems.</p>
+                </a>
+
+                <!-- Fan Laws Card -->
+                <a href="/fan-laws" style="text-decoration:none; display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; transition: all 0.3s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="background: rgba(245,158,11,0.1); color: var(--warning); padding: 8px; border-radius: 6px; font-size: 1.1rem;"><i class="fas fa-fan"></i></span>
+                        <strong style="color: var(--heading); font-size: 1.05rem; font-family: 'Montserrat', sans-serif;">Fan Laws Calculator</strong>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text); line-height: 1.4; margin: 0 0 8px 0;"><strong>What it does:</strong> Projects changes in fan speed, static pressure, flow capacity, and motor power requirements.</p>
+                    <p style="font-size: 0.85rem; color: var(--text); line-height: 1.4; margin: 0; font-style: italic;"><strong style="color: var(--secondary);">Why it is useful:</strong> Essential for sizing forced-draft air-cooled exchangers that reject compressor package heat.</p>
+                </a>
+
             </div>
         </div>
     </section>
@@ -1392,12 +1693,20 @@
             // --- Element Selection ---
             const flowValueInput = document.getElementById('flow-value');
             const flowUnitInput = document.getElementById('flow-unit');
+            const altitudeInput = document.getElementById('inlet-altitude');
+            const altitudeUnitSelect = document.getElementById('altitude-unit');
             const inletPressureInput = document.getElementById('inlet-pressure');
             const pressureUnitInput = document.getElementById('pressure-unit');
             const inletTempInput = document.getElementById('inlet-temp');
             const tempUnitInput = document.getElementById('temp-unit');
             const rhInput = document.getElementById('relative-humidity');
+            const dischargePressureInput = document.getElementById('discharge-pressure');
+            const dischargePressureUnitSelect = document.getElementById('discharge-pressure-unit');
+            const isentropicEfficiencyInput = document.getElementById('isentropic-efficiency');
+            const motorEfficiencyInput = document.getElementById('motor-efficiency');
             const standardDefInput = document.getElementById('standard-def');
+            const operatingHoursInput = document.getElementById('operating-hours');
+            const electricityTariffInput = document.getElementById('electricity-tariff');
 
             const calculateBtn = document.getElementById('calculate-btn');
             const resetFormBtn = document.getElementById('reset-form-btn');
@@ -1416,9 +1725,13 @@
             // --- Default Values ---
             const defaultValues = {
                 'flow-value': 500, 'flow-unit': 'cfm',
+                'inlet-altitude': 0, 'altitude-unit': 'meters',
                 'inlet-pressure': 1.01325, 'pressure-unit': 'bar',
                 'inlet-temp': 35, 'temp-unit': 'c',
-                'relative-humidity': 60, 'standard-def': 'scfm_asme'
+                'relative-humidity': 60, 'standard-def': 'scfm_asme',
+                'discharge-pressure': 7.0, 'discharge-pressure-unit': 'bar',
+                'isentropic-efficiency': 75, 'motor-efficiency': 92.0,
+                'operating-hours': 8000, 'electricity-tariff': 0.120
             };
 
             // --- Standard Definitions (P in Pa, T in K) ---
@@ -1464,6 +1777,34 @@
                 displayMessage("Results cleared.", "info");
             }
 
+            function updateInletPressureFromAltitude() {
+                const altVal = parseFloat(altitudeInput.value);
+                const altUnit = altitudeUnitSelect.value;
+                if (isNaN(altVal)) return;
+
+                // Convert to meters
+                const altMeters = altUnit === 'feet' ? altVal * 0.3048 : altVal;
+                
+                // US Standard Atmosphere formula: P in Pascals
+                // P = 101325 * (1 - 2.25577e-5 * h)^5.25588
+                const pPa = 101325 * Math.pow(1 - 2.25577e-5 * altMeters, 5.25588);
+                
+                // Convert back to current inlet pressure unit
+                const pUnit = pressureUnitInput.value;
+                let convertedP = pPa;
+                if (pUnit === 'bar') convertedP = pPa / 100000;
+                else if (pUnit === 'psi') convertedP = pPa / 6894.76;
+                else if (pUnit === 'kpa') convertedP = pPa / 1000;
+                else if (pUnit === 'atm') convertedP = pPa / 101325;
+
+                inletPressureInput.value = convertedP.toFixed(5);
+            }
+
+            // Bind altitude to inlet pressure auto-updates
+            altitudeInput.addEventListener('input', updateInletPressureFromAltitude);
+            altitudeUnitSelect.addEventListener('change', updateInletPressureFromAltitude);
+            pressureUnitInput.addEventListener('change', updateInletPressureFromAltitude);
+
             function resetForm() {
                 for (const key in defaultValues) {
                     const el = document.getElementById(key);
@@ -1472,6 +1813,8 @@
                 // Reset secondary selects
                 document.getElementById('pressure-unit').value = 'bar';
                 document.getElementById('temp-unit').value = 'c';
+                document.getElementById('altitude-unit').value = 'meters';
+                document.getElementById('discharge-pressure-unit').value = 'bar';
                 clearResults();
                 displayMessage("Form reset to default values.", "info");
             }
@@ -1511,19 +1854,30 @@
                 // 1. Get Inputs
                 const flowVal = parseFloat(flowValueInput.value);
                 const flowUnit = flowUnitInput.value;
+                const altVal = parseFloat(altitudeInput.value);
+                const altUnit = altitudeUnitSelect.value;
                 const pInVal = parseFloat(inletPressureInput.value);
                 const pUnit = pressureUnitInput.value;
                 const tInVal = parseFloat(inletTempInput.value);
                 const tUnit = tempUnitInput.value;
                 const rhVal = parseFloat(rhInput.value);
+                
+                const pOutVal = parseFloat(dischargePressureInput.value);
+                const pOutUnit = dischargePressureUnitSelect.value;
+                const etaIsen = parseFloat(isentropicEfficiencyInput.value);
+                const etaMotor = parseFloat(motorEfficiencyInput.value);
+                const hours = parseFloat(operatingHoursInput.value);
+                const tariff = parseFloat(electricityTariffInput.value);
+                
                 const stdKey = standardDefInput.value;
 
                 // Validation
-                if (isNaN(flowVal) || isNaN(pInVal) || isNaN(tInVal) || isNaN(rhVal)) {
+                if (isNaN(flowVal) || isNaN(pInVal) || isNaN(tInVal) || isNaN(rhVal) ||
+                    isNaN(pOutVal) || isNaN(etaIsen) || isNaN(etaMotor) || isNaN(hours) || isNaN(tariff)) {
                     displayMessage("Please enter valid numbers in all fields.", "error"); return;
                 }
-                if (flowVal <= 0 || pInVal <= 0) {
-                    displayMessage("Flow and Pressure must be positive.", "error"); return;
+                if (flowVal <= 0 || pInVal <= 0 || pOutVal < 0 || etaIsen <= 0 || etaMotor <= 0 || hours < 0 || tariff < 0) {
+                    displayMessage("Check inputs. Flows, pressures, and efficiencies must be positive.", "error"); return;
                 }
                 if (rhVal < 0 || rhVal > 100) {
                     displayMessage("Humidity must be between 0% and 100%.", "error"); return;
@@ -1534,133 +1888,254 @@
                 const T1_C = toCelsius(tInVal, tUnit);
                 const P1_Pa = toPascals(pInVal, pUnit);
                 
-                // 3. Normalize Flow to m³/min (FAD)
+                // Normalizing flow to m3/min and m3/s (FAD)
                 let flow_m3min_fad;
                 if (flowUnit === 'cfm') flow_m3min_fad = flowVal * 0.0283168;
                 else if (flowUnit === 'm3hr') flow_m3min_fad = flowVal / 60;
                 else if (flowUnit === 'lmin') flow_m3min_fad = flowVal / 1000;
                 else flow_m3min_fad = flowVal; 
+                
+                const flow_m3s_fad = flow_m3min_fad / 60;
+                const flow_cfm_fad = flow_m3min_fad / 0.0283168;
 
-                // 4. Psychrometrics
+                // 3. Psychrometrics & Humidity
                 const Psat_Pa = getSaturationPressure(T1_C);
-                const Pv_Pa = (rhVal / 100) * Psat_Pa; // Partial pressure of vapor
-                const P1_Dry_Pa = P1_Pa - Pv_Pa; // Partial pressure of dry air
+                const Pv_Pa = (rhVal / 100) * Psat_Pa; 
+                const P1_Dry_Pa = P1_Pa - Pv_Pa; 
                 
                 if (P1_Dry_Pa <= 0) {
-                    displayMessage("Error: Vapor pressure exceeds total pressure. Check inputs (High Temp/Low Pressure combination).", "error"); return;
+                    displayMessage("Error: Vapor pressure exceeds inlet pressure. Lower temperature or raise inlet pressure.", "error"); return;
                 }
 
-                // 5. Get Target Standard Definition
+                // 4. Target Standard
                 const std = standards[stdKey];
                 const P2_Pa = std.P;
                 const T2_K = std.T;
 
-                // 6. Calculate Correction Factors
-                // Factor due to Pressure (including humidity loss)
+                // 5. Correction Factors
                 const K_p = P1_Dry_Pa / P2_Pa;
-                // Factor due to Temperature
                 const K_t = T2_K / T1_K;
-                // Total Factor
                 const K_total = K_p * K_t;
                 
                 const flow_m3min_std = flow_m3min_fad * K_total;
-
-                // 7. Calculate Outputs (Dual units for user convenience)
                 const out_scfm = flow_m3min_std / 0.0283168;
                 const out_nm3hr = flow_m3min_std * 60; 
-                const out_m3min = flow_m3min_std;
 
-                // 8. Generate Steps HTML
+                // 6. Discharge Sizing & Compression Ratio
+                // Gauge pressure to absolute pressure
+                let P2_gauge_Pa = toPascals(pOutVal, pOutUnit);
+                let P2_Pa_abs = P2_gauge_Pa + P1_Pa;
+                let compression_ratio = P2_Pa_abs / P1_Pa;
+
+                // 7. Isentropic Compression Sizing
+                const k = 1.4; // Ratio of specific heats for air
+                let T2_isen_K = T1_K * Math.pow(compression_ratio, (k - 1) / k);
+                let T2_isen_C = T2_isen_K - 273.15;
+                
+                // Isentropic power: kW
+                // W = [k/(k-1)] * P1 * Q_fad * [ (P2/P1)^((k-1)/k) - 1 ]
+                let P_isen_W = (k / (k - 1)) * P1_Pa * flow_m3s_fad * (Math.pow(compression_ratio, (k - 1) / k) - 1);
+                let P_isen_kW = P_isen_W / 1000;
+
+                // 8. Shaft Power & Motor Power Sizing
+                let P_shaft_kW = P_isen_kW / (etaIsen / 100);
+                let P_motor_kW = P_shaft_kW / (etaMotor / 100);
+
+                // 9. Specific Energy Sizing (SEC)
+                let SEC_metric = P_shaft_kW / flow_m3min_fad; // kW / (m3/min) FAD
+                let SEC_imperial = (P_shaft_kW / flow_cfm_fad) * 100; // kW / 100 CFM FAD
+
+                // 10. Annual operational utility cost Sizing
+                let annual_cost = P_motor_kW * hours * tariff;
+
+                // 11. Condensation Rate Sizing
+                // Gas Constant of dry air = 287.05 J/(kg K)
+                const R_dry = 287.05;
+                let mass_flow_dry = (P1_Dry_Pa * flow_m3s_fad) / (R_dry * T1_K); // kg/s
+                
+                // Humidity ratio: kg water / kg dry air
+                let w1 = 0.622 * Pv_Pa / (P1_Pa - Pv_Pa);
+                
+                // Saturated humidity ratio at discharge cooling (assume cooled to 40C)
+                let T_aftercooler_C = 40.0;
+                let Psat_40 = getSaturationPressure(T_aftercooler_C);
+                let w2 = 0.622 * Psat_40 / (P2_Pa_abs - Psat_40);
+                
+                let condensation_rate_lh = 0;
+                if (w2 < w1) {
+                    let cond_rate_kgs = mass_flow_dry * (w1 - w2);
+                    condensation_rate_lh = cond_rate_kgs * 3600; // 1 kg of water = 1 Liter
+                }
+
+                // Generate 10-Step breakdown
                 let stepHtml = '';
 
-                // Step 1: Conditions
-                stepHtml += `<div class="step-card">
-                    <h4><span class="number">1</span>Analyze Inlet Conditions</h4>
-                    <div class="step-content">
-                        <div class="step-explanation">
-                            <strong>Absolute Pressure ($P_1$):</strong> ${P1_Pa.toFixed(0)} Pa<br>
-                            <strong>Abs. Temperature ($T_1$):</strong> ${T1_K.toFixed(2)} K<br>
-                            <strong>Relative Humidity:</strong> ${rhVal}%
-                        </div>
-                        <div class="step-explanation">
-                            <p><strong>Step 1b: Calculate Saturation Vapor Pressure ($P_{sat}$)</strong></p>
-                            <div class="formula-block" style="padding:10px;">
-                                <p>Using Tetens Equation at ${T1_C.toFixed(1)}°C:</p>
-                                $$P_{sat} = 610.78 \times e^{\\frac{17.27 \\times ${T1_C.toFixed(1)}}{${T1_C.toFixed(1)} + 237.3}} = \\mathbf{${Psat_Pa.toFixed(0)} \\text{ Pa}}$$
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-                // Step 2: Partial Pressure
+                // Step 1: Site Elevation & Barometric Pressure
+                let altUnitLabel = altUnit === 'feet' ? 'ft' : 'm';
                 stepHtml += `<div class="step-card math-content">
-                    <h4><span class="number">2</span>Correct for Humidity (Partial Pressure)</h4>
-                    <div class="step-content">
-                        <div class="step-explanation">
-                            <p>To convert to Dry Standard air, we must subtract the volume occupied by water vapor at the inlet.</p>
-                            <p><strong>Partial Pressure of Vapor ($P_v$):</strong></p>
-                            $$P_v = RH \\times P_{sat} = ${rhVal/100} \\times ${Psat_Pa.toFixed(0)} = ${Pv_Pa.toFixed(0)} \\text{ Pa}$$
-                        </div>
-                        <div class="step-explanation">
-                            <p><strong>Partial Pressure of Dry Air ($P_{1,dry}$):</strong></p>
-                            <div class="formula-block">
-                                $$P_{1,dry} = P_{total} - P_v$$
-                                $$P_{1,dry} = ${P1_Pa.toFixed(0)} - ${Pv_Pa.toFixed(0)} = \\mathbf{${P1_Dry_Pa.toFixed(0)} \\text{ Pa}}$$
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-                // Step 3: Factor
-                stepHtml += `<div class="step-card math-content">
-                    <h4><span class="number">3</span>Apply General Gas Law</h4>
-                    <div class="step-content">
-                        <div class="step-explanation">
-                            <p>Target Standard: <strong>${std.name}</strong></p>
-                            <ul>
-                                <li>Ref Pressure ($P_{std}$): ${P2_Pa} Pa</li>
-                                <li>Ref Temp ($T_{std}$): ${T2_K} K</li>
-                            </ul>
-                            <p>This ratio defines the compressibility and density change.</p>
-                        </div>
-                        <div class="step-explanation">
-                            <div class="formula-block">
-                                <p class="formula">$$K = \\frac{P_{1,dry}}{P_{std}} \\times \\frac{T_{std}}{T_1}$$</p>
-                                <p class="formula">$$K = \\frac{${P1_Dry_Pa.toFixed(0)}}{${P2_Pa}} \\times \\frac{${T2_K}}{${T1_K.toFixed(2)}} = \\mathbf{${K_total.toFixed(4)}}$$</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-                // Step 4: Final Flow
-                stepHtml += `<div class="step-card math-content">
-                    <h4><span class="number">4</span>Final Volumetric Flow</h4>
+                    <h4><span class="number">1</span>Inlet Ambient Site Pressure Elevation Sizing</h4>
                     <div class="step-explanation">
-                        <p>$$Q_{std} = Q_{FAD} \\times K$$</p>
-                        <p>$$Q_{std} = ${flowVal} \\times ${K_total.toFixed(4)} = \\mathbf{${(flowVal * K_total).toFixed(2)}}$$ (in input units)</p>
+                        <p>At altitude <strong>${altVal} ${altUnitLabel}</strong>, the site barometric absolute pressure is converted or sized.</p>
+                        <p>If atmospheric pressure is calculated automatically from elevation using the standard atmosphere model:</p>
+                        <p class="formula">$$P_{atm} = 101325 \\times \\left(1 - 2.25577 \\times 10^{-5} \\cdot H_{meters}\\right)^{5.25588} \\text{ Pa}$$</p>
+                        <p>Inlet pressure ($P_1$) selected: <strong>${pInVal} ${pUnit}(a)</strong>, which translates to:</p>
+                        <p class="formula">$$P_1 = \\mathbf{${P1_Pa.toFixed(0)} \\text{ Pa (abs)}}$$</p>
+                        <p>Absolute Inlet Temperature ($T_1$) at ${tInVal}°${tUnit.toUpperCase()} translates to:</p>
+                        <p class="formula">$$T_1 = ${T1_K.toFixed(2)} \\text{ K}$$</p>
                     </div>
-                    <div class="step-value">${K_total.toFixed(4)} <span class="step-unit">Total Derating Factor</span></div>
                 </div>`;
 
-                // 9. Update Result Table
-                addResultRow("Input FAD Flow", `<strong>${flowVal} ${flowUnit}</strong>`);
-                addResultRow("Total Correction Factor", `${K_total.toFixed(4)}`);
-                
-                // Highlight the selected standard result
-                const selectedResult = std.unit === "SCFM" ? `${out_scfm.toFixed(2)} SCFM` : `${out_nm3hr.toFixed(2)} Nm³/hr`;
-                
-                addResultRow(`<span style="color:var(--primary)">Target: ${std.name}</span>`, `<strong class="ok" style="font-size:1.3em">${selectedResult}</strong>`);
-                
-                // Show other equivalents useful for engineers
-                addResultRow("Equivalent Normal Flow (DIN 1343)", `${((flow_m3min_fad * 60) * (P1_Dry_Pa/101325) * (273.15/T1_K)).toFixed(2)} Nm³/hr`);
-                addResultRow("Equivalent ASME Flow (SCFM)", `${((flow_m3min_fad / 0.0283168) * (P1_Dry_Pa/101353) * (293.15/T1_K)).toFixed(2)} SCFM`);
+                // Step 2: Saturation Vapor Pressure
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">2</span>Saturation Vapor Pressure ($P_{sat}$)</h4>
+                    <div class="step-explanation">
+                        <p>Water vapor content is bounded by the temperature of the air. The saturation vapor pressure is computed using the Tetens Equation:</p>
+                        <p class="formula">$$P_{sat} = 610.78 \\times \\exp\\left(\\frac{17.27 \\times T_{Celsius}}{T_{Celsius} + 237.3}\\right) \\text{ Pa}$$</p>
+                        <p>At intake temperature ${T1_C.toFixed(2)}°C:</p>
+                        <p class="formula">$$P_{sat} = 610.78 \\times \\exp\\left(\\frac{17.27 \\times ${T1_C.toFixed(2)}}{${T1_C.toFixed(2)} + 237.3}\\right) = \\mathbf{${Psat_Pa.toFixed(0)} \\text{ Pa}}$$</p>
+                    </div>
+                </div>`;
 
-                // Update Diagram
+                // Step 3: Vapor Pressure and Dry Air Correction
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">3</span>Humidity & Dry Air Sizing ($P_{1,dry}$)</h4>
+                    <div class="step-explanation">
+                        <p>By Dalton's Law of Partial Pressures, ambient air is a mixture of dry gases and water vapor. Since standard flow definitions represent dry air mass, the water vapor portion is subtracted:</p>
+                        <p class="formula">$$P_v = RH \\times P_{sat} = ${rhVal}\\% \\times ${Psat_Pa.toFixed(0)} \\text{ Pa} = \\mathbf{${Pv_Pa.toFixed(0)} \\text{ Pa}}$$</p>
+                        <p>The net inlet pressure of the dry air fraction is:</p>
+                        <p class="formula">$$P_{1,dry} = P_1 - P_v = ${P1_Pa.toFixed(0)} - ${Pv_Pa.toFixed(0)} = \\mathbf{${P1_Dry_Pa.toFixed(0)} \\text{ Pa (abs)}}$$</p>
+                    </div>
+                </div>`;
+
+                // Step 4: Flow Rate Normalization
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">4</span>Inlet Flow Rate Normalization ($Q_{FAD}$)</h4>
+                    <div class="step-explanation">
+                        <p>The input Free Air Delivery flow of <strong>${flowVal} ${flowUnit}</strong> is normalized to standard SI metric bases:</p>
+                        <ul>
+                            <li>Normalized Flow: <strong>${flow_m3min_fad.toFixed(4)} m³/min</strong></li>
+                            <li>Mass Sizing flow rate base: <strong>${flow_m3s_fad.toFixed(6)} m³/s</strong></li>
+                        </ul>
+                    </div>
+                </div>`;
+
+                // Step 5: Correction Factors Sizing
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">5</span>Reference Standard & Density Ratio Sizing</h4>
+                    <div class="step-explanation">
+                        <p>Using the target standard reference <strong>${std.name}</strong>:</p>
+                        <ul>
+                            <li>Ref Pressure ($P_{std}$): <strong>${P2_Pa} Pa</strong></li>
+                            <li>Ref Temperature ($T_{std}$): <strong>${T2_K} K</strong></li>
+                        </ul>
+                        <p>The correction factors due to pressure scaling and thermal expansion are:</p>
+                        <p class="formula">$$K_p = \\frac{P_{1,dry}}{P_{std}} = \\frac{${P1_Dry_Pa.toFixed(0)}}{${P2_Pa}} = ${K_p.toFixed(5)}$$</p>
+                        <p class="formula">$$K_t = \\frac{T_{std}}{T_1} = \\frac{${T2_K}}{${T1_K.toFixed(2)}} = ${K_t.toFixed(5)}$$</p>
+                        <p>Combined thermodynamic density scaling multiplier:</p>
+                        <p class="formula">$$K_{total} = K_p \\times K_t = \\mathbf{${K_total.toFixed(5)}}$$</p>
+                    </div>
+                </div>`;
+
+                // Step 6: Standardized Capacity Calculation
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">6</span>Standardized Outlet Flow Sizing ($Q_{std}$)</h4>
+                    <div class="step-explanation">
+                        <p>Applying the combined factor to the intake volumetric capacity:</p>
+                        <p class="formula">$$Q_{std} = Q_{FAD} \\times K_{total}$$</p>
+                        <p>This results in standard flow equivalents:</p>
+                        <ul>
+                            <li>Standard Flow Rate: <strong class="ok" style="font-size:1.15em;">${out_scfm.toFixed(2)} SCFM</strong></li>
+                            <li>Normal Volumetric Flow: <strong class="ok" style="font-size:1.15em;">${out_nm3hr.toFixed(2)} Nm³/hr</strong></li>
+                            <li>Standard Metric Flow: <strong class="ok">${flow_m3min_std.toFixed(3)} m³/min (Std)</strong></li>
+                        </ul>
+                    </div>
+                </div>`;
+
+                // Step 7: Sizing Compression Ratio & Discharge States
+                let pOutUnitLabel = pOutUnit === 'bar' ? 'bar(g)' : pOutUnit === 'psi' ? 'psi(g)' : pOutUnit === 'kpa' ? 'kPa(g)' : 'atm(g)';
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">7</span>Sizing Compression Ratio ($r$) & Temperature</h4>
+                    <div class="step-explanation">
+                        <p>For a discharge pressure of <strong>${pOutVal} ${pOutUnitLabel}</strong>:</p>
+                        <p class="formula">$$P_{2,abs} = P_{2,gauge} + P_1 = ${P2_gauge_Pa.toFixed(0)} + ${P1_Pa.toFixed(0)} = ${P2_Pa_abs.toFixed(0)} \\text{ Pa (abs)}$$</p>
+                        <p>Sizing the total compression ratio ($r$):</p>
+                        <p class="formula">$$r = \\frac{P_{2,abs}}{P_1} = \\frac{${P2_Pa_abs.toFixed(0)}}{${P1_Pa.toFixed(0)}} = \\mathbf{${compression_ratio.toFixed(4)}}$$</p>
+                        <p>Theoretical isentropic temperature rise (dry air, $k=1.4$):</p>
+                        <p class="formula">$$T_{2,isen} = T_1 \\times r^{\\frac{k-1}{k}} = ${T1_K.toFixed(2)} \\times ${compression_ratio.toFixed(4)}^{0.2857} = \\mathbf{${T2_isen_K.toFixed(2)} \\text{ K } (${T2_isen_C.toFixed(1)}°\\text{C})}$$</p>
+                    </div>
+                </div>`;
+
+                // Step 8: Theoretical Isentropic Compression Power
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">8</span>Theoretical Isentropic Power Sizing ($P_{isen}$)</h4>
+                    <div class="step-explanation">
+                        <p>The minimum thermodynamic work per second required for ideal compression is given by:</p>
+                        <p class="formula">$$P_{isen} = \\frac{k}{k-1} P_1 Q_{FAD,m^3/s} \\left[ r^{\\frac{k-1}{k}} - 1 \\right]$$</p>
+                        <p class="formula">$$P_{isen} = 3.5 \\times ${P1_Pa.toFixed(0)} \\times ${flow_m3s_fad.toFixed(6)} \\times \\left[ ${compression_ratio.toFixed(4)}^{0.2857} - 1 \\right] = \\mathbf{${P_isen_kW.toFixed(2)} \\text{ kW}}$$</p>
+                    </div>
+                </div>`;
+
+                // Step 9: Sizing Shaft & Input Electrical Power
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">9</span>Compressor Shaft & Motor Sizing ($P_{shaft}, P_{motor}$)</h4>
+                    <div class="step-explanation">
+                        <p>Accounting for compressor isentropic efficiency ($\eta_{isen} = ${etaIsen}\\%$) and electrical motor efficiency ($\eta_{motor} = ${etaMotor}\\%$):</p>
+                        <p class="formula">$$P_{shaft} = \\frac{P_{isen}}{\\eta_{isen}} = \\frac{${P_isen_kW.toFixed(2)}}{${(etaIsen/100).toFixed(2)}} = \\mathbf{${P_shaft_kW.toFixed(2)} \\text{ kW}}$$</p>
+                        <p>Total electrical grid utility load drawn by the motor package:</p>
+                        <p class="formula">$$P_{motor} = \\frac{P_{shaft}}{\\eta_{motor}} = \\frac{${P_shaft_kW.toFixed(2)}}{${(etaMotor/100).toFixed(2)}} = \\mathbf{${P_motor_kW.toFixed(2)} \\text{ kW}}$$</p>
+                    </div>
+                </div>`;
+
+                // Step 10: Specific Energy Sizing & Annual Utility Cost
+                stepHtml += `<div class="step-card math-content">
+                    <h4><span class="number">10</span>Specific Energy Sizing & Annual Operational Sizing</h4>
+                    <div class="step-explanation">
+                        <p>Evaluating standard compressor performance metrics:</p>
+                        <ul>
+                            <li>Specific Energy Sizing (Metric): <strong>${SEC_metric.toFixed(3)} kW / (m³/min)</strong></li>
+                            <li>Specific Energy Sizing (Imperial): <strong>${SEC_imperial.toFixed(2)} kW / 100 CFM</strong></li>
+                        </ul>
+                        <p>For <strong>${hours}</strong> annual operating hours at a tariff of <strong>$${tariff.toFixed(3)}/kWh</strong>:</p>
+                        <p class="formula">$$\\text{Annual Cost} = P_{motor} \\times \\text{hours} \\times \\text{tariff}$$</p>
+                        <p class="formula">$$\\text{Annual Cost} = ${P_motor_kW.toFixed(2)} \\times ${hours} \\times $${tariff.toFixed(3)} = \\mathbf{\\$${annual_cost.toLocaleString('en-US', {maximumFractionDigits:2})}}$$</p>
+                    </div>
+                </div>`;
+
+                // Update results table rows
+                addResultRow("Input FAD Flow", `<strong>${flowVal} ${flowUnit}</strong>`);
+                addResultRow("Inlet Elevation Sized Pressure", `${(P1_Pa/1000).toFixed(2)} kPa(a)`);
+                addResultRow("Corrected Dry Inlet Pressure ($P_{1,dry}$)", `${(P1_Dry_Pa/1000).toFixed(2)} kPa(a)`);
+                addResultRow("Atmospheric Vapor Pressure ($P_v$)", `${(Pv_Pa/1000).toFixed(2)} kPa`);
+                addResultRow("Total Volume Sizing Factor ($K_{total}$)", `${K_total.toFixed(5)}`);
+                
+                // Highlights
+                const selectedResult = std.unit === "SCFM" ? `${out_scfm.toFixed(2)} SCFM` : `${out_nm3hr.toFixed(2)} Nm³/hr`;
+                addResultRow(`<span style="color:var(--primary); font-weight: bold;">Target: ${std.name}</span>`, `<strong class="ok" style="font-size:1.3em">${selectedResult}</strong>`);
+                addResultRow("Compression Ratio ($r$)", `<strong>${compression_ratio.toFixed(3)}</strong>`);
+                addResultRow("Moisture Condensation Rate Sizing", `${condensation_rate_lh.toFixed(2)} L/hr`);
+                addResultRow("Ideal Isentropic Sizing Power", `${P_isen_kW.toFixed(2)} kW`);
+                addResultRow("Compressor Shaft Sizing Power", `${P_shaft_kW.toFixed(2)} kW`);
+                addResultRow("Electric Motor Sizing Load", `<strong style="color:var(--secondary); font-size:1.15em;">${P_motor_kW.toFixed(2)} kW</strong>`);
+                addResultRow("Specific Energy Consumption (SEC)", `${SEC_imperial.toFixed(2)} kW / 100 CFM`);
+                addResultRow("Annual Utility Sizing Cost", `<strong class="ok" style="font-size:1.25em;">$${annual_cost.toLocaleString('en-US', {maximumFractionDigits:2})}</strong>`);
+
+                // Update Diagram Elements
                 svgP1.textContent = `${(P1_Pa/1000).toFixed(1)} kPa, ${T1_C.toFixed(1)}°C`;
                 svgV1.textContent = `${flowVal} ${flowUnit}`;
-                svgP2.textContent = `${(P2_Pa/1000).toFixed(1)} kPa, ${(T2_K-273.15).toFixed(1)}°C`;
-                svgV2.textContent = std.unit === "SCFM" ? `${out_scfm.toFixed(1)} SCFM` : `${out_nm3hr.toFixed(1)} Nm³/hr`;
                 
+                // Dynamic Diagram bindings
+                document.getElementById('svg-wet-badge').textContent = `${rhVal}% RH Wet Inlet`;
+                document.getElementById('svg-shaft-power').textContent = `Shaft Power: ${P_shaft_kW.toFixed(1)} kW`;
+                document.getElementById('svg-motor-power').textContent = `Motor Input: ${P_motor_kW.toFixed(1)} kW`;
+                document.getElementById('svg-isen-eff').textContent = `Isentropic Eff: ${etaIsen}%`;
+                document.getElementById('svg-water-condensed').textContent = `Condensation: ${condensation_rate_lh.toFixed(1)} L/hr`;
+                document.getElementById('svg-motor-eff').textContent = `Motor Eff: ${etaMotor.toFixed(1)}%`;
+                
+                svgP2.textContent = `${pOutVal.toFixed(1)} ${pOutUnitLabel}`;
+                svgV2.textContent = std.unit === "SCFM" ? `${out_scfm.toFixed(1)} SCFM` : `${out_nm3hr.toFixed(1)} Nm³/hr`;
+                document.getElementById('svg-std-name').textContent = std.name;
+                document.getElementById('svg-sec-val').textContent = `SEC: ${SEC_imperial.toFixed(1)} kW/100 CFM`;
+
                 conversionSummary.textContent = `1.0 ${flowUnit} (FAD) = ${K_total.toFixed(3)} ${flowUnit} (Std)`;
                 if(K_total < 1) {
                     conversionSummary.style.backgroundColor = 'var(--warning)';
@@ -1675,7 +2150,6 @@
                 resultContainer.style.display = 'block';
                 setTimeout(() => {
                     resultContainer.classList.add('show');
-                    // resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Optional: auto-scroll
                 }, 10);
 
                 if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
