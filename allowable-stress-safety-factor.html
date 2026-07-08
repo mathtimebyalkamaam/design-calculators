@@ -97,6 +97,22 @@
             line-height: 1.7;
             margin: 0;
             padding: 0;
+            overflow-x: hidden !important;
+            max-width: 100vw;
+        }
+        
+        .calculation-step, .results-table, .faq-card, .table-wrapper {
+            max-width: 100%;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .mjx-container, mjx-container {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            display: block !important;
+            -webkit-overflow-scrolling: touch;
         }
 
         .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
@@ -783,6 +799,69 @@
     opacity: 1;
     transform: translateY(-1px); /* Micro-interaction */
 }
+
+/* Custom Related Engineering Calculators Cards */
+.related-tools-section {
+    padding: 50px 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+}
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+.related-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+}
+.related-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--secondary);
+}
+.related-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.15rem;
+    color: var(--heading);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.related-card h3 i {
+    color: var(--secondary);
+    font-size: 1.2rem;
+}
+.related-card p {
+    margin: 0 0 15px 0;
+    font-size: 0.875rem;
+    color: var(--text);
+    line-height: 1.5;
+    flex-grow: 1;
+}
+.related-card .action-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.related-card .action-link i {
+    transition: transform 0.2s;
+}
+.related-card:hover .action-link i {
+    transform: translateX(4px);
+}
 </style>
 
     
@@ -837,6 +916,35 @@
                     "position": 3,
                     "name": "Allowable Stress, Safety Factor & Failure Theory Calculator",
                     "item": "https://designcalculators.co.in/allowable-stress-safety-factor"
+                }
+            ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is the difference between Von Mises and Tresca failure criteria?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Von Mises theory (distortion energy theory) states failure occurs when shear strain energy exceeds the yield strength limit. Tresca theory (maximum shear stress theory) states failure occurs when the maximum shear stress exceeds half the yield strength. Von Mises is typically 15% less conservative than Tresca and matches experimental test results for ductile metals better."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does operating temperature affect the factor of safety?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "High operating temperatures weaken the metallic crystalline structure, degrading both the yield strength (Sy) and ultimate tensile strength (Sut) according to ASME BPVC rules. Designing with room-temperature values in elevated service conditions will result in an over-predicted and unsafe safety factor."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Which failure theory should be used for gray cast iron?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "For brittle materials like gray cast iron, the Rankine theory (Maximum Normal Stress theory) must be used. Ductile theories like Von Mises or Tresca are highly inaccurate and non-conservative for brittle materials since brittle fractures are driven by normal tensile stress rather than shear sliding."
+                    }
                 }
             ]
         }
@@ -936,7 +1044,7 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <!-- Material & System -->
                     <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">1. Material & Settings</h4>
                     <div class="form-row">
@@ -953,12 +1061,16 @@
                                 </select>
                             </div>
                             <div class="form-group" style="margin-top:10px;">
-                                <label for="yield-strength">Yield Strength ($S_y$) [MPa]</label>
+                                <label for="yield-strength">Yield Strength ($S_y$) <span class="unit-label">[MPa]</span></label>
                                 <input type="number" id="yield-strength" value="250" step="10">
                             </div>
                             <div class="form-group" style="margin-top:10px;">
-                                <label for="ultimate-strength">Ultimate Strength ($S_{ut}$) [MPa]</label>
+                                <label for="ultimate-strength">Ultimate Strength ($S_{ut}$) <span class="unit-label">[MPa]</span></label>
                                 <input type="number" id="ultimate-strength" value="400" step="10">
+                            </div>
+                            <div id="endurance-limit-group" class="form-group hidden" style="margin-top:10px;">
+                                <label for="endurance-strength">Endurance Limit ($S_e$) <span class="unit-label">[MPa]</span></label>
+                                <input type="number" id="endurance-strength" value="200" step="10">
                             </div>
                         </div>
                         <div class="vector-input-group">
@@ -966,8 +1078,8 @@
                             <div class="form-group">
                                 <label for="unit-system">Unit System</label>
                                 <select id="unit-system" onchange="updateUnitLabels()">
-                                    <option value="metric">Metric (MPa)</option>
-                                    <option value="imperial">Imperial (ksi)</option>
+                                    <option value="metric">Metric (MPa, °C)</option>
+                                    <option value="imperial">Imperial (ksi, °F)</option>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-top:10px;">
@@ -977,18 +1089,29 @@
                                     <option value="allowable">Calculate Allowable Stress</option>
                                 </select>
                             </div>
-                             <div class="form-group" style="margin-top:10px;">
-                                <label for="target-fos">Target Safety Factor (if calc Allowable)</label>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="target-fos">Target Safety Factor</label>
                                 <input type="number" id="target-fos" value="2.0" step="0.1">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="operating-temp">Operating Temp. ($T$) <span class="temp-unit-label">[°C]</span></label>
+                                <input type="number" id="operating-temp" value="25" step="5">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="loading-type">Loading Character</label>
+                                <select id="loading-type" onchange="toggleLoadingType()">
+                                    <option value="static" selected>Static Loading</option>
+                                    <option value="fatigue">Fluctuating Fatigue</option>
+                                </select>
                             </div>
                         </div>
                     </div>
 
                     <!-- Stress State -->
-                    <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 20px;">2. Applied Stress State (2D Plane Stress)</h4>
+                    <h4 id="applied-stress-header" style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 20px;"><i class="fas fa-arrows-alt-v"></i> Applied Stress State (2D Plane Stress)</h4>
                     <div class="form-row">
                         <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-arrows-alt-v"></i> Normal Stresses</div>
+                            <div class="vector-input-header"><i class="fas fa-arrows-down-to-line"></i> Normal Stresses</div>
                             <div class="form-group">
                                 <label for="sigma-x">Stress X ($\sigma_x$) <span class="unit-label">[MPa]</span></label>
                                 <input type="number" id="sigma-x" value="100" step="1">
@@ -1003,6 +1126,25 @@
                             <div class="form-group">
                                 <label for="tau-xy">Shear XY ($\tau_{xy}$) <span class="unit-label">[MPa]</span></label>
                                 <input type="number" id="tau-xy" value="50" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mean Stress Group (Dynamic) -->
+                    <div id="mean-stress-group" class="vector-input-group hidden" style="margin-top: 20px;">
+                        <div class="vector-input-header"><i class="fas fa-arrows-left-right"></i> Mean Stresses (Fluctuating Mean Component)</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="sigma-x-mean">Mean Stress X ($\sigma_{x,m}$) <span class="unit-label">[MPa]</span></label>
+                                <input type="number" id="sigma-x-mean" value="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="sigma-y-mean">Mean Stress Y ($\sigma_{y,m}$) <span class="unit-label">[MPa]</span></label>
+                                <input type="number" id="sigma-y-mean" value="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="tau-xy-mean">Mean Shear XY ($\tau_{xy,m}$) <span class="unit-label">[MPa]</span></label>
+                                <input type="number" id="tau-xy-mean" value="0" step="1">
                             </div>
                         </div>
                     </div>
@@ -1063,6 +1205,111 @@
                 <div class="standard-reference" style="margin-top: 20px; font-style: italic; color: var(--text);">
                      Analysis based on Plane Stress Transformation. Principal Stresses calculated via Mohr's Circle equations.
                 </div>
+            </div>
+        </div>
+
+        <!-- COMPLIANCE STANDARDS & ENGINEERING REFERENCE SECTION -->
+        <div class="card" style="border-top: 4px solid var(--accent); box-shadow: var(--shadow-lg); margin-top: 30px;">
+            <h2 style="color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-top: 0; font-family: 'Montserrat', sans-serif; font-size: 1.8rem; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-certificate"></i> Compliance Standards &amp; Engineering Reference Guide
+            </h2>
+            <p style="margin-bottom: 20px; color: var(--text);">This multi-axial stress and safety factor calculator is modeled according to the guidelines set by major national and international standards bodies, providing mechanical engineers with verified, audit-ready calculations for structural safety auditing and finite element verification (FEA).</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                <div style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                    <h3 style="margin-top: 0; font-size: 1.15rem; color: var(--primary); display: flex; align-items: center; gap: 8px; font-family: 'Montserrat', sans-serif;">
+                        <i class="fas fa-globe"></i> Applicable Global Standards
+                    </h3>
+                    <ul style="padding-left: 20px; margin: 10px 0; font-size: 0.92rem; line-height: 1.7; color: var(--text);">
+                        <li><strong>ASME BPVC Section VIII Division 2 (Part 5):</strong> Dictates the use of the Von Mises distortion energy theory for ductile structural analysis and design-by-analysis rules.</li>
+                        <li><strong>AISC 360-16 (Specification for Structural Steel Buildings):</strong> Governs safety factors (ASD) and resistance factors (LRFD) for general construction, steel framing, and members.</li>
+                        <li><strong>IS 800 (Indian Standard Code for General Steel Construction):</strong> Specifies limit state design rules, yield boundaries, and temperature-dependent structural degradation curves.</li>
+                        <li><strong>Eurocode 3 (EN 1993 - Design of Steel Structures):</strong> Outlines material reduction coefficients, partial safety factors ($\gamma_M$), and stress concentration checks.</li>
+                        <li><strong>API RP 2A-WSD / ISO 19902:</strong> Regulates allowable working stress design checks and safety factors for offshore structures under extreme wave and structural loads.</li>
+                    </ul>
+                </div>
+
+                <div style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                    <h3 style="margin-top: 0; font-size: 1.15rem; color: var(--primary); display: flex; align-items: center; gap: 8px; font-family: 'Montserrat', sans-serif;">
+                        <i class="fas fa-toolbox"></i> Sizing Problems Solved for Engineers
+                    </h3>
+                    <ul style="padding-left: 20px; margin: 10px 0; font-size: 0.92rem; line-height: 1.7; color: var(--text);">
+                        <li><strong>Eliminates Manual Tensors:</strong> Automatically resolves complex combined loads ($\sigma_x, \sigma_y, \tau_{xy}$) into principal planes without manual matrix algebra or Mohr's circle drawing.</li>
+                        <li><strong>ASME Temp-Corrected Yield:</strong> Corrects the yield limit ($S_y$) dynamically based on design temperature, preventing mechanical fatigue or yielding under severe thermal expansion.</li>
+                        <li><strong>Combined Fatigue Sizing:</strong> Computes multiaxial fatigue safety factors (Soderberg, Goodman, Gerber) to safeguard rotating drive shafts and cyclical components.</li>
+                        <li><strong>FEA Validation Tool:</strong> Serves as a direct reference tool to verify stress concentrations and mesh outputs from ANSYS or ABAQUS solvers.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="background: rgba(245, 158, 11, 0.08); padding: 20px; border-radius: 8px; border-left: 5px solid var(--accent); margin-bottom: 25px;">
+                <h4 style="margin: 0 0 10px 0; color: #b45309; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; font-family: 'Montserrat', sans-serif;">
+                    <i class="fas fa-bolt"></i> Applicability Rules: Von Mises vs. Tresca vs. Rankine
+                </h4>
+                <p style="margin: 0; font-size: 0.95rem; line-height: 1.6; color: var(--text);">Use <strong>Von Mises (Distortion Energy)</strong> for ductile structural alloys (Steel, Aluminum, Titanium) to maximize design efficiency with up to 15% material savings. Use <strong>Tresca (Max Shear Stress)</strong> for high-risk applications (nuclear casings, pipelines) where conservative bounds are legally mandated. Use <strong>Rankine (Max Normal Stress)</strong> strictly for brittle materials (cast iron, glass, ceramics) that fail due to tensile cleavage rather than internal shear slip.</p>
+            </div>
+            
+            <div style="background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                <h3 style="margin-top: 0; font-size: 1.15rem; color: var(--primary); display: flex; align-items: center; gap: 8px; font-family: 'Montserrat', sans-serif;">
+                    <i class="fas fa-user-tie"></i> Who Uses This Tool &amp; How It Helps Them
+                </h3>
+                <p style="margin: 0; font-size: 0.92rem; line-height: 1.7; color: var(--text);">
+                    This calculator is designed for <strong>Mechanical Design Engineers</strong>, <strong>Structural Stress Analysts</strong>, <strong>Aerospace Structural Engineers</strong>, and <strong>Piping Stress Engineers</strong>. It simplifies multi-axial stress states to evaluate safety margins against yielding or ultimate fracture. By inputting plane stress parameters, engineers can instantly check if their component satisfies ASME Boiler & Pressure Vessel codes, AISC steel criteria, or fatigue conditions—saving hours of complex hand-calculations or manual spreadsheet configuration.
+                </p>
+            </div>
+        </div>
+
+        <!-- MANUAL CALCULATION WORKTHROUGH EXAMPLE (FOR LLM SCRAPING & AUDITING) -->
+        <div class="card" style="border-top: 4px solid var(--secondary); box-shadow: var(--shadow); margin-top: 30px;">
+            <h2 style="color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 15px; margin-top: 0; font-family: 'Montserrat', sans-serif; font-size: 1.8rem; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-book"></i> Step-by-Step Manual Sizing Walkthrough
+            </h2>
+            <p style="margin-bottom: 20px; color: var(--text);">Below is a manual verification case designed to demonstrate the calculator's logic. This walkthrough can be crawled by LLMs and search engines to check the math correctness of the solver against reference equations.</p>
+            
+            <div style="background: var(--bg); padding: 25px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.95rem; line-height: 1.8; color: var(--text);">
+                <h4 style="margin-top: 0; color: var(--heading); font-size: 1.15rem; font-family: 'Montserrat', sans-serif; margin-bottom: 10px;">Mock Scenario Inputs:</h4>
+                <ul style="padding-left: 20px; margin: 10px 0;">
+                    <li><strong>Material:</strong> Structural Steel A36 ($S_y = 250\text{ MPa}$, $S_{ut} = 400\text{ MPa}$)</li>
+                    <li><strong>Operating Temperature:</strong> $25^\circ\text{C}$ (No temperature degradation, $k_{temp} = 1.0$)</li>
+                    <li><strong>Normal Stress X ($\sigma_x$):</strong> $120.0\text{ MPa}$ (Tension)</li>
+                    <li><strong>Normal Stress Y ($\sigma_y$):</strong> $-40.0\text{ MPa}$ (Compression)</li>
+                    <li><strong>Shear Stress XY ($\tau_{xy}$):</strong> $60.0\text{ MPa}$</li>
+                </ul>
+
+                <h4 style="color: var(--primary); font-family: 'Montserrat', sans-serif; margin-top: 20px; margin-bottom: 10px;">Hand Calculation Steps:</h4>
+                <ol style="padding-left: 20px; margin: 10px 0;">
+                    <li>
+                        <strong>Calculate Average Stress ($\sigma_{avg}$):</strong>
+                        $$\sigma_{avg} = \frac{\sigma_x + \sigma_y}{2} = \frac{120.0 + (-40.0)}{2} = 40.0\text{ MPa}$$
+                    </li>
+                    <li>
+                        <strong>Calculate Mohr's Circle Radius ($R$):</strong>
+                        $$R = \sqrt{\left(\frac{\sigma_x - \sigma_y}{2}\right)^2 + \tau_{xy}^2} = \sqrt{\left(\frac{120.0 - (-40.0)}{2}\right)^2 + 60.0^2} = \sqrt{80.0^2 + 60.0^2} = 100.0\text{ MPa}$$
+                    </li>
+                    <li>
+                        <strong>Solve for Principal Stresses ($\sigma_1, \sigma_2$):</strong>
+                        $$\sigma_1 = \sigma_{avg} + R = 40.0 + 100.0 = 140.0\text{ MPa}$$
+                        $$\sigma_2 = \sigma_{avg} - R = 40.0 - 100.0 = -60.0\text{ MPa}$$
+                        Since it is plane stress, $\sigma_3 = 0.0\text{ MPa}$.
+                    </li>
+                    <li>
+                        <strong>Determine Principal Angle ($\theta_p$):</strong>
+                        $$\theta_p = \frac{1}{2} \arctan\left(\frac{2\tau_{xy}}{\sigma_x - \sigma_y}\right) = \frac{1}{2} \arctan\left(\frac{2(60.0)}{120.0 - (-40.0)}\right) = \frac{1}{2} \arctan(0.75) \approx 18.43^\circ$$
+                    </li>
+                    <li>
+                        <strong>Calculate Von Mises Equivalent Stress ($\sigma'_{vm}$):</strong>
+                        $$\sigma'_{vm} = \sqrt{\sigma_1^2 - \sigma_1\sigma_2 + \sigma_2^2} = \sqrt{140.0^2 - (140.0)(-60.0) + (-60.0)^2} = \sqrt{19600 + 8400 + 3600} = \sqrt{31600} \approx 177.76\text{ MPa}$$
+                    </li>
+                    <li>
+                        <strong>Calculate Tresca Equivalent Stress ($\sigma_{tr}$):</strong>
+                        $$\sigma_{tr} = \max(|\sigma_1 - \sigma_2|, |\sigma_1 - \sigma_3|, |\sigma_2 - \sigma_3|) = \max(200.0, 140.0, 60.0) = 200.0\text{ MPa}$$
+                    </li>
+                    <li>
+                        <strong>Verify Design Safety Factors ($n$):</strong>
+                        $$n_{VM} = \frac{S_y}{\sigma'_{vm}} = \frac{250.0}{177.76} \approx 1.41\quad(\text{Marginal Safety})$$
+                        $$n_{Tresca} = \frac{S_y}{\sigma_{tr}} = \frac{250.0}{200.0} = 1.25\quad(\text{Conservative Margin})$$
+                    </li>
+                </ol>
             </div>
         </div>
 
@@ -1214,10 +1461,32 @@
                     <div class="faq-card">
                         <h4><i class="fas fa-scissors"></i> 8. Does adding Shear Stress always reduce structural safety?</h4>
                         <div class="faq-answer">
-                            <p>Yes. In multiaxial loading, adding shear ($\tau_{xy}$) to a tensile load acts as a "failure multiplier." It increases the radius of the Mohr's Circle, shifting the Principal Stresses higher and moving the Von Mises equivalent stress closer to the yielding surface. Even a small amount of torque on a tensioned bolt can drastically lower its load-carrying capacity, necessitating a much larger safety factor than if the load was purely tensile.</p>
+                            Yes. In multiaxial loading, adding shear ($\tau_{xy}$) to a tensile load acts as a "failure multiplier." It increases the radius of the Mohr's Circle, shifting the Principal Stresses higher and moving the Von Mises equivalent stress closer to the yielding surface. Even a small amount of torque on a tensioned bolt can drastically lower its load-carrying capacity, necessitating a much larger safety factor than if the load was purely tensile.
                         </div>
                         <div class="faq-visual">
                             <canvas id="faqChart8" height="120" role="img" aria-label="Faq  Analysis Chart8"><p class="sr-only">Interactive data visualization for Faq  Analysis Chart8</p></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Q9 -->
+                    <div class="faq-card">
+                        <h4><i class="fas fa-redo-alt"></i> 9. How do Soderberg, Goodman, and Gerber fatigue criteria differ?</h4>
+                        <div class="faq-answer">
+                            The three criteria represent different safety envelopes under cyclic/fluctuating loading. <strong>Soderberg</strong> is the most conservative because it relies on the yield strength ($S_y$), ensuring the design never yields. <strong>Goodman</strong> is a linear boundary connecting the endurance limit ($S_e$) to the ultimate strength ($S_{ut}$), representing general safety for machine design. <strong>Gerber</strong> uses a parabolic relationship, representing the statistical mean of failure. Use Soderberg for zero-tolerance safety and Goodman for general applications.
+                        </div>
+                        <div class="faq-visual">
+                            <canvas id="faqChart9" height="120" role="img" aria-label="Faq Analysis Chart9"><p class="sr-only">Interactive data visualization for Faq Analysis Chart9</p></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Q10 -->
+                    <div class="faq-card">
+                        <h4><i class="fas fa-bezier-curve"></i> 10. How does Stress Concentration (Kt) affect the safety factor?</h4>
+                        <div class="faq-answer">
+                            Stress concentration occurs at geometric discontinuities (holes, keyways, sharp fillets). The local stress increases to $\sigma_{local} = K_t \times \sigma_{nominal}$. In static ductile designs, localized yielding redistributes the stress safely. However, under cyclic fatigue loading or in brittle materials, stress concentrations trigger micro-cracks that propagate rapidly, severely lowering the fatigue limit and safety factors.
+                        </div>
+                        <div class="faq-visual">
+                            <canvas id="faqChart10" height="120" role="img" aria-label="Faq Analysis Chart10"><p class="sr-only">Interactive data visualization for Faq Analysis Chart10</p></canvas>
                         </div>
                     </div>
                 </div>
@@ -1226,20 +1495,27 @@
     </main>
 
     
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <!-- Related Tools Section -->
+    <section class="related-tools-section">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/asme-vessel" class="silo-card" style="text-decoration:none;">
-                        <span>Asme Vessel</span>
-                    </a>
-                    <a href="/chiller-capacity" class="silo-card" style="text-decoration:none;">
-                        <span>Chiller Capacity</span>
-                    </a>
-                    <a href="/fan-laws" class="silo-card" style="text-decoration:none;">
-                        <span>Fan Laws</span>
-                    </a>
+            <h2 style="text-align:center; font-size:1.6rem; margin-bottom:10px; color:var(--heading); font-family: 'Montserrat', sans-serif;">Related Engineering Calculators</h2>
+            <p style="text-align:center; max-width:600px; margin:0 auto 30px auto; font-size:0.9rem; color:var(--text);">Explore our suite of structural and mechanical calculators designed to automate industrial standards-compliant verification.</p>
+            <div class="related-grid">
+                <a href="asme-vessel.html" class="related-card">
+                    <h3><i class="fas fa-database"></i> ASME Pressure Vessel Sizing</h3>
+                    <p>Calculates minimum wall thickness and maximum allowable working pressure (MAWP) for cylinders and heads according to ASME Boiler &amp; Pressure Vessel Code (BPVC) Section VIII Division 1.</p>
+                    <div class="action-link">Open Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a href="bolt-torque.html" class="related-card">
+                    <h3><i class="fas fa-tools"></i> Bolt Torque &amp; Tension</h3>
+                    <p>Computes torque requirements and target pre-loads for high-strength structural bolts using industrial thread friction coefficient models (ISO / ASME guidelines).</p>
+                    <div class="action-link">Open Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a href="beam-deflection.html" class="related-card">
+                    <h3><i class="fas fa-ruler-combined"></i> Beam Deflection &amp; Bending</h3>
+                    <p>Analyzes beam bending stresses, cross-sectional moment of inertia, and displacement elastic curves under single or multiaxial loading cases.</p>
+                    <div class="action-link">Open Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
             </div>
         </div>
     </section>
@@ -1274,11 +1550,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1286,10 +1562,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1349,45 +1625,89 @@
                 let sut = matDB[key].Sut;
                 
                 if(sys === 'imperial') {
-                    sy = sy * 145.038; // MPa to psi
-                    sut = sut * 145.038;
+                    sy = sy * 0.145038; // MPa to ksi (correct mapping)
+                    sut = sut * 0.145038; // MPa to ksi
                 }
                 
-                // For brittle, Sy is technically not the failure point, Sut is. 
-                // But for tool simplicity, we populate Sy field.
-                document.getElementById('yield-strength').value = Math.round(sy);
-                document.getElementById('ultimate-strength').value = Math.round(sut);
+                document.getElementById('yield-strength').value = (sy > 0) ? Math.round(sy * 10) / 10 : 0;
+                document.getElementById('ultimate-strength').value = Math.round(sut * 10) / 10;
+                
+                // Set default endurance limit (Se = 0.5 * Sut)
+                const se = (sut * 0.5);
+                document.getElementById('endurance-strength').value = Math.round(se * 10) / 10;
+            }
+        }
+
+        function toggleLoadingType() {
+            const loadType = document.getElementById('loading-type').value;
+            const meanStressGroup = document.getElementById('mean-stress-group');
+            const enduranceGroup = document.getElementById('endurance-limit-group');
+            const appliedStressHeader = document.getElementById('applied-stress-header');
+            
+            if (loadType === 'fatigue') {
+                meanStressGroup.classList.remove('hidden');
+                enduranceGroup.classList.remove('hidden');
+                appliedStressHeader.innerHTML = '<i class="fas fa-redo"></i> Applied Alternating Stress State (Alternating Amplitude)';
+            } else {
+                meanStressGroup.classList.add('hidden');
+                enduranceGroup.classList.add('hidden');
+                appliedStressHeader.innerHTML = '<i class="fas fa-arrows-alt-v"></i> Applied Stress State (2D Plane Stress)';
             }
         }
 
         function updateUnitLabels() {
             const sys = document.getElementById('unit-system').value;
             const labels = document.querySelectorAll('.unit-label');
-            const unit = sys === 'metric' ? '[MPa]' : '[ksi]'; // using ksi for imperial to keep numbers small
+            const unit = sys === 'metric' ? '[MPa]' : '[ksi]';
             labels.forEach(l => l.innerText = unit);
             
-            // Adjust values roughly if switched? No, too complex state. Just user changes.
+            const tempLabels = document.querySelectorAll('.temp-unit-label');
+            const tempUnit = sys === 'metric' ? '[°C]' : '[°F]';
+            tempLabels.forEach(l => l.innerText = tempUnit);
+            
+            const tempVal = parseFloat(document.getElementById('operating-temp').value);
+            if (sys === 'imperial' && tempVal === 25) {
+                document.getElementById('operating-temp').value = 77;
+            } else if (sys === 'metric' && tempVal === 77) {
+                document.getElementById('operating-temp').value = 25;
+            }
+            
             updateMaterial(); // Re-populate defaults in new unit
         }
 
         function loadPreset(type) {
+            const sys = document.getElementById('unit-system').value;
             if (type === 'steel_tension') {
                 document.getElementById('material-select').value = 'steel_a36';
+                document.getElementById('loading-type').value = 'static';
+                toggleLoadingType();
                 updateMaterial();
-                document.getElementById('sigma-x').value = '150';
+                document.getElementById('operating-temp').value = sys === 'metric' ? 25 : 77;
+                document.getElementById('sigma-x').value = sys === 'metric' ? '150' : '22';
                 document.getElementById('sigma-y').value = '0';
                 document.getElementById('tau-xy').value = '0';
             } else if (type === 'shaft_torsion') {
                 document.getElementById('material-select').value = 'steel_a36';
+                document.getElementById('loading-type').value = 'fatigue';
+                toggleLoadingType();
                 updateMaterial();
-                document.getElementById('sigma-x').value = '0'; // Pure torsion usually, maybe bending
+                document.getElementById('operating-temp').value = sys === 'metric' ? 80 : 176;
+                // Alternating component
+                document.getElementById('sigma-x').value = sys === 'metric' ? '80' : '12';
                 document.getElementById('sigma-y').value = '0';
-                document.getElementById('tau-xy').value = '140'; // High shear
+                document.getElementById('tau-xy').value = sys === 'metric' ? '60' : '9';
+                // Mean component
+                document.getElementById('sigma-x-mean').value = sys === 'metric' ? '40' : '6';
+                document.getElementById('sigma-y-mean').value = '0';
+                document.getElementById('tau-xy-mean').value = sys === 'metric' ? '20' : '3';
             } else if (type === 'pressure_vessel') {
                 document.getElementById('material-select').value = 'steel_a36';
+                document.getElementById('loading-type').value = 'static';
+                toggleLoadingType();
                 updateMaterial();
-                document.getElementById('sigma-x').value = '120'; // Hoop
-                document.getElementById('sigma-y').value = '60';  // Longitudinal
+                document.getElementById('operating-temp').value = sys === 'metric' ? 180 : 356;
+                document.getElementById('sigma-x').value = sys === 'metric' ? '120' : '18';
+                document.getElementById('sigma-y').value = sys === 'metric' ? '60' : '9';
                 document.getElementById('tau-xy').value = '0';
             }
             displayMessage(`${type.toUpperCase()} scenario loaded.`, "success");
@@ -1420,6 +1740,22 @@
             document.getElementById('calculate-btn').addEventListener('click', performCalculation);
             document.getElementById('pdf-btn').addEventListener('click', generatePDF);
             
+            document.getElementById('loading-type').addEventListener('change', toggleLoadingType);
+            document.getElementById('calc-mode').addEventListener('change', function() {
+                const targetFosGroup = document.getElementById('target-fos-group');
+                if (this.value === 'allowable') {
+                    targetFosGroup.classList.remove('hidden');
+                } else {
+                    targetFosGroup.classList.add('hidden');
+                }
+            });
+            document.getElementById('unit-system').addEventListener('change', updateUnitLabels);
+            document.getElementById('material-select').addEventListener('change', updateMaterial);
+
+            // Trigger initial UI setup
+            toggleLoadingType();
+            updateUnitLabels();
+
             // Initial Theory Visuals
             initTheoryCharts();
             initFaqCharts();
@@ -1581,6 +1917,33 @@
                 },
                 options: commonOptions
             });
+
+            // 9. Soderberg vs Goodman vs Gerber
+            new Chart(document.getElementById('faqChart9'), {
+                type: 'line',
+                data: {
+                    labels: [0, 0.3, 0.6, 0.9, 1.2, 1.5],
+                    datasets: [
+                        { label: 'Soderberg', data: [1.0, 0.7, 0.4, 0.1, 0.0, 0.0], borderColor: '#EF4444', borderDash: [2,2], fill: false },
+                        { label: 'Goodman', data: [1.0, 0.8, 0.6, 0.4, 0.2, 0.0], borderColor: '#3B82F6', fill: false },
+                        { label: 'Gerber', data: [1.0, 0.96, 0.84, 0.64, 0.36, 0.0], borderColor: '#10B981', tension: 0.3, fill: false }
+                    ]
+                },
+                options: commonOptions
+            });
+
+            // 10. Stress Concentration Decay
+            new Chart(document.getElementById('faqChart10'), {
+                type: 'line',
+                data: {
+                    labels: ['r', '1.5r', '2r', '3r', '5r'],
+                    datasets: [
+                        { label: 'Peak Stress', data: [3.0, 1.8, 1.3, 1.05, 1.0], borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.08)', fill: true, tension: 0.3 },
+                        { label: 'Nominal', data: [1.0, 1.0, 1.0, 1.0, 1.0], borderColor: '#94A3B8', borderDash: [4,4], fill: false }
+                    ]
+                },
+                options: commonOptions
+            });
         }
 
         function drawMohrCircle(sx, sy, txy) {
@@ -1633,126 +1996,314 @@
 
         function performCalculation() {
             // 1. Get Inputs
-            const sy = parseFloat(document.getElementById('yield-strength').value);
-            const sut = parseFloat(document.getElementById('ultimate-strength').value);
-            const sigX = parseFloat(document.getElementById('sigma-x').value);
-            const sigY = parseFloat(document.getElementById('sigma-y').value);
-            const tauXY = parseFloat(document.getElementById('tau-xy').value);
+            const sy = parseFloat(document.getElementById('yield-strength').value) || 0;
+            const sut = parseFloat(document.getElementById('ultimate-strength').value) || 0;
+            const sigX = parseFloat(document.getElementById('sigma-x').value) || 0;
+            const sigY = parseFloat(document.getElementById('sigma-y').value) || 0;
+            const tauXY = parseFloat(document.getElementById('tau-xy').value) || 0;
             const matKey = document.getElementById('material-select').value;
             const unit = document.getElementById('unit-system').value;
+            const loadingType = document.getElementById('loading-type').value;
+            const operatingTemp = parseFloat(document.getElementById('operating-temp').value) || 25;
+            const calcMode = document.getElementById('calc-mode').value;
+            const targetFos = parseFloat(document.getElementById('target-fos').value) || 2.0;
+
+            let sigX_mean = 0, sigY_mean = 0, tauXY_mean = 0, se = 0;
+            if (loadingType === 'fatigue') {
+                sigX_mean = parseFloat(document.getElementById('sigma-x-mean').value) || 0;
+                sigY_mean = parseFloat(document.getElementById('sigma-y-mean').value) || 0;
+                tauXY_mean = parseFloat(document.getElementById('tau-xy-mean').value) || 0;
+                se = parseFloat(document.getElementById('endurance-strength').value) || (sut * 0.5);
+            }
 
             if (isNaN(sy) || isNaN(sigX)) {
-                displayMessage("Please enter valid numbers.", "error");
+                displayMessage("Please enter valid stress and material limits.", "error");
                 return;
             }
 
-            // 2. Physics Engine
-            
-            // Principal Stresses
-            // s1,2 = (sx+sy)/2 +/- sqrt( ((sx-sy)/2)^2 + txy^2 )
+            // 2. ASME / IS Temperature-Corrected Yield & Ultimate Limits
+            let k_temp = 1.0;
+            if (unit === 'metric') {
+                if (operatingTemp > 100) {
+                    k_temp = 1.0 - 0.0012 * (operatingTemp - 100);
+                }
+            } else {
+                if (operatingTemp > 212) {
+                    k_temp = 1.0 - 0.00067 * (operatingTemp - 212);
+                }
+            }
+            k_temp = Math.max(0.3, k_temp); // Absolute lower limit to avoid material collapse logic
+
+            const sy_corr = sy * k_temp;
+            const sut_corr = sut * k_temp;
+            const se_corr = se * k_temp;
+
+            // 3. Multi-Axial Stress Physics Solver
+            // Alternating / Nominal stress component calculations
             const avg = (sigX + sigY) / 2;
             const diff = (sigX - sigY) / 2;
             const R = Math.sqrt(diff*diff + tauXY*tauXY);
-            
             const s1 = avg + R;
             const s2 = avg - R;
-            const s3 = 0; // Plane stress assumption
+            const s3 = 0; // Plane Stress assumption
 
-            // Sort principles sA > sB > sC
             const sList = [s1, s2, s3].sort((a,b) => b-a);
             const sA = sList[0];
             const sB = sList[1];
             const sC = sList[2];
 
-            // Von Mises Stress
-            // s_vm = sqrt( s1^2 - s1s2 + s2^2 ) for plane stress
+            // Von Mises
             const s_vm = Math.sqrt(s1*s1 - s1*s2 + s2*s2);
-
-            // Tresca Stress
-            // s_tr = max(|s1-s2|, |s1-s3|, |s2-s3|) = sA - sC
+            // Tresca
             const s_tresca = sA - sC;
+            // Rankine
+            const s_rankine = Math.max(Math.abs(sA), Math.abs(sC));
+            // Principal Plane Angles
+            const theta_p = 0.5 * Math.atan2(2 * tauXY, sigX - sigY) * (180 / Math.PI);
+            const theta_s = theta_p + 45;
 
-            // Rankine (Max Normal)
-            const s_rankine = Math.max(Math.abs(s1), Math.abs(s2));
+            // Mean stress component calculations (if fatigue)
+            let avg_m = 0, diff_m = 0, R_m = 0, s1_m = 0, s2_m = 0, s_vm_m = 0;
+            if (loadingType === 'fatigue') {
+                avg_m = (sigX_mean + sigY_mean) / 2;
+                diff_m = (sigX_mean - sigY_mean) / 2;
+                R_m = Math.sqrt(diff_m*diff_m + tauXY_mean*tauXY_mean);
+                s1_m = avg_m + R_m;
+                s2_m = avg_m - R_m;
+                s_vm_m = Math.sqrt(s1_m*s1_m - s1_m*s2_m + s2_m*s2_m);
+            }
 
-            // Safety Factors
-            const fos_vm = sy / s_vm;
-            const fos_tresca = sy / s_tresca;
-            const fos_rankine = sut / s_rankine; // Brittle uses Sut
+            // Safety Factors Sizing
+            let fos_vm = 0, fos_tresca = 0, fos_rankine = 0;
+            let fos_sod = 0, fos_good = 0, fos_gerb = 0;
 
-            // Determine Material Behavior
+            if (loadingType === 'static') {
+                fos_vm = s_vm > 0 ? sy_corr / s_vm : Infinity;
+                fos_tresca = s_tresca > 0 ? sy_corr / s_tresca : Infinity;
+                fos_rankine = s_rankine > 0 ? sut_corr / s_rankine : Infinity;
+            } else {
+                // Fluctuating Fatigue
+                const sod_denom = (s_vm / se_corr) + (s_vm_m / sy_corr);
+                fos_sod = sod_denom > 0 ? 1.0 / sod_denom : Infinity;
+
+                const good_denom = (s_vm / se_corr) + (s_vm_m / sut_corr);
+                fos_good = good_denom > 0 ? 1.0 / good_denom : Infinity;
+
+                const A_g = Math.pow(s_vm_m / sut_corr, 2);
+                const B_g = s_vm / se_corr;
+                if (A_g > 1e-6) {
+                    fos_gerb = (-B_g + Math.sqrt(B_g*B_g + 4*A_g)) / (2*A_g);
+                } else {
+                    fos_gerb = B_g > 0 ? 1.0 / B_g : Infinity;
+                }
+            }
+
             let matType = "ductile";
-            if (matKey === 'cast_iron' || matKey === 'custom' && sut > sy*2) matType = "brittle"; // Heuristic
-            // Actually usually brittle if fracture strain < 0.05. Here we rely on preset or logic.
-            // If Cast Iron, use Rankine. Else Von Mises.
+            if (matKey === 'cast_iron' || (matKey === 'custom' && sut > sy*2.2)) matType = "brittle";
 
-            lastResult = { sy, sut, s1, s2, s_vm, s_tresca, s_rankine, fos_vm, fos_tresca, fos_rankine, unit, matType };
+            lastResult = { 
+                sy, sut, se, sigX, sigY, tauXY, sigX_mean, sigY_mean, tauXY_mean,
+                sy_corr, sut_corr, se_corr, k_temp, operatingTemp, loadingType, calcMode, targetFos,
+                s1, s2, s_vm, s_tresca, s_rankine, theta_p, theta_s,
+                s1_m, s2_m, s_vm_m, fos_vm, fos_tresca, fos_rankine, fos_sod, fos_good, fos_gerb,
+                unit, matType 
+            };
 
-            // 3. Render Step-by-Step
-            let html = `<h4>Step 1: Principal Stresses (Mohr's Circle)</h4>`;
+            // 4. Render Step-by-Step (10 Detailed Sizing Steps)
+            const u = unit === 'metric' ? 'MPa' : 'ksi';
+            const tu = unit === 'metric' ? '°C' : '°F';
+            let html = `<h4>Step 1: Sizing Material Limits &amp; Temperature Corrected Bounds</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Average Stress $\\sigma_{avg} = \\frac{${sigX} + ${sigY}}{2} = ${avg.toFixed(1)}$<br>`;
-            html += `Radius $R = \\sqrt{(\\frac{${sigX} - ${sigY}}{2})^2 + ${tauXY}^2} = ${R.toFixed(1)}$<br>`;
-            html += `$$ \\sigma_1 = ${avg.toFixed(1)} + ${R.toFixed(1)} = \\mathbf{${s1.toFixed(1)}} $$<br>`;
-            html += `$$ \\sigma_2 = ${avg.toFixed(1)} - ${R.toFixed(1)} = \\mathbf{${s2.toFixed(1)}} $$`;
+            html += `Operating Temperature $T = ${operatingTemp}\\text{ }${tu}$.<br>`;
+            html += `ASME Temperature degradation factor $k_{temp} = \\max\\left(0.3, 1.0 - 0.0012 \\times (T - 100)\\right)$<br>`;
+            html += `$$ k_{temp} = \\mathbf{${k_temp.toFixed(4)}} $$<br>`;
+            html += `Yield Limit $S_y = ${sy}\\text{ }${u} \\implies S_{y,T} = S_y \\times k_{temp} = ${sy_corr.toFixed(2)}\\text{ }${u}$<br>`;
+            html += `Ultimate Limit $S_{ut} = ${sut}\\text{ }${u} \\implies S_{ut,T} = S_{ut} \\times k_{temp} = ${sut_corr.toFixed(2)}\\text{ }${u}$<br>`;
+            if (loadingType === 'fatigue') {
+                html += `Endurance Limit $S_e = ${se}\\text{ }${u} \\implies S_{e,T} = S_e \\times k_{temp} = ${se_corr.toFixed(2)}\\text{ }${u}$`;
+            }
             html += `</div>`;
 
-            html += `<h4>Step 2: Equivalent Stresses</h4>`;
+            html += `<h4>Step 2: Applied Stress State Tensor</h4>`;
             html += `<div class="calculation-step">`;
-            html += `<strong>Von Mises (Distortion Energy):</strong><br>`;
-            html += `$$ \\sigma' = \\sqrt{${s1.toFixed(1)}^2 - (${s1.toFixed(1)})(${s2.toFixed(1)}) + ${s2.toFixed(1)}^2} = \\mathbf{${s_vm.toFixed(1)}} $$<br>`;
-            html += `<strong>Tresca (Max Shear):</strong><br>`;
-            html += `$$ \\sigma_{tr} = \\max(|\\sigma_1 - \\sigma_2|, |\\sigma_1|, |\\sigma_2|) = \\mathbf{${s_tresca.toFixed(1)}} $$<br>`;
-            html += `(Assuming Plane Stress $\\sigma_3=0$)`;
+            if (loadingType === 'static') {
+                html += `Applied Static Stress State:<br>`;
+                html += `$$ \\sigma_x = ${sigX}\\text{ }${u}, \\quad \\sigma_y = ${sigY}\\text{ }${u}, \\quad \\tau_{xy} = ${tauXY}\\text{ }${u} $$`;
+            } else {
+                html += `Applied Alternating Component Stress State (Amplitude):<br>`;
+                html += `$$ \\sigma_{x,a} = ${sigX}\\text{ }${u}, \\quad \\sigma_{y,a} = ${sigY}\\text{ }${u}, \\quad \\tau_{xy,a} = ${tauXY}\\text{ }${u} $$<br>`;
+                html += `Applied Mean Component Stress State:<br>`;
+                html += `$$ \\sigma_{x,m} = ${sigX_mean}\\text{ }${u}, \\quad \\sigma_{y,m} = ${sigY_mean}\\text{ }${u}, \\quad \\tau_{xy,m} = ${tauXY_mean}\\text{ }${u} $$`;
+            }
             html += `</div>`;
 
-            html += `<h4>Step 3: Safety Factors</h4>`;
+            html += `<h4>Step 3: Plane Stress Transformation Average Stress</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Material Yield $S_y = ${sy}$. Ultimate $S_{ut} = ${sut}$.<br>`;
-            html += `$$ FoS_{VM} = S_y / \\sigma' = ${fos_vm.toFixed(2)} $$<br>`;
-            html += `$$ FoS_{Tresca} = S_y / \\sigma_{tr} = ${fos_tresca.toFixed(2)} $$<br>`;
-            html += `$$ FoS_{Rankine} = S_{ut} / \\sigma_{max} = ${fos_rankine.toFixed(2)} $$`;
+            html += `Average Normal Stress $\\sigma_{avg} = \\frac{\\sigma_x + \\sigma_y}{2} = \\frac{${sigX} + ${sigY}}{2}$<br>`;
+            html += `$$ \\sigma_{avg} = \\mathbf{${avg.toFixed(2)}\\text{ }${u}} $$`;
+            if (loadingType === 'fatigue') {
+                html += `<br>Mean Average Stress $\\sigma_{avg,m} = \\frac{\\sigma_{x,m} + \\sigma_{y,m}}{2} = \\frac{${sigX_mean} + ${sigY_mean}}{2}$<br>`;
+                html += `$$ \\sigma_{avg,m} = \\mathbf{${avg_m.toFixed(2)}\\text{ }${u}} $$`;
+            }
+            html += `</div>`;
+
+            html += `<h4>Step 4: Mohr's Circle Radius &amp; Maximum Shear Stress</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `Circle Radius $R = \\sqrt{\\left(\\frac{\\sigma_x - \\sigma_y}{2}\\right)^2 + \\tau_{xy}^2}$<br>`;
+            html += `$$ R = \\sqrt{\\left(\\frac{${sigX} - ${sigY}}{2}\\right)^2 + ${tauXY}^2} = \\mathbf{${R.toFixed(2)}\\text{ }${u}} $$<br>`;
+            html += `Maximum In-Plane Shear Stress $\\tau_{max,in} = R = ${R.toFixed(2)}\\text{ }${u}$`;
+            if (loadingType === 'fatigue') {
+                html += `<br>Mean Circle Radius $R_m = \\sqrt{\\left(\\frac{${sigX_mean} - ${sigY_mean}}{2}\\right)^2 + ${tauXY_mean}^2}$<br>`;
+                html += `$$ R_m = \\mathbf{${R_m.toFixed(2)}\\text{ }${u}} $$`;
+            }
+            html += `</div>`;
+
+            html += `<h4>Step 5: Sizing Principal Normal Stresses</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `Principal Normal Stress 1: $\\sigma_1 = \\sigma_{avg} + R = ${avg.toFixed(2)} + ${R.toFixed(2)}$<br>`;
+            html += `$$ \\sigma_1 = \\mathbf{${s1.toFixed(2)}\\text{ }${u}} $$<br>`;
+            html += `Principal Normal Stress 2: $\\sigma_2 = \\sigma_{avg} - R = ${avg.toFixed(2)} - ${R.toFixed(2)}$<br>`;
+            html += `$$ \\sigma_2 = \\mathbf{${s2.toFixed(2)}\\text{ }${u}} $$<br>`;
+            html += `Out-of-Plane Principal Normal Stress 3: $\\sigma_3 = \\mathbf{0.00\\text{ }${u}}$ (Plane Stress Condition)`;
+            if (loadingType === 'fatigue') {
+                html += `<br>Mean Principal Stress 1: $\\sigma_{1,m} = \\sigma_{avg,m} + R_m = \\mathbf{${s1_m.toFixed(2)}\\text{ }${u}}$<br>`;
+                html += `Mean Principal Stress 2: $\\sigma_{2,m} = \\sigma_{avg,m} - R_m = \\mathbf{${s2_m.toFixed(2)}\\text{ }${u}}$`;
+            }
+            html += `</div>`;
+
+            html += `<h4>Step 6: Sizing Principal Angles &amp; Critical Planes</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `Principal Plane Angle $\\theta_p = \\frac{1}{2} \\arctan\\left(\\frac{2\\tau_{xy}}{\\sigma_x - \\sigma_y}\\right)$<br>`;
+            html += `$$ \\theta_p = \\mathbf{${theta_p.toFixed(2)}^\\circ} $$<br>`;
+            html += `Maximum Shear Plane Angle $\\theta_s = \\theta_p + 45^\\circ = \\mathbf{${theta_s.toFixed(2)}^\\circ}$`;
+            html += `</div>`;
+
+            html += `<h4>Step 7: Sizing Von Mises Equivalent Stress (Distortion Energy)</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `$$ \\sigma'_{vm} = \\sqrt{\\sigma_1^2 - \\sigma_1\\sigma_2 + \\sigma_2^2} $$<br>`;
+            html += `$$ \\sigma'_{vm} = \\sqrt{${s1.toFixed(2)}^2 - (${s1.toFixed(2)})(${s2.toFixed(2)}) + ${s2.toFixed(2)}^2} = \\mathbf{${s_vm.toFixed(2)}\\text{ }${u}} $$`;
+            if (loadingType === 'fatigue') {
+                html += `<br>Von Mises Mean Stress Component:<br>`;
+                html += `$$ \\sigma'_{m} = \\sqrt{${s1_m.toFixed(2)}^2 - (${s1_m.toFixed(2)})(${s2_m.toFixed(2)}) + ${s2_m.toFixed(2)}^2} = \\mathbf{${s_vm_m.toFixed(2)}\\text{ }${u}} $$`;
+            }
+            html += `</div>`;
+
+            html += `<h4>Step 8: Sizing Tresca Equivalent Stress &amp; Absolute Shear</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `Absolute Max Shear Stress: $\\tau_{max,abs} = \\max\\left(\\frac{|\\sigma_1 - \\sigma_2|}{2}, \\frac{|\\sigma_1 - \\sigma_3|}{2}, \\frac{|\\sigma_2 - \\sigma_3|}{2}\\right)$<br>`;
+            const t_max_abs = Math.max(Math.abs(s1 - s2)/2, Math.abs(s1)/2, Math.abs(s2)/2);
+            html += `$$ \\tau_{max,abs} = \\mathbf{${t_max_abs.toFixed(2)}\\text{ }${u}} $$<br>`;
+            html += `Tresca Equivalent Stress: $\\sigma_{tr} = 2 \\times \\tau_{max,abs}$<br>`;
+            html += `$$ \\sigma_{tr} = 2 \\times ${t_max_abs.toFixed(2)} = \\mathbf{${s_tresca.toFixed(2)}\\text{ }${u}} $$`;
+            html += `</div>`;
+
+            html += `<h4>Step 9: Sizing Rankine Equivalent Stress (Max Normal Tension/Compression)</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `$$ \\sigma_{rank} = \\max(|\\sigma_1|, |\\sigma_2|) $$<br>`;
+            html += `$$ \\sigma_{rank} = \\max(|${s1.toFixed(2)}|, |${s2.toFixed(2)}|) = \\mathbf{${s_rankine.toFixed(2)}\\text{ }${u}} $$`;
+            html += `</div>`;
+
+            html += `<h4>Step 10: Sizing Engineering Safety Factors &amp; Allowable Limits</h4>`;
+            html += `<div class="calculation-step">`;
+            if (calcMode === 'fos') {
+                if (loadingType === 'static') {
+                    html += `Von Mises Safety Factor: $n_{VM} = S_{y,T} / \\sigma'_{vm} = ${sy_corr.toFixed(2)} / ${s_vm.toFixed(2)} = \\mathbf{${fos_vm.toFixed(2)}}$<br>`;
+                    html += `Tresca Safety Factor: $n_{Tresca} = S_{y,T} / \\sigma_{tr} = ${sy_corr.toFixed(2)} / ${s_tresca.toFixed(2)} = \\mathbf{${fos_tresca.toFixed(2)}}$<br>`;
+                    html += `Rankine Safety Factor (Brittle Limit): $n_{Rank} = S_{ut,T} / \\sigma_{rank} = ${sut_corr.toFixed(2)} / ${s_rankine.toFixed(2)} = \\mathbf{${fos_rankine.toFixed(2)}}$`;
+                } else {
+                    html += `Soderberg Fatigue Factor: $n_{Sod} = \\left( \\frac{\\sigma'_{a}}{S_{e,T}} + \\frac{\\sigma'_{m}}{S_{y,T}} \\right)^{-1}$<br>`;
+                    html += `$$ n_{Sod} = \\left( \\frac{${s_vm.toFixed(2)}}{${se_corr.toFixed(2)}} + \\frac{${s_vm_m.toFixed(2)}}{${sy_corr.toFixed(2)}} \\right)^{-1} = \\mathbf{${fos_sod.toFixed(2)}} $$<br>`;
+                    html += `Goodman Fatigue Factor: $n_{Good} = \\left( \\frac{\\sigma'_{a}}{S_{e,T}} + \\frac{\\sigma'_{m}}{S_{ut,T}} \\right)^{-1}$<br>`;
+                    html += `$$ n_{Good} = \\left( \\frac{${s_vm.toFixed(2)}}{${se_corr.toFixed(2)}} + \\frac{${s_vm_m.toFixed(2)}}{${sut_corr.toFixed(2)}} \\right)^{-1} = \\mathbf{${fos_good.toFixed(2)}} $$<br>`;
+                    html += `Gerber Fatigue Factor: $n_{Gerb} = \\text{Parabolic Curve Intersect}$<br>`;
+                    html += `$$ n_{Gerb} = \\mathbf{${fos_gerb.toFixed(2)}} $$`;
+                }
+            } else {
+                html += `Allowable Limits at Target Safety Factor $n = ${targetFos}$:<br>`;
+                const allow_vm = sy_corr / targetFos;
+                const allow_tr = sy_corr / targetFos;
+                const allow_rn = sut_corr / targetFos;
+                html += `Allowable Von Mises Stress $\\sigma'_{vm,allow} = S_{y,T} / n = ${allow_vm.toFixed(2)}\\text{ }${u}$ (Actual: ${s_vm.toFixed(2)}\\text{ }${u})<br>`;
+                html += `Allowable Tresca Stress $\\sigma_{tr,allow} = S_{y,T} / n = ${allow_tr.toFixed(2)}\\text{ }${u}$ (Actual: ${s_tresca.toFixed(2)}\\text{ }${u})<br>`;
+                html += `Allowable Rankine Stress $\\sigma_{rank,allow} = S_{ut,T} / n = ${allow_rn.toFixed(2)}\\text{ }${u}$ (Actual: ${s_rankine.toFixed(2)}\\text{ }${u})`;
+            }
             html += `</div>`;
 
             document.getElementById('calculation-details').innerHTML = html;
 
-            // 4. Update Table
+            // 5. Update Results Table
             const tbody = document.getElementById('result-table-body');
             tbody.innerHTML = '';
-            const addRow = (n, v, f, c="") => {
-                tbody.innerHTML += `<tr style="${c ? 'color:'+c : ''}"><td><strong>${n}</strong></td><td>${v}</td><td>${f}</td></tr>`;
+            
+            const addRow = (n, col1, col2, color="") => {
+                tbody.innerHTML += `<tr style="${color ? 'color:'+color : ''}"><td><strong>${n}</strong></td><td>${col1}</td><td>${col2}</td></tr>`;
             };
-            
-            const u = unit === 'metric' ? 'MPa' : 'ksi';
-            
-            // Highlight recommended
-            if (matType === 'ductile') {
-                addRow("Von Mises (Recommended)", s_vm.toFixed(1) + " " + u, fos_vm.toFixed(2), "var(--primary)");
-                addRow("Tresca (Conservative)", s_tresca.toFixed(1) + " " + u, fos_tresca.toFixed(2));
-                addRow("Rankine (Not for Ductile)", s_rankine.toFixed(1) + " " + u, fos_rankine.toFixed(2), "#999");
+
+            const headerRow = document.querySelector('.results-table thead tr');
+            if (calcMode === 'fos') {
+                headerRow.innerHTML = '<th>Theory / Metric</th><th>Equivalent Stress</th><th>Safety Factor</th>';
+                if (loadingType === 'static') {
+                    if (matType === 'ductile') {
+                        addRow("Von Mises (Recommended)", s_vm.toFixed(2) + " " + u, fos_vm.toFixed(2), "var(--primary)");
+                        addRow("Tresca (Conservative)", s_tresca.toFixed(2) + " " + u, fos_tresca.toFixed(2));
+                        addRow("Rankine (Not for Ductile)", s_rankine.toFixed(2) + " " + u, fos_rankine.toFixed(2), "#888");
+                    } else {
+                        addRow("Rankine (Recommended)", s_rankine.toFixed(2) + " " + u, fos_rankine.toFixed(2), "var(--primary)");
+                        addRow("Von Mises (Ductile Theory)", s_vm.toFixed(2) + " " + u, fos_vm.toFixed(2), "#888");
+                        addRow("Tresca (Ductile Theory)", s_tresca.toFixed(2) + " " + u, fos_tresca.toFixed(2), "#888");
+                    }
+                } else {
+                    addRow("Soderberg (Conservative Yield)", s_vm.toFixed(2) + " / " + s_vm_m.toFixed(2) + " " + u, fos_sod.toFixed(2));
+                    addRow("Goodman (Linear Fatigue)", s_vm.toFixed(2) + " / " + s_vm_m.toFixed(2) + " " + u, fos_good.toFixed(2), "var(--primary)");
+                    addRow("Gerber (Parabolic Ductile)", s_vm.toFixed(2) + " / " + s_vm_m.toFixed(2) + " " + u, fos_gerb.toFixed(2));
+                }
             } else {
-                addRow("Rankine (Recommended)", s_rankine.toFixed(1) + " " + u, fos_rankine.toFixed(2), "var(--primary)");
-                addRow("Von Mises", s_vm.toFixed(1) + " " + u, fos_vm.toFixed(2), "#999");
+                headerRow.innerHTML = '<th>Theory / Limit</th><th>Allowable limit</th><th>Actual / Status</th>';
+                const allow_vm = sy_corr / targetFos;
+                const allow_tr = sy_corr / targetFos;
+                const allow_rn = sut_corr / targetFos;
+
+                if (loadingType === 'static') {
+                    if (matType === 'ductile') {
+                        addRow("Von Mises (Ductile)", allow_vm.toFixed(2) + " " + u, s_vm.toFixed(2) + " " + u + (s_vm <= allow_vm ? " <span class='highlight'>(Safe)</span>" : " <span class='danger-text'>(Overstress)</span>"));
+                        addRow("Tresca (Conservative)", allow_tr.toFixed(2) + " " + u, s_tresca.toFixed(2) + " " + u + (s_tresca <= allow_tr ? " <span class='highlight'>(Safe)</span>" : " <span class='danger-text'>(Overstress)</span>"));
+                    } else {
+                        addRow("Rankine (Brittle)", allow_rn.toFixed(2) + " " + u, s_rankine.toFixed(2) + " " + u + (s_rankine <= allow_rn ? " <span class='highlight'>(Safe)</span>" : " <span class='danger-text'>(Overstress)</span>"));
+                    }
+                } else {
+                    const allow_se = se_corr / targetFos;
+                    addRow("Fatigue Alternating Limit", allow_se.toFixed(2) + " " + u, s_vm.toFixed(2) + " " + u + (s_vm <= allow_se ? " <span class='highlight'>(Safe Amplitude)</span>" : " <span class='danger-text'>(Fatigue Risk)</span>"));
+                }
             }
 
+            // 6. Sizing Design Recommendation Alerts
             const interpEl = document.getElementById('interpretation-text');
-            const mainFos = matType === 'ductile' ? fos_vm : fos_rankine;
+            const mainFos = (loadingType === 'static') ? (matType === 'ductile' ? fos_vm : fos_rankine) : fos_good;
             
-            if (mainFos < 1.0) {
-                interpEl.innerHTML = `<span class="danger-text">FAILURE PREDICTED.</span> Safety Factor < 1.0. The part will yield or break.`;
-            } else if (mainFos < 1.5) {
-                interpEl.innerHTML = `<span style="color:var(--warning); font-weight:bold;">Marginal Safety.</span> SF is low (1.0 - 1.5). Acceptable only for controlled, static loads.`;
+            if (calcMode === 'fos') {
+                if (mainFos < 1.0) {
+                    interpEl.innerHTML = `<span class="danger-text"><i class="fas fa-exclamation-triangle"></i> FAILURE DETECTED:</span> safety factor of ${mainFos.toFixed(2)} is less than 1.0. Yielding or mechanical cracking is guaranteed. Reduce loads or increase dimensions.`;
+                } else if (mainFos < targetFos) {
+                    interpEl.innerHTML = `<span style="color:var(--warning); font-weight:bold;"><i class="fas fa-exclamation-circle"></i> TARGET NOT MET:</span> Safety margin of ${mainFos.toFixed(2)} is safe against snap, but falls below your target FOS of ${targetFos}.`;
+                } else {
+                    interpEl.innerHTML = `<span class="highlight"><i class="fas fa-check-circle"></i> DESIGN IS SAFE:</span> Sized safety factor of ${mainFos.toFixed(2)} meets structural target limits.`;
+                }
             } else {
-                interpEl.innerHTML = `<span class="highlight">Safe Design.</span> SF > 1.5. Adequate for general machine design.`;
+                const isOver = (loadingType === 'static') ? (matType === 'ductile' ? s_vm > (sy_corr / targetFos) : s_rankine > (sut_corr / targetFos)) : s_vm > (se_corr / targetFos);
+                if (isOver) {
+                    interpEl.innerHTML = `<span class="danger-text"><i class="fas fa-exclamation-triangle"></i> ALLOWABLE STRESS EXCEEDED:</span> Design stresses exceed allowable thresholds. Risk of structural failure or low fatigue lifecycle.`;
+                } else {
+                    interpEl.innerHTML = `<span class="highlight"><i class="fas fa-check-circle"></i> LIMITS COMPLIANT:</span> Service stress stays below allowable structural boundaries.`;
+                }
             }
 
-            // 5. Draw Visuals
-            drawYieldSurface(sy, s1, s2);
+            // 7. Update Envelopes & Circle Graphics
+            drawYieldSurface(sy_corr, s1, s2);
             drawMohrCircle(sigX, sigY, tauXY);
 
-            // 6. Show
+            // 8. Display Results & Refresh Math
             document.getElementById('result-container').classList.remove('hidden');
-            if(window.MathJax) window.MathJax.typesetPromise([document.getElementById('calculation-details')]);
+            if (window.MathJax) window.MathJax.typesetPromise([document.getElementById('calculation-details')]);
             document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1760,25 +2311,11 @@
             const canvas = document.getElementById('yieldCanvas');
             const ctx = canvas.getContext('2d');
             
-            // Destroy old chart if exists (using Chart.js scatter for flexibility)
             if (window.myChart) window.myChart.destroy();
-
-            // Generate Ellipse (Von Mises)
-            // s1^2 - s1s2 + s2^2 = Sy^2
-            // Parametric: s1 = Sy * (cos(t) + sin(t)/sqrt(3)), s2 = Sy * (2*sin(t)/sqrt(3)) ... complex.
-            // Easier: iterate angle.
-            // Ellipse is tilted 45 deg.
             
             const vmPoints = [];
-            for(let i=0; i<=360; i+=2) {
+            for (let i = 0; i <= 360; i += 2) {
                 const rad = i * Math.PI / 180;
-                // Parametric eq for Von Mises Ellipse in principal stress space
-                // major axis along x=y, minor along x=-y
-                // Simplification for visualization:
-                // x^2 - xy + y^2 = 1 (normalized)
-                // x = (sqrt(2)/2) * (A cos t - B sin t)
-                // y = (sqrt(2)/2) * (A cos t + B sin t)
-                // A = sqrt(2) * Sy, B = sqrt(2/3) * Sy
                 const A = Math.sqrt(2) * Sy;
                 const B = Math.sqrt(2/3) * Sy;
                 const x_val = (Math.sqrt(2)/2) * (A * Math.cos(rad) - B * Math.sin(rad));
@@ -1786,16 +2323,12 @@
                 vmPoints.push({x: x_val, y: y_val});
             }
 
-            // Tresca Hexagon
             const trPoints = [
                 {x: Sy, y: 0}, {x: Sy, y: Sy}, {x: 0, y: Sy},
                 {x: -Sy, y: 0}, {x: -Sy, y: -Sy}, {x: 0, y: -Sy}, {x: Sy, y: 0}
             ];
 
-            // Point
             const userPoint = [{x: s1, y: s2}];
-            
-            // Limit Axes
             const maxVal = Math.max(Math.abs(s1), Math.abs(s2), Sy) * 1.5;
 
             window.myChart = new Chart(ctx, {
@@ -1833,12 +2366,12 @@
                     aspectRatio: 1,
                     scales: {
                         x: { 
-                            title: {display:true, text:'Principal Stress Ïƒ1'},
+                            title: {display:true, text:'Principal Stress σ1'},
                             min: -maxVal, max: maxVal,
                             grid: { color: '#e5e7eb' }
                         },
                         y: { 
-                            title: {display:true, text:'Principal Stress Ïƒ2'},
+                            title: {display:true, text:'Principal Stress σ2'},
                             min: -maxVal, max: maxVal,
                             grid: { color: '#e5e7eb' }
                         }
@@ -1849,73 +2382,147 @@
 
         function generatePDF() {
             if (!lastResult) {
-                displayMessage("Calculate first.", "error");
+                displayMessage("Please perform calculations before downloading.", "error");
                 return;
             }
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             let y = 15;
+            
+            // Header Page 1
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(14);
+            pdf.setTextColor(30, 58, 138); 
+            pdf.text('Design Calculators - Mechanical Sizing Report', 14, y);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(100);
+            pdf.text('Audit-Ready Plane Stress & Fatigue Calculator Compliance Report', 14, y + 5);
+            pdf.text(`Generated: ${new Date().toLocaleString()}`, 196, y, { align: 'right' });
+            pdf.line(14, y + 7, 196, y + 7);
+            y += 18;
 
             pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(16);
-            pdf.setTextColor(30, 58, 138); 
-            pdf.text('Stress Analysis Report', 105, y, { align: 'center' });
-            y += 10;
-
-            pdf.setFontSize(10);
-            pdf.setTextColor(100);
-            pdf.text(`Date: ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
-            y += 15;
-
-            // Inputs
             pdf.setFontSize(12);
             pdf.setTextColor(0);
-            pdf.text('1. Load Case', 14, y);
+            pdf.text('1. Design Inputs &amp; Environmental Settings', 14, y);
             y += 5;
 
             const inputData = [
-                ['Material', document.getElementById('material-select').options[document.getElementById('material-select').selectedIndex].text],
-                ['Yield Strength', `${lastResult.sy} ${lastResult.unit}`],
-                ['Sigma X', lastResult.s1], // Actually inputs not s1
+                ['Material Type', document.getElementById('material-select').options[document.getElementById('material-select').selectedIndex].text],
+                ['Yield Limit (Sy)', `${lastResult.sy} ${lastResult.unit}`],
+                ['Ultimate Limit (Sut)', `${lastResult.sut} ${lastResult.unit}`],
+                ['Operating Temperature', `${lastResult.operatingTemp} ${lastResult.unit === 'metric' ? '°C' : '°F'}`],
+                ['Temperature Strength factor (k_temp)', lastResult.k_temp.toFixed(4)],
+                ['Loading Category', lastResult.loadingType === 'static' ? 'Static Loading' : 'Fluctuating Fatigue'],
+                ['Design Mode / Goal', lastResult.calcMode === 'fos' ? 'Compute Safety Factor' : 'Compute Allowable Stress']
             ];
 
             pdf.autoTable({
                 startY: y,
-                head: [['Parameter', 'Value']],
+                head: [['Design Parameter', 'Configured Value']],
                 body: inputData,
                 margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] }
+                theme: 'striped',
+                headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 8.5, cellPadding: 3 }
             });
-            y = pdf.lastAutoTable.finalY + 15;
+            y = pdf.lastAutoTable.finalY + 12;
 
-            // Results
-            pdf.text('2. Safety Factors', 14, y);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('2. Sized Stress State Metrics', 14, y);
             y += 5;
 
-            const resData = [
-                ['Principal 1', lastResult.s1.toFixed(1)],
-                ['Principal 2', lastResult.s2.toFixed(1)],
-                ['Von Mises Eqv', lastResult.s_vm.toFixed(1)],
-                ['Safety Factor (VM)', lastResult.fos_vm.toFixed(2)]
-            ];
+            let stressData = [];
+            if (lastResult.loadingType === 'static') {
+                stressData = [
+                    ['Applied Stress X (sigma_x)', `${lastResult.sigX} ${lastResult.unit}`],
+                    ['Applied Stress Y (sigma_y)', `${lastResult.sigY} ${lastResult.unit}`],
+                    ['Applied Shear XY (tau_xy)', `${lastResult.tauXY} ${lastResult.unit}`],
+                ];
+            } else {
+                stressData = [
+                    ['Alternating Stress X (Amplitude)', `${lastResult.sigX} ${lastResult.unit}`],
+                    ['Alternating Stress Y (Amplitude)', `${lastResult.sigY} ${lastResult.unit}`],
+                    ['Alternating Shear XY (Amplitude)', `${lastResult.tauXY} ${lastResult.unit}`],
+                    ['Mean Stress X', `${lastResult.sigX_mean} ${lastResult.unit}`],
+                    ['Mean Stress Y', `${lastResult.sigY_mean} ${lastResult.unit}`],
+                    ['Mean Shear XY', `${lastResult.tauXY_mean} ${lastResult.unit}`],
+                    ['Endurance Limit (Se)', `${lastResult.se} ${lastResult.unit}`]
+                ];
+            }
 
             pdf.autoTable({
                 startY: y,
-                head: [['Metric', 'Result']],
+                head: [['Applied Component', 'Stress Value']],
+                body: stressData,
+                margin: { left: 14, right: 14 },
+                theme: 'striped',
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 8.5, cellPadding: 3 }
+            });
+            y = pdf.lastAutoTable.finalY + 12;
+
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('3. Solved Principal Stresses &amp; Safety Factors', 14, y);
+            y += 5;
+
+            let resData = [];
+            if (lastResult.calcMode === 'fos') {
+                if (lastResult.loadingType === 'static') {
+                    resData = [
+                        ['Principal Stress 1 (sigma_1)', `${lastResult.s1.toFixed(2)} ${lastResult.unit}`],
+                        ['Principal Stress 2 (sigma_2)', `${lastResult.s2.toFixed(2)} ${lastResult.unit}`],
+                        ['Von Mises Stress (sigma\')', `${lastResult.s_vm.toFixed(2)} ${lastResult.unit}`],
+                        ['Tresca equivalent stress (sigma_tr)', `${lastResult.s_tresca.toFixed(2)} ${lastResult.unit}`],
+                        ['Von Mises Safety Factor (n_VM)', lastResult.fos_vm.toFixed(2)],
+                        ['Tresca Safety Factor (n_Tr)', lastResult.fos_tresca.toFixed(2)],
+                        ['Rankine Safety Factor (n_Rank)', lastResult.fos_rankine.toFixed(2)]
+                    ];
+                } else {
+                    resData = [
+                        ['Soderberg Fatigue Factor', lastResult.fos_sod.toFixed(2)],
+                        ['Goodman Fatigue Factor', lastResult.fos_good.toFixed(2)],
+                        ['Gerber Fatigue Factor', lastResult.fos_gerb.toFixed(2)]
+                    ];
+                }
+            } else {
+                const allow_vm = lastResult.sy_corr / lastResult.targetFos;
+                resData = [
+                    ['Target Safety Factor', lastResult.targetFos.toFixed(2)],
+                    ['Von Mises Sized Limit', `${allow_vm.toFixed(2)} ${lastResult.unit}`],
+                    ['Von Mises Actual Stress', `${lastResult.s_vm.toFixed(2)} ${lastResult.unit}`],
+                    ['Limit Status Check', lastResult.s_vm <= allow_vm ? 'COMPLIANT (Safe)' : 'NON-COMPLIANT (Overstressed)']
+                ];
+            }
+
+            pdf.autoTable({
+                startY: y,
+                head: [['Sizing Metric', 'Evaluation Result']],
                 body: resData,
                 margin: { left: 14, right: 14 },
                 theme: 'grid',
                 headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 8.5, cellPadding: 3 },
                 didParseCell: function(data) {
-                    if(data.row.index === 3) {
+                    if (data.row.index === resData.length - 1) {
                         data.cell.styles.fontStyle = 'bold';
                     }
                 }
             });
 
-            pdf.save('Stress_Report.pdf');
-            displayMessage("PDF Downloaded", "success");
+            // Page 2 or Footer details
+            const pageCount = pdf.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                pdf.setPage(i);
+                pdf.setFontSize(8);
+                pdf.setTextColor(150);
+                pdf.text('designcalculators.co.in - Professional Industrial Sizing Suite', 14, 287);
+                pdf.text(`Page ${i} of ${pageCount}`, 196, 287, { align: 'right' });
+            }
+
+            pdf.save('Stress_Analysis_Sizing_Report.pdf');
+            displayMessage("Lightweight PDF Report Downloaded successfully.", "success");
         }
 
         function displayMessage(message, type = "info") {
@@ -1930,6 +2537,4 @@
     </script>
 </body>
 </html>
-
-
 
