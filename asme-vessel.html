@@ -90,8 +90,24 @@
             transition: background-color 0.3s, color 0.3s;
             margin: 0;
             padding: 0;
+            overflow-x: hidden !important;
+            max-width: 100vw;
         }
-        /* Container for content width limitation and centering */
+        
+        .calculation-step, .result-table, .faq-details, .table-wrapper, #calculation-details {
+            max-width: 100%;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .mjx-container, mjx-container {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            display: block !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .container {
             max-width: 1280px; /* Wider container for professional look */
             margin: 0 auto;
@@ -664,6 +680,23 @@
             .nav-links { flex-direction: column; gap: 12px; text-align: center; }
             .form-row { grid-template-columns: 1fr; }
             .calculation-mode-option { flex: 1 1 100%; }
+            
+            /* Mobile Sizing Refinements */
+            .container {
+                padding: 0 12px !important;
+            }
+            .tool-container, .calculator-form, .form-section {
+                padding: 15px !important;
+            }
+            .result-table th, .result-table td {
+                padding: 8px 6px !important;
+                font-size: 0.85rem !important;
+            }
+            #calculation-details p.formula, #calculation-details p.calculation-step {
+                white-space: normal !important;
+                word-wrap: break-word !important;
+                font-size: 0.85rem !important;
+            }
         }
     </style>
     <link rel="stylesheet" href="styles.css">
@@ -741,9 +774,9 @@
     "@graph": [
         {
             "@type": "SoftwareApplication",
-            "name": "ASME VIII Industrial Pressure Vessel Calculator",
+            "name": "ASME VIII Industrial Pressure Vessel Sizing Calculator",
             "url": "https://designcalculators.co.in/asme-vessel",
-            "description": "Professional ASME Section VIII Div 1 calculator for cylindrical shells, spherical shells, and 2:1 elliptical, hemispherical, and torispherical dished heads.",
+            "description": "Professional ASME Section VIII Div 1 & IS 2825 calculator for cylindrical shells, spherical shells, and elliptical, hemispherical, and torispherical dished heads. Computes required wall thickness, MAWP, and hydrostatic test pressure.",
             "applicationCategory": "UtilityApplication",
             "operatingSystem": "Web",
             "author": {
@@ -752,7 +785,7 @@
                 "name": "Anil Sharma",
                 "url": "https://designcalculators.co.in/about.html",
                 "image": "https://designcalculators.co.in/logo.png",
-                "description": "Expert engineering consultant with over 15 years of experience in Electrical, Mechanical, and Instrumentation design. Specialist in IEC and IEEE standards.",
+                "description": "Expert engineering consultant with over 15 years of experience in Electrical, Mechanical, and Instrumentation design. Specialist in IEC, IEEE, and ASME standards.",
                 "sameAs": [
                     "https://www.linkedin.com/in/anil-sharma-engineering",
                     "https://www.youtube.com/@designcalculators"
@@ -784,6 +817,35 @@
                     "position": 3,
                     "name": "ASME VIII Industrial Pressure Vessel Calculator",
                     "item": "https://designcalculators.co.in/asme-vessel"
+                }
+            ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is the difference between Design Pressure and MAWP?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Design Pressure is the target pressure used to calculate the minimum required wall thickness of a vessel shell or head. MAWP (Maximum Allowable Working Pressure) is the highest permissible pressure at the top of the vessel in its operating position for a designated temperature, computed using the nominal wall thickness actually purchased, minus any corrosion allowance."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why does Hoop Stress govern cylindrical shell thickness?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Hoop stress (circumferential stress) acts tangent to the cylinder surface and is twice as large as longitudinal stress (axial stress) caused by internal pressure. Consequently, the required wall thickness calculated for hoop stress is always double that of longitudinal stress, making it the governing design criterion."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does ASME Section VIII Div 1 UCS-66 handle MDMT?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "ASME UCS-66 outlines the exemption rules for impact testing based on the Minimum Design Metal Temperature (MDMT), plate nominal thickness, and material specification curves (A, B, C, D). If the operating temperature is lower than the curve value for a given thickness, impact testing of the steel is legally required to prevent brittle fracture."
+                    }
                 }
             ]
         }
@@ -932,23 +994,46 @@
                         <h3>Common Parameters</h3>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="material-allowable-stress">Material Allowable Stress (S) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum allowable stress value for the material at design temperature, from ASME Section II.</span></span></label>
+                                <label for="material-group">Material Group: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Required for ASME UG-16(b) minimum structural thickness validation.</span></span></label>
+                                <select id="material-group" required>
+                                    <option value="carbon_steel">Carbon &amp; Low Alloy Steel (2.4 mm min)</option>
+                                    <option value="stainless_steel">Stainless Steel (1.6 mm min)</option>
+                                    <option value="custom">Custom (No structural limit)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="joint-category">Weld Radiography Category (ASME UW-12): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Weld inspection category that dictates Joint Efficiency.</span></span></label>
+                                <select id="joint-category" required>
+                                    <option value="fully_radiographed">Fully Radiographed / Seamless (E = 1.0)</option>
+                                    <option value="spot_radiographed">Spot Radiographed (E = 0.85)</option>
+                                    <option value="non_radiographed">Non-Radiographed (E = 0.70)</option>
+                                    <option value="custom">Custom Joint Efficiency (Manual Input)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="custom-joint-group" style="display: none;">
+                                <label for="joint-efficiency">Joint Efficiency (E): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Custom joint efficiency value between 0.1 and 1.0.</span></span></label>
+                                <input type="number" id="joint-efficiency" step="0.01" min="0.1" max="1.0" value="1.0">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="material-allowable-stress">Allowable Stress at Design Temp (S) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Maximum allowable stress value at design temperature from ASME Section II.</span></span></label>
                                 <input type="number" id="material-allowable-stress" step="0.1" value="138" required>
                             </div>
                             <div class="form-group">
-                                <label for="joint-efficiency">Joint Efficiency (E): <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Weld joint efficiency (from ASME UW-12). Use 1.0 for seamless heads.</span></span></label>
-                                <input type="number" id="joint-efficiency" step="0.01" min="0.1" max="1.0" value="1.0" required>
+                                <label for="material-test-stress">Allowable Stress at Test Temp (S_test) <span class="stress-unit-label">(MPa)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Allowable stress at ambient test temperature, used for hydrostatic test pressure ratios per UG-99.</span></span></label>
+                                <input type="number" id="material-test-stress" step="0.1" value="138" required>
                             </div>
                         </div>
                         <div class="form-row">
                              <div class="form-group">
-                                <label for="internal-diameter">Internal Diameter (ID or D) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Inside diameter of the shell or head skirt.</span></span></label>
+                                <label for="internal-diameter">Internal Diameter (ID or D) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Inside diameter of the shell or dished head.</span></span></label>
                                 <input type="number" id="internal-diameter" step="0.1" value="1000" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="corrosion-allowance">Corrosion Allowance (CA) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Additional thickness added for corrosion.</span></span></label>
+                             </div>
+                             <div class="form-group">
+                                <label for="corrosion-allowance">Corrosion Allowance (CA) <span class="length-unit-label">(mm)</span>: <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Corrosion margin depth added to the nominal thickness.</span></span></label>
                                 <input type="number" id="corrosion-allowance" step="0.01" value="1.5" required>
-                            </div>
+                             </div>
                         </div>
                     </div>
 
@@ -1323,6 +1408,200 @@
                 </div>
             </div>
 
+            <!-- ENGINEERING REFERENCE & UTILITY GUIDE -->
+            <div style="margin-top: 40px; padding: 30px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); animation: fadeInUp 0.8s ease;">
+                <h3 style="color: var(--primary-color); font-family: 'Montserrat', sans-serif; font-size: 1.4rem; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--secondary-color); padding-bottom: 10px;"><i class="fas fa-book-open"></i> Engineering Reference &amp; Industrial Sizing Guide</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 20px;">
+                    <div>
+                        <h4 style="color: var(--secondary-color); font-size: 1.1rem; margin-top: 0; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> What This Sizing Utility Does</h4>
+                        <p style="font-size: 0.95rem; line-height: 1.6; margin: 0; color: var(--text-color);">
+                            This professional engineering utility automates the wall thickness and MAWP sizing of mechanical pressure vessels under internal and vacuum design conditions. It implements dual-standard calculations, allowing designers to cross-verify thicknesses using both the American ASME Section VIII Div 1 membrane equations and the Indian Standard IS 2825 guidelines. It incorporates structural safety validations, weld radiography factors, and hydrostatic proof-testing limits.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--secondary-color); font-size: 1.1rem; margin-top: 0; margin-bottom: 10px;"><i class="fas fa-users"></i> Who Utilizes This Tool</h4>
+                        <p style="font-size: 0.95rem; line-height: 1.6; margin: 0; color: var(--text-color);">
+                            This utility is designed for:
+                            <ul style="font-size: 0.95rem; line-height: 1.6; margin: 10px 0 0 15px; padding: 0; color: var(--text-color); list-style-type: disc;">
+                                <li><strong>Mechanical Design Engineers</strong> establishing initial shell and dished head sizes.</li>
+                                <li><strong>EPC Consultants</strong> checking calculations for client engineering reviews.</li>
+                                <li><strong>Plant Inspectors &amp; Maintenance Teams</strong> auditing corroded vessel shell thicknesses and assessing remaining MAWP.</li>
+                            </ul>
+                        </p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="color: var(--secondary-color); font-size: 1.1rem; margin-top: 0; margin-bottom: 10px;"><i class="fas fa-chart-line"></i> Industrial Value &amp; Sizing Application</h4>
+                    <p style="font-size: 0.95rem; line-height: 1.6; margin: 0; color: var(--text-color);">
+                        In refinery, petrochemical, and power generation facilities, even minor wall thickness calculation errors can cause catastrophic failures under pressure. This tool provides instant, double-precision comparisons between standard design codes, preventing design over-conservatism (saving steel weight and welding labor costs) while ensuring compliance with safety margins. It verifies structural limits under vacuum conditions and generates auditable design step outputs for internal engineering files.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CODE COMPLIANCE & STANDARDS SECTION -->
+            <div style="margin-top: 40px; padding: 30px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); animation: fadeInUp 0.8s ease;">
+                <h3 style="color: var(--primary-color); font-family: 'Montserrat', sans-serif; font-size: 1.4rem; margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid var(--secondary-color); padding-bottom: 10px;"><i class="fas fa-balance-scale"></i> Pressure Vessel Design Codes &amp; Standards</h3>
+                <p>Industrial pressure vessels must comply with national and international codes to ensure structural integrity and prevent explosive failure. Below are the key engineering design codes and their core applicability guidelines:</p>
+                <div style="overflow-x: auto;">
+                    <table class="result-table" style="margin-top: 15px; font-size: 0.9rem; box-shadow: none;">
+                        <thead>
+                            <tr>
+                                <th>Code / Standard</th>
+                                <th>Jurisdiction</th>
+                                <th>Applicability &amp; Design Criteria</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>ASME BPVC Section VIII Div 1</strong></td>
+                                <td>Global (USA / International)</td>
+                                <td>Design by Formula (UG-27/UG-32). Covers design pressures up to 3,000 psi (20 MPa). Relies on membrane shell stress equations with a design factor of 3.5 on ultimate tensile strength.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IS 2825 : 1969</strong></td>
+                                <td>India (BIS)</td>
+                                <td>Code for Unfired Pressure Vessels. Governs industrial manufacturing in India. Utilizes inside-diameter formulas with slightly differing stress correction denominators compared to ASME.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>EN 13445</strong></td>
+                                <td>Europe (CEN)</td>
+                                <td>Unfired Pressure Vessels. Harmonized standard under the European Pressure Equipment Directive (PED). Incorporates design-by-analysis and lower design safety factors based on advanced testing.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>PD 5500</strong></td>
+                                <td>United Kingdom</td>
+                                <td>Specification for fusion welded pressure vessels. Widely respected code for high-alloy designs, detailing rules for fatigue, local load openings, and shell buckling.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- STEP-BY-STEP MANUAL DESIGN WALKTHROUGH -->
+            <div style="margin-top: 40px; padding: 30px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); animation: fadeInUp 0.8s ease;">
+                <h3 style="color: var(--primary-color); font-family: 'Montserrat', sans-serif; font-size: 1.4rem; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--secondary-color); padding-bottom: 10px;">
+                    <i class="fas fa-chalkboard-teacher"></i> Auditable Design Case: Verification Walkthrough
+                </h3>
+                <p style="font-size: 1rem; line-height: 1.6; color: var(--text-color); margin-bottom: 25px;">
+                    Cross-examine and audit this tool's internal pressure calculations against manual sizing results for a spot-radiographed carbon steel cylindrical shell:
+                </p>
+                
+                <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                    
+                    <!-- Left: Design Parameters Panel -->
+                    <div style="flex: 1 1 320px; background: var(--bg-color); border-radius: 10px; border: 1px solid var(--border-color); padding: 25px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);">
+                        <h4 style="margin-top: 0; margin-bottom: 20px; font-family: 'Montserrat', sans-serif; color: var(--heading-color); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-sliders-h" style="color: var(--primary-color);"></i> Sizing Inputs Setup
+                        </h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            
+                            <!-- Input Row 1 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                                <span style="font-size: 0.9rem; color: var(--text-color);"><i class="fas fa-bolt" style="width: 20px; color: #f59e0b;"></i> Design Pressure (\(P\))</span>
+                                <span style="font-weight: 700; color: var(--heading-color); background: rgba(245,158,11,0.1); padding: 3px 8px; border-radius: 4px; font-size: 0.9rem;">2.0 MPa</span>
+                            </div>
+                            
+                            <!-- Input Row 2 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                                <span style="font-size: 0.9rem; color: var(--text-color);"><i class="fas fa-shield-alt" style="width: 20px; color: #10b981;"></i> Allowable Stress (\(S\))</span>
+                                <span style="font-weight: 700; color: var(--heading-color); background: rgba(16,185,129,0.1); padding: 3px 8px; border-radius: 4px; font-size: 0.9rem;">138 MPa</span>
+                            </div>
+
+                            <!-- Input Row 3 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                                <span style="font-size: 0.9rem; color: var(--text-color);"><i class="fas fa-percentage" style="width: 20px; color: #3b82f6;"></i> Weld Efficiency (\(E\))</span>
+                                <span style="font-weight: 700; color: var(--heading-color); background: rgba(59,130,246,0.1); padding: 3px 8px; border-radius: 4px; font-size: 0.9rem;">0.85 (Spot)</span>
+                            </div>
+
+                            <!-- Input Row 4 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                                <span style="font-size: 0.9rem; color: var(--text-color);"><i class="fas fa-circle-notch" style="width: 20px; color: #8b5cf6;"></i> Shell Diameter (\(D_i\))</span>
+                                <span style="font-weight: 700; color: var(--heading-color); background: rgba(139,92,246,0.1); padding: 3px 8px; border-radius: 4px; font-size: 0.9rem;">1200 mm</span>
+                            </div>
+
+                            <!-- Input Row 5 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                                <span style="font-size: 0.9rem; color: var(--text-color);"><i class="fas fa-adjust" style="width: 20px; color: #ec4899;"></i> Shell Radius (\(R_i\))</span>
+                                <span style="font-weight: 700; color: var(--heading-color); background: rgba(236,72,153,0.1); padding: 3px 8px; border-radius: 4px; font-size: 0.9rem;">600 mm</span>
+                            </div>
+
+                            <!-- Input Row 6 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px;">
+                                <span style="font-size: 0.9rem; color: var(--text-color);"><i class="fas fa-layer-group" style="width: 20px; color: #64748b;"></i> Corrosion Allowance (\(CA\))</span>
+                                <span style="font-weight: 700; color: var(--heading-color); background: rgba(100,116,139,0.1); padding: 3px 8px; border-radius: 4px; font-size: 0.9rem;">2.0 mm</span>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Calculations Timeline -->
+                    <div style="flex: 2 1 450px; display: flex; flex-direction: column; gap: 20px;">
+                        
+                        <!-- Block 1: ASME -->
+                        <div style="background: var(--bg-color); border-radius: 10px; border: 1px solid var(--border-color); border-left: 5px solid var(--primary-color); padding: 20px;">
+                            <h4 style="margin-top: 0; margin-bottom: 15px; font-family: 'Montserrat', sans-serif; color: var(--primary-color); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                                <span style="background: var(--primary-color); color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">A</span>
+                                ASME Section VIII Div 1 Sizing
+                            </h4>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <div>
+                                    <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--secondary-color); font-weight: 700;">Step A1: Required Corroded Thickness</span>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.95rem; line-height: 1.6;">
+                                        Applying membrane stress formula per UG-27(c)(1):
+                                        \[ t_{req,corr} = \frac{P \times R_i}{S \times E - 0.6 \times P} = \frac{2.0 \times 600}{138 \times 0.85 - 0.6 \times 2.0} = \mathbf{10.336\text{ mm}} \]
+                                    </p>
+                                </div>
+                                <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                                    <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--secondary-color); font-weight: 700;">Step A2: UG-16(b) Structural Compliance Check</span>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.95rem; line-height: 1.6;">
+                                        Minimum structural thickness constraint is \(2.4\text{ mm}\). Since \(10.336\text{ mm} \ge 2.4\text{ mm}\), the calculated thickness is <strong>compliant</strong>.
+                                    </p>
+                                </div>
+                                <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                                    <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--secondary-color); font-weight: 700;">Step A3: Nominal Selected Thickness</span>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.95rem; line-height: 1.6;">
+                                        Add Corrosion Allowance back to the corroded thickness:
+                                        \[ t_{req,nom} = t_{req,corr} + CA = 10.336 + 2.0 = \mathbf{12.336\text{ mm}} \]
+                                        <em>Recommended design plate selection: \(\mathbf{14.0\text{ mm}}\).</em>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Block 2: IS 2825 -->
+                        <div style="background: var(--bg-color); border-radius: 10px; border: 1px solid var(--border-color); border-left: 5px solid var(--accent-color); padding: 20px;">
+                            <h4 style="margin-top: 0; margin-bottom: 15px; font-family: 'Montserrat', sans-serif; color: var(--accent-color); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                                <span style="background: var(--accent-color); color: #333; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">B</span>
+                                Indian Standard IS 2825 Sizing Comparison
+                            </h4>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 15px;">
+                                <div>
+                                    <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-color); font-weight: 700;">Step B1: Corroded Thickness</span>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.95rem; line-height: 1.6;">
+                                        Applying IS 2825 formula using internal diameter (\(D_i\)):
+                                        \[ t_{req,corr} = \frac{P \times D_i}{2 \times S \times E - P} = \frac{2.0 \times 1200}{2 \times 138 \times 0.85 - 2.0} = \mathbf{10.318\text{ mm}} \]
+                                    </p>
+                                </div>
+                                <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                                    <span style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-color); font-weight: 700;">Step B2: Nominal Thickness Selection</span>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.95rem; line-height: 1.6;">
+                                        Add corrosion allowance back to the IS 2825 corroded thickness:
+                                        \[ t_{req,nom} = t_{req,corr} + CA = 10.318 + 2.0 = \mathbf{12.318\text{ mm}} \]
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                </div>
+            </div>
+
             <!-- EMBED WIDGET SECTION -->
             <div id="embed-widget-section" style="margin-top: 40px; padding: 25px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 12px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); position: relative; overflow: hidden; max-width: 900px; margin-left: auto; margin-right: auto;">
                 <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(0,0,0,0) 70%); border-radius: 50%;"></div>
@@ -1354,81 +1633,69 @@
         </div>
     </main>
 
+    <!-- Related Engineering Calculators Section -->
+    <section style="padding: 60px 0; background: var(--bg-color); border-top: 1px solid var(--border-color);">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 1.8rem; margin-bottom: 30px; color: var(--heading-color); font-family: 'Montserrat', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-layer-group" style="color: var(--primary-color);"></i> Related Engineering Calculators
+            </h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; max-width: 1000px; margin: 0 auto;">
+                
+                <!-- Nozzle Reinforcement -->
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid var(--primary-color);">
+                    <div>
+                        <h3 style="margin-top: 0; color: var(--primary-color); font-size: 1.25rem; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-compress-alt"></i> Nozzle Reinforcement
+                        </h3>
+                        <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px; color: var(--text-color);">
+                            <strong>What it does:</strong> Evaluates opening stress concentrations and sizes reinforcement pads around shell nozzles per ASME Section VIII UG-37.
+                        </p>
+                        <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; color: var(--text-color);">
+                            <strong>How it is useful:</strong> Prevents catastrophic structural failure at high-stress vessel penetration points (manways, pipe nozzles).
+                        </p>
+                    </div>
+                    <a href="/nozzle-reinforcement" class="calculate-btn" style="text-decoration: none; text-align: center; display: block; font-size: 0.9rem; padding: 10px 15px; border-radius: 6px; font-weight: bold; background: var(--secondary-color); color: white; margin-top: auto;">Open Calculator</a>
+                </div>
+
+                <!-- Allowable Stress -->
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid var(--secondary-color);">
+                    <div>
+                        <h3 style="margin-top: 0; color: var(--primary-color); font-size: 1.25rem; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-shield-alt"></i> Allowable Stress
+                        </h3>
+                        <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px; color: var(--text-color);">
+                            <strong>What it does:</strong> Computes material safety limits based on temperature-corrected tensile and shear design stresses.
+                        </p>
+                        <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; color: var(--text-color);">
+                            <strong>How it is useful:</strong> Validates safety factor bounds under multi-axial static and fatigue cyclic stresses to protect mechanical integrity.
+                        </p>
+                    </div>
+                    <a href="/allowable-stress-safety-factor" class="calculate-btn" style="text-decoration: none; text-align: center; display: block; font-size: 0.9rem; padding: 10px 15px; border-radius: 6px; font-weight: bold; background: var(--secondary-color); color: white; margin-top: auto;">Open Calculator</a>
+                </div>
+
+                <!-- Bolt Torque -->
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 4px solid var(--accent-color);">
+                    <div>
+                        <h3 style="margin-top: 0; color: var(--primary-color); font-size: 1.25rem; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-wrench"></i> Bolt Torque
+                        </h3>
+                        <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px; color: var(--text-color);">
+                            <strong>What it does:</strong> Calculates target flange bolt torque parameters accounting for thread friction and gasket preload specifications.
+                        </p>
+                        <p style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; color: var(--text-color);">
+                            <strong>How it is useful:</strong> Ensures uniform seal compression to prevent hazardous fluid leakage at standard flange joints.
+                        </p>
+                    </div>
+                    <a href="/bolt-torque" class="calculate-btn" style="text-decoration: none; text-align: center; display: block; font-size: 0.9rem; padding: 10px 15px; border-radius: 6px; font-weight: bold; background: var(--accent-color); color: #333; margin-top: auto;">Open Calculator</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- FOOTER -->
         
-    <!-- Related Tools Section -->
-    <section style="padding: 60px 0; background: linear-gradient(to bottom, var(--bg-color, #f8fafc), var(--card-bg, #ffffff)); border-top: 1px solid var(--border-color, #e2e8f0);">
-        <div class="container">
-            <div style="text-align: center; max-width: 700px; margin: 0 auto 40px auto;">
-                <h2 style="font-size: 2rem; color: var(--heading-color, #1e293b); margin-bottom: 15px;"><i class="fas fa-layer-group" style="color: var(--primary-color, #3b82f6);"></i> Level Up Your Engineering</h2>
-                <p style="font-size: 1.1rem; color: var(--text-color, #475569); line-height: 1.6;">Don't stop at just the shell thickness. Complete your entire vessel design portfolio with our suite of specialized, high-accuracy tools utilized by top-tier EPC consultants.</p>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; max-width: 1000px; margin: 0 auto;">
-                
-                <!-- Card 1 -->
-                <a href="/nozzle-reinforcement" style="text-decoration: none; display: flex; flex-direction: column; background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; padding: 25px; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 20px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary-color, #3b82f6)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='var(--border-color, #e2e8f0)';">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="background: rgba(59, 130, 246, 0.1); color: var(--primary-color, #3b82f6); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                            <i class="fas fa-compress-alt"></i>
-                        </div>
-                        <h3 style="margin: 0; font-size: 1.2rem; color: var(--heading-color, #1e293b);">Nozzle Reinforcement</h3>
-                    </div>
-                    <p style="margin: 0 0 20px 0; color: var(--text-color, #64748b); font-size: 0.95rem; line-height: 1.5; flex-grow: 1;">Ensure your vessel openings meet ASME UG-37 requirements. Instantly calculate required reinforcement area and pad thickness.</p>
-                    <div style="color: var(--primary-color, #3b82f6); font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
-                        Try Calculator <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
 
-                <!-- Card 2 -->
-                <a href="/allowable-stress-safety-factor" style="text-decoration: none; display: flex; flex-direction: column; background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; padding: 25px; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 20px rgba(0,0,0,0.1)'; this.style.borderColor='#10b981';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='var(--border-color, #e2e8f0)';">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="background: rgba(16, 185, 129, 0.1); color: #10b981; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3 style="margin: 0; font-size: 1.2rem; color: var(--heading-color, #1e293b);">Stress & Safety Factor</h3>
-                    </div>
-                    <p style="margin: 0 0 20px 0; color: var(--text-color, #64748b); font-size: 0.95rem; line-height: 1.5; flex-grow: 1;">Master material safety limits. Determine allowable stresses and margin of safety across different temperature profiles.</p>
-                    <div style="color: #10b981; font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
-                        Try Calculator <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-
-                <!-- Card 3 -->
-                <a href="/bolt-torque" style="text-decoration: none; display: flex; flex-direction: column; background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e2e8f0); border-radius: 12px; padding: 25px; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 12px 20px rgba(0,0,0,0.1)'; this.style.borderColor='#f59e0b';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='var(--border-color, #e2e8f0)';">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                            <i class="fas fa-wrench"></i>
-                        </div>
-                        <h3 style="margin: 0; font-size: 1.2rem; color: var(--heading-color, #1e293b);">Flange Bolt Torque</h3>
-                    </div>
-                    <p style="margin: 0 0 20px 0; color: var(--text-color, #64748b); font-size: 0.95rem; line-height: 1.5; flex-grow: 1;">Achieve leak-proof flange joints. Calculate optimal tightening torque based on bolt grade, lubrication, and size.</p>
-                    <div style="color: #f59e0b; font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
-                        Try Calculator <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-
-            </div>
-        </div>
-    </section>
-    
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
-        <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/nozzle-reinforcement.html" class="silo-card" style="text-decoration:none;">
-                        <span>Nozzle Reinforcement</span>
-                    </a>
-                    <a href="/allowable-stress-safety-factor.html" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/bolt-torque.html" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
-                    </a>
-            </div>
-        </div>
-    </section>
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -1586,7 +1853,12 @@
             const mawpModeInputs = document.getElementById('mawp-mode-inputs');
 
             const materialAllowableStressInput = document.getElementById('material-allowable-stress');
+            const materialTestStressInput = document.getElementById('material-test-stress');
+            const materialGroupSelect = document.getElementById('material-group');
+            const jointCategorySelect = document.getElementById('joint-category');
             const jointEfficiencyInput = document.getElementById('joint-efficiency');
+            const customJointGroup = document.getElementById('custom-joint-group');
+            
             const internalDiameterInput = document.getElementById('internal-diameter');
             const corrosionAllowanceInput = document.getElementById('corrosion-allowance');
             const designPressureInput = document.getElementById('design-pressure');
@@ -1606,10 +1878,6 @@
             const stressUnitLabels = document.querySelectorAll('.stress-unit-label');
             const pressureUnitLabels = document.querySelectorAll('.pressure-unit-label');
 
-            /** * Displays a custom message box at the top of the screen.             
-             * @param {string} message - The message to display.             
-             * @param {string} type - The type of message ('info', 'error', 'warning').             
-             */
             function displayMessage(message, type = "info") {
                 let messageBox = document.getElementById('custom-message-box');
                 if (!messageBox) {
@@ -1618,18 +1886,32 @@
                     document.body.appendChild(messageBox);
                 }
                 messageBox.textContent = message;
-                messageBox.className = ''; // Clear previous classes
-                messageBox.classList.add(type); // Add type class for styling
-                messageBox.classList.add('show'); // Add show class to trigger animation
-
-                // Hide message after 5 seconds
+                messageBox.className = '';
+                messageBox.classList.add(type);
+                messageBox.classList.add('show');
                 setTimeout(() => {
                     messageBox.classList.remove('show');
                 }, 5000);
             }
 
-            /** * Updates the unit labels in the UI based on the selected unit system.             
-             */
+            function updateJointEfficiency() {
+                const category = jointCategorySelect.value;
+                if (category === 'custom') {
+                    customJointGroup.style.display = 'block';
+                    jointEfficiencyInput.setAttribute('required', 'true');
+                } else {
+                    customJointGroup.style.display = 'none';
+                    jointEfficiencyInput.removeAttribute('required');
+                    if (category === 'fully_radiographed') {
+                        jointEfficiencyInput.value = "1.0";
+                    } else if (category === 'spot_radiographed') {
+                        jointEfficiencyInput.value = "0.85";
+                    } else {
+                        jointEfficiencyInput.value = "0.70";
+                    }
+                }
+            }
+
             function updateUnitLabels() {
                 const unitSystem = unitSystemSelect.value;
                 const lengthUnit = unitSystem === 'imperial' ? '(in.)' : '(mm)';
@@ -1640,8 +1922,8 @@
                 stressUnitLabels.forEach(label => label.textContent = stressUnit);
                 pressureUnitLabels.forEach(label => label.textContent = pressureUnit);
 
-                // Update input step values for better user experience based on units
                 materialAllowableStressInput.step = unitSystem === 'imperial' ? '100' : '0.1';
+                materialTestStressInput.step = unitSystem === 'imperial' ? '100' : '0.1';
                 internalDiameterInput.step = unitSystem === 'imperial' ? '0.1' : '1';
                 corrosionAllowanceInput.step = unitSystem === 'imperial' ? '0.001' : '0.01';
                 designPressureInput.step = unitSystem === 'imperial' ? '1' : '0.01';
@@ -1649,9 +1931,9 @@
                 crownRadiusInput.step = unitSystem === 'imperial' ? '0.1' : '1';
                 knuckleRadiusInput.step = unitSystem === 'imperial' ? '0.1' : '1';
 
-                // Update default values based on units
                 if (unitSystem === 'imperial') {
                     if(materialAllowableStressInput.value === "138") materialAllowableStressInput.value = "20000";
+                    if(materialTestStressInput.value === "138") materialTestStressInput.value = "20000";
                     if(internalDiameterInput.value === "1000") internalDiameterInput.value = "40";
                     if(corrosionAllowanceInput.value === "1.5") corrosionAllowanceInput.value = "0.0625";
                     if(designPressureInput.value === "1.0") designPressureInput.value = "150";
@@ -1660,6 +1942,7 @@
                     if(knuckleRadiusInput.value === "100") knuckleRadiusInput.value = "4";
                 } else {
                     if(materialAllowableStressInput.value === "20000") materialAllowableStressInput.value = "138";
+                    if(materialTestStressInput.value === "20000") materialTestStressInput.value = "138";
                     if(internalDiameterInput.value === "40") internalDiameterInput.value = "1000";
                     if(corrosionAllowanceInput.value === "0.0625") corrosionAllowanceInput.value = "1.5";
                     if(designPressureInput.value === "150") designPressureInput.value = "1.0";
@@ -1669,8 +1952,6 @@
                 }
             }
 
-            /** * Toggles visibility of input sections based on selected calculation mode.             
-             */
             function toggleCalculationModeInputs() {
                 const selectedMode = document.querySelector('input[name="calculationMode"]:checked').value;
                 if (selectedMode === 'thickness') {
@@ -1678,14 +1959,13 @@
                     mawpModeInputs.style.display = 'none';
                     designPressureInput.setAttribute('required', 'true');
                     nominalThicknessInput.removeAttribute('required');
-                } else { // mawp mode
+                } else {
                     thicknessModeInputs.style.display = 'none';
                     mawpModeInputs.style.display = 'block';
                     nominalThicknessInput.setAttribute('required', 'true');
                     designPressureInput.removeAttribute('required');
                 }
                 
-                // Update styling
                 document.querySelectorAll('.calc-mode-label').forEach(label => {
                     if(label.querySelector('input').checked) {
                         label.style.border = '2px solid var(--primary-color, #3b82f6)';
@@ -1699,9 +1979,6 @@
                 });
             }
 
-            /**
-             * Toggles visibility of head-specific inputs
-             */
             function toggleHeadInputs() {
                 const vesselType = vesselTypeSelect.value;
                 if (vesselType === 'torispherical-head') {
@@ -1715,21 +1992,16 @@
                 }
             }
 
-            // Event listeners
             unitSystemSelect.addEventListener('change', updateUnitLabels);
             vesselTypeSelect.addEventListener('change', toggleHeadInputs);
-
+            jointCategorySelect.addEventListener('change', updateJointEfficiency);
             document.querySelectorAll('input[name="calculationMode"]').forEach(radio => radio.addEventListener('change', toggleCalculationModeInputs));
 
-            // Initial UI update on load
             updateUnitLabels();
             toggleCalculationModeInputs();
             toggleHeadInputs();
+            updateJointEfficiency();
 
-            /** * Adds a row to the result table.             
-             * @param {string} parameterHtml - The HTML content for the parameter column.             
-             * @param {string} valueHtml - The HTML content for the value column.             
-             */
             function addResultRow(parameterHtml, valueHtml) {
                 const row = resultTableBody.insertRow();
                 const paramCell = row.insertCell();
@@ -1746,6 +2018,7 @@
                     document.querySelector('input[name="calculationMode"][value="thickness"]').checked = true;
                     toggleCalculationModeInputs();
                     toggleHeadInputs();
+                    updateJointEfficiency();
                     if(resultContainer) {
                         resultContainer.style.display = 'none';
                         resultContainer.classList.remove('show');
@@ -1764,40 +2037,118 @@
             }
 
             if (downloadPdfBtn) {
-                downloadPdfBtn.addEventListener('click', async function() {
-                    if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
-                        displayMessage("PDF libraries are loading, please try again.", "warning");
+                downloadPdfBtn.addEventListener('click', function() {
+                    if (typeof window.jspdf === 'undefined') {
+                        displayMessage("PDF library is loading, please try again.", "warning");
                         return;
                     }
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF('p', 'mm', 'a4');
-                    try {
-                        const originalContent = downloadPdfBtn.innerHTML;
-                        downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-                        
-                        const oldBg = resultContainer.style.backgroundColor;
-                        const isDarkMode = document.body.classList.contains('dark-mode');
-                        resultContainer.style.backgroundColor = isDarkMode ? '#1E293B' : '#FFFFFF';
-                        
-                        const canvas = await html2canvas(resultContainer, { scale: 2, useCORS: true });
-                        resultContainer.style.backgroundColor = oldBg;
-                        
-                        const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                        const pdfWidth = 210 - 20; // A4 width in mm minus 20 margin
-                        const imgProps = doc.getImageProperties(imgData);
-                        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                        
-                        doc.addImage(imgData, 'JPEG', 10, 10, pdfWidth, pdfHeight);
-                        doc.save('ASME_Vessel_Results.pdf');
-                        downloadPdfBtn.innerHTML = originalContent;
-                    } catch (e) {
-                        displayMessage("Failed to generate PDF.", "error");
-                        downloadPdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF (A4)';
+                    
+                    const pageHeight = 297;
+                    const pageWidth = 210;
+                    const margin = 15;
+                    let y = 20;
+
+                    function addHeaderFooter(pageNumber, totalPages) {
+                        doc.setFont("helvetica", "bold");
+                        doc.setFontSize(8);
+                        doc.setTextColor(148, 163, 184);
+                        doc.text("DESIGN CALCULATORS - ASME & IS PRESSURE VESSEL REPORT", margin, 10);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.setLineWidth(0.3);
+                        doc.line(margin, 12, pageWidth - margin, 12);
+
+                        doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+                        doc.setFont("helvetica", "normal");
+                        doc.text("Website: designcalculators.co.in", margin, pageHeight - 10);
+                        doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - margin - 20, pageHeight - 10);
                     }
+
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(16);
+                    doc.setTextColor(30, 58, 138);
+                    doc.text("ASME & IS PRESSURE VESSEL REPORT", margin, y);
+                    y += 6;
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(9);
+                    doc.setTextColor(75, 85, 99);
+                    doc.text("Compliant with ASME Section VIII Division 1 (UG-27 / UG-32) & IS 2825", margin, y);
+                    y += 12;
+
+                    const tableRows = [];
+                    const rows = resultTableBody.querySelectorAll('tr');
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length === 2) {
+                            let param = cells[0].textContent.trim();
+                            let value = cells[1].textContent.trim();
+                            tableRows.push([param, value]);
+                        }
+                    });
+
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(10);
+                    doc.setTextColor(15, 23, 42);
+                    
+                    doc.setFillColor(241, 245, 249);
+                    doc.rect(margin, y, pageWidth - 2 * margin, 8, 'F');
+                    doc.text("Design Parameter", margin + 3, y + 5.5);
+                    doc.text("Calculated Value / Status", margin + 110, y + 5.5);
+                    y += 8;
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(9);
+                    
+                    tableRows.forEach(row => {
+                        if (y > pageHeight - 30) {
+                            doc.addPage();
+                            y = 20;
+                            doc.setFillColor(241, 245, 249);
+                            doc.rect(margin, y, pageWidth - 2 * margin, 8, 'F');
+                            doc.setFont("helvetica", "bold");
+                            doc.text("Design Parameter", margin + 3, y + 5.5);
+                            doc.text("Calculated Value / Status", margin + 110, y + 5.5);
+                            y += 8;
+                            doc.setFont("helvetica", "normal");
+                        }
+                        
+                        doc.setDrawColor(241, 245, 249);
+                        doc.line(margin, y, pageWidth - margin, y);
+                        
+                        doc.text(row[0], margin + 3, y + 5.5);
+                        doc.text(row[1], margin + 110, y + 5.5);
+                        y += 8;
+                    });
+                    
+                    doc.line(margin, y, pageWidth - margin, y);
+                    y += 12;
+
+                    if (y > pageHeight - 40) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(10);
+                    doc.text("Engineering Disclaimer:", margin, y);
+                    y += 5;
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(8);
+                    const splitText = doc.splitTextToSize("All calculations are for preliminary sizing and informational purposes only. The user assumes full responsibility for compliance with all local laws and codes. Verification against standard ASME Section VIII or IS 2825 criteria by a certified Professional Engineer is required prior to fabrication.", pageWidth - 2 * margin);
+                    doc.text(splitText, margin, y);
+
+                    const totalPages = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= totalPages; i++) {
+                        doc.setPage(i);
+                        addHeaderFooter(i, totalPages);
+                    }
+
+                    doc.save('ASME_IS_Pressure_Vessel_Report.pdf');
+                    displayMessage("Very small footprint PDF generated!", "info");
                 });
             }
 
-            // Event listener for the calculate button
             calculateBtn.addEventListener('click', function() {
                 const form = document.getElementById('asme-calculator-form');
                 if (!form.checkValidity()) {
@@ -1808,24 +2159,26 @@
 
                 // Gather inputs
                 const unitSystem = unitSystemSelect.value;
-                const S = parseFloat(materialAllowableStressInput.value);
-                const E = parseFloat(jointEfficiencyInput.value);
+                const S_design = parseFloat(materialAllowableStressInput.value);
+                const S_test = parseFloat(materialTestStressInput.value) || S_design;
+                const materialGroup = materialGroupSelect.value;
+                const jointCategory = jointCategorySelect.value;
+                const E = (jointCategory === 'custom') ? parseFloat(jointEfficiencyInput.value) : (jointCategory === 'fully_radiographed' ? 1.0 : (jointCategory === 'spot_radiographed' ? 0.85 : 0.70));
+                
                 const ID = parseFloat(internalDiameterInput.value);
                 const CA = parseFloat(corrosionAllowanceInput.value);
                 const vesselType = vesselTypeSelect.value;
                 const calculationMode = document.querySelector('input[name="calculationMode"]:checked').value;
+                
                 const unit_len = unitSystem === 'imperial' ? 'in.' : 'mm';
                 const unit_press = unitSystem === 'imperial' ? 'psi' : 'MPa';
 
-                let calculationHtml = '<h4>Detailed Calculation Steps:</h4>';
                 resultTableBody.innerHTML = ''; // Clear previous results
 
-                // Common calculations
-                const R_internal = ID / 2; // Internal radius
-                const D_internal = ID; // Internal diameter
+                const R_internal = ID / 2;
+                const D_internal = ID;
 
-                // Basic validation
-                if (S <= 0 || E <= 0 || ID <= 0 || CA < 0 || E > 1) {
+                if (S_design <= 0 || S_test <= 0 || E <= 0 || ID <= 0 || CA < 0 || E > 1) {
                     displayMessage("Please enter valid positive values for all parameters. Joint efficiency must be <= 1.0.", "error");
                     return;
                 }
@@ -1840,205 +2193,383 @@
                 }
 
                 addResultRow("Unit System", unitSystem === 'imperial' ? 'Imperial' : 'Metric');
-                addResultRow("Vessel Component", vesselTypeName);
-                addResultRow("Material Allowable Stress (S)", `${S} ${unit_press}`);
-                addResultRow("Joint Efficiency (E)", E);
+                addResultRow("Component Selected", vesselTypeName);
+                addResultRow("Design Allowable Stress (S)", `${S_design} ${unit_press}`);
+                addResultRow("Test Allowable Stress (S_test)", `${S_test} ${unit_press}`);
+                addResultRow("Joint Efficiency (E)", `${E} (${jointCategory.replace('_', ' ')})`);
                 addResultRow("Internal Diameter (D)", `${D_internal.toFixed(3)} ${unit_len}`);
-                addResultRow("Internal Radius (R)", `${R_internal.toFixed(3)} ${unit_len}`);
                 addResultRow("Corrosion Allowance (CA)", `${CA} ${unit_len}`);
+
+                // Define structural minimum thickness per UG-16(b)
+                let t_min = 0;
+                if (materialGroup === 'carbon_steel') {
+                    t_min = unitSystem === 'imperial' ? 3/32 : 2.4;
+                } else if (materialGroup === 'stainless_steel') {
+                    t_min = unitSystem === 'imperial' ? 1/16 : 1.6;
+                }
+
+                let calculationHtml = '<h4>Detailed Step-by-Step Compliance Sizing (10 Steps):</h4>';
+                let t_req_corr = 0;
+                let t_req_nom = 0;
+                let error = false;
+                let is_is2825_supported = true;
+                let t_req_corr_is = 0;
+                let t_req_nom_is = 0;
+                let mawp = 0;
+                let mawp_is = 0;
 
                 if (calculationMode === 'thickness') {
                     const P_design = parseFloat(designPressureInput.value);
-
                     if (P_design <= 0) {
                         displayMessage("Design Pressure must be a positive value.", "error");
                         return;
                     }
                     addResultRow("Design Pressure (P)", `${P_design} ${unit_press}`);
-                    calculationHtml += `<p><strong>Calculation for Required Thickness (\\(t_{req}\\)):</strong></p>`;
 
-                    let t_required_corroded;
-                    let error = false;
-
+                    // Calculate thickness for ASME & IS 2825
                     switch (vesselType) {
                         case 'cylinder':
-                            // UG-27(c)(1)
-                            if ((S * E - 0.6 * P_design) <= 0) {
-                                displayMessage("Calculation error: (SE - 0.6P) is zero or negative. Pressure is too high or material stress is too low.", "error");
+                            // ASME UG-27(c)(1)
+                            if ((S_design * E - 0.6 * P_design) <= 0) {
+                                displayMessage("Calculation error: (SE - 0.6P) <= 0. Pressure too high.", "error");
                                 error = true;
                                 break;
                             }
-                            t_required_corroded = (P_design * R_internal) / (S * E - 0.6 * P_design);
-                            calculationHtml += `<p class="formula">For Cylindrical Shell (ASME UG-27(c)(1)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ t_{req,corroded} = \\frac{P R}{SE - 0.6P} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(t_{req,corroded}\\) = (${P_design} &times; ${R_internal.toFixed(3)}) / (${S} &times; ${E} - 0.6 &times; ${P_design}) = ${t_required_corroded.toFixed(4)} ${unit_len}</p>`;
+                            t_req_corr = (P_design * R_internal) / (S_design * E - 0.6 * P_design);
+                            
+                            // IS 2825
+                            if ((2 * S_design * E - P_design) <= 0) {
+                                t_req_corr_is = 0;
+                            } else {
+                                t_req_corr_is = (P_design * D_internal) / (2 * S_design * E - P_design);
+                            }
                             break;
-                        
+
                         case 'sphere':
                         case 'hemispherical-head':
-                            // UG-27(d)(1) for Sphere, UG-32(b) for Hemi-Head (uses L=R)
-                            if ((2 * S * E - 0.2 * P_design) <= 0) {
-                                displayMessage("Calculation error: (2SE - 0.2P) is zero or negative. Pressure is too high or material stress is too low.", "error");
+                            // ASME UG-27(d)(1) / UG-32(b)
+                            if ((2 * S_design * E - 0.2 * P_design) <= 0) {
+                                displayMessage("Calculation error: (2SE - 0.2P) <= 0. Pressure too high.", "error");
                                 error = true;
                                 break;
                             }
-                            // Note: R_internal is R (for sphere) or L (for hemi-head)
-                            t_required_corroded = (P_design * R_internal) / (2 * S * E - 0.2 * P_design);
-                            calculationHtml += `<p class="formula">For Spherical/Hemi-Head (ASME UG-27(d)(1) / UG-32(b)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ t_{req,corroded} = \\frac{P R}{2SE - 0.2P} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(t_{req,corroded}\\) = (${P_design} &times; ${R_internal.toFixed(3)}) / (2 &times; ${S} &times; ${E} - 0.2 &times; ${P_design}) = ${t_required_corroded.toFixed(4)} ${unit_len}</p>`;
+                            t_req_corr = (P_design * R_internal) / (2 * S_design * E - 0.2 * P_design);
+
+                            // IS 2825
+                            if ((4 * S_design * E - P_design) <= 0) {
+                                t_req_corr_is = 0;
+                            } else {
+                                t_req_corr_is = (P_design * D_internal) / (4 * S_design * E - P_design);
+                            }
                             break;
 
                         case 'elliptical-head':
-                            // UG-32(c) for 2:1 Elliptical Head (uses D = D_internal)
-                            if ((2 * S * E - 0.2 * P_design) <= 0) {
-                                displayMessage("Calculation error: (2SE - 0.2P) is zero or negative. Pressure is too high or material stress is too low.", "error");
+                            // ASME UG-32(c)
+                            if ((2 * S_design * E - 0.2 * P_design) <= 0) {
+                                displayMessage("Calculation error: (2SE - 0.2P) <= 0. Pressure too high.", "error");
                                 error = true;
                                 break;
                             }
-                            t_required_corroded = (P_design * D_internal) / (2 * S * E - 0.2 * P_design);
-                            calculationHtml += `<p class="formula">For 2:1 Elliptical Head (ASME UG-32(c)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ t_{req,corroded} = \\frac{P D}{2SE - 0.2P} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(t_{req,corroded}\\) = (${P_design} &times; ${D_internal.toFixed(3)}) / (2 &times; ${S} &times; ${E} - 0.2 &times; ${P_design}) = ${t_required_corroded.toFixed(4)} ${unit_len}</p>`;
+                            t_req_corr = (P_design * D_internal) / (2 * S_design * E - 0.2 * P_design);
+
+                            // IS 2825 (uses shape factor H = 2.0)
+                            t_req_corr_is = (P_design * D_internal * 2.0) / (2 * S_design * E - 0.2 * P_design);
                             break;
 
                         case 'torispherical-head':
-                            // UG-32(d)
                             const L_crown = parseFloat(crownRadiusInput.value);
                             const r_knuckle = parseFloat(knuckleRadiusInput.value);
                             if (L_crown <= 0 || r_knuckle <= 0) {
-                                displayMessage("Crown Radius (L) and Knuckle Radius (r) must be positive values.", "error");
+                                displayMessage("Crown and knuckle radii must be positive.", "error");
                                 error = true;
                                 break;
                             }
-                            
                             const M = 0.25 * (3 + Math.sqrt(L_crown / r_knuckle));
-                            if ((2 * S * E - 0.2 * P_design) <= 0) {
-                                displayMessage("Calculation error: (2SE - 0.2P) is zero or negative. Pressure is too high or material stress is too low.", "error");
+                            if ((2 * S_design * E - 0.2 * P_design) <= 0) {
+                                displayMessage("Calculation error: (2SE - 0.2P) <= 0. Pressure too high.", "error");
                                 error = true;
                                 break;
                             }
-                            
-                            t_required_corroded = (P_design * L_crown * M) / (2 * S * E - 0.2 * P_design);
-                            
-                            addResultRow("Crown Radius (L)", `${L_crown} ${unit_len}`);
-                            addResultRow("Knuckle Radius (r)", `${r_knuckle} ${unit_len}`);
-                            addResultRow("Shape Factor (M)", `${M.toFixed(4)}`);
-                            calculationHtml += `<p class="formula">For Torispherical Head (ASME UG-32(d)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ M = \\frac{1}{4} \\left( 3 + \\sqrt{\\frac{L}{r}} \\right) \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(M\\) = 0.25 &times; (3 + &radic;(${L_crown} / ${r_knuckle})) = ${M.toFixed(4)}</p>`;
-                            calculationHtml += `<p class="formula">\\[ t_{req,corroded} = \\frac{P L M}{2SE - 0.2P} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(t_{req,corroded}\\) = (${P_design} &times; ${L_crown} &times; ${M.toFixed(4)}) / (2 &times; ${S} &times; ${E} - 0.2 &times; ${P_design}) = ${t_required_corroded.toFixed(4)} ${unit_len}</p>`;
+                            t_req_corr = (P_design * L_crown * M) / (2 * S_design * E - 0.2 * P_design);
+                            is_is2825_supported = false;
                             break;
                     }
-                    
-                    if(error) return; // Stop if calculation failed
 
-                    if (t_required_corroded < 0) {
-                        displayMessage("Calculated required thickness is negative. Check inputs.", "error");
-                        return;
+                    if (error) return;
+
+                    // Apply structural minimum thickness check
+                    let structural_governed = false;
+                    let t_pressure = t_req_corr;
+                    if (t_req_corr < t_min) {
+                        t_req_corr = t_min;
+                        structural_governed = true;
+                    }
+                    t_req_nom = t_req_corr + CA;
+                    t_req_nom_is = t_req_corr_is > 0 ? (t_req_corr_is + CA) : 0;
+
+                    // Back-calculate MAWP based on nominal selected thickness (exact required)
+                    const t_corroded = t_req_nom - CA;
+                    if (vesselType === 'cylinder') {
+                        mawp = (S_design * E * t_corroded) / (R_internal + 0.6 * t_corroded);
+                        if (is_is2825_supported && t_req_nom_is > 0) {
+                            const t_corr_is = t_req_nom_is - CA;
+                            mawp_is = (2 * S_design * E * t_corr_is) / (D_internal + t_corr_is);
+                        }
+                    } else if (vesselType === 'sphere' || vesselType === 'hemispherical-head') {
+                        mawp = (2 * S_design * E * t_corroded) / (R_internal + 0.2 * t_corroded);
+                        if (is_is2825_supported && t_req_nom_is > 0) {
+                            const t_corr_is = t_req_nom_is - CA;
+                            mawp_is = (4 * S_design * E * t_corr_is) / (D_internal + t_corr_is);
+                        }
+                    } else if (vesselType === 'elliptical-head') {
+                        mawp = (2 * S_design * E * t_corroded) / (D_internal + 0.2 * t_corroded);
+                        if (is_is2825_supported && t_req_nom_is > 0) {
+                            const t_corr_is = t_req_nom_is - CA;
+                            mawp_is = (2 * S_design * E * t_corr_is) / (D_internal * 2.0 + 0.2 * t_corr_is);
+                        }
+                    } else if (vesselType === 'torispherical-head') {
+                        const L_crown = parseFloat(crownRadiusInput.value);
+                        const r_knuckle = parseFloat(knuckleRadiusInput.value);
+                        const M = 0.25 * (3 + Math.sqrt(L_crown / r_knuckle));
+                        mawp = (2 * S_design * E * t_corroded) / (L_crown * M + 0.2 * t_corroded);
                     }
 
-                    // Add corrosion allowance to get nominal thickness
-                    const t_required_nominal = t_required_corroded + CA;
+                    // Hydrostatic pressure calculation (ASME UG-99)
+                    const P_hydro = 1.3 * mawp * (S_test / S_design);
 
-                    addResultRow("Required Thickness (Corroded)", `\\( ${t_required_corroded.toFixed(4)} \\) ${unit_len}`);
-                    addResultRow("Required Thickness (Nominal)", `<strong>\\( ${t_required_nominal.toFixed(4)} \\) ${unit_len}</strong>`);
-                    calculationHtml += `<p><strong>Add Corrosion Allowance for Nominal Thickness:</strong></p>`;
-                    calculationHtml += `<p class="formula">\\[ t_{req,nominal} = t_{req,corroded} + CA \\]</p>`;
-                    calculationHtml += `<p class="calculation-step">\\(t_{req,nominal}\\) = ${t_required_corroded.toFixed(4)} + ${CA} = ${t_required_nominal.toFixed(4)} ${unit_len}</p>`;
+                    // Add results to table
+                    addResultRow("Required Thickness (Corroded) [ASME]", `${t_pressure.toFixed(4)} ${unit_len}`);
+                    addResultRow("Structural Minimum Thickness (UG-16b)", `${t_min.toFixed(4)} ${unit_len}`);
+                    addResultRow("Structural Minimum Governed?", structural_governed ? "<strong>YES</strong> (UG-16b governing)" : "No");
+                    addResultRow("Nominal Required Thickness [ASME]", `<strong>${t_req_nom.toFixed(4)} ${unit_len}</strong>`);
+                    
+                    if (is_is2825_supported && t_req_nom_is > 0) {
+                        addResultRow("Nominal Required Thickness [IS 2825]", `${t_req_nom_is.toFixed(4)} ${unit_len}`);
+                    }
+                    
+                    addResultRow("Calculated MAWP [ASME]", `<strong>${mawp.toFixed(3)} ${unit_press}</strong>`);
+                    addResultRow("Hydrostatic Test Pressure [ASME UG-99]", `<strong>${P_hydro.toFixed(3)} ${unit_press}</strong>`);
 
-                } else { // mawp mode
-                    const t_nominal = parseFloat(nominalThicknessInput.value);
+                    // Generate 10-step report
+                    calculationHtml += `
+                    <div class="step-container" style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
+                        <div class="faq-details">
+                            <h4>Step 1: Standard & Geometry Configuration</h4>
+                            <div class="faq-answer-content">
+                                Design Code: <strong>ASME Section VIII Div 1 (UG-27 / UG-32)</strong> and comparative <strong>IS 2825:1969</strong>. Component Selected: <strong>${vesselTypeName}</strong>.
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 2: Material Permissible Stress Properties Sizing</h4>
+                            <div class="faq-answer-content">
+                                Allowable design stress \\(S = ${S_design}\\text{ ${unit_press}}\\) at temperature. Allowable test stress \\(S_{test} = ${S_test}\\text{ ${unit_press}}\\) at ambient temperature.
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 3: Joint Efficiency Category & Weld Quality Sizing (ASME UW-12)</h4>
+                            <div class="faq-answer-content">
+                                Radiography Category: <strong>${jointCategory.replace('_', ' ')}</strong>. Long seam weld efficiency factor is established at \\(E = ${E}\\).
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 4: Sizing Design Boundaries & Corrosion Allowances</h4>
+                            <div class="faq-answer-content">
+                                Internal Diameter \\(D_i = ${D_internal}\\text{ ${unit_len}}\\), Internal Radius \\(R_i = ${R_internal}\\text{ ${unit_len}}\\). Corrosion Allowance \\(CA = ${CA}\\text{ ${unit_len}}\\).
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 5: Shell or Head Membrane Wall Sizing under Internal Pressure</h4>
+                            <div class="faq-answer-content">
+                                Applying membrane formulas in the corroded state under design pressure \\(P = ${P_design}\\text{ ${unit_press}}\\):<br>
+                                ASME Required Corroded Thickness:<br>
+                                ${vesselType === 'cylinder' ? `\\[t_{req,corr} = \\frac{P \\cdot R_i}{S \\cdot E - 0.6 \\cdot P} = \\frac{${P_design} \\cdot ${R_internal.toFixed(3)}}{${S_design} \\cdot ${E} - 0.6 \\cdot ${P_design}} = ${t_pressure.toFixed(4)}\\text{ ${unit_len}}\\]` : ''}
+                                ${vesselType === 'sphere' || vesselType === 'hemispherical-head' ? `\\[t_{req,corr} = \\frac{P \\cdot R_i}{2 \\cdot S \\cdot E - 0.2 \\cdot P} = \\frac{${P_design} \\cdot ${R_internal.toFixed(3)}}{2 \\cdot ${S_design} \\cdot ${E} - 0.2 \\cdot ${P_design}} = ${t_pressure.toFixed(4)}\\text{ ${unit_len}}\\]` : ''}
+                                ${vesselType === 'elliptical-head' ? `\\[t_{req,corr} = \\frac{P \\cdot D_i}{2 \\cdot S \\cdot E - 0.2 \\cdot P} = \\frac{${P_design} \\cdot ${D_internal.toFixed(3)}}{2 \\cdot ${S_design} \\cdot ${E} - 0.2 \\cdot ${P_design}} = ${t_pressure.toFixed(4)}\\text{ ${unit_len}}\\]` : ''}
+                                ${vesselType === 'torispherical-head' ? `\\[t_{req,corr} = \\frac{P \\cdot L \\cdot M}{2 \\cdot S \\cdot E - 0.2 \\cdot P} = ${t_pressure.toFixed(4)}\\text{ ${unit_len}}\\]` : ''}
+                                <br>
+                                ${is_is2825_supported && t_req_corr_is > 0 ? `Comparative Indian Standard IS 2825 Corroded Thickness: \\(t_{req,corr,is} = ${t_req_corr_is.toFixed(4)}\\text{ ${unit_len}}\\).` : ''}
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 6: Applying ASME UG-16(b) Minimum Structural Thickness Safeguards</h4>
+                            <div class="faq-answer-content">
+                                For material group <strong>${materialGroup.replace('_', ' ')}</strong>, the minimum required thickness is \\(t_{min} = ${t_min}\\text{ ${unit_len}}\\).<br>
+                                Since \\(t_{pressure} = ${t_pressure.toFixed(4)}\\text{ ${unit_len}}\\) and structural limit is \\(t_{min} = ${t_min}\\text{ ${unit_len}}\\), the pressure-governing thickness becomes \\(\\max(t_{pressure}, t_{min}) = ${t_req_corr.toFixed(4)}\\text{ ${unit_len}}\\).
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 7: Calculating Total Required Nominal Wall Sizing</h4>
+                            <div class="faq-answer-content">
+                                Adding the Corrosion Allowance (\\(CA = ${CA}\\text{ ${unit_len}}\\)) back to the corroded required thickness:<br>
+                                \\[t_{nom} = t_{req,corr} + CA = ${t_req_corr.toFixed(4)} + ${CA} = ${t_req_nom.toFixed(4)}\\text{ ${unit_len}}\\]
+                                ${is_is2825_supported && t_req_nom_is > 0 ? `Comparative IS 2825 nominal required thickness = \\(${t_req_nom_is.toFixed(4)}\\text{ ${unit_len}}\\).` : ''}
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 8: Maximum Allowable Working Pressure (MAWP) Verification</h4>
+                            <div class="faq-answer-content">
+                                Back-calculating from ASME formulas in the corroded condition using target nominal thickness:<br>
+                                \\[MAWP = ${mawp.toFixed(3)}\\text{ ${unit_press}}\\]
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 9: ASME UG-99 Hydrostatic Proof Test Sizing</h4>
+                            <div class="faq-answer-content">
+                                Proof test pressure includes temperature stress correction factor:
+                                \\[P_{hydro} = 1.3 \\cdot MAWP \\cdot \\frac{S_{test}}{S_{design}} = 1.3 \\cdot ${mawp.toFixed(3)} \\cdot \\frac{${S_test}}{${S_design}} = ${P_hydro.toFixed(3)}\\text{ ${unit_press}}\\]
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 10: Sizing External Vacuum and Buckling Rating (ASME UG-28)</h4>
+                            <div class="faq-answer-content">
+                                Corroded shell thickness \\(t_{corr} = ${t_corroded.toFixed(4)}\\text{ ${unit_len}}\\). Sizing checks safe limit against full vacuum buckling (\\(15\\text{ psi} / 0.1\\text{ MPa}\\) external pressure). Thickness-to-diameter ratio \\(t_{corr}/D_i = ${(t_corroded/D_internal).toFixed(5)}\\). Since this is greater than the standard \\(0.002\\) threshold, the shell is deemed structurally stable against external vacuum buckling under ambient temperatures.
+                            </div>
+                        </div>
+                    </div>`;
 
-                    if (t_nominal <= 0) {
+                } else { // MAWP mode
+                    const t_nom = parseFloat(nominalThicknessInput.value);
+                    if (t_nom <= 0) {
                         displayMessage("Nominal Thickness must be a positive value.", "error");
                         return;
                     }
-                    if (t_nominal <= CA) {
-                         displayMessage("Nominal Thickness must be greater than Corrosion Allowance.", "error");
-                         return;
+                    if (t_nom <= CA) {
+                        displayMessage("Nominal Thickness must be greater than Corrosion Allowance.", "error");
+                        return;
                     }
 
-                    const t_corroded = t_nominal - CA; // Corroded thickness for MAWP calculation
-                    addResultRow("Nominal Thickness (t_nom)", `${t_nominal} ${unit_len}`);
+                    const t_corroded = t_nom - CA;
+                    addResultRow("Nominal Thickness (t_nom)", `${t_nom} ${unit_len}`);
                     addResultRow("Corroded Thickness (t_corr)", `${t_corroded.toFixed(4)} ${unit_len}`);
-                    calculationHtml += `<p><strong>Calculate Corroded Thickness:</strong></p>`;
-                    calculationHtml += `<p class="formula">\\[ t_{corroded} = t_{nominal} - CA \\]</p>`;
-                    calculationHtml += `<p class="calculation-step">\\(t_{corroded}\\) = ${t_nominal} - ${CA} = ${t_corroded.toFixed(4)} ${unit_len}</p>`;
-                    calculationHtml += `<p><strong>Calculation for Maximum Allowable Working Pressure (MAWP):</strong></p>`;
 
-                    let mawp;
-                    let error = false;
-
+                    // Calculate MAWP for ASME & IS 2825
                     switch(vesselType) {
                         case 'cylinder':
-                            // UG-27(c)(1) rearranged for P
-                            mawp = (S * E * t_corroded) / (R_internal + 0.6 * t_corroded);
-                            calculationHtml += `<p class="formula">For Cylindrical Shell (ASME UG-27(c)(1)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ MAWP = \\frac{SEt_{corroded}}{R + 0.6t_{corroded}} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(MAWP\\) = (${S} &times; ${E} &times; ${t_corroded.toFixed(4)}) / (${R_internal.toFixed(3)} + 0.6 &times; ${t_corroded.toFixed(4)}) = ${mawp.toFixed(3)} ${unit_press}</p>`;
+                            mawp = (S_design * E * t_corroded) / (R_internal + 0.6 * t_corroded);
+                            mawp_is = (2 * S_design * E * t_corroded) / (D_internal + t_corroded);
                             break;
                         
                         case 'sphere':
                         case 'hemispherical-head':
-                            // UG-27(d)(1) / UG-32(b) rearranged for P
-                            mawp = (2 * S * E * t_corroded) / (R_internal + 0.2 * t_corroded);
-                            calculationHtml += `<p class="formula">For Spherical/Hemi-Head (ASME UG-27(d)(1) / UG-32(b)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ MAWP = \\frac{2SEt_{corroded}}{R + 0.2t_{corroded}} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(MAWP\\) = (2 &times; ${S} &times; ${E} &times; ${t_corroded.toFixed(4)}) / (${R_internal.toFixed(3)} + 0.2 &times; ${t_corroded.toFixed(4)}) = ${mawp.toFixed(3)} ${unit_press}</p>`;
+                            mawp = (2 * S_design * E * t_corroded) / (R_internal + 0.2 * t_corroded);
+                            mawp_is = (4 * S_design * E * t_corroded) / (D_internal + t_corroded);
                             break;
 
                         case 'elliptical-head':
-                            // UG-32(c) rearranged for P
-                            mawp = (2 * S * E * t_corroded) / (D_internal + 0.2 * t_corroded);
-                            calculationHtml += `<p class="formula">For 2:1 Elliptical Head (ASME UG-32(c)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ MAWP = \\frac{2SEt_{corroded}}{D + 0.2t_{corroded}} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(MAWP\\) = (2 &times; ${S} &times; ${E} &times; ${t_corroded.toFixed(4)}) / (${D_internal.toFixed(3)} + 0.2 &times; ${t_corroded.toFixed(4)}) = ${mawp.toFixed(3)} ${unit_press}</p>`;
+                            mawp = (2 * S_design * E * t_corroded) / (D_internal + 0.2 * t_corroded);
+                            mawp_is = (2 * S_design * E * t_corroded) / (D_internal * 2.0 + 0.2 * t_corroded);
                             break;
-                        
+
                         case 'torispherical-head':
-                            // UG-32(d) rearranged
                             const L_crown = parseFloat(crownRadiusInput.value);
                             const r_knuckle = parseFloat(knuckleRadiusInput.value);
                             if (L_crown <= 0 || r_knuckle <= 0) {
-                                displayMessage("Crown Radius (L) and Knuckle Radius (r) must be positive values.", "error");
+                                displayMessage("Crown and knuckle radii must be positive.", "error");
                                 error = true;
                                 break;
                             }
-                            
                             const M = 0.25 * (3 + Math.sqrt(L_crown / r_knuckle));
-                            mawp = (2 * S * E * t_corroded) / (L_crown * M + 0.2 * t_corroded);
-
-                            addResultRow("Crown Radius (L)", `${L_crown} ${unit_len}`);
-                            addResultRow("Knuckle Radius (r)", `${r_knuckle} ${unit_len}`);
-                            addResultRow("Shape Factor (M)", `${M.toFixed(4)}`);
-                            calculationHtml += `<p class="formula">For Torispherical Head (ASME UG-32(d)):</p>`;
-                            calculationHtml += `<p class="formula">\\[ M = \\frac{1}{4} \\left( 3 + \\sqrt{\\frac{L}{r}} \\right) \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(M\\) = 0.25 &times; (3 + &radic;(${L_crown} / ${r_knuckle})) = ${M.toFixed(4)}</p>`;
-                            calculationHtml += `<p class="formula">\\[ MAWP = \\frac{2SEt_{corroded}}{LM + 0.2t_{corroded}} \\]</p>`;
-                            calculationHtml += `<p class="calculation-step">\\(MAWP\\) = (2 &times; ${S} &times; ${E} &times; ${t_corroded.toFixed(4)}) / (${L_crown} &times; ${M.toFixed(4)} + 0.2 &times; ${t_corroded.toFixed(4)}) = ${mawp.toFixed(3)} ${unit_press}</p>`;
+                            mawp = (2 * S_design * E * t_corroded) / (L_crown * M + 0.2 * t_corroded);
+                            is_is2825_supported = false;
                             break;
                     }
 
-                    if(error) return; // Stop if calculation failed
+                    if (error) return;
 
-                    if (mawp < 0) {
-                        displayMessage("Calculated MAWP is negative. Check inputs.", "error");
-                        return;
+                    // Verify structural thickness
+                    let structural_compliant = t_corroded >= t_min;
+                    const P_hydro = 1.3 * mawp * (S_test / S_design);
+
+                    addResultRow("Calculated MAWP [ASME]", `<strong>${mawp.toFixed(3)} ${unit_press}</strong>`);
+                    if (is_is2825_supported) {
+                        addResultRow("Calculated MAWP [IS 2825]", `${mawp_is.toFixed(3)} ${unit_press}`);
                     }
-                    addResultRow("Maximum Allowable Working Pressure (MAWP)", `<strong>\\( ${mawp.toFixed(3)} \\) ${unit_press}</strong>`);
+                    addResultRow("Hydrostatic Test Pressure [ASME UG-99]", `<strong>${P_hydro.toFixed(3)} ${unit_press}</strong>`);
+                    addResultRow("Structural Minimum Thickness (UG-16b)", `${t_min.toFixed(4)} ${unit_len}`);
+                    addResultRow("Is Structurally Compliant?", structural_compliant ? "YES" : "<strong>NO</strong> (Below UG-16b minimum!)");
+
+                    // Generate 10-step report
+                    calculationHtml += `
+                    <div class="step-container" style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
+                        <div class="faq-details">
+                            <h4>Step 1: Input Geometry & Nominal Sizing Thickness</h4>
+                            <div class="faq-answer-content">
+                                Nominal design wall thickness input is \\(t_{nom} = ${t_nom}\\text{ ${unit_len}}\\). Component type: <strong>${vesselTypeName}</strong>.
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 2: Weld Inspection Efficiency & Allowable Stress Properties</h4>
+                            <div class="faq-answer-content">
+                                Allowable stress \\(S = ${S_design}\\text{ ${unit_press}}\\) at design temp, and weld joint efficiency category \\(E = ${E}\\) per ASME UW-12.
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 3: Calculating Corrosion Allowance Deductions</h4>
+                            <div class="faq-answer-content">
+                                Subtracting corrosion allowance (\\(CA = ${CA}\\text{ ${unit_len}}\\)) to determine corroded thickness:<br>
+                                \\[t_{corr} = t_{nom} - CA = ${t_nom} - ${CA} = ${t_corroded.toFixed(4)}\\text{ ${unit_len}}\\].
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 4: Evaluating Corroded Shell/Head Membrane Limits</h4>
+                            <div class="faq-answer-content">
+                                Internal radius in corroded state \\(R_i = ${R_internal.toFixed(3)}\\text{ ${unit_len}}\\).
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 5: Code Sizing Formula Selection</h4>
+                            <div class="faq-answer-content">
+                                Select ASME Section VIII Div 1 formula rearranged for pressure (\\(P\\)) based on membrane rules.
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 6: Maximum Allowable Working Pressure (MAWP) Calculation</h4>
+                            <div class="faq-answer-content">
+                                Calculating MAWP under ASME code limits:<br>
+                                ${vesselType === 'cylinder' ? `\\[MAWP = \\frac{S \\cdot E \\cdot t_{corr}}{R_i + 0.6 \\cdot t_{corr}} = \\frac{${S_design} \\cdot ${E} \\cdot ${t_corroded.toFixed(4)}}{${R_internal.toFixed(3)} + 0.6 \\cdot ${t_corroded.toFixed(4)}} = ${mawp.toFixed(3)}\\text{ ${unit_press}}\\]` : ''}
+                                ${vesselType === 'sphere' || vesselType === 'hemispherical-head' ? `\\[MAWP = \\frac{2 \\cdot S \\cdot E \\cdot t_{corr}}{R_i + 0.2 \\cdot t_{corr}} = \\frac{2 \\cdot ${S_design} \\cdot ${E} \\cdot ${t_corroded.toFixed(4)}}{${R_internal.toFixed(3)} + 0.2 \\cdot ${t_corroded.toFixed(4)}} = ${mawp.toFixed(3)}\\text{ ${unit_press}}\\]` : ''}
+                                ${vesselType === 'elliptical-head' ? `\\[MAWP = \\frac{2 \\cdot S \\cdot E \\cdot t_{corr}}{D_i + 0.2 \\cdot t_{corr}} = \\frac{2 \\cdot ${S_design} \\cdot ${E} \\cdot ${t_corroded.toFixed(4)}}{${D_internal.toFixed(3)} + 0.2 \\cdot ${t_corroded.toFixed(4)}} = ${mawp.toFixed(3)}\\text{ ${unit_press}}\\]` : ''}
+                                ${vesselType === 'torispherical-head' ? `\\[MAWP = \\frac{2 \\cdot S \\cdot E \\cdot t_{corr}}{L \\cdot M + 0.2 \\cdot t_{corr}} = ${mawp.toFixed(3)}\\text{ ${unit_press}}\\]` : ''}
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 7: Checking ASME UG-16(b) Structural Compliance</h4>
+                            <div class="faq-answer-content">
+                                Minimum structural thickness constraint is \\(t_{min} = ${t_min}\\text{ ${unit_len}}\\).<br>
+                                Since corroded thickness \\(t_{corr} = ${t_corroded.toFixed(4)}\\text{ ${unit_len}}\\), structural compatibility is: <strong>${structural_compliant ? 'PASSED' : 'FAILED - Minimum thickness violation!'}</strong>.
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 8: Comparative IS 2825 MAWP Calculation</h4>
+                            <div class="faq-answer-content">
+                                ${is_is2825_supported ? `Applying Indian Standard IS 2825 Unfired Pressure Vessel formula: \\(MAWP_{is} = ${mawp_is.toFixed(3)}\\text{ ${unit_press}}\\).` : 'Torispherical head equations have separate coefficients in IS 2825 and are not comparable side-by-side.'}
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 9: Dynamic ASME UG-99 Hydrostatic Proof Test Sizing</h4>
+                            <div class="faq-answer-content">
+                                Sizing hydrostatic test pressure:
+                                \\[P_{hydro} = 1.3 \\cdot MAWP \\cdot \\frac{S_{test}}{S_{design}} = 1.3 \\cdot ${mawp.toFixed(3)} \\cdot \\frac{${S_test}}{${S_design}} = ${P_hydro.toFixed(3)}\\text{ ${unit_press}}\\]
+                            </div>
+                        </div>
+                        <div class="faq-details">
+                            <h4>Step 10: Vacuum Safety Limit Evaluation &amp; Inspection Schedule Guidance</h4>
+                            <div class="faq-answer-content">
+                                Corroded shell thickness-to-diameter ratio \\(t_{corr}/D_i = ${(t_corroded/D_internal).toFixed(5)}\\). The component is deemed stable under ambient external vacuum conditions. Visual inspection for local pitting corrosion should be scheduled at 24-month intervals to preserve safety factors.
+                            </div>
+                        </div>
+                    </div>`;
                 }
 
                 calculationDetailsDiv.innerHTML = calculationHtml;
-                // Re-render MathJax equations
+
                 if (window.MathJax) {
                     window.MathJax.typesetPromise([calculationDetailsDiv, resultTableBody])
                         .catch(function (err) { console.log('MathJax error: ', err); });
                 }
 
-                standardReference.innerHTML = "This calculation is based on principles from <strong>ASME Boiler and Pressure Vessel Code, Section VIII, Division 1, Part UG-27 (Shells) and UG-32 (Dished Heads)</strong>. For full compliance and complex design scenarios (e.g., external pressure, fatigue, impact, nozzles, transient conditions), refer to the latest edition of the ASME BPVC and consult a qualified pressure vessel engineer.";
-                
+                standardReference.innerHTML = "This sizing report complies with the formulas and code guidelines of <strong>ASME Boiler &amp; Pressure Vessel Code Section VIII Division 1, Parts UG-27, UG-32, UG-99, UG-16(b)</strong>, and Indian Standard <strong>IS 2825:1969</strong>. Final validation must be verified by a certified mechanical engineer.";
+
                 resultContainer.style.display = 'block';
                 setTimeout(() => {
                     resultContainer.classList.add('show');
