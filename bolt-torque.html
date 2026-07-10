@@ -428,12 +428,23 @@
 
         /* Vector Input Group Styling (Reused) */
         .vector-input-group {
-            background: var(--bg);
-            padding: 15px;
-            border-radius: 8px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
             border: 1px solid var(--border);
             position: relative;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--secondary);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        .vector-input-group:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        .vector-input-group.geometry-accent { border-left-color: var(--secondary); }
+        .vector-input-group.material-accent { border-left-color: var(--success); }
+        .vector-input-group.lubricant-accent { border-left-color: var(--accent); }
+        .vector-input-group.target-accent { border-left-color: var(--danger); }
         .vector-input-header {
             font-weight: 700;
             margin-bottom: 10px;
@@ -739,6 +750,91 @@
                     "item": "https://designcalculators.co.in/bolt-torque"
                 }
             ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is the K-Factor (Nut Factor) and why is it critical?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The K-Factor is a dimensionless multiplier that accounts for friction in the threads and under the nut. It typically ranges from 0.10 (well-lubricated) to 0.30 (dry/rusty). Since 90% of torque is lost to friction, a small error in K can lead to massive errors in actual preload."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the difference between Torque and Tension?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Torque is the rotational force applied to the bolt. Tension (or Preload) is the axial 'clamping force' created as the bolt stretches. Torque is a means to achieve tension, but tension is what actually holds the joint together."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why is the Stress Area used instead of the Nominal Area for calculations?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The stress area (As) accounts for the reduced cross-section of the threads. It is an average between the pitch diameter and the minor diameter, providing a more accurate representation of the bolt's load-carrying capacity."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the Yield Strength of a bolt, and why do we target 60-75%?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yield strength is the point where the bolt permanently deforms. We target 60-75% to ensure the bolt remains in the elastic region (acting like a spring) while providing enough clamping force to resist external loads and vibration."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does temperature affect bolt torque requirements?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "High temperatures can reduce the yield strength of the material and change the friction coefficient of the lubricant. At extreme temperatures, thermal expansion differences between the bolt and the flange can significantly increase or decrease preload."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the importance of the tightening sequence (e.g., Star Pattern)?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "A proper sequence ensures the joint is compressed evenly. Tightening one side fully before the others can warp the flange or crush the gasket on one side, leading to leaks even if the total torque is correct."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is Galling and how can it be prevented?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Galling is a form of wear caused by adhesion between sliding surfaces (common in stainless steel). It can be prevented by using anti-seize lubricants and avoiding high-speed impact wrenches."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is ASME PCC-1?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "ASME PCC-1 is the 'Guidelines for Pressure Boundary Bolted Flange Joint Assembly.' It is the primary industry standard for bolting procedures, patterns, and technician qualification."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What happens if a bolt is Over-torqued?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Over-torquing can cause the bolt to exceed its yield point, leading to permanent stretching (necking) or eventual fracture. It can also crush gaskets or damage the flange faces."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why are Hardened Washers used in high-strength bolting?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Washers provide a smooth, consistent bearing surface for the nut, which helps stabilize the K-Factor. They also prevent the nut from 'digging' into the flange material."
+                    }
+                }
+            ]
         }
     ]
 }
@@ -836,12 +932,19 @@
                                 <button type="button" class="preset-btn" onclick="loadPreset('88_dry')"><i class="fas fa-times-circle"></i> Metric 8.8 Dry</button>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="calc-mode">Calculation Level:</label>
+                            <select id="calc-mode" onchange="toggleCalcMode()">
+                                <option value="standard">Standard (ASME PCC-1 K-Factor)</option>
+                                <option value="advanced">Advanced Industrial (VDI 2230)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Bolt Specs -->
                     <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">1. Fastener Specifications</h4>
                     <div class="form-row">
-                        <div class="vector-input-group">
+                        <div class="vector-input-group geometry-accent">
                             <div class="vector-input-header"><i class="fas fa-bolt"></i> Geometry</div>
                             <div class="form-group">
                                 <label for="unit-sys">Unit System</label>
@@ -857,7 +960,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="vector-input-group">
+                        <div class="vector-input-group material-accent">
                             <div class="vector-input-header"><i class="fas fa-layer-group"></i> Material Grade</div>
                             <div class="form-group">
                                 <label for="bolt-grade">Grade / Class</label>
@@ -875,7 +978,7 @@
                     <!-- Lubrication & Target -->
                     <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 20px;">2. Lubrication & Target Preload</h4>
                     <div class="form-row">
-                        <div class="vector-input-group">
+                        <div class="vector-input-group lubricant-accent">
                             <div class="vector-input-header"><i class="fas fa-tint"></i> Tribology</div>
                             <div class="form-group">
                                 <label for="lubricant">Lubrication Condition</label>
@@ -893,11 +996,43 @@
                                 <input type="number" id="k-factor" value="0.17" step="0.01">
                             </div>
                         </div>
-                        <div class="vector-input-group">
+                        <div class="vector-input-group target-accent">
                             <div class="vector-input-header"><i class="fas fa-bullseye"></i> Target</div>
                             <div class="form-group">
                                 <label for="target-pct">Target Preload [% Yield] <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Standard: 60-75% for static, 75-90% for dynamic/fatigue.</span></span></label>
                                 <input type="number" id="target-pct" value="70" step="5">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Parameters (Hidden by default, shown in VDI 2230 mode) -->
+                    <div id="advanced-params-row" class="form-row hidden" style="margin-top: 20px;">
+                        <div class="vector-input-group lubricant-accent">
+                            <div class="vector-input-header"><i class="fas fa-sliders-h"></i> Friction Coefficients</div>
+                            <div class="form-group">
+                                <label for="mu-thread">Thread Friction Coefficient (\(\mu_{th}\))</label>
+                                <input type="number" id="mu-thread" value="0.15" step="0.01" min="0.01" max="0.50">
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="mu-head">Nut Head Bearing Friction (\(\mu_{head}\))</label>
+                                <input type="number" id="mu-head" value="0.15" step="0.01" min="0.01" max="0.50">
+                            </div>
+                        </div>
+                        <div class="vector-input-group target-accent">
+                            <div class="vector-input-header"><i class="fas fa-cogs"></i> Assembly &amp; Relaxation</div>
+                            <div class="form-group">
+                                <label for="tightening-method">Tightening Method (Scatter \(\alpha_A\))</label>
+                                <select id="tightening-method">
+                                    <option value="1.1">Hydraulic Tensioner / Calibrated Wrench (\(\alpha_A = 1.1\))</option>
+                                    <option value="1.2" selected>Calibrated Wrench / Hydraulic Torque (\(\alpha_A = 1.2\))</option>
+                                    <option value="1.4">Manual Torque Wrench, oiled (\(\alpha_A = 1.4\))</option>
+                                    <option value="1.8">Manual Torque Wrench, dry (\(\alpha_A = 1.8\))</option>
+                                    <option value="2.5">Impact Gun, uncalibrated (\(\alpha_A = 2.5\))</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-top:10px;">
+                                <label for="relaxation-pct">Preload Loss / Relaxation [%]</label>
+                                <input type="number" id="relaxation-pct" value="10" step="1" min="0" max="50">
                             </div>
                         </div>
                     </div>
@@ -1032,6 +1167,76 @@
             </div>
         </div>
 
+<!-- STANDARDS & APPLICABILITY SECTION -->
+<div id="standards-section" style="margin-top: 40px; animation: fadeInUp 0.8s ease;">
+    <div class="theory-card" style="border-top-color: var(--accent); background: var(--card); padding: 35px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+        <h3 style="color: var(--primary); font-family: 'Montserrat', sans-serif; font-size: 1.6rem; display: flex; align-items: center; gap: 12px; margin-top: 0; margin-bottom: 20px;">
+            <i class="fas fa-balance-scale"></i> Applicable Codes, Standards &amp; Engineering Rules
+        </h3>
+        <p style="font-size: 1rem; line-height: 1.7; color: var(--text); margin-bottom: 25px;">
+            Industrial bolting calculations and assembly practices must adhere strictly to national and international standard specifications. The table below outlines the primary governing codes and their operational validity envelopes:
+        </p>
+        <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
+            <table class="results-table" style="width: 100%; border-collapse: collapse; margin-top: 0; box-shadow: none;">
+                <thead>
+                    <tr style="background: var(--grad); color: white;">
+                        <th style="padding: 15px; font-weight: 700; text-align: left;">Standard Code</th>
+                        <th style="padding: 15px; font-weight: 700; text-align: left;">Industrial Scope</th>
+                        <th style="padding: 15px; font-weight: 700; text-align: left;">Validity Envelope &amp; Applicability Rules</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border); font-weight: 700;">ASME PCC-1</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">Guidelines for Pressure Boundary Bolted Flange Joint Assembly (American Society of Mechanical Engineers).</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">
+                            • Governing standard for industrial piping flanges.<br>
+                            • Standardizes torque tightening sequences (Legacy and Star patterns).<br>
+                            • Outlines calibration requirements for manual, hydraulic, and electric torque tools.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border); font-weight: 700;">ASME B1.1 / ISO 262</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">Unified Inch Screw Threads &amp; ISO General Purpose Metric Screw Threads.</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">
+                            • Defines thread profile geometries, pitch, and lead angles.<br>
+                            • Determines formula for thread tensile stress area (\(A_s\)).<br>
+                            • Essential for calculating exact stress limits under tension.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border); font-weight: 700;">SAE J429 / ISO 898-1</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">Mechanical properties of carbon and alloy steel externally threaded fasteners.</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">
+                            • Defines bolt grade strength classes (Grade 2/5/8 for Imperial; Class 8.8/10.9/12.9 for Metric).<br>
+                            • Mandates minimum yield strength, tensile strength, and proof load parameters.<br>
+                            • Hardness boundaries to protect fasteners from stress corrosion cracking.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border); font-weight: 700;">ASTM A193 / A320</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">Alloy Steel and Stainless Steel Bolting Materials for High/Low Temperature Service.</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">
+                            • ASTM A193: High-temperature, high-pressure utility service (e.g. B7/B8/B16).<br>
+                            • ASTM A320: Low-temperature cryogenic service (e.g. L7/L7M).<br>
+                            • Dictates chemical composition limits and heat-treatment specifications.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border); font-weight: 700;">VDI 2230</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">Systematic Calculation of Highly Stressed Bolted Joints (Association of German Engineers).</td>
+                        <td style="padding: 15px; border-bottom: 1px solid var(--border);">
+                            • Scientific guideline for high-stress assembly designs.<br>
+                            • Calculates joint compliance, embedding, and safety margins against fatigue.<br>
+                            • Models multi-bolted layouts under combined axial, shear, and bending loads.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
         <!-- INTERVIEW & EXAM SECTION -->
         <div id="interview-section" class="card" style="margin-top: 40px; border-top: 5px solid var(--accent);">
             <h3 style="color: var(--primary); text-align: center; font-size: 1.8rem;"><i class="fas fa-user-tie"></i> Interview & Exam Preparation</h3>
@@ -1041,42 +1246,146 @@
                 <div class="insight-card" style="margin: 0;">
                     <h4>1. What is the "K-Factor" (Nut Factor) and why is it critical?</h4>
                     <p><strong>Answer:</strong> The K-Factor is a dimensionless multiplier that accounts for friction in the threads and under the nut. It typically ranges from 0.10 (well-lubricated) to 0.30 (dry/rusty). Since 90% of torque is lost to friction, a small error in K can lead to massive errors in actual preload.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <rect x="25" y="25" width="350" height="25" fill="#3b82f6" rx="4"/>
+                            <text x="200" y="41" fill="#ffffff" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Applied Torque Energy Input = 100%</text>
+                            <rect x="25" y="65" width="175" height="25" fill="#ef4444" rx="4"/>
+                            <text x="112" y="81" fill="#ffffff" font-size="9" font-family="monospace" text-anchor="middle">Thread Friction 50%</text>
+                            <rect x="205" y="65" width="140" height="25" fill="#f59e0b" rx="4"/>
+                            <text x="275" y="81" fill="#ffffff" font-size="9" font-family="monospace" text-anchor="middle">Nut Face 40%</text>
+                            <rect x="350" y="65" width="25" height="25" fill="#10b981" rx="4"/>
+                            <text x="362" y="81" fill="#ffffff" font-size="9" font-family="monospace" text-anchor="middle" font-weight="bold">F 10%</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>2. What is the difference between Torque and Tension?</h4>
                     <p><strong>Answer:</strong> Torque is the rotational force applied to the bolt. Tension (or Preload) is the axial "clamping force" created as the bolt stretches. Torque is a <em>means</em> to achieve tension, but tension is what actually holds the joint together.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <line x1="40" y1="110" x2="360" y2="110" stroke="#475569" stroke-width="1.5"/>
+                            <line x1="40" y1="20" x2="40" y2="110" stroke="#475569" stroke-width="1.5"/>
+                            <text x="200" y="122" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">Applied Torque (Rotational)</text>
+                            <text x="25" y="65" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle" transform="rotate(-90 25 65)">Axial Tension (F)</text>
+                            <path d="M 40 110 L 320 30" fill="none" stroke="#10b981" stroke-width="2.5"/>
+                            <circle cx="320" cy="30" r="4" fill="#ef4444"/>
+                            <text x="325" y="25" fill="#ef4444" font-size="8" font-family="monospace" font-weight="bold">Yield Limit</text>
+                            <line x1="200" y1="110" x2="200" y2="64" stroke="#f59e0b" stroke-dasharray="3,2"/>
+                            <line x1="40" y1="64" x2="200" y2="64" stroke="#f59e0b" stroke-dasharray="3,2"/>
+                            <circle cx="200" cy="64" r="4" fill="#f59e0b"/>
+                            <text x="210" y="68" fill="#f59e0b" font-size="8" font-family="monospace">Target Preload (60-75%)</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>3. Why is the "Stress Area" used instead of the "Nominal Area" for calculations?</h4>
                     <p><strong>Answer:</strong> The stress area ($A_s$) accounts for the reduced cross-section of the threads. It is an average between the pitch diameter and the minor diameter, providing a more accurate representation of the bolt's load-carrying capacity.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <circle cx="200" cy="65" r="45" fill="none" stroke="#475569" stroke-dasharray="3,3" stroke-width="1.5"/>
+                            <circle cx="200" cy="65" r="35" fill="none" stroke="#10b981" stroke-width="2"/>
+                            <circle cx="200" cy="65" r="28" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+                            <text x="200" y="68" fill="#ffffff" font-size="9" font-family="monospace" text-anchor="middle">As Stress Area</text>
+                            <line x1="200" y1="65" x2="245" y2="65" stroke="#475569" stroke-width="1"/>
+                            <text x="250" y="68" fill="#94a3b8" font-size="8" font-family="monospace">Nominal Dia (D)</text>
+                            <line x1="200" y1="65" x2="200" y2="93" stroke="#ef4444" stroke-width="1"/>
+                            <text x="200" y="103" fill="#ef4444" font-size="8" font-family="monospace" text-anchor="middle">Minor Dia (d_m)</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>4. What is the "Yield Strength" of a bolt, and why do we target 60-75%?</h4>
                     <p><strong>Answer:</strong> Yield strength is the point where the bolt permanently deforms. We target 60-75% to ensure the bolt remains in the elastic region (acting like a spring) while providing enough clamping force to resist external loads and vibration.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <path d="M 40 100 Q 150 100 220 50 T 360 40" fill="none" stroke="#3b82f6" stroke-width="2"/>
+                            <line x1="220" y1="50" x2="220" y2="115" stroke="#ef4444" stroke-dasharray="3,2"/>
+                            <circle cx="220" cy="50" r="4" fill="#ef4444"/>
+                            <text x="220" y="40" fill="#ef4444" font-size="8" font-family="monospace" text-anchor="middle" font-weight="bold">Yield Point (Sy)</text>
+                            <rect x="90" y="80" width="80" height="25" fill="#10b981" opacity="0.3" rx="2"/>
+                            <text x="130" y="95" fill="#10b981" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">Elastic Zone (Target)</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>5. How does temperature affect bolt torque requirements?</h4>
                     <p><strong>Answer:</strong> High temperatures can reduce the yield strength of the material and change the friction coefficient of the lubricant. At extreme temperatures, <em>thermal expansion</em> differences between the bolt and the flange can significantly increase or decrease preload.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <rect x="120" y="40" width="160" height="50" fill="#f59e0b" opacity="0.2" stroke="#f59e0b" stroke-width="2"/>
+                            <text x="200" y="68" fill="#f59e0b" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">High Temp Zone (ASME B31.3)</text>
+                            <path d="M 60 90 L 120 70 L 280 40 L 340 30" fill="none" stroke="#ef4444" stroke-width="2"/>
+                            <text x="60" y="105" fill="#ef4444" font-size="8" font-family="monospace">Yield Strength decreases as temp increases</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>6. What is the importance of the tightening sequence (e.g., Star Pattern)?</h4>
                     <p><strong>Answer:</strong> A proper sequence ensures the joint is compressed evenly. Tightening one side fully before the others can warp the flange or crush the gasket on one side, leading to leaks even if the total torque is correct.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <circle cx="200" cy="65" r="40" fill="none" stroke="#475569" stroke-width="2"/>
+                            <circle cx="200" cy="25" r="8" fill="#3b82f6"/>
+                            <text x="200" y="28" fill="#ffffff" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">1</text>
+                            <circle cx="200" cy="105" r="8" fill="#3b82f6"/>
+                            <text x="200" y="108" fill="#ffffff" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">2</text>
+                            <circle cx="160" cy="65" r="8" fill="#3b82f6"/>
+                            <text x="160" y="68" fill="#ffffff" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">3</text>
+                            <circle cx="240" cy="65" r="8" fill="#3b82f6"/>
+                            <text x="240" y="68" fill="#ffffff" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">4</text>
+                            <path d="M 200 33 L 200 97 M 168 65 L 232 65" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>7. What is "Galling" and how can it be prevented?</h4>
                     <p><strong>Answer:</strong> Galling is a form of wear caused by adhesion between sliding surfaces (common in stainless steel). It can be prevented by using anti-seize lubricants and avoiding high-speed impact wrenches.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <rect x="50" y="20" width="300" height="40" fill="#64748b" stroke="#334155" stroke-width="2"/>
+                            <rect x="50" y="70" width="300" height="40" fill="#64748b" stroke="#334155" stroke-width="2"/>
+                            <circle cx="200" cy="60" r="15" fill="#ef4444" opacity="0.8"/>
+                            <text x="200" y="63" fill="#ffffff" font-size="8" font-family="monospace" font-weight="bold" text-anchor="middle">Micro-weld / Tear</text>
+                            <text x="200" y="15" fill="#ef4444" font-size="9" font-family="monospace" text-anchor="middle">High pressure breaks oxide film on Stainless Steel</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>8. What is ASME PCC-1?</h4>
                     <p><strong>Answer:</strong> ASME PCC-1 is the "Guidelines for Pressure Boundary Bolted Flange Joint Assembly." It is the primary industry standard for bolting procedures, patterns, and technician qualification.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <rect x="120" y="20" width="160" height="90" fill="none" stroke="#10b981" stroke-width="2" rx="4"/>
+                            <text x="200" y="45" fill="#10b981" font-size="11" font-weight="bold" font-family="monospace" text-anchor="middle">ASME PCC-1</text>
+                            <text x="200" y="65" fill="#ffffff" font-size="9" font-family="monospace" text-anchor="middle">Target Preload Envelopes</text>
+                            <text x="200" y="85" fill="#94a3b8" font-size="8" font-family="monospace" text-anchor="middle">Approved Flange Assembly Rules</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>9. What happens if a bolt is "Over-torqued"?</h4>
                     <p><strong>Answer:</strong> Over-torquing can cause the bolt to exceed its yield point, leading to permanent stretching (necking) or eventual fracture. It can also crush gaskets or damage the flange faces.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <path d="M 120 40 L 150 40 L 160 50 L 150 60 L 150 110 L 120 110 Z" fill="#64748b" stroke="#334155" stroke-width="1.5"/>
+                            <path d="M 280 40 L 250 40 L 240 50 L 250 60 L 250 110 L 280 110 Z" fill="#64748b" stroke="#334155" stroke-width="1.5"/>
+                            <path d="M 170 50 Q 200 40 230 50" fill="none" stroke="#ef4444" stroke-width="3"/>
+                            <text x="200" y="30" fill="#ef4444" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle">Plastic Necking &amp; Fracture</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>10. Why are "Hardened Washers" used in high-strength bolting?</h4>
                     <p><strong>Answer:</strong> Washers provide a smooth, consistent bearing surface for the nut, which helps stabilize the K-Factor. They also prevent the nut from "digging" into the flange material.</p>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <svg viewBox="0 0 400 130" class="svg-diagram" style="background:#0b0f19; border-radius:12px; margin: 10px auto; max-width: 450px;">
+                            <rect x="100" y="70" width="200" height="8" fill="#f59e0b" stroke="#d97706" stroke-width="1.5"/>
+                            <text x="200" y="88" fill="#f59e0b" font-size="9" font-family="monospace" text-anchor="middle" font-weight="bold">Hardened Washer (Redistributes Load)</text>
+                            <rect x="120" y="30" width="160" height="40" fill="#64748b" stroke="#334155" stroke-width="1.5"/>
+                            <text x="200" y="55" fill="#ffffff" font-size="10" font-family="monospace" text-anchor="middle">Nut</text>
+                        </svg>
+                    </div>
                 </div>
                 <div class="insight-card" style="margin: 0;">
                     <h4>11. How do fine threads differ from coarse threads in terms of torque?</h4>
@@ -1146,23 +1455,7 @@
         </section>
     </main>
     
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
-        <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor.html" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/chiller-capacity.html" class="silo-card" style="text-decoration:none;">
-                        <span>Chiller Capacity</span>
-                    </a>
-                    <a href="/fan-laws.html" class="silo-card" style="text-decoration:none;">
-                        <span>Fan Laws</span>
-                    </a>
-            </div>
-        </div>
-    </section>
+
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -1251,18 +1544,17 @@
         let torqueChart = null;
         let lastResult = null;
 
-        // Data: Bolt Stress Areas and Yield Strengths
-        // Imperial (UNC)
+        // Data: Bolt Stress Areas and Yield         // Imperial (UNC) with pitch and width across flats (s)
         const impSizes = {
-            '0.25': { name: '1/4"-20', As: 0.0318 },
-            '0.375': { name: '3/8"-16', As: 0.0775 },
-            '0.5': { name: '1/2"-13', As: 0.1419 },
-            '0.625': { name: '5/8"-11', As: 0.226 },
-            '0.75': { name: '3/4"-10', As: 0.334 },
-            '0.875': { name: '7/8"-9', As: 0.462 },
-            '1.0': { name: '1"-8', As: 0.606 },
-            '1.25': { name: '1-1/4"-7', As: 0.969 },
-            '1.5': { name: '1-1/2"-6', As: 1.405 }
+            '0.25': { name: '1/4"-20', As: 0.0318, pitch: 0.05, flats: 0.4375 },
+            '0.375': { name: '3/8"-16', As: 0.0775, pitch: 0.0625, flats: 0.5625 },
+            '0.5': { name: '1/2"-13', As: 0.1419, pitch: 0.0769, flats: 0.75 },
+            '0.625': { name: '5/8"-11', As: 0.226, pitch: 0.0909, flats: 0.9375 },
+            '0.75': { name: '3/4"-10', As: 0.334, pitch: 0.1, flats: 1.125 },
+            '0.875': { name: '7/8"-9', As: 0.462, pitch: 0.1111, flats: 1.3125 },
+            '1.0': { name: '1"-8', As: 0.606, pitch: 0.125, flats: 1.5 },
+            '1.25': { name: '1-1/4"-7', As: 0.969, pitch: 0.1429, flats: 1.875 },
+            '1.5': { name: '1-1/2"-6', As: 1.405, pitch: 0.1667, flats: 2.25 }
         };
         const impGrades = {
             'b7': { name: 'ASTM A193 B7', Sy: 105000 },
@@ -1271,17 +1563,17 @@
             'gr5': { name: 'SAE J429 Grade 5', Sy: 92000 },
             'gr8': { name: 'SAE J429 Grade 8', Sy: 130000 }
         };
-
-        // Metric (Coarse)
+ 
+        // Metric (Coarse) with pitch and width across flats (s) in mm
         const metSizes = {
-            '6': { name: 'M6 x 1.0', As: 20.1 },
-            '8': { name: 'M8 x 1.25', As: 36.6 },
-            '10': { name: 'M10 x 1.5', As: 58.0 },
-            '12': { name: 'M12 x 1.75', As: 84.3 },
-            '16': { name: 'M16 x 2.0', As: 157 },
-            '20': { name: 'M20 x 2.5', As: 245 },
-            '24': { name: 'M24 x 3.0', As: 353 },
-            '30': { name: 'M30 x 3.5', As: 561 }
+            '6': { name: 'M6 x 1.0', As: 20.1, pitch: 1.0, flats: 10 },
+            '8': { name: 'M8 x 1.25', As: 36.6, pitch: 1.25, flats: 13 },
+            '10': { name: 'M10 x 1.5', As: 58.0, pitch: 1.5, flats: 17 },
+            '12': { name: 'M12 x 1.75', As: 84.3, pitch: 1.75, flats: 19 },
+            '16': { name: 'M16 x 2.0', As: 157, pitch: 2.0, flats: 24 },
+            '20': { name: 'M20 x 2.5', As: 245, pitch: 2.5, flats: 30 },
+            '24': { name: 'M24 x 3.0', As: 353, pitch: 3.0, flats: 36 },
+            '30': { name: 'M30 x 3.5', As: 561, pitch: 3.5, flats: 46 }
         };
         const metGrades = {
             '8.8': { name: 'Class 8.8', Sy: 660 }, // MPa
@@ -1348,6 +1640,16 @@
             }
         }
 
+        function toggleCalcMode() {
+            const mode = document.getElementById('calc-mode').value;
+            const advRow = document.getElementById('advanced-params-row');
+            if (mode === 'advanced') {
+                advRow.classList.remove('hidden');
+            } else {
+                advRow.classList.add('hidden');
+            }
+        }
+
         function loadPreset(type) {
             if (type === 'b7_oil') {
                 document.getElementById('unit-sys').value = 'imperial';
@@ -1411,75 +1713,241 @@
             // 1. Get Inputs
             const unit = document.getElementById('unit-sys').value;
             const sizeKey = document.getElementById('bolt-size').value;
+            const gradeKey = document.getElementById('bolt-grade').value;
             const Sy = parseFloat(document.getElementById('yield-strength').value);
             const K = parseFloat(document.getElementById('k-factor').value);
             const pct = parseFloat(document.getElementById('target-pct').value);
+
+            // Advanced Mode inputs
+            const calcMode = document.getElementById('calc-mode').value;
+            const muThread = parseFloat(document.getElementById('mu-thread').value) || 0.15;
+            const muHead = parseFloat(document.getElementById('mu-head').value) || 0.15;
+            const alphaA = parseFloat(document.getElementById('tightening-method').value) || 1.2;
+            const relaxationPct = parseFloat(document.getElementById('relaxation-pct').value) || 10;
 
             if (isNaN(Sy) || isNaN(K) || isNaN(pct)) {
                 displayMessage("Please enter valid numbers.", "error");
                 return;
             }
 
-            // 2. Physics Engine
+            // 2. Physics Engine Constants & Sizing
             let D = 0; // Nominal Dia (in or mm)
             let As = 0; // Stress Area (in2 or mm2)
+            let P = 0; // Thread pitch (in or mm)
+            let s = 0; // Flats width (in or mm)
             let unitT = "";
             let unitF = "";
 
             if (unit === 'imperial') {
                 D = parseFloat(sizeKey);
                 As = impSizes[sizeKey].As;
+                P = impSizes[sizeKey].pitch;
+                s = impSizes[sizeKey].flats;
                 unitT = "ft-lb";
                 unitF = "lbf";
             } else {
                 D = parseFloat(sizeKey); // mm
                 As = metSizes[sizeKey].As;
+                P = metSizes[sizeKey].pitch;
+                s = metSizes[sizeKey].flats;
                 unitT = "N-m";
                 unitF = "kN";
             }
 
-            // Target Preload Force F = Sy * As * %
-            // Metric: Sy (MPa) * As (mm2) = F (Newtons)
-            // Imperial: Sy (psi) * As (in2) = F (lbf)
-            
             const stress_target = Sy * (pct / 100);
-            let F_preload = stress_target * As; // N or lbf
+            let F_preload = stress_target * As; // Target Nominal Preload Force (lbf or N)
             
-            // Torque T = K * F * D
-            // Imperial: F(lbf) * D(in) * K = T(in-lb). Divide by 12 for ft-lb.
-            // Metric: F(N) * D(mm) * K / 1000 = T(N-m).
-            
+            // Output Variables
             let Torque = 0;
-            if (unit === 'imperial') {
-                Torque = (K * F_preload * D) / 12; 
+            let F_max = F_preload * alphaA;
+            let F_min = F_preload / alphaA;
+            let F_residual = F_preload * (1 - relaxationPct / 100);
+            let yieldUtilization = 0;
+            let sigma_eq = 0;
+            let T_thread = 0;
+            let T_head = 0;
+            
+            // VDI 2230 Geometry calculations
+            const d2 = D - 0.649519 * P; // Pitch diameter
+            const d3 = D - 1.22687 * P; // Root diameter
+            const D_m = (s + D) / 2; // Mean bearing diameter
+            
+            if (calcMode === 'standard') {
+                if (unit === 'imperial') {
+                    Torque = (K * F_preload * D) / 12; 
+                } else {
+                    Torque = (K * F_preload * D) / 1000;
+                    F_preload /= 1000; // Convert N to kN for display
+                }
             } else {
-                Torque = (K * F_preload * D) / 1000;
-                F_preload /= 1000; // Convert N to kN for display
+                // Advanced VDI 2230 Method
+                const phi = Math.atan(P / (Math.PI * d2)); // Helix pitch angle (rad)
+                const rho = Math.atan(muThread / Math.cos(Math.PI / 6)); // Friction angle (rad, 30 deg half-angle)
+                
+                // Imperial units need force in lbf and dimensions in inches
+                // Metric units need force in Newtons and dimensions in mm
+                if (unit === 'imperial') {
+                    T_thread = F_preload * (d2 / 2) * Math.tan(phi + rho); // in-lb
+                    T_head = F_preload * (D_m / 2) * muHead; // in-lb
+                    Torque = (T_thread + T_head) / 12; // ft-lb
+                    
+                    // Stress checks (Imperial)
+                    const sigma_z = F_preload / As; // Tensile stress
+                    const root_area_factor = Math.PI * Math.pow(d3, 3) / 16;
+                    const tau = T_thread / root_area_factor; // Torsional shear stress
+                    sigma_eq = Math.sqrt(Math.pow(sigma_z, 2) + 3 * Math.pow(tau, 2));
+                    yieldUtilization = (sigma_eq / Sy) * 100;
+                } else {
+                    // Metric: F_preload is in Newtons
+                    T_thread = F_preload * (d2 / 2) * Math.tan(phi + rho); // N-mm
+                    T_head = F_preload * (D_m / 2) * muHead; // N-mm
+                    Torque = (T_thread + T_head) / 1000; // N-m
+                    
+                    // Stress checks (Metric)
+                    const sigma_z = F_preload / As; // MPa (N/mm2)
+                    const root_area_factor = Math.PI * Math.pow(d3, 3) / 16;
+                    const tau = T_thread / root_area_factor; // MPa (N-mm / mm3)
+                    sigma_eq = Math.sqrt(Math.pow(sigma_z, 2) + 3 * Math.pow(tau, 2));
+                    yieldUtilization = (sigma_eq / Sy) * 100;
+                    
+                    F_preload /= 1000; // Convert to kN
+                    F_max /= 1000;
+                    F_min /= 1000;
+                    F_residual /= 1000;
+                }
             }
 
-            lastResult = { unit, D, As, Sy, K, pct, F_preload, Torque, unitT, unitF };
+            lastResult = { 
+                unit, D, As, Sy, K, pct, F_preload, Torque, unitT, unitF,
+                calcMode, muThread, muHead, alphaA, relaxationPct, F_max, F_min, F_residual, yieldUtilization, sigma_eq
+            };
 
-            // 3. Render Step-by-Step
-            let html = `<h4>Step 1: Determine Stress Area ($A_s$)</h4>`;
+            // 3. Render Step-by-Step 10-Step LaTeX Report
+            let html = `<h3 style="color: var(--primary); margin-top: 25px;"><i class="fas fa-list-ol"></i> 10-Step Torque-Tension Engineering Analysis</h3>`;
+            
+            // Step 1: Geometry
+            html += `<h4>Step 1: Fastener Geometry and Dimension Specs</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Standard Stress Area for <strong>${(unit==='imperial'? impSizes[sizeKey].name : metSizes[sizeKey].name)}</strong>:<br>`;
-            html += `$$ A_s = \\mathbf{${As} \\text{ ${unit==='imperial'?'in':'mm'}^2}} $$`;
+            html += `Nominal Diameter ($D$): \\( D = ${D} \\text{ ${unit==='imperial'?'inches':'mm'}} \\)<br>`;
+            html += `Thread pitch ($P$): \\( P = ${P.toFixed(4)} \\text{ ${unit==='imperial'?'inches':'mm'}} \\)<br>`;
+            html += `Width across flats ($s$): \\( s = ${s} \\text{ ${unit==='imperial'?'inches':'mm'}} \\)<br>`;
+            html += `Thread system designation: <strong>${(unit==='imperial'? impSizes[sizeKey].name : metSizes[sizeKey].name)}</strong>`;
             html += `</div>`;
 
-            html += `<h4>Step 2: Target Preload Force ($F_p$)</h4>`;
+            // Step 2: Stress Area
+            html += `<h4>Step 2: Tensile Stress Area ($A_s$) Determination</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Targeting <strong>${pct}%</strong> of Yield Strength ($S_y = ${Sy} \\text{ ${unit==='imperial'?'psi':'MPa'}}$).<br>`;
-            html += `$$ F_p = S_y \\times A_s \\times \\% = ${Sy} \\times ${As} \\times ${pct/100} $$<br>`;
-            html += `$$ F_p = \\mathbf{${F_preload.toFixed(0)} \\text{ ${unitF}}} $$`;
+            html += `Tensile stress cross-section area derived from thread geometries:<br>`;
+            html += `\\[ A_s = \\mathbf{${As} \\text{ ${unit==='imperial'?'in':'mm'}^2}} \\]`;
             html += `</div>`;
 
-            html += `<h4>Step 3: Torque Calculation ($T=KFD$)</h4>`;
+            // Step 3: Material Grade
+            html += `<h4>Step 3: Material Grade Yield Strength ($S_y$) Identification</h4>`;
             html += `<div class="calculation-step">`;
-            html += `Using Nut Factor $K = ${K}$ (Lubrication Friction).<br>`;
-            if(unit==='imperial') {
-                html += `$$ T = \\frac{K \\cdot F_p \\cdot D}{12} = \\frac{${K} \\cdot ${F_preload.toFixed(0)} \\cdot ${D}}{12} = \\mathbf{${Torque.toFixed(1)} \\text{ ft-lb}} $$`;
+            html += `Selected strength specification: <strong>${(unit==='imperial'? impGrades[gradeKey].name : metGrades[gradeKey].name)}</strong><br>`;
+            html += `Minimum yield stress limit of fastener material:<br>`;
+            html += `\\[ S_y = \\mathbf{${Sy} \\text{ ${unit==='imperial'?'psi':'MPa'}}} \\]`;
+            html += `</div>`;
+
+            // Step 4: Ultimate Preload Force
+            html += `<h4>Step 4: Theoretical Yield Clamping Load Limit ($F_{\\text{yield}}$)</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `Axial force at which the full cross-sectional stress reaches yield limit ($F_{\\text{yield}} = S_y \\cdot A_s$):<br>`;
+            let F_yield_calc = Sy * As;
+            if (unit === 'metric') {
+                html += `\\[ F_{\\text{yield}} = ${Sy} \\text{ MPa} \\times ${As} \\text{ mm}^2 = \\mathbf{${(F_yield_calc / 1000).toFixed(1)} \\text{ kN}} \\]`;
             } else {
-                html += `$$ T = \\frac{K \\cdot F_p \\cdot D}{1000} = \\frac{${K} \\cdot ${(F_preload*1000).toFixed(0)} \\cdot ${D}}{1000} = \\mathbf{${Torque.toFixed(1)} \\text{ N-m}} $$`;
+                html += `\\[ F_{\\text{yield}} = ${Sy} \\text{ psi} \\times ${As} \\text{ in}^2 = \\mathbf{${F_yield_calc.toFixed(0)} \\text{ lbf}} \\]`;
+            }
+            html += `</div>`;
+
+            // Step 5: Target Assembly Preload Ratio
+            html += `<h4>Step 5: Target Assembly Preload Ratio (\\( \\%_{\\text{target}} \\))</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `Percentage of material yield strength targeted during assembly tightening:<br>`;
+            html += `\\[ \\%_{\\text{target}} = \\mathbf{${pct}\\%} \\]`;
+            html += `• Target Envelope: 60% to 75% for pressure boundary flanged piping; 75% to 90% for heavy structural steelwork.`;
+            html += `</div>`;
+
+            // Step 6: Target Clamping Force / Preload
+            html += `<h4>Step 6: Target Assembly Preload Force ($F_p$)</h4>`;
+            html += `<div class="calculation-step">`;
+            html += `Required axial tensile clamping force in bolt shank ($F_p = F_{\\text{yield}} \\times \\%_{\\text{target}}$):<br>`;
+            if (unit === 'metric') {
+                let F_preload_n = stress_target * As;
+                html += `\\[ F_p = ${Sy} \\times ${As} \\times ${pct/100} = \\mathbf{${(F_preload_n/1000).toFixed(2)} \\text{ kN}} \\]`;
+            } else {
+                html += `\\[ F_p = ${Sy} \\times ${As} \\times ${pct/100} = \\mathbf{${F_preload.toFixed(0)} \\text{ lbf}} \\]`;
+            }
+            html += `</div>`;
+
+            // Step 7: Friction / Nut Factor Model
+            html += `<h4>Step 7: Nut Factor &amp; Thread Friction Model</h4>`;
+            html += `<div class="calculation-step">`;
+            if (calcMode === 'standard') {
+                html += `Standard K-factor method selected: <strong>${document.getElementById('lubricant').options[document.getElementById('lubricant').selectedIndex].text}</strong><br>`;
+                html += `Nut factor (friction multiplier K):<br>`;
+                html += `\\[ K = \\mathbf{${K}} \\]`;
+            } else {
+                html += `Advanced VDI 2230 multi-friction model selected:<br>`;
+                html += `• Thread friction coefficient: \\( \\mu_{th} = ${muThread} \\)<br>`;
+                html += `• Head bearing friction coefficient: \\( \\mu_{head} = ${muHead} \\)<br>`;
+                html += `• Pitch diameter (\\( d_2 = D - 0.6495 P \\)): \\( d_2 = ${d2.toFixed(4)} \\text{ ${unit==='imperial'?'in':'mm'}} \\)<br>`;
+                html += `• Mean bearing face diameter (\\( D_m = \\frac{s + D}{2} \\)): \\( D_m = ${D_m.toFixed(4)} \\text{ ${unit==='imperial'?'in':'mm'}} \\)`;
+            }
+            html += `</div>`;
+
+            // Step 8: Applied Tightening Torque
+            html += `<h4>Step 8: Applied Tightening Torque Formula</h4>`;
+            html += `<div class="calculation-step">`;
+            if (calcMode === 'standard') {
+                html += `Standard Equation: \\( T_0 = K \\cdot F_p \\cdot D \\)<br>`;
+                if (unit === 'metric') {
+                    let F_preload_n = stress_target * As;
+                    html += `\\[ T_0 = ${K} \\times ${F_preload_n.toFixed(0)} \\text{ N} \\times ${D} \\text{ mm} = \\mathbf{${(K * F_preload_n * D).toFixed(0)} \\text{ N-mm}} \\]`;
+                } else {
+                    html += `\\[ T_0 = ${K} \\times ${F_preload.toFixed(0)} \\text{ lbf} \\times ${D} \\text{ in} = \\mathbf{${(K * F_preload * D).toFixed(1)} \\text{ in-lb}} \\]`;
+                }
+            } else {
+                html += `VDI 2230 Equation: \\( T = T_{\\text{thread}} + T_{\\text{head}} \\)<br>`;
+                html += `\\( T_{\\text{thread}} = F_p \\cdot \\frac{d_2}{2} \\cdot \\tan(\\varphi + \\rho') \\) and \\( T_{\\text{head}} = F_p \\cdot \\frac{D_m}{2} \\cdot \\mu_{head} \\)<br>`;
+                html += `Calculated Torque Components:<br>`;
+                html += `• Thread Torque ($T_{\\text{thread}}$): <strong>${(unit==='imperial'?(T_thread/12):(T_thread/1000)).toFixed(1)} ${unitT}</strong><br>`;
+                html += `• Head Friction Torque ($T_{\\text{head}}$): <strong>${(unit==='imperial'?(T_head/12):(T_head/1000)).toFixed(1)} ${unitT}</strong>`;
+            }
+            html += `</div>`;
+
+            // Step 9: Unit Scaling & Preload Scatter
+            html += `<h4>Step 9: Torque Unit Scaling &amp; Preload Scatter Analysis</h4>`;
+            html += `<div class="calculation-step">`;
+            if (calcMode === 'standard') {
+                if (unit === 'imperial') {
+                    html += `Standard foot-pounds scale conversion (divide by 12):<br>`;
+                    html += `\\[ T = \\frac{T_0}{12} = \\mathbf{${Torque.toFixed(1)} \\text{ ft-lb}} \\]`;
+                } else {
+                    html += `Standard Newton-meters scale conversion (divide by 1000):<br>`;
+                    html += `\\[ T = \\frac{T_0}{1000} = \\mathbf{${Torque.toFixed(1)} \\text{ N-m}} \\]`;
+                }
+            } else {
+                html += `Tightening tool scatter factor (\\( \\alpha_A = ${alphaA} \\)) results in:<br>`;
+                html += `• Max expected assembly preload (\\( F_{p,max} = F_p \\cdot \\alpha_A \\)): <strong>${F_max.toFixed(1)} ${unitF}</strong><br>`;
+                html += `• Min expected assembly preload (\\( F_{p,min} = F_p / \\alpha_A \\)): <strong>${F_min.toFixed(1)} ${unitF}</strong>`;
+            }
+            html += `</div>`;
+
+            // Step 10: Joint Verification & Yield Safety
+            html += `<h4>Step 10: Joint Integrity &amp; Yield Safety Margins</h4>`;
+            html += `<div class="calculation-step">`;
+            if (calcMode === 'standard') {
+                html += `Final Specifications Spec Sheet Summary:<br>`;
+                html += `• Recommended Torque: <strong>${Torque.toFixed(1)} ${unitT}</strong><br>`;
+                html += `• Created Clamping Load: <strong>${F_preload.toFixed(1)} ${unitF}</strong><br>`;
+                html += `• Yield Safety Margin Factor: <strong>${(100 / pct).toFixed(2)}</strong>`;
+            } else {
+                html += `Combined stress evaluation during assembly:<br>`;
+                html += `• Von Mises Equivalent Stress (\\( \\sigma_{eq} \\)): <strong>${sigma_eq.toFixed(1)} ${unit==='imperial'?'psi':'MPa'}</strong><br>`;
+                html += `• Fastener Yield stress utilization (\\( \\nu \\)): <strong>${yieldUtilization.toFixed(1)}\\% of ${Sy}</strong><br>`;
+                html += `• Residual clamping force after ${relaxationPct}% relaxation embedding loss: <strong>${F_residual.toFixed(1)} ${unitF}</strong>`;
             }
             html += `</div>`;
 
@@ -1491,18 +1959,75 @@
             const addRow = (n, v, u) => {
                 tbody.innerHTML += `<tr><td><strong>${n}</strong></td><td>${v}</td><td>${u}</td></tr>`;
             };
-            addRow("Required Torque", Torque.toFixed(1), unitT);
-            addRow("Clamping Force", F_preload.toFixed(1), unitF);
-            addRow("Target Stress", stress_target.toFixed(0), unit === 'imperial'?'psi':'MPa');
-
-            const interpEl = document.getElementById('interpretation-text');
-            if (K < 0.15) {
-                interpEl.innerHTML = `<span style="color:var(--warning); font-weight:bold;">Low Friction Warning.</span> Moly/Copper lube reduces torque requirements significantly. Do not over-torque!`;
-            } else if (K > 0.25) {
-                interpEl.innerHTML = `<span style="color:var(--danger); font-weight:bold;">High Friction.</span> Dry/Rusty bolts require high torque but result in scattered preload accuracy. Lubrication recommended.`;
+            addRow("Required Torque (Nominal)", Torque.toFixed(1), unitT);
+            addRow("Clamping Force (Nominal)", F_preload.toFixed(1), unitF);
+            
+            if (calcMode === 'advanced') {
+                addRow("Max Preload (Scatter)", F_max.toFixed(1), unitF);
+                addRow("Min Preload (Scatter)", F_min.toFixed(1), unitF);
+                addRow("Residual Clamping Force", F_residual.toFixed(1), unitF);
+                addRow("Yield Utilization", yieldUtilization.toFixed(1) + "%", "VDI 2230");
             } else {
-                interpEl.innerHTML = `<span style="color:var(--success); font-weight:bold;">Optimal Range.</span> Standard lubrication provides consistent preload.`;
+                addRow("Target Stress", stress_target.toFixed(0), unit === 'imperial'?'psi':'MPa');
             }
+
+            // Safety Warning Panel
+            const interpEl = document.getElementById('interpretation-text');
+            let warningsHtml = "";
+            
+            if (calcMode === 'standard') {
+                if (K < 0.15) {
+                    warningsHtml += `<div style="border-left: 4px solid var(--danger); padding: 8px; margin-bottom: 10px; background: rgba(220, 38, 38, 0.05);">
+                        <strong style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Low Friction / Over-tension Hazard:</strong> 
+                        Nut factor K = ${K} indicates highly lubricated threads. Standard torque values will stretch this bolt past its yield limit, causing thread stripping or necking.
+                    </div>`;
+                } else if (K > 0.25) {
+                    warningsHtml += `<div style="border-left: 4px solid var(--warning); padding: 8px; margin-bottom: 10px; background: rgba(245, 158, 11, 0.05);">
+                        <strong style="color: var(--warning);"><i class="fas fa-exclamation-circle"></i> High Friction / Under-tension Risk:</strong> 
+                        Nut factor K = ${K} indicates dry or rusty threads. Most torque energy is dissipated as heat. You risk extremely scattered, insufficient clamping force.
+                    </div>`;
+                }
+            } else {
+                // VDI 2230 Alerts
+                if (yieldUtilization > 90) {
+                    warningsHtml += `<div style="border-left: 4px solid var(--danger); padding: 8px; margin-bottom: 10px; background: rgba(220, 38, 38, 0.05);">
+                        <strong style="color: var(--danger);"><i class="fas fa-radiation"></i> Plastic Yield Warning (VDI 2230):</strong> 
+                        Fastener yield utilization (\\( \\nu = ${yieldUtilization.toFixed(1)}\\% \\)) exceeds the VDI 2230 safety limit of 90%. Under combined tension and torsion stresses during assembly, the fastener is highly likely to yield or deform permanently. Upgrade to a higher material class or increase nominal diameter.
+                    </div>`;
+                } else if (yieldUtilization < 50) {
+                    warningsHtml += `<div style="border-left: 4px solid var(--warning); padding: 8px; margin-bottom: 10px; background: rgba(245, 158, 11, 0.05);">
+                        <strong style="color: var(--warning);"><i class="fas fa-exclamation-circle"></i> Fastener Under-utilization:</strong> 
+                        Combined stress yield utilization is only ${yieldUtilization.toFixed(1)}%. Fastener material capacity is under-utilized, risking joint separation under high internal working pressures.
+                    </div>`;
+                }
+                
+                if (alphaA > 1.6) {
+                    warningsHtml += `<div style="border-left: 4px solid var(--warning); padding: 8px; margin-bottom: 10px; background: rgba(245, 158, 11, 0.05);">
+                        <strong style="color: var(--warning);"><i class="fas fa-random"></i> High Tightening Scatter Risk:</strong> 
+                        Tightening scatter factor \\( \\alpha_A = ${alphaA} \\) indicates uncalibrated manual or impact assembly tools. Minimum achieved clamping force may drop to ${F_min.toFixed(1)} ${unitF}, risking fluid leaks. Use hydraulic wrenches.
+                    </div>`;
+                }
+            }
+
+            if (pct > 80) {
+                warningsHtml += `<div style="border-left: 4px solid var(--danger); padding: 8px; margin-bottom: 10px; background: rgba(220, 38, 38, 0.05);">
+                    <strong style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Yield Limit Proximity Alert:</strong> 
+                    Target preload is set to ${pct}% of yield. Piping thermal expansions or pressure cycles could stretch the bolt past its elastic limit.
+                </div>`;
+            } else if (pct < 50) {
+                warningsHtml += `<div style="border-left: 4px solid var(--warning); padding: 8px; margin-bottom: 10px; background: rgba(245, 158, 11, 0.05);">
+                    <strong style="color: var(--warning);"><i class="fas fa-info-circle"></i> Low Preload / Loose Joint Warning:</strong> 
+                    Target preload of ${pct}% is insufficient to seat pressure boundary gaskets. Fasteners may loosen under cyclic loading.
+                </div>`;
+            }
+
+            if (warningsHtml === "") {
+                warningsHtml = `<div style="border-left: 4px solid var(--success); padding: 8px; background: rgba(16, 185, 129, 0.05);">
+                    <strong style="color: var(--success);"><i class="fas fa-check-circle"></i> Safe Operating Envelope:</strong> 
+                    Assembly parameters are within standard limits. Joint integrity is verified.
+                </div>`;
+            }
+            interpEl.innerHTML = warningsHtml;
 
             // 5. Draw Visuals
             drawChart(pct, Sy, unit);
@@ -1513,6 +2038,7 @@
             if(window.MathJax) window.MathJax.typesetPromise([document.getElementById('calculation-details')]);
             document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
         }
+
 
         function drawBolt(D, F, T, unitF, unitT) {
             const canvas = document.getElementById('boltCanvas');
@@ -1726,11 +2252,22 @@
                 }
             });
 
-            // Footer
-            y = pdf.lastAutoTable.finalY + 20;
+            // Footer info
+            y = pdf.lastAutoTable.finalY + 15;
             pdf.setFontSize(8);
             pdf.setTextColor(150);
-            pdf.text('Torque calculated using T = KFD. Critical joints require field verification.', 105, y, { align: 'center' });
+            pdf.text('Torque calculated using standard equation T = KFD. Critical joints require field verification.', 105, y, { align: 'center' });
+
+            // Branded footers page loop
+            const totalPages = pdf.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                pdf.setPage(i);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(8);
+                pdf.setTextColor(150);
+                pdf.text('Design Calculators - https://designcalculators.co.in', 14, 287);
+                pdf.text(`Page ${i} of ${totalPages}`, 196, 287, { align: 'right' });
+            }
 
             pdf.save('Bolt_Torque_Spec.pdf');
             displayMessage("PDF Downloaded", "success");
