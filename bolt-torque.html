@@ -1822,134 +1822,319 @@
                 calcMode, muThread, muHead, alphaA, relaxationPct, F_max, F_min, F_residual, yieldUtilization, sigma_eq
             };
 
-            // 3. Render Step-by-Step 10-Step LaTeX Report
-            let html = `<h3 style="color: var(--primary); margin-top: 25px;"><i class="fas fa-list-ol"></i> 10-Step Torque-Tension Engineering Analysis</h3>`;
+            // ─── 3. Render Step-by-Step 10-Step LaTeX Report ───────────────
+            const isMetric = (unit === 'metric');
+            const uLen   = isMetric ? 'mm'  : 'in';
+            const uArea  = isMetric ? 'mm^2': 'in^2';
+            const uStr   = isMetric ? 'MPa' : 'psi';
+            const uForce_raw = isMetric ? 'N' : 'lbf';
+            const gradeName = isMetric ? metGrades[gradeKey].name : impGrades[gradeKey].name;
+            const sizeName  = isMetric ? metSizes[sizeKey].name  : impSizes[sizeKey].name;
+            const F_preload_raw = stress_target * As; // always N or lbf (not yet /1000)
+            const F_yield_raw   = Sy * As;
             
-            // Step 1: Geometry
-            html += `<h4>Step 1: Fastener Geometry and Dimension Specs</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Nominal Diameter ($D$): \\( D = ${D} \\text{ ${unit==='imperial'?'inches':'mm'}} \\)<br>`;
-            html += `Thread pitch ($P$): \\( P = ${P.toFixed(4)} \\text{ ${unit==='imperial'?'inches':'mm'}} \\)<br>`;
-            html += `Width across flats ($s$): \\( s = ${s} \\text{ ${unit==='imperial'?'inches':'mm'}} \\)<br>`;
-            html += `Thread system designation: <strong>${(unit==='imperial'? impSizes[sizeKey].name : metSizes[sizeKey].name)}</strong>`;
-            html += `</div>`;
-
-            // Step 2: Stress Area
-            html += `<h4>Step 2: Tensile Stress Area ($A_s$) Determination</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Tensile stress cross-section area derived from thread geometries:<br>`;
-            html += `\\[ A_s = \\mathbf{${As} \\text{ ${unit==='imperial'?'in':'mm'}^2}} \\]`;
-            html += `</div>`;
-
-            // Step 3: Material Grade
-            html += `<h4>Step 3: Material Grade Yield Strength ($S_y$) Identification</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Selected strength specification: <strong>${(unit==='imperial'? impGrades[gradeKey].name : metGrades[gradeKey].name)}</strong><br>`;
-            html += `Minimum yield stress limit of fastener material:<br>`;
-            html += `\\[ S_y = \\mathbf{${Sy} \\text{ ${unit==='imperial'?'psi':'MPa'}}} \\]`;
-            html += `</div>`;
-
-            // Step 4: Ultimate Preload Force
-            html += `<h4>Step 4: Theoretical Yield Clamping Load Limit ($F_{\\text{yield}}$)</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Axial force at which the full cross-sectional stress reaches yield limit ($F_{\\text{yield}} = S_y \\cdot A_s$):<br>`;
-            let F_yield_calc = Sy * As;
-            if (unit === 'metric') {
-                html += `\\[ F_{\\text{yield}} = ${Sy} \\text{ MPa} \\times ${As} \\text{ mm}^2 = \\mathbf{${(F_yield_calc / 1000).toFixed(1)} \\text{ kN}} \\]`;
-            } else {
-                html += `\\[ F_{\\text{yield}} = ${Sy} \\text{ psi} \\times ${As} \\text{ in}^2 = \\mathbf{${F_yield_calc.toFixed(0)} \\text{ lbf}} \\]`;
+            // Helper: styled step card
+            function stepCard(num, icon, title, color, bodyHtml) {
+                return `<div style="border-radius:10px; border-left:5px solid ${color}; background:var(--card-bg,#fff); 
+                              box-shadow:0 2px 10px rgba(0,0,0,0.07); margin-bottom:20px; overflow:hidden;">
+                          <div style="background:${color}20; padding:11px 18px; border-bottom:1px solid ${color}30;
+                                      display:flex; align-items:center; gap:10px;">
+                            <div style="background:${color}; color:#fff; border-radius:50%; width:30px; height:30px;
+                                        display:flex; align-items:center; justify-content:center; font-weight:700; 
+                                        font-size:0.85rem; flex-shrink:0;">${num}</div>
+                            <i class="${icon}" style="color:${color};"></i>
+                            <h4 style="margin:0; color:var(--heading,#1e293b); font-size:0.98rem; font-weight:700;">${title}</h4>
+                          </div>
+                          <div style="padding:15px 20px; font-size:0.9rem; line-height:1.8; color:var(--text,#334155);">
+                            ${bodyHtml}
+                          </div>
+                        </div>`;
             }
-            html += `</div>`;
-
-            // Step 5: Target Assembly Preload Ratio
-            html += `<h4>Step 5: Target Assembly Preload Ratio (\\( \\%_{\\text{target}} \\))</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Percentage of material yield strength targeted during assembly tightening:<br>`;
-            html += `\\[ \\%_{\\text{target}} = \\mathbf{${pct}\\%} \\]`;
-            html += `• Target Envelope: 60% to 75% for pressure boundary flanged piping; 75% to 90% for heavy structural steelwork.`;
-            html += `</div>`;
-
-            // Step 6: Target Clamping Force / Preload
-            html += `<h4>Step 6: Target Assembly Preload Force ($F_p$)</h4>`;
-            html += `<div class="calculation-step">`;
-            html += `Required axial tensile clamping force in bolt shank ($F_p = F_{\\text{yield}} \\times \\%_{\\text{target}}$):<br>`;
-            if (unit === 'metric') {
-                let F_preload_n = stress_target * As;
-                html += `\\[ F_p = ${Sy} \\times ${As} \\times ${pct/100} = \\mathbf{${(F_preload_n/1000).toFixed(2)} \\text{ kN}} \\]`;
-            } else {
-                html += `\\[ F_p = ${Sy} \\times ${As} \\times ${pct/100} = \\mathbf{${F_preload.toFixed(0)} \\text{ lbf}} \\]`;
+            function pill(val, clr) {
+                return `<span style="background:${clr}18; color:${clr}; border:1.5px solid ${clr}40; 
+                               border-radius:6px; padding:2px 10px; font-weight:700; display:inline-block;">${val}</span>`;
             }
-            html += `</div>`;
+            function tip(txt) {
+                return `<p style="background:#f8fafc; border-left:3px solid #94a3b8; border-radius:0 6px 6px 0; 
+                               padding:8px 12px; font-style:italic; font-size:0.85rem; color:#64748b; margin:8px 0;">${txt}</p>`;
+            }
 
-            // Step 7: Friction / Nut Factor Model
-            html += `<h4>Step 7: Nut Factor &amp; Thread Friction Model</h4>`;
-            html += `<div class="calculation-step">`;
+            let html = `<div style="background:linear-gradient(135deg,#1e3a8a,#2563eb); border-radius:12px; 
+                              padding:18px 22px; margin-bottom:24px; color:#fff;">
+                           <h3 style="margin:0; font-size:1.2rem; display:flex; align-items:center; gap:10px;">
+                             <i class="fas fa-microscope"></i> Step-by-Step Engineering Calculation
+                           </h3>
+                           <p style="margin:6px 0 0; opacity:0.85; font-size:0.87rem;">
+                             Method: <strong>${calcMode==='advanced'?'Advanced VDI 2230 / ASME PCC-1':'Standard ASME PCC-1 K-Factor'}</strong>
+                             &nbsp;|&nbsp; Fastener: <strong>${sizeName}</strong>
+                             &nbsp;|&nbsp; Material: <strong>${gradeName}</strong>
+                           </p>
+                         </div>`;
+
+            // ── STEP 1 ───────────────────────────────────────────────────────
+            html += stepCard(1,'fas fa-ruler-combined','Fastener Geometry — Identifying the bolt dimensions','#6366f1', `
+              <p>Every bolt calculation begins by recording the exact physical dimensions of the fastener. 
+                 These three values feed into every formula that follows.</p>
+              ${tip('🔑 Think of it like measuring a screw before drilling a hole — you need the right size.')}
+              <ul style="margin:6px 0 10px 18px; padding:0;">
+                <li><strong>Nominal Diameter (D):</strong> Outside width of the threads. This is the number in the bolt name (e.g., M16 → D = 16 mm).</li>
+                <li><strong>Thread Pitch (P):</strong> Distance between neighbouring thread crests. Small P = fine thread (strong but slow); large P = coarse thread (fast but weaker).</li>
+                <li><strong>Width Across Flats (s):</strong> The nut wrench size. Needed to calculate the friction diameter under the nut face.</li>
+              </ul>
+              \\[
+                D = \\mathbf{${D}\\;\\text{${uLen}}}, \\qquad
+                P = \\mathbf{${P.toFixed(4)}\\;\\text{${uLen}}}, \\qquad
+                s = \\mathbf{${s}\\;\\text{${uLen}}}
+              \\]
+              <p>Thread designation: ${pill(sizeName,'#6366f1')}</p>`);
+
+            // ── STEP 2 ───────────────────────────────────────────────────────
+            const As_formula = isMetric
+              ? 'A_s = \\frac{\\pi}{4}\\left(d - 0.9382\\,P\\right)^2 \\quad\\text{(ISO 898-1)}'
+              : 'A_s = 0.7854\\left(D - \\frac{0.9743}{n}\\right)^2 \\quad\\text{(ASME B1.1)}';
+            html += stepCard(2,'fas fa-expand','Tensile Stress Area (Aₛ) — The real load-carrying cross-section','#0891b2', `
+              <p>A bolt is <em>not</em> a solid round bar — its threads cut into the shank, making the narrowest section 
+                 smaller than the outer diameter. The <strong>Tensile Stress Area (Aₛ)</strong> is the effective area 
+                 calculated from the average of the pitch and root diameters.</p>
+              ${tip('🔑 Analogy: A chain is only as strong as its weakest link. For a bolt, the threaded section IS that weakest link — Aₛ measures it precisely.')}
+              <p><strong>Standard formula (${isMetric?'ISO 898-1':'ASME B1.1'}):</strong></p>
+              \\[ ${As_formula} \\]
+              <p><strong>Tabulated value for ${sizeName}:</strong></p>
+              \\[ \\boxed{A_s = ${As}\\;\\text{${uArea}}} \\]
+              <p>${pill(As+' '+uArea,'#0891b2')} — This is the effective tension-resisting cross-sectional area.</p>`);
+
+            // ── STEP 3 ───────────────────────────────────────────────────────
+            html += stepCard(3,'fas fa-layer-group','Material Yield Strength (Sᵧ) — The steel\'s elastic limit','#059669', `
+              <p>Every steel has a <strong>Yield Strength (Sᵧ)</strong>: the stress level at which the material 
+                 transitions from elastic (springy, returns to shape) to plastic (permanently deformed). 
+                 We must keep the bolt stress <em>below</em> this value.</p>
+              ${tip('🔑 Analogy: Think of Sᵧ as the maximum weight limit on a bridge. Stay below it and it is safe. Go beyond it and permanent damage begins.')}
+              <p>Grade selected: ${pill(gradeName,'#059669')}</p>
+              \\[ \\boxed{S_y = ${Sy}\\;\\text{${uStr}}} \\]
+              <p style="font-size:0.85rem; color:#64748b;">
+                Source: ${isMetric?'ISO 898-1 — Mechanical properties of fasteners made of carbon and alloy steel':'SAE J429 / ASTM A193 — Mechanical and material properties of fasteners'}
+              </p>`);
+
+            // ── STEP 4 ───────────────────────────────────────────────────────
+            const Fyield_disp = isMetric ? (F_yield_raw/1000).toFixed(2)+' kN' : F_yield_raw.toFixed(0)+' lbf';
+            html += stepCard(4,'fas fa-weight-hanging','Absolute Yield Load (F_yield) — Maximum force before permanent stretch','#d97706', `
+              <p>This is the theoretical maximum pull force the bolt can carry before its threads or shank begin to permanently deform. 
+                 It is found by multiplying yield strength by the stress area:</p>
+              ${tip('🔑 Analogy: If Aₛ is the size of a rope\'s fibres, and Sᵧ is the breaking strength per fibre, then F_yield is the total rope breaking load.')}
+              <p><strong>Formula:</strong></p>
+              \\[ F_{\\text{yield}} = S_y \\times A_s \\]
+              <p><strong>Substituting your values:</strong></p>
+              ${isMetric
+                ? `\\[ F_{\\text{yield}} = ${Sy}\\;\\text{MPa} \\times ${As}\\;\\text{mm}^2 = ${F_yield_raw.toFixed(0)}\\;\\text{N} \\]
+                   \\[ \\boxed{F_{\\text{yield}} = ${(F_yield_raw/1000).toFixed(2)}\\;\\text{kN}} \\]`
+                : `\\[ F_{\\text{yield}} = ${Sy}\\;\\text{psi} \\times ${As}\\;\\text{in}^2 \\]
+                   \\[ \\boxed{F_{\\text{yield}} = ${F_yield_raw.toFixed(0)}\\;\\text{lbf}} \\]`}
+              <p>${pill(Fyield_disp,'#d97706')} — Absolute upper limit. We NEVER approach this during assembly.</p>`);
+
+            // ── STEP 5 ───────────────────────────────────────────────────────
+            html += stepCard(5,'fas fa-percentage','Target Preload Ratio (η) — How much of yield strength do we use?','#7c3aed', `
+              <p>We deliberately tighten bolts to a <em>fraction</em> of their yield strength — never to 100%. 
+                 The remaining margin protects against vibration, temperature changes, and unexpected overloads.</p>
+              ${tip('🔑 Analogy: A highway has a speed limit well below the car\'s top speed. That margin is your safety buffer. η_target works the same way.')}
+              <table style="width:100%; border-collapse:collapse; font-size:0.84rem; margin:10px 0;">
+                <tr style="background:#f1f5f9;"><th style="padding:6px 10px; text-align:left; border:1px solid #e2e8f0;">Application</th><th style="padding:6px 10px; text-align:center; border:1px solid #e2e8f0;">Target η (% of Sᵧ)</th><th style="padding:6px 10px; border:1px solid #e2e8f0;">Standard</th></tr>
+                <tr><td style="padding:6px 10px; border:1px solid #e2e8f0;">Pressure flanges &amp; gasket sealing</td><td style="padding:6px 10px; text-align:center; border:1px solid #e2e8f0;">60 – 75%</td><td style="padding:6px 10px; border:1px solid #e2e8f0;">ASME PCC-1</td></tr>
+                <tr style="background:#f8fafc;"><td style="padding:6px 10px; border:1px solid #e2e8f0;">Heavy structural &amp; machinery joints</td><td style="padding:6px 10px; text-align:center; border:1px solid #e2e8f0;">75 – 90%</td><td style="padding:6px 10px; border:1px solid #e2e8f0;">VDI 2230</td></tr>
+                <tr><td style="padding:6px 10px; border:1px solid #e2e8f0;">Dynamic / fatigue loaded joints</td><td style="padding:6px 10px; text-align:center; border:1px solid #e2e8f0;">70 – 85%</td><td style="padding:6px 10px; border:1px solid #e2e8f0;">ISO 23125</td></tr>
+              </table>
+              <p><strong>Your selected target:</strong></p>
+              \\[ \\boxed{\\eta_{\\text{target}} = ${pct}\\% = ${(pct/100).toFixed(2)}} \\]
+              ${pill(pct+'%','#7c3aed')}`);
+
+            // ── STEP 6 ───────────────────────────────────────────────────────
+            const Fp_disp = isMetric ? (F_preload_raw/1000).toFixed(2)+' kN' : F_preload_raw.toFixed(0)+' lbf';
+            html += stepCard(6,'fas fa-compress-arrows-alt','Target Preload Force (Fₚ) — The clamping force we create','#0f766e', `
+              <p>The <strong>Preload (Fₚ)</strong> is the axial tensile force locked into the bolt shank after tightening. 
+                 It acts like a compressed spring holding the joint faces together, preventing leaks, loosening, and fatigue cracks.</p>
+              ${tip('🔑 Analogy: When you squeeze two boards with a G-clamp, the clamping force is the preload. Without it, the boards fall apart. Without bolt preload, the joint falls apart.')}
+              <p><strong>Formula:</strong></p>
+              \\[ F_p = S_y \\times A_s \\times \\eta_{\\text{target}} \\]
+              <p><strong>Substituting your values:</strong></p>
+              ${isMetric
+                ? `\\[ F_p = ${Sy}\\;\\text{MPa} \\times ${As}\\;\\text{mm}^2 \\times ${(pct/100).toFixed(2)} = ${F_preload_raw.toFixed(0)}\\;\\text{N} \\]
+                   \\[ \\boxed{F_p = ${(F_preload_raw/1000).toFixed(2)}\\;\\text{kN}} \\]`
+                : `\\[ F_p = ${Sy}\\;\\text{psi} \\times ${As}\\;\\text{in}^2 \\times ${(pct/100).toFixed(2)} \\]
+                   \\[ \\boxed{F_p = ${F_preload_raw.toFixed(0)}\\;\\text{lbf}} \\]`}
+              <p>Target clamping force: ${pill(Fp_disp,'#0f766e')}</p>`);
+
+            // ── STEP 7 ───────────────────────────────────────────────────────
             if (calcMode === 'standard') {
-                html += `Standard K-factor method selected: <strong>${document.getElementById('lubricant').options[document.getElementById('lubricant').selectedIndex].text}</strong><br>`;
-                html += `Nut factor (friction multiplier K):<br>`;
-                html += `\\[ K = \\mathbf{${K}} \\]`;
+                const lubricantText = document.getElementById('lubricant').options[document.getElementById('lubricant').selectedIndex].text;
+                html += stepCard(7,'fas fa-tint','Nut Factor K — How friction steals your torque','#be185d', `
+                  <p>This is the most critical and most misunderstood factor in torque specification. 
+                     When you turn a wrench, only a small fraction of that torque actually stretches the bolt. 
+                     The rest is lost to friction — in the thread contacts and under the nut/bolt head face.</p>
+                  ${tip('🔑 Analogy: Pushing a heavy box across rough ground vs smooth ice. Same push, very different movement. K captures how rough or slippery your threads are.')}
+                  <p>Energy distribution in a typical torque application:</p>
+                  <ul style="margin:4px 0 10px 18px; padding:0;">
+                    <li>~50% — Nut-face friction (under the bolt head / washer)</li>
+                    <li>~40% — Thread friction (in the helical thread contacts)</li>
+                    <li>~10% — Actual bolt tension (the useful part!)</li>
+                  </ul>
+                  <table style="width:100%; border-collapse:collapse; font-size:0.84rem; margin:10px 0;">
+                    <tr style="background:#f1f5f9;"><th style="padding:6px 10px; border:1px solid #e2e8f0;">Surface Condition</th><th style="padding:6px 10px; text-align:center; border:1px solid #e2e8f0;">Typical K</th><th style="padding:6px 10px; border:1px solid #e2e8f0;">Risk</th></tr>
+                    <tr><td style="padding:5px 10px; border:1px solid #e2e8f0;">Moly paste (MoS₂)</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">0.10 – 0.13</td><td style="padding:5px 10px; border:1px solid #e2e8f0; color:#dc2626;">⚠ Over-tension</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px; border:1px solid #e2e8f0;">Anti-seize (copper)</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">0.13 – 0.15</td><td style="padding:5px 10px; border:1px solid #e2e8f0; color:#d97706;">Moderate care</td></tr>
+                    <tr><td style="padding:5px 10px; border:1px solid #e2e8f0;">Machine oil</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">0.15 – 0.18</td><td style="padding:5px 10px; border:1px solid #e2e8f0; color:#059669;">✅ Normal</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px; border:1px solid #e2e8f0;">Zinc plated, dry</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">0.18 – 0.22</td><td style="padding:5px 10px; border:1px solid #e2e8f0; color:#059669;">✅ Normal</td></tr>
+                    <tr><td style="padding:5px 10px; border:1px solid #e2e8f0;">Dry / rusty</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">0.25 – 0.35</td><td style="padding:5px 10px; border:1px solid #e2e8f0; color:#dc2626;">⚠ Under-tension</td></tr>
+                  </table>
+                  <p>Lubrication selected: ${pill(lubricantText,'#be185d')}</p>
+                  \\[ \\boxed{K = ${K}} \\]`);
             } else {
-                html += `Advanced VDI 2230 multi-friction model selected:<br>`;
-                html += `• Thread friction coefficient: \\( \\mu_{th} = ${muThread} \\)<br>`;
-                html += `• Head bearing friction coefficient: \\( \\mu_{head} = ${muHead} \\)<br>`;
-                html += `• Pitch diameter (\\( d_2 = D - 0.6495 P \\)): \\( d_2 = ${d2.toFixed(4)} \\text{ ${unit==='imperial'?'in':'mm'}} \\)<br>`;
-                html += `• Mean bearing face diameter (\\( D_m = \\frac{s + D}{2} \\)): \\( D_m = ${D_m.toFixed(4)} \\text{ ${unit==='imperial'?'in':'mm'}} \\)`;
+                const phi_r = Math.atan(P / (Math.PI * d2));
+                const rho_r = Math.atan(muThread / Math.cos(Math.PI/6));
+                html += stepCard(7,'fas fa-sliders-h','Thread Friction Geometry — VDI 2230 Inclined-Plane Model','#be185d', `
+                  <p>VDI 2230 models the bolt thread as a <strong>helical inclined plane (wedge)</strong>. Turning the nut pushes this wedge along the ramp. 
+                     Two friction forces oppose the motion — one in the threads, one under the bearing face.</p>
+                  ${tip('🔑 Analogy: Rolling a wheel up a slope. The slope angle (φ) and road roughness (ρ\') together determine how hard you have to push.')}
+                  <p><strong>① Pitch Diameter d₂ — where thread contact actually happens:</strong></p>
+                  \\[ d_2 = D - 0.6495 \\times P = ${D} - 0.6495 \\times ${P.toFixed(4)} = \\boxed{${d2.toFixed(4)}\\;\\text{${uLen}}} \\]
+                  <p><strong>② Root Diameter d₃ — smallest cross-section, governs torsion stress:</strong></p>
+                  \\[ d_3 = D - 1.2269 \\times P = ${D} - 1.2269 \\times ${P.toFixed(4)} = \\boxed{${d3.toFixed(4)}\\;\\text{${uLen}}} \\]
+                  <p><strong>③ Helix Pitch Angle φ — the thread spiral angle (steeper = easier to unwind):</strong></p>
+                  \\[ \\varphi = \\arctan\\!\\left(\\frac{P}{\\pi \\cdot d_2}\\right) = \\arctan\\!\\left(\\frac{${P.toFixed(4)}}{\\pi \\times ${d2.toFixed(4)}}\\right) = \\boxed{${(phi_r*180/Math.PI).toFixed(3)}°} \\]
+                  <p><strong>④ Friction Angle ρ' — converts μ_th into an angle, adjusted for 60° V-thread flank:</strong></p>
+                  \\[ \\rho' = \\arctan\\!\\left(\\frac{\\mu_{th}}{\\cos 30°}\\right) = \\arctan\\!\\left(\\frac{${muThread}}{0.8660}\\right) = \\boxed{${(rho_r*180/Math.PI).toFixed(3)}°} \\]
+                  <p><strong>⑤ Mean Bearing Diameter Dₘ — effective radius of nut-face friction:</strong></p>
+                  \\[ D_m = \\frac{s + D}{2} = \\frac{${s} + ${D}}{2} = \\boxed{${D_m.toFixed(4)}\\;\\text{${uLen}}} \\]`);
             }
-            html += `</div>`;
 
-            // Step 8: Applied Tightening Torque
-            html += `<h4>Step 8: Applied Tightening Torque Formula</h4>`;
-            html += `<div class="calculation-step">`;
+            // ── STEP 8 ───────────────────────────────────────────────────────
             if (calcMode === 'standard') {
-                html += `Standard Equation: \\( T_0 = K \\cdot F_p \\cdot D \\)<br>`;
-                if (unit === 'metric') {
-                    let F_preload_n = stress_target * As;
-                    html += `\\[ T_0 = ${K} \\times ${F_preload_n.toFixed(0)} \\text{ N} \\times ${D} \\text{ mm} = \\mathbf{${(K * F_preload_n * D).toFixed(0)} \\text{ N-mm}} \\]`;
-                } else {
-                    html += `\\[ T_0 = ${K} \\times ${F_preload.toFixed(0)} \\text{ lbf} \\times ${D} \\text{ in} = \\mathbf{${(K * F_preload * D).toFixed(1)} \\text{ in-lb}} \\]`;
-                }
+                const T0_raw = K * F_preload_raw * D;
+                html += stepCard(8,'fas fa-wrench','Tightening Torque — How hard to turn the wrench','#1d4ed8', `
+                  <p>Now all the inputs come together in the <strong>ASME PCC-1 Torque-Tension equation</strong>. 
+                     This is the most widely used formula in bolting. It tells you exactly what torque to set on your wrench.</p>
+                  ${tip('🔑 Analogy: Torque = Force × Lever Arm. K modifies this because friction "steals" part of your wrench effort before it converts into bolt tension.')}
+                  <p><strong>Standard Formula (ASME PCC-1):</strong></p>
+                  \\[ T = K \\cdot F_p \\cdot D \\]
+                  <p style="font-size:0.85rem; color:#64748b; margin:4px 0 10px;">
+                    Where: K = nut factor, Fₚ = target preload force, D = nominal bolt diameter
+                  </p>
+                  <p><strong>Substituting numbers (in base units — ${isMetric?'N and mm':'lbf and inches'}):</strong></p>
+                  \\[ T = ${K} \\times ${F_preload_raw.toFixed(0)}\\;\\text{${uForce_raw}} \\times ${D}\\;\\text{${uLen}} = \\mathbf{${T0_raw.toFixed(0)}\\;\\text{${uLen}·${uForce_raw}}} \\]
+                  <p><strong>After unit conversion to standard torque units:</strong></p>
+                  ${isMetric
+                    ? `\\[ T = \\frac{${T0_raw.toFixed(0)}\\;\\text{N·mm}}{1000} = \\boxed{${Torque.toFixed(2)}\\;\\text{N·m}} \\]`
+                    : `\\[ T = \\frac{${T0_raw.toFixed(1)}\\;\\text{in·lbf}}{12} = \\boxed{${Torque.toFixed(1)}\\;\\text{ft·lbf}} \\]`}
+                  <p>Set your wrench to: ${pill(Torque.toFixed(1)+' '+unitT,'#1d4ed8')}</p>`);
             } else {
-                html += `VDI 2230 Equation: \\( T = T_{\\text{thread}} + T_{\\text{head}} \\)<br>`;
-                html += `\\( T_{\\text{thread}} = F_p \\cdot \\frac{d_2}{2} \\cdot \\tan(\\varphi + \\rho') \\) and \\( T_{\\text{head}} = F_p \\cdot \\frac{D_m}{2} \\cdot \\mu_{head} \\)<br>`;
-                html += `Calculated Torque Components:<br>`;
-                html += `• Thread Torque ($T_{\\text{thread}}$): <strong>${(unit==='imperial'?(T_thread/12):(T_thread/1000)).toFixed(1)} ${unitT}</strong><br>`;
-                html += `• Head Friction Torque ($T_{\\text{head}}$): <strong>${(unit==='imperial'?(T_head/12):(T_head/1000)).toFixed(1)} ${unitT}</strong>`;
+                const phi_r = Math.atan(P / (Math.PI * d2));
+                const rho_r = Math.atan(muThread / Math.cos(Math.PI/6));
+                html += stepCard(8,'fas fa-wrench','Tightening Torque — VDI 2230 Two-Component Formula','#1d4ed8', `
+                  <p>VDI 2230 separates total torque into two physical contributions — 
+                     thread-inclined-plane torque and nut-face bearing torque. 
+                     This is more accurate than the single K-factor method because it uses the actual friction coefficients.</p>
+                  <p><strong>① Thread Torque — force needed to push bolt up the thread helix ramp:</strong></p>
+                  \\[ T_{\\text{thread}} = F_p \\cdot \\frac{d_2}{2} \\cdot \\tan(\\varphi + \\rho') \\]
+                  \\[ = ${F_preload_raw.toFixed(0)} \\times \\frac{${d2.toFixed(4)}}{2} \\times \\tan(${(phi_r*180/Math.PI).toFixed(2)}° + ${(rho_r*180/Math.PI).toFixed(2)}°) = \\boxed{${T_thread.toFixed(0)}\\;\\text{${uLen}·${uForce_raw}}} \\]
+                  <p><strong>② Head Bearing Torque — force needed to slide the nut face over the joint:</strong></p>
+                  \\[ T_{\\text{head}} = F_p \\cdot \\frac{D_m}{2} \\cdot \\mu_{\\text{head}} \\]
+                  \\[ = ${F_preload_raw.toFixed(0)} \\times \\frac{${D_m.toFixed(4)}}{2} \\times ${muHead} = \\boxed{${T_head.toFixed(0)}\\;\\text{${uLen}·${uForce_raw}}} \\]
+                  <p><strong>③ Total Torque = Thread + Head:</strong></p>
+                  \\[ T_{\\text{total}} = ${T_thread.toFixed(0)} + ${T_head.toFixed(0)} = ${(T_thread+T_head).toFixed(0)}\\;\\text{${uLen}·${uForce_raw}} = \\boxed{${Torque.toFixed(2)}\\;\\text{${unitT}}} \\]
+                  <p>Set your wrench to: ${pill(Torque.toFixed(1)+' '+unitT,'#1d4ed8')}</p>
+                  <p style="font-size:0.84rem; color:#64748b;">Thread torque share: ${((T_thread/(T_thread+T_head))*100).toFixed(1)}% | Head torque share: ${((T_head/(T_thread+T_head))*100).toFixed(1)}%</p>`);
             }
-            html += `</div>`;
 
-            // Step 9: Unit Scaling & Preload Scatter
-            html += `<h4>Step 9: Torque Unit Scaling &amp; Preload Scatter Analysis</h4>`;
-            html += `<div class="calculation-step">`;
+            // ── STEP 9 ───────────────────────────────────────────────────────
             if (calcMode === 'standard') {
-                if (unit === 'imperial') {
-                    html += `Standard foot-pounds scale conversion (divide by 12):<br>`;
-                    html += `\\[ T = \\frac{T_0}{12} = \\mathbf{${Torque.toFixed(1)} \\text{ ft-lb}} \\]`;
-                } else {
-                    html += `Standard Newton-meters scale conversion (divide by 1000):<br>`;
-                    html += `\\[ T = \\frac{T_0}{1000} = \\mathbf{${Torque.toFixed(1)} \\text{ N-m}} \\]`;
-                }
+                const T0_raw = K * F_preload_raw * D;
+                html += stepCard(9,'fas fa-exchange-alt','Unit Conversion — From raw units to standard wrench settings','#0369a1', `
+                  <p>The torque formula computes in base units (N·mm or in·lbf). 
+                     However, torque wrenches and engineering spec sheets use standard units. 
+                     Here is the conversion step clearly shown.</p>
+                  ${isMetric ? `
+                  <p><strong>N·mm → N·m</strong> (1 N·m = 1000 N·mm because 1 m = 1000 mm):</p>
+                  \\[ T = \\frac{T_{\\text{raw}}}{1000} = \\frac{${T0_raw.toFixed(0)}\\;\\text{N·mm}}{1000} = \\boxed{${Torque.toFixed(2)}\\;\\text{N·m}} \\]
+                  <p style="font-size:0.85rem; color:#64748b;">A standard 18 V impact wrench typically outputs 200–400 N·m. Compare your result to your tool's maximum range.</p>
+                  ` : `
+                  <p><strong>in·lbf → ft·lbf</strong> (1 ft = 12 in, so divide by 12):</p>
+                  \\[ T = \\frac{T_{\\text{raw}}}{12} = \\frac{${T0_raw.toFixed(1)}\\;\\text{in·lbf}}{12} = \\boxed{${Torque.toFixed(1)}\\;\\text{ft·lbf}} \\]
+                  <p style="font-size:0.85rem; color:#64748b;">Most industrial torque wrenches read in ft·lbf. Large flange bolts can require 1000+ ft·lbf — use a hydraulic torque wrench.</p>
+                  `}
+                  <p><strong>Final wrench setting: ${pill(Torque.toFixed(1)+' '+unitT,'#0369a1')}</strong></p>`);
             } else {
-                html += `Tightening tool scatter factor (\\( \\alpha_A = ${alphaA} \\)) results in:<br>`;
-                html += `• Max expected assembly preload (\\( F_{p,max} = F_p \\cdot \\alpha_A \\)): <strong>${F_max.toFixed(1)} ${unitF}</strong><br>`;
-                html += `• Min expected assembly preload (\\( F_{p,min} = F_p / \\alpha_A \\)): <strong>${F_min.toFixed(1)} ${unitF}</strong>`;
+                html += stepCard(9,'fas fa-random','Assembly Scatter — Accounting for tool inaccuracy in real life','#0369a1', `
+                  <p>Even with a calibrated torque wrench, the actual clamping force in the bolt varies. 
+                     Friction variation, surface condition, operator technique — all introduce scatter. 
+                     VDI 2230 quantifies this with the <strong>Scatter Factor α_A</strong>.</p>
+                  ${tip('🔑 Analogy: Throwing darts at a target. A skilled pro clusters darts very tightly (αₐ = 1.1). An untrained person with a random tool throws darts all over the board (αₐ = 2.5).')}
+                  <table style="width:100%; border-collapse:collapse; font-size:0.84rem; margin:10px 0;">
+                    <tr style="background:#f1f5f9;"><th style="padding:6px 10px; border:1px solid #e2e8f0;">Tool / Method</th><th style="padding:6px 10px; text-align:center; border:1px solid #e2e8f0;">α_A</th></tr>
+                    <tr><td style="padding:5px 10px; border:1px solid #e2e8f0;">Hydraulic tensioner</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">1.05 – 1.10</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px; border:1px solid #e2e8f0;">Hydraulic torque wrench (calibrated)</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">1.15 – 1.20</td></tr>
+                    <tr><td style="padding:5px 10px; border:1px solid #e2e8f0;">Manual torque wrench (oiled)</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">1.30 – 1.40</td></tr>
+                    <tr style="background:#f8fafc;"><td style="padding:5px 10px; border:1px solid #e2e8f0;">Manual torque wrench (dry)</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">1.60 – 1.80</td></tr>
+                    <tr><td style="padding:5px 10px; border:1px solid #e2e8f0;">Impact gun (uncalibrated)</td><td style="padding:5px 10px; text-align:center; border:1px solid #e2e8f0;">2.00 – 2.50</td></tr>
+                  </table>
+                  <p>Selected scatter factor: ${pill('αₐ = '+alphaA,'#0369a1')}</p>
+                  <p><strong>Maximum preload (bolt could be over-stretched this much):</strong></p>
+                  \\[ F_{p,\\text{max}} = F_p \\times \\alpha_A = ${Fp_disp} \\times ${alphaA} = \\boxed{${F_max.toFixed(1)}\\;\\text{${unitF}}} \\]
+                  <p><strong>Minimum preload (bolt might only achieve this little clamping):</strong></p>
+                  \\[ F_{p,\\text{min}} = \\frac{F_p}{\\alpha_A} = \\frac{${Fp_disp}}{${alphaA}} = \\boxed{${F_min.toFixed(1)}\\;\\text{${unitF}}} \\]
+                  <p style="font-size:0.84rem; color:#64748b; margin-top:8px;">F_p,min must still be sufficient to seat the gasket / prevent joint separation under working loads.</p>`);
             }
-            html += `</div>`;
 
-            // Step 10: Joint Verification & Yield Safety
-            html += `<h4>Step 10: Joint Integrity &amp; Yield Safety Margins</h4>`;
-            html += `<div class="calculation-step">`;
+            // ── STEP 10 ──────────────────────────────────────────────────────
             if (calcMode === 'standard') {
-                html += `Final Specifications Spec Sheet Summary:<br>`;
-                html += `• Recommended Torque: <strong>${Torque.toFixed(1)} ${unitT}</strong><br>`;
-                html += `• Created Clamping Load: <strong>${F_preload.toFixed(1)} ${unitF}</strong><br>`;
-                html += `• Yield Safety Margin Factor: <strong>${(100 / pct).toFixed(2)}</strong>`;
+                const sigma_z_check = F_preload_raw / As;
+                const SF = (Sy / sigma_z_check).toFixed(2);
+                html += stepCard(10,'fas fa-shield-alt','Final Safety Check — Is the joint safe? (ASME PCC-1)','#15803d', `
+                  <p>The last step verifies the joint safety in three ways: tensile stress in the bolt, 
+                     utilisation of material strength, and the safety factor against yielding.</p>
+                  <p><strong>① Tensile stress in bolt shank (σ_z):</strong></p>
+                  \\[ \\sigma_z = \\frac{F_p}{A_s} = \\frac{${F_preload_raw.toFixed(0)}\\;\\text{${uForce_raw}}}{${As}\\;\\text{${uArea}}} = \\boxed{${sigma_z_check.toFixed(1)}\\;\\text{${uStr}}} \\]
+                  <p><strong>② Preload utilisation η (the % of Sᵧ being used):</strong></p>
+                  \\[ \\eta = \\frac{\\sigma_z}{S_y} \\times 100 = \\frac{${sigma_z_check.toFixed(1)}}{${Sy}} \\times 100 = \\boxed{${pct.toFixed(1)}\\%} \\]
+                  <p><strong>③ Safety Factor against yield (always keep SF &gt; 1.2 for critical joints):</strong></p>
+                  \\[ \\text{SF} = \\frac{S_y}{\\sigma_z} = \\frac{${Sy}}{${sigma_z_check.toFixed(1)}} = \\boxed{${SF}} \\]
+                  <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:8px; padding:14px; margin-top:16px;">
+                    <p style="margin:0; font-weight:700; color:#15803d; font-size:1rem; display:flex; align-items:center; gap:8px;">
+                      <i class="fas fa-check-circle"></i> Final Assembly Torque Specification
+                    </p>
+                    <p style="margin:10px 0 4px;">Wrench Setting: <span style="color:#1d4ed8; font-weight:800; font-size:1.15rem;">${Torque.toFixed(1)} ${unitT}</span></p>
+                    <p style="margin:4px 0;">Target Clamping Force: <strong>${Fp_disp}</strong></p>
+                    <p style="margin:4px 0;">Bolt Tensile Stress: <strong>${sigma_z_check.toFixed(1)} ${uStr}</strong> (${pct}% of yield)</p>
+                    <p style="margin:4px 0;">Safety Factor: <strong>${SF}</strong> ${parseFloat(SF) >= 1.2 ? '✅ Safe' : '⚠️ Below recommended 1.2 minimum'}</p>
+                  </div>`);
             } else {
-                html += `Combined stress evaluation during assembly:<br>`;
-                html += `• Von Mises Equivalent Stress (\\( \\sigma_{eq} \\)): <strong>${sigma_eq.toFixed(1)} ${unit==='imperial'?'psi':'MPa'}</strong><br>`;
-                html += `• Fastener Yield stress utilization (\\( \\nu \\)): <strong>${yieldUtilization.toFixed(1)}\\% of ${Sy}</strong><br>`;
-                html += `• Residual clamping force after ${relaxationPct}% relaxation embedding loss: <strong>${F_residual.toFixed(1)} ${unitF}</strong>`;
+                const sigma_z_check = F_preload_raw / As;
+                const Wp = Math.PI * Math.pow(d3, 3) / 16;
+                const tau_check = T_thread / Wp;
+                const sig_eq_check = Math.sqrt(sigma_z_check**2 + 3*tau_check**2);
+                html += stepCard(10,'fas fa-shield-alt','Combined Stress Verification — VDI 2230 Von Mises Criterion','#15803d', `
+                  <p>During tightening, the bolt simultaneously experiences tension (from the axial preload) 
+                     AND torsion (from the thread torque twisting the shank). VDI 2230 requires checking the 
+                     <strong>combined equivalent stress</strong> using the Von Mises failure criterion.</p>
+                  ${tip('🔑 Analogy: Pulling AND twisting a rubber band at the same time breaks it much sooner than just pulling. Von Mises accounts for this combined effect.')}
+                  <p><strong>① Tensile stress σ_z (from axial clamping force):</strong></p>
+                  \\[ \\sigma_z = \\frac{F_p}{A_s} = \\frac{${F_preload_raw.toFixed(0)}}{${As}} = \\boxed{${sigma_z_check.toFixed(1)}\\;\\text{${uStr}}} \\]
+                  <p><strong>② Torsional shear stress τ (from thread torque acting on root diameter d₃):</strong></p>
+                  \\[ W_p = \\frac{\\pi\\,d_3^3}{16} = \\frac{\\pi \\times ${d3.toFixed(4)}^3}{16} = ${Wp.toFixed(4)}\\;\\text{${uLen}^3} \\]
+                  \\[ \\tau = \\frac{T_{\\text{thread}}}{W_p} = \\frac{${T_thread.toFixed(0)}}{${Wp.toFixed(4)}} = \\boxed{${tau_check.toFixed(1)}\\;\\text{${uStr}}} \\]
+                  <p><strong>③ Von Mises Equivalent Stress σ_eq (VDI 2230, Equation 21):</strong></p>
+                  \\[ \\sigma_{\\text{eq}} = \\sqrt{\\sigma_z^2 + 3\\,\\tau^2} = \\sqrt{${sigma_z_check.toFixed(1)}^2 + 3 \\times ${tau_check.toFixed(1)}^2} = \\boxed{${sig_eq_check.toFixed(1)}\\;\\text{${uStr}}} \\]
+                  <p><strong>④ Yield utilisation ν — must stay ≤ 90% (VDI 2230 Clause 5.4.2):</strong></p>
+                  \\[ \\nu = \\frac{\\sigma_{\\text{eq}}}{S_y} \\times 100 = \\frac{${sig_eq_check.toFixed(1)}}{${Sy}} \\times 100 = \\boxed{${(sig_eq_check/Sy*100).toFixed(1)}\\%} \\]
+                  <p><strong>⑤ Residual preload after ${relaxationPct}% embedding relaxation:</strong></p>
+                  \\[ F_{\\text{residual}} = F_p \\times \\left(1 - \\frac{${relaxationPct}}{100}\\right) = ${Fp_disp} \\times ${(1-relaxationPct/100).toFixed(2)} = \\boxed{${F_residual.toFixed(1)}\\;\\text{${unitF}}} \\]
+                  <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:8px; padding:14px; margin-top:16px;">
+                    <p style="margin:0; font-weight:700; color:#15803d; font-size:1rem; display:flex; align-items:center; gap:8px;">
+                      <i class="fas fa-check-circle"></i> VDI 2230 Final Assembly Specification
+                    </p>
+                    <p style="margin:10px 0 4px;">Wrench Setting: <span style="color:#1d4ed8; font-weight:800; font-size:1.15rem;">${Torque.toFixed(1)} ${unitT}</span></p>
+                    <p style="margin:4px 0;">Nominal Preload: <strong>${Fp_disp}</strong> | Residual: <strong>${F_residual.toFixed(1)} ${unitF}</strong></p>
+                    <p style="margin:4px 0;">Scatter Range: <strong>${F_min.toFixed(1)} – ${F_max.toFixed(1)} ${unitF}</strong></p>
+                    <p style="margin:4px 0;">Yield Utilisation: <strong>${(sig_eq_check/Sy*100).toFixed(1)}%</strong> ${(sig_eq_check/Sy*100)<=90?'✅ Within VDI 2230 90% limit':'⚠️ Exceeds VDI 2230 90% limit — redesign required'}</p>
+                  </div>`);
             }
-            html += `</div>`;
 
             document.getElementById('calculation-details').innerHTML = html;
 
