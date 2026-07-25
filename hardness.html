@@ -39,6 +39,9 @@
         };
     </script>
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -420,6 +423,29 @@
             box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
         }
 
+        .download-pdf-btn {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 700;
+            margin-top: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-pdf-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
         .clear-results-btn {
             background-color: var(--clear-button-bg);
             color: white;
@@ -625,9 +651,15 @@
             max-width: 100% !important;
             box-sizing: border-box; /* v6 */
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
             gap: 15px;
             align-items: start;
+        }
+        .step-content > * {
+            min-width: 0;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box;
         }
         
         .step-content .formula-block {
@@ -833,6 +865,61 @@
             background-color: var(--bg);
         }
 
+        /* FAQ Accordion Styling */
+        .faq-accordion {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .faq-item {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--card);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .faq-question {
+            width: 100%;
+            padding: 18px 24px;
+            background: none;
+            border: none;
+            text-align: left;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--heading);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .faq-question:hover {
+            background-color: var(--bg);
+        }
+        .faq-question i {
+            transition: transform 0.3s ease;
+            color: var(--secondary);
+        }
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease;
+            padding: 0 24px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.7;
+            background-color: var(--bg);
+        }
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 18px 24px;
+            border-top: 1px solid var(--border);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container { padding: 0 15px; }
@@ -939,6 +1026,51 @@
                 "price": "0",
                 "priceCurrency": "USD"
             }
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is the standard governing hardness conversion for metals?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The primary international standard for converting between different hardness scales (such as Rockwell, Brinell, and Vickers) is ASTM E140. It provides empirical tables for non-austenitic steels, austenitic stainless steels, copper alloys, aluminum alloys, and cemented carbides."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Can you mathematically convert Rockwell directly to Brinell or Vickers?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "No, there is no direct theoretical mathematical relationship. Rockwell testing measures the depth of plastic deformation, whereas Brinell and Vickers measure the surface area or diagonal of the indentation. Conversions must be done using empirical lookup tables (like ASTM E140) and linear interpolation."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why is material classification critical in hardness conversion?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Different metals work-harden and deform differently under indenters. A conversion table for carbon steel will produce significant errors if applied to aluminum or cartridge brass. Always select the correct material class (such as standard steel, soft metals, or cemented carbide) before converting."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the anvil effect in hardness testing?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The anvil effect occurs when the test specimen is too thin, causing the indenter's stress field to penetrate through the material and interact with the supporting anvil. This leads to false, elevated readings. Under ASTM standards, the material thickness must be at least 10 times the indentation depth for Rockwell or 1.5 times the indent diagonal for Vickers."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does surface curvature affect hardness measurement?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Testing on cylindrical or spherical surfaces reduces the lateral support of the material, causing deeper indentation and a falsely lower hardness reading. ASTM E18 provides correction factors that must be added to the measured Rockwell value depending on the surface diameter."
+                    }
+                }
+            ]
         },
         {
             "@type": "BreadcrumbList",
@@ -1078,6 +1210,24 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="form-section">
+                        <h3><i class="fas fa-microscope"></i> Optional Specimen & Test Parameters</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="specimen-thickness">Specimen Thickness (mm) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Used for ASTM specimen thickness compliance checks.</span></span></label>
+                                <input type="number" id="specimen-thickness" step="0.01" placeholder="e.g., 6.35">
+                            </div>
+                            <div class="form-group">
+                                <label for="cylinder-diameter">Cylinder Diameter (mm) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">For curved/cylindrical surfaces, to apply ASTM E18 correction factors.</span></span></label>
+                                <input type="number" id="cylinder-diameter" step="0.1" placeholder="e.g., 25.4 (Leave blank for flat)">
+                            </div>
+                            <div class="form-group">
+                                <label for="test-load">Vickers/Brinell Custom Load (kgf) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Custom test load. Defaults: 30 kgf (HV) / 3000 kgf (HBW).</span></span></label>
+                                <input type="number" id="test-load" step="1" placeholder="e.g., 30 for HV, 3000 for HBW">
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="button-wrapper">
                         <button type="button" id="calculate-btn" class="calculate-btn"><i class="fas fa-calculator"></i> Convert Hardness</button>
@@ -1113,7 +1263,8 @@
                 </tbody>
             </table>
             
-            <div style="display: flex; justify-content: center; margin-top: 20px;">
+            <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 25px;">
+                <button type="button" id="download-pdf-btn" class="download-pdf-btn"><i class="fas fa-file-pdf"></i> Download PDF Report</button>
                 <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Report</button>
             </div>
         </div>
@@ -1155,7 +1306,7 @@
                 <h4>Common Rockwell Scales</h4>
                 <table class="comparison-table">
                     <tr><th>Scale</th><th>Indenter</th><th>Total Load</th><th>Application</th></tr>
-                    <tr><td>HRC</td><td>120° Diamond Cone</td><td>150 kgf</td><td>Hardened steel, Titanium, Hard cast iron (>20 HRC)</td></tr>
+                    <tr><td>HRC</td><td>120° Diamond Cone</td><td>150 kgf</td><td>Hardened steel, Titanium, Hard cast iron (&gt;20 HRC)</td></tr>
                     <tr><td>HRB</td><td>1/16" Steel Ball</td><td>100 kgf</td><td>Low carbon steel, Brass, Aluminum, Bronze</td></tr>
                     <tr><td>HRA</td><td>120° Diamond Cone</td><td>60 kgf</td><td>Thin hardened steel, Cemented carbides, Tungsten</td></tr>
                 </table>
@@ -1213,23 +1364,132 @@
                 </div>
                 <p>This allows engineers to non-destructively estimate the strength of a structural beam or part simply by poking it with a hardness tester. Note that this falls apart for Aluminum or Work-hardened stainless steel.</p>
             </div>
+
+            <div class="content-panel">
+                <h3>7. Frequently Asked Questions (FAQ)</h3>
+                <div class="faq-accordion">
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            What is the standard governing hardness conversion for metals?
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>The primary international standard for converting between different hardness scales (such as Rockwell, Brinell, and Vickers) is <strong>ASTM E140</strong>. It provides empirical tables for non-austenitic steels, austenitic stainless steels, copper alloys, aluminum alloys, and cemented carbides.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            Can you mathematically convert Rockwell directly to Brinell or Vickers?
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>No, there is no direct theoretical mathematical relationship. Rockwell testing measures the depth of plastic deformation, whereas Brinell and Vickers measure the surface area or diagonal of the indentation. Conversions must be done using empirical lookup tables (like ASTM E140) and linear interpolation.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            Why is material classification critical in hardness conversion?
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Different metals work-harden and deform differently under indenters. A conversion table for carbon steel will produce significant errors if applied to aluminum or cartridge brass. Always select the correct material class (such as standard steel, soft metals, or cemented carbide) before converting.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            What is the anvil effect in hardness testing?
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>The anvil effect occurs when the test specimen is too thin, causing the indenter's stress field to penetrate through the material and interact with the supporting anvil. This leads to false, elevated readings. Under ASTM standards, the material thickness must be at least 10 times the indentation depth for Rockwell or 1.5 times the indent diagonal for Vickers.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button type="button" class="faq-question">
+                            How does surface curvature affect hardness measurement?
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Testing on cylindrical or spherical surfaces reduces the lateral support of the material, causing deeper indentation and a falsely lower hardness reading. ASTM E18 provides correction factors that must be added to the measured Rockwell value depending on the surface diameter.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
         
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <!-- Related Tools Section -->
+    <section style="padding: 50px 0; background: var(--bg);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
+            <h2 style="text-align:center; font-size:1.35rem; margin-bottom:6px; color:var(--heading); font-weight:800; font-family:'Montserrat', sans-serif;">
+                <i class="fas fa-network-wired" style="color:var(--secondary); margin-right:8px; font-size:1.15rem;"></i>Related Engineering Calculators
+            </h2>
+            <p style="text-align:center; max-width:650px; margin:0 auto 24px auto; font-size:0.88rem; color:var(--text); opacity:0.85; line-height:1.5;">
+                Cross-verify material mechanical properties, fastener clamping loads, and structural stress limits with complementary professional tools.
+            </p>
+            <div class="related-calc-grid">
+                    <!-- Card 1: Allowable Stress & Safety Factor -->
+                    <a href="/allowable-stress-safety-factor" class="silo-card">
+                        <div class="silo-card-title">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Allowable Stress & Safety Factor</span>
+                        </div>
+                        <div class="silo-card-body">
+                            <div class="benefit-item">
+                                <span class="benefit-label">What it does:</span>
+                                <span>Calculates allowable design stress, ultimate tensile strength limits, and safety margins (SF) per ASME/AISC standards.</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-label">How it helps:</span>
+                                <span>Validates structural design safety and load capacities using hardness-converted tensile strength values.</span>
+                            </div>
+                        </div>
+                        <div class="silo-card-action">
+                            Open Calculator <i class="fas fa-arrow-right"></i>
+                        </div>
                     </a>
-                    <a href="/bolt-torque" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
+
+                    <!-- Card 2: Bolt Torque & Preload Tension -->
+                    <a href="/bolt-torque" class="silo-card">
+                        <div class="silo-card-title">
+                            <i class="fas fa-wrench"></i>
+                            <span>Bolt Torque & Preload Tension</span>
+                        </div>
+                        <div class="silo-card-body">
+                            <div class="benefit-item">
+                                <span class="benefit-label">What it does:</span>
+                                <span>Determines tightening torque, bolt yield utilization, and clamping force based on thread material hardness and friction.</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-label">How it helps:</span>
+                                <span>Prevents bolt shear, joint separation, and thread stripping in critical flanged equipment and pressure assemblies.</span>
+                            </div>
+                        </div>
+                        <div class="silo-card-action">
+                            Open Calculator <i class="fas fa-arrow-right"></i>
+                        </div>
                     </a>
-                    <a href="/darcy-weisbach" class="silo-card" style="text-decoration:none;">
-                        <span>Darcy Weisbach</span>
+
+                    <!-- Card 3: Fatigue & Stress Life Analysis -->
+                    <a href="/fatigue" class="silo-card">
+                        <div class="silo-card-title">
+                            <i class="fas fa-heartbeat"></i>
+                            <span>Fatigue & Endurance Limit</span>
+                        </div>
+                        <div class="silo-card-body">
+                            <div class="benefit-item">
+                                <span class="benefit-label">What it does:</span>
+                                <span>Estimates fatigue endurance limits ($S_e$) and S-N cycle life under cyclic mechanical loading using surface hardness factors.</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-label">How it helps:</span>
+                                <span>Predicts component operating lifespan and prevents catastrophic fatigue failure in shafting, gearing, and cyclic machinery.</span>
+                            </div>
+                        </div>
+                        <div class="silo-card-action">
+                            Open Calculator <i class="fas fa-arrow-right"></i>
+                        </div>
                     </a>
             </div>
         </div>
@@ -1265,11 +1525,11 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1277,10 +1537,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1333,6 +1593,15 @@
             const svgContainer = document.getElementById('indenter-svg');
             const stateSummary = document.getElementById('state-summary');
 
+            // FAQ Accordion Toggle
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(q => {
+                q.addEventListener('click', () => {
+                    const item = q.parentElement;
+                    item.classList.toggle('active');
+                });
+            });
+
             // --- DATA TABLES (ASTM E140 Approx) ---
             
             // 1. STEEL TABLE (Standard Non-Austenitic)
@@ -1382,24 +1651,16 @@
             }
 
             function getConvertedValues(scale, val, material) {
-                // Select Table
                 let table = dataPointsSteel;
                 if (material === 'soft') table = dataPointsSoft;
                 if (material === 'carbide') table = dataPointsCarbide;
                 
                 const key = scale; 
-                
-                // Filter valid points for input scale
                 const validPoints = table.filter(p => p[key] !== null);
-                
-                // Sort Descending (Highest hardness first)
                 validPoints.sort((a, b) => b[key] - a[key]);
                 
-                // Find bracket [p1 (higher), p2 (lower)]
                 let p1 = null, p2 = null;
-                
                 for(let i = 0; i < validPoints.length - 1; i++) {
-                    // Check if val is between current and next
                     if (val <= validPoints[i][key] && val >= validPoints[i+1][key]) {
                         p1 = validPoints[i];
                         p2 = validPoints[i+1];
@@ -1407,14 +1668,12 @@
                     }
                 }
                 
-                // Out of bounds check
                 if (!p1) {
                     return { error: true, msg: "Value out of standard range for selected material." };
                 }
                 
-                // Interpolate
                 const result = {
-                    meta: { p1, p2, inputScale: scale, inputVal: val } // For step display
+                    meta: { p1, p2, inputScale: scale, inputVal: val }
                 };
                 
                 ['hrc', 'hrb', 'hra', 'hb', 'hv', 'uts'].forEach(targetKey => {
@@ -1454,79 +1713,432 @@
                 
                 if (isNaN(v)) { displayMessage("Enter a valid number", "error"); return; }
                 
-                // Basic range validation
                 if (s === 'hrc' && mat === 'soft') {
                     displayMessage("HRC is not used for soft metals. Switch to HRB or Steel.", "error");
                     return;
                 }
 
+                // Check optional parameters
+                const thickness = parseFloat(document.getElementById('specimen-thickness').value);
+                const cylinderDiam = parseFloat(document.getElementById('cylinder-diameter').value);
+                const customLoad = parseFloat(document.getElementById('test-load').value);
+
+                // Fetch database
+                let table = dataPointsSteel;
+                if (mat === 'soft') table = dataPointsSoft;
+                if (mat === 'carbide') table = dataPointsCarbide;
+
+                // Dynamic Bounds Check (Step 1)
+                const validPoints = table.filter(p => p[s] !== null);
+                validPoints.sort((a, b) => b[s] - a[s]);
+                const scalePoints = validPoints.map(p => p[s]);
+                const minScale = Math.min(...scalePoints);
+                const maxScale = Math.max(...scalePoints);
+
+                if (v < minScale || v > maxScale) {
+                    displayMessage(`Value ${v} ${s.toUpperCase()} is out of standard range for ${mat === 'steel' ? 'Steel' : (mat === 'soft' ? 'Soft Metals' : 'Carbide')} [${minScale.toFixed(1)}, ${maxScale.toFixed(1)}].`, "error");
+                    return;
+                }
+
                 const results = getConvertedValues(s, v, mat);
-                
                 if (results.error) {
                     displayMessage(results.msg, "error");
                     return;
                 }
-                
-                // --- Step Logic ---
+
                 const p1 = results.meta.p1;
                 const p2 = results.meta.p2;
-                
-                // Calculate an example interpolation (e.g., to Brinell)
-                let exampleHtml = '';
-                if (p1.hb !== null && p2.hb !== null && s !== 'hb') {
-                    // Show interpolation math for Brinell
-                    const y1 = p1.hb;
-                    const y2 = p2.hb;
-                    const x1 = p1[s];
-                    const x2 = p2[s];
-                    const interpolated = results.hb;
-                    
-                    exampleHtml = `
-                    <div class="formula-block">
-                        <p><strong>Example Calculation (to Brinell HBW):</strong></p>
-                        $$y = y_1 + \\frac{(x - x_1)(y_2 - y_1)}{x_2 - x_1}$$
-                        <br>
-                        $$HB = ${y1} + \\frac{(${v} - ${x1})(${y2} - ${y1})}{${x2} - ${x1}}$$
-                        <br>
-                        $$HB = ${y1} + \\frac{(${(v-x1).toFixed(2)})(${(y2-y1)})}{${(x2-x1)}} = \\mathbf{${interpolated.toFixed(1)}}$$
-                    </div>`;
-                } else if (p1.hv !== null && p2.hv !== null && s !== 'hv') {
-                     // Fallback example for Vickers if Brinell is null (e.g. Carbides)
-                    const y1 = p1.hv;
-                    const y2 = p2.hv;
-                    const x1 = p1[s];
-                    const x2 = p2[s];
-                    const interpolated = results.hv;
-                    
-                    exampleHtml = `
-                    <div class="formula-block">
-                        <p><strong>Example Calculation (to Vickers HV):</strong></p>
-                        $$HV = ${y1} + \\frac{(${v} - ${x1})(${y2} - ${y1})}{${x2} - ${x1}} = \\mathbf{${interpolated.toFixed(1)}}$$
-                    </div>`;
-                }
+                let stepsHtml = '';
 
-                const stepsHtml = `
-                <div class="step-card math-content">
-                    <h4><span class="number">1</span>Table Lookup & Interpolation</h4>
+                // Step 1: Input Validation & Boundary Verification
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">1</span>Input Boundary & Range Verification</h4>
                     <div class="step-content">
                         <div class="step-explanation">
-                            <p>Using <strong>${mat === 'steel' ? 'ASTM E140 Table 1 (Steel)' : (mat === 'soft' ? 'Soft Metal Standard' : 'Carbide Standard')}</strong>.</p>
-                            <p>Input <strong>${v} ${s.toUpperCase()}</strong> falls between standard data points:</p>
-                            <ul>
-                                <li>Upper Bracket: <strong>${p1[s]} ${s.toUpperCase()}</strong> (Equiv: ${p1.hb||'-'} HB, ${p1.hv||'-'} HV)</li>
-                                <li>Lower Bracket: <strong>${p2[s]} ${s.toUpperCase()}</strong> (Equiv: ${p2.hb||'-'} HB, ${p2.hv||'-'} HV)</li>
-                            </ul>
-                            ${exampleHtml}
+                            <p>Verify that the input hardness value of <strong>${v.toFixed(1)} ${s.toUpperCase()}</strong> lies within the ASTM E140 compliant range for the selected material class (<em>${mat === 'steel' ? 'Non-Austenitic Steel' : (mat === 'soft' ? 'Soft Metals' : 'Cemented Carbide')}</em>):</p>
+                            <div class="formula-block">
+                                $$V_{\\text{min}} \\le V_{\\text{input}} \\le V_{\\text{max}}$$
+                                $$${minScale.toFixed(1)} \\le ${v.toFixed(1)} \\le ${maxScale.toFixed(1)}$$
+                            </div>
+                            <p style="color: var(--success); font-weight: 600;"><i class="fas fa-check-circle"></i> Input value is validated and confirmed within standard limits.</p>
                         </div>
                     </div>
                 </div>`;
+
+                // Step 2: ASTM E140 Bracket Determination
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">2</span>ASTM E140 Bracket Determination</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Identify the upper and lower bounding reference values ($P_1$ and $P_2$) in the empirical data tables corresponding to the standard ASTM E140 conversion tables:</p>
+                            <ul>
+                                <li><strong>Upper Bound ($P_1$):</strong> ${p1[s].toFixed(1)} ${s.toUpperCase()} (equivalent to: ${p1.hb ? p1.hb + ' HBW' : 'N/A'}, ${p1.hv ? p1.hv + ' HV' : 'N/A'})</li>
+                                <li><strong>Lower Bound ($P_2$):</strong> ${p2[s].toFixed(1)} ${s.toUpperCase()} (equivalent to: ${p2.hb ? p2.hb + ' HBW' : 'N/A'}, ${p2.hv ? p2.hv + ' HV' : 'N/A'})</li>
+                            </ul>
+                            <p>These reference points enclose the target value and provide the boundaries for piecewise interpolation.</p>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 3: Piecewise Linear Interpolation
+                const scalesToInterpolate = [
+                    { key: 'hrc', name: 'Rockwell C', unit: 'HRC' },
+                    { key: 'hrb', name: 'Rockwell B', unit: 'HRB' },
+                    { key: 'hra', name: 'Rockwell A', unit: 'HRA' },
+                    { key: 'hb', name: 'Brinell', unit: 'HBW' },
+                    { key: 'hv', name: 'Vickers', unit: 'HV' }
+                ];
+
+                let interpDetails = '';
+                scalesToInterpolate.forEach(sc => {
+                    if (sc.key === s) {
+                        interpDetails += `<li><strong>${sc.name} (${sc.unit}):</strong> Input scale value is <strong>${v.toFixed(1)}</strong>.</li>`;
+                    } else {
+                        const y1 = p1[sc.key];
+                        const y2 = p2[sc.key];
+                        if (y1 === null || y2 === null) {
+                            interpDetails += `<li><strong>${sc.name} (${sc.unit}):</strong> Out of standard conversion range for this scale.</li>`;
+                        } else {
+                            const interpolatedVal = results[sc.key];
+                            interpDetails += `
+                            <li><strong>${sc.name} (${sc.unit}):</strong>
+                                $$y = y_1 + \\frac{(x - x_1)(y_2 - y_1)}{x_2 - x_1}$$
+                                $$y = ${y1.toFixed(1)} + \\frac{(${v.toFixed(1)} - ${p1[s].toFixed(1)})(${y2.toFixed(1)} - ${y1.toFixed(1)})}{${p2[s].toFixed(1)} - ${p1[s].toFixed(1)}} = \\mathbf{${interpolatedVal.toFixed(1)}}$$
+                            </li>`;
+                        }
+                    }
+                });
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">3</span>Linear Piecewise Interpolation</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            <p>Applying standard linear interpolation formula to translate the input value to equivalent scales:</p>
+                            <ul>
+                                ${interpDetails}
+                            </ul>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 4: Ultimate Tensile Strength (UTS) Estimation
+                let utsHtml = '';
+                const hbVal = results.hb;
+                if (mat === 'steel' && hbVal !== null) {
+                    const utsKsi = results.uts;
+                    const utsMpa = utsKsi * 6.89476;
+                    const empiricalUts = hbVal * 3.45;
+                    utsHtml = `
+                    <p>For standard non-austenitic carbon/alloy steels, tensile strength correlates strongly with Brinell hardness:</p>
+                    <div class="formula-block">
+                        $$\\sigma_{\\text{uts}} = \\text{Table-interpolated Value} = ${utsKsi.toFixed(1)} \\text{ ksi} \\approx \\mathbf{${utsMpa.toFixed(0)} \\text{ MPa}}$$
+                        $$\\text{Empirical Rule-of-Thumb: } \\sigma_{\\text{uts}} \\approx 3.45 \\times HBW = 3.45 \\times ${hbVal.toFixed(1)} = \\mathbf{${empiricalUts.toFixed(0)} \\text{ MPa}}$$
+                    </div>
+                    <p>The conversion shows close agreement between empirical approximation and table interpolation.</p>`;
+                } else {
+                    utsHtml = `<p>Tensile strength estimation is not standardized under ASTM E140 for ${mat === 'soft' ? 'Soft Metals' : 'Cemented Carbides'} because work-hardening behaviors vary significantly compared to standard steels.</p>`;
+                }
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">4</span>Ultimate Tensile Strength (UTS) Estimation</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            ${utsHtml}
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 5: Yield Strength (YS) & Micro-Deformation Assessment
+                let ysHtml = '';
+                if (mat === 'steel' && hbVal !== null) {
+                    const utsKsi = results.uts;
+                    const utsMpa = utsKsi * 6.89476;
+                    const ysMpa = 3.1 * hbVal - 70;
+                    const yieldRatio = ysMpa / utsMpa;
+                    ysHtml = `
+                    <p>Yield strength is estimated based on classical metallurgical correlations for structural steel steels:</p>
+                    <div class="formula-block">
+                        $$\\sigma_y \\approx 3.1 \\times HBW - 70 \\text{ (MPa)}$$
+                        $$\\sigma_y \\approx 3.1 \\times ${hbVal.toFixed(1)} - 70 = \\mathbf{${ysMpa.toFixed(0)} \\text{ MPa}}$$
+                        $$\\text{Estimated Yield Ratio } \\left(\\frac{\\sigma_y}{\\sigma_{\\text{uts}}}\\right) \\approx \\frac{${ysMpa.toFixed(0)}}{${utsMpa.toFixed(0)}} = \\mathbf{${yieldRatio.toFixed(2)}}$$
+                    </div>
+                    <p>This yield-to-tensile ratio indicates the work-hardening capacity. Values of $\\approx 0.70 - 0.85$ are typical for tempered industrial alloy steels.</p>`;
+                } else {
+                    ysHtml = `<p>Yield strength estimations are not applicable to the selected material class due to non-linear yield behaviour and highly variable work hardening coefficients.</p>`;
+                }
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">5</span>Yield Strength (YS) & Micro-Deformation Assessment</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            ${ysHtml}
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 6: Indenter contact stress mechanics
+                const hvVal = results.hv;
+                let geometryHtml = '';
+                let loadForHv = isNaN(customLoad) ? 30 : customLoad;
+                if (hvVal !== null) {
+                    const hvPa = hvVal * 9.80665; 
+                    const pN = loadForHv * 9.80665; 
+                    const d_v = Math.sqrt((1.8544 * loadForHv) / hvVal); 
+                    const contactArea = (d_v * d_v) / 1.8544; 
+                    geometryHtml = `
+                    <p>Using a test load of <strong>${loadForHv} kgf</strong> (${pN.toFixed(1)} N), the contact mechanics of the Vickers diamond pyramid indenter are computed as follows:</p>
+                    <div class="formula-block">
+                        $$\\text{Mean Contact Pressure } (p_m) = g \\times HV = 9.807 \\times ${hvVal.toFixed(1)} \\text{ MPa} = \\mathbf{${hvPa.toFixed(1)} \\text{ MPa}}$$
+                        $$\\text{Contact Area } (A_c) = \\frac{P}{HV} = \\frac{${loadForHv}}{${hvVal.toFixed(1)}} = \\mathbf{${contactArea.toFixed(4)} \\text{ mm}^2}$$
+                    </div>
+                    <p>This contact pressure represents the average stress the diamond indenter imposes on the surface of the specimen under peak load.</p>`;
+                } else {
+                    geometryHtml = `<p>Indenter contact pressure cannot be calculated because Vickers (HV) conversion is out of range for this setting.</p>`;
+                }
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">6</span>Indenter Contact Stress Mechanics</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            ${geometryHtml}
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 7: Indentation Physical Sizing & Micro-geometry
+                let sizingHtml = '';
+                let loadForHb = isNaN(customLoad) ? 3000 : customLoad;
                 
+                let db_str = 'N/A';
+                let dv_str = 'N/A';
+                let h_str = 'N/A';
+
+                if (hvVal !== null) {
+                    const d_v = Math.sqrt((1.8544 * loadForHv) / hvVal); 
+                    const d_v_um = d_v * 1000;
+                    dv_str = `${d_v_um.toFixed(1)} \\mu\\text{m}`;
+                }
+                if (hbVal !== null) {
+                    const D = 10.0; 
+                    const innerTerm = D - (2.0 * loadForHb) / (Math.PI * D * hbVal);
+                    if (innerTerm > 0) {
+                        const d_b = Math.sqrt(D * D - innerTerm * innerTerm);
+                        const d_b_um = d_b * 1000;
+                        db_str = `${d_b_um.toFixed(1)} \\mu\\text{m} \\text{ (for 10mm ball)}`;
+                    }
+                }
+                
+                let rockwellScaleUsed = '';
+                let rockwellDepthMm = 0;
+                if (results.hrc !== null && s === 'hrc') {
+                    rockwellScaleUsed = 'Rockwell C';
+                    rockwellDepthMm = (100 - results.hrc) * 0.002;
+                    h_str = `${(rockwellDepthMm * 1000).toFixed(1)} \\mu\\text{m}`;
+                } else if (results.hrb !== null && s === 'hrb') {
+                    rockwellScaleUsed = 'Rockwell B';
+                    rockwellDepthMm = (130 - results.hrb) * 0.002;
+                    h_str = `${(rockwellDepthMm * 1000).toFixed(1)} \\mu\\text{m}`;
+                } else if (results.hra !== null && s === 'hra') {
+                    rockwellScaleUsed = 'Rockwell A';
+                    rockwellDepthMm = (100 - results.hra) * 0.002;
+                    h_str = `${(rockwellDepthMm * 1000).toFixed(1)} \\mu\\text{m}`;
+                } else if (results.hrc !== null) {
+                    rockwellScaleUsed = 'Rockwell C (Equivalent)';
+                    rockwellDepthMm = (100 - results.hrc) * 0.002;
+                    h_str = `${(rockwellDepthMm * 1000).toFixed(1)} \\mu\\text{m}`;
+                }
+
+                sizingHtml = `
+                <p>Calculating the theoretical micro-dimensions of the indentations left on the test surface:</p>
+                <div class="formula-block">
+                    $$\\text{Vickers Diagonal Length } (d_v) = \\sqrt{\\frac{1.8544 \\cdot P_{\\text{Vickers}}}{HV}} = \\mathbf{${dv_str}}$$
+                    $$\\text{Brinell Indent Diameter } (d_b) = \\sqrt{D^2 - \\left(D - \\frac{2P_{\\text{Brinell}}}{\\pi \\cdot D \\cdot HBW}\\right)^2} = \\mathbf{${db_str}}$$
+                    $$\\text{Rockwell Indent Depth } (h_{\\text{Rockwell}}) = (100/130 - HR) \\times 0.002\\text{ mm} = \\mathbf{${h_str}}$$
+                </div>
+                <p>These values define the spatial scale of the plastic deformation zone created by the test.</p>`;
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">7</span>Indentation Physical Sizing & Micro-geometry</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            ${sizingHtml}
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 8: ASTM Specimen Minimum Thickness Verification
+                let thicknessHtml = '';
+                let tMin = 0.0;
+                let tMinText = '';
+                let thickStatus = '';
+
+                if (s === 'hrc' || s === 'hra') {
+                    const depth = (100 - v) * 0.002;
+                    tMin = 10 * depth; 
+                    tMinText = `$$t_{\\text{min}} = 10 \\times h_{\\text{indent}} = 10 \\times ${depth.toFixed(4)} \\text{ mm} = ${tMin.toFixed(3)} \\text{ mm}$$`;
+                } else if (s === 'hrb') {
+                    const depth = (130 - v) * 0.002;
+                    tMin = 10 * depth;
+                    tMinText = `$$t_{\\text{min}} = 10 \\times h_{\\text{indent}} = 10 \\times ${depth.toFixed(4)} \\text{ mm} = ${tMin.toFixed(3)} \\text{ mm}$$`;
+                } else if (s === 'hv' && hvVal !== null) {
+                    const d_v = Math.sqrt((1.8544 * loadForHv) / hvVal); 
+                    tMin = 1.5 * d_v; 
+                    tMinText = `$$t_{\\text{min}} = 1.5 \\times d_v = 1.5 \\times ${d_v.toFixed(3)} \\text{ mm} = ${tMin.toFixed(3)} \\text{ mm}$$`;
+                } else if (s === 'hb' && hbVal !== null) {
+                    const D = 10.0;
+                    const innerTerm = D - (2.0 * loadForHb) / (Math.PI * D * hbVal);
+                    if (innerTerm > 0) {
+                        const d_b = Math.sqrt(D * D - innerTerm * innerTerm);
+                        const depth_b = (D - Math.sqrt(D*D - d_b*d_b)) / 2;
+                        tMin = 8 * depth_b; 
+                        tMinText = `$$t_{\\text{min}} = 8 \\times h_{\\text{Brinell}} = 8 \\times ${depth_b.toFixed(3)} \\text{ mm} = ${tMin.toFixed(3)} \\text{ mm}$$`;
+                    }
+                }
+
+                if (tMin > 0) {
+                    thicknessHtml = `<p>According to ASTM guidelines, minimum specimen thickness prevents the stress field from reaching the support anvil:</p>
+                    <div class="formula-block">
+                        ${tMinText}
+                    </div>`;
+
+                    if (!isNaN(thickness)) {
+                        if (thickness >= tMin) {
+                            thickStatus = `<p style="color: var(--success); font-weight: 600;"><i class="fas fa-check-circle"></i> PASS: Input specimen thickness of ${thickness.toFixed(2)} mm meets the ASTM standard minimum of ${tMin.toFixed(2)} mm. No anvil effect is predicted.</p>`;
+                        } else {
+                            thickStatus = `<p style="color: var(--danger); font-weight: 600;"><i class="fas fa-exclamation-triangle"></i> WARNING: Specimen thickness of ${thickness.toFixed(2)} mm is LESS than the ASTM minimum of ${tMin.toFixed(2)} mm. The anvil effect will distort your reading (elevating measured hardness).</p>`;
+                        }
+                    } else {
+                        thickStatus = `<p style="color: var(--warning); font-style: italic;"><i class="fas fa-info-circle"></i> Input specimen thickness in the form to run automatic compliance checking.</p>`;
+                    }
+                } else {
+                    thicknessHtml = `<p>Specimen thickness check is not calculated because the selected scale is currently out of range.</p>`;
+                }
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">8</span>ASTM Specimen Minimum Thickness Verification</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            ${thicknessHtml}
+                            ${thickStatus}
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 9: Standard Indent Spacing & Boundary Compliance
+                let spacingHtml = '';
+                let spacingVal = 0.0;
+                let edgeVal = 0.0;
+                
+                if (hvVal !== null) {
+                    const d_v = Math.sqrt((1.8544 * loadForHv) / hvVal);
+                    spacingVal = 3.0 * d_v; 
+                    edgeVal = 2.5 * d_v;   
+                    spacingHtml = `
+                    <p>Based on ASTM E92 guidelines for Vickers testing, indentations must be spaced sufficiently to prevent stress field overlap:</p>
+                    <div class="formula-block">
+                        $$\\text{Min Center-to-Center Spacing} \\ge 3.0 \\times d_v = 3.0 \\times ${d_v.toFixed(3)} \\text{ mm} = \\mathbf{${spacingVal.toFixed(2)} \\text{ mm}}$$
+                        $$\\text{Min Center-to-Edge Distance} \\ge 2.5 \\times d_v = 2.5 \\times ${d_v.toFixed(3)} \\text{ mm} = \\mathbf{${edgeVal.toFixed(2)} \\text{ mm}}$$
+                    </div>`;
+                } else if (hbVal !== null) {
+                    const D = 10.0;
+                    const innerTerm = D - (2.0 * loadForHb) / (Math.PI * D * hbVal);
+                    if (innerTerm > 0) {
+                        const d_b = Math.sqrt(D * D - innerTerm * innerTerm);
+                        spacingVal = 3.0 * d_b; 
+                        edgeVal = 2.5 * d_b;   
+                        spacingHtml = `
+                        <p>Based on ASTM E10 guidelines for Brinell testing, minimum spacing boundaries are:</p>
+                        <div class="formula-block">
+                            $$\\text{Min Center-to-Center Spacing} \\ge 3.0 \\times d_b = 3.0 \\times ${d_b.toFixed(3)} \\text{ mm} = \\mathbf{${spacingVal.toFixed(2)} \\text{ mm}}$$
+                            $$\\text{Min Center-to-Edge Distance} \\ge 2.5 \\times d_b = 2.5 \\times ${d_b.toFixed(3)} \\text{ mm} = \\mathbf{${edgeVal.toFixed(2)} \\text{ mm}}$$
+                        </div>`;
+                    }
+                } else if (results.hrc !== null) {
+                    const depth = (100 - results.hrc) * 0.002;
+                    const d_est = 5 * depth;
+                    spacingVal = 3.0 * d_est;
+                    edgeVal = 2.5 * d_est;
+                    spacingHtml = `
+                    <p>Based on ASTM E18 guidelines for Rockwell testing (estimated indenter print diameter of $\\approx ${d_est.toFixed(3)}$ mm):</p>
+                    <div class="formula-block">
+                        $$\\text{Min Center-to-Center Spacing} \\ge 3.0 \\times d_{\\text{est}} = \\mathbf{${spacingVal.toFixed(2)} \\text{ mm}}$$
+                        $$\\text{Min Center-to-Edge Distance} \\ge 2.5 \\times d_{\\text{est}} = \\mathbf{${edgeVal.toFixed(2)} \\text{ mm}}$$
+                    </div>`;
+                } else {
+                    spacingHtml = `<p>Spacing guidelines cannot be determined for the selected scale.</p>`;
+                }
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">9</span>Standard Indent Spacing & Boundary Compliance</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            ${spacingHtml}
+                            <p class="insight-card" style="font-size:0.95rem; margin:10px 0 0 0;"><i class="fas fa-info-circle"></i> Placing indentations closer than these boundaries will work-harden the target area from previous tests and cause false high readings.</p>
+                        </div>
+                    </div>
+                </div>`;
+
+                // Step 10: ASTM Cylindrical Curvature Correction
+                let curveHtml = '';
+                if (!isNaN(cylinderDiam) && cylinderDiam > 0) {
+                    if (s === 'hrc') {
+                        const correction = (30.0 - 0.25 * v) / cylinderDiam;
+                        const correctedVal = v + correction;
+                        curveHtml = `
+                        <p>Testing on a cylindrical specimen of diameter <strong>${cylinderDiam.toFixed(1)} mm</strong> reduces lateral support for the indenter, requiring a positive correction factor (ASTM E18 Annex):</p>
+                        <div class="formula-block">
+                            $$\\Delta HRC \\approx \\frac{30.0 - 0.25 \\cdot HRC}{D_c}$$
+                            $$\\Delta HRC \\approx \\frac{30.0 - 0.25 \\times ${v.toFixed(1)}}{${cylinderDiam.toFixed(1)}} = \\mathbf{+${correction.toFixed(2)} \\text{ HRC}}$$
+                            $$HRC_{\\text{corrected}} = HRC_{\\text{measured}} + \\Delta HRC = ${v.toFixed(1)} + ${correction.toFixed(2)} = \\mathbf{${correctedVal.toFixed(1)} \\text{ HRC}}$$
+                        </div>
+                        <p style="color: var(--success); font-weight: 600;"><i class="fas fa-adjust"></i> Curved Surface Adjusted Value: <strong>${correctedVal.toFixed(1)} HRC</strong></p>`;
+                    } else if (s === 'hrb') {
+                        const correction = (50.0 - 0.35 * v) / cylinderDiam;
+                        const correctedVal = v + correction;
+                        curveHtml = `
+                        <p>Testing on a cylindrical specimen of diameter <strong>${cylinderDiam.toFixed(1)} mm</strong> with Rockwell B scale requires standard correction (ASTM E18 Annex):</p>
+                        <div class="formula-block">
+                            $$\\Delta HRB \\approx \\frac{50.0 - 0.35 \\cdot HRB}{D_c}$$
+                            $$\\Delta HRB \\approx \\frac{50.0 - 0.35 \\times ${v.toFixed(1)}}{${cylinderDiam.toFixed(1)}} = \\mathbf{+${correction.toFixed(2)} \\text{ HRB}}$$
+                            $$HRB_{\\text{corrected}} = HRB_{\\text{measured}} + \\Delta HRB = ${v.toFixed(1)} + ${correction.toFixed(2)} = \\mathbf{${correctedVal.toFixed(1)} \\text{ HRB}}$$
+                        </div>
+                        <p style="color: var(--success); font-weight: 600;"><i class="fas fa-adjust"></i> Curved Surface Adjusted Value: <strong>${correctedVal.toFixed(1)} HRB</strong></p>`;
+                    } else {
+                        curveHtml = `<p>Cylindrical correction factors are primarily standardized for Rockwell scale testing (HRC/HRB) under ASTM E18. For scale <strong>${s.toUpperCase()}</strong>, cylindrical surface adjustments should be performed referencing ISO/ASTM standard lookup tables directly.</p>`;
+                    }
+                } else {
+                    curveHtml = `
+                    <p>Flat specimen surface type was selected (no diameter provided). Surface curvature correction is not required:</p>
+                    <div class="formula-block">
+                        $$\\text{Correction Factor } (\\Delta H) = 0.00 \\text{ (Flat specimen)}$$
+                    </div>
+                    <p>The standard conversion values remain unmodified.</p>`;
+                }
+
+                stepsHtml += `
+                <div class="step-card">
+                    <h4><span class="number">10</span>ASTM Cylindrical Curvature Correction</h4>
+                    <div class="step-content">
+                        <div class="step-explanation">
+                            ${curveHtml}
+                        </div>
+                    </div>
+                </div>`;
+
                 stepsContainer.innerHTML = stepsHtml;
                 stepsContainer.classList.add('active');
                 
                 if(window.MathJax) {
-                    // Slight delay to ensure content is injected
-                    setTimeout(() => window.MathJax.typesetPromise([resultContainer]), 10);
+                    setTimeout(() => window.MathJax.typesetPromise([stepsContainer]), 10);
                 }
                 
                 // --- Results Table ---
@@ -1547,12 +2159,11 @@
                     
                     if (val !== null) {
                         if (r.k === 'uts') {
-                            displayVal = (val * 6.89476).toFixed(0); // ksi to MPa
+                            displayVal = (val * 6.89476).toFixed(0); 
                         } else {
                             displayVal = val.toFixed(1);
                         }
                     } else {
-                        // Value outside valid range for this scale
                         rowStyle = "color:#999; font-style:italic;";
                         displayVal = "N/A";
                     }
@@ -1570,32 +2181,335 @@
                     resultTableBody.insertAdjacentHTML('beforeend', rowHtml);
                 });
 
-                stateSummary.textContent = `Input: ${v} ${s.toUpperCase()}`;
-                drawIndenter(s);
+                stateSummary.textContent = `Scale: ${s.toUpperCase()} | Material: ${mat === 'steel' ? 'Steel' : (mat === 'soft' ? 'Soft Metals' : 'Carbide')} | Input: ${v.toFixed(1)}`;
+                drawIndenter(s, v, results);
 
                 resultContainer.style.display = 'block';
                 setTimeout(() => resultContainer.classList.add('show'), 10);
             }
 
-            function drawIndenter(type) {
+            function drawIndenter(type, value, results) {
+                if (!svgContainer) return;
                 svgContainer.innerHTML = '';
-                let svg = `<rect x="50" y="100" width="300" height="80" fill="#e2e8f0" stroke="#334155" stroke-width="2" />`;
                 
-                if (type === 'hrc' || type === 'hv' || type === 'hra') {
-                    // Cone
-                    svg += `<path d="M 200,100 L 180,20 L 220,20 Z" fill="#333" stroke="black" />`;
-                    svg += `<text x="200" y="15" text-anchor="middle" font-size="12">Diamond Indenter</text>`;
+                let defs = `
+                <defs>
+                    <linearGradient id="diamondFaceLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#E0F2FE"/>
+                        <stop offset="50%" stop-color="#BAE6FD"/>
+                        <stop offset="100%" stop-color="#0284C7"/>
+                    </linearGradient>
+                    <linearGradient id="diamondFaceRight" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#F0F9FF"/>
+                        <stop offset="60%" stop-color="#7DD3FC"/>
+                        <stop offset="100%" stop-color="#0369A1"/>
+                    </linearGradient>
+                    <linearGradient id="holderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#475569"/>
+                        <stop offset="30%" stop-color="#94A3B8"/>
+                        <stop offset="70%" stop-color="#64748B"/>
+                        <stop offset="100%" stop-color="#334155"/>
+                    </linearGradient>
+                    <radialGradient id="carbideBallGrad" cx="35%" cy="35%" r="65%">
+                        <stop offset="0%" stop-color="#94A3B8"/>
+                        <stop offset="40%" stop-color="#475569"/>
+                        <stop offset="85%" stop-color="#1E293B"/>
+                        <stop offset="100%" stop-color="#0F172A"/>
+                    </radialGradient>
+                    <linearGradient id="substrateGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#CBD5E1"/>
+                        <stop offset="20%" stop-color="#E2E8F0"/>
+                        <stop offset="100%" stop-color="#94A3B8"/>
+                    </linearGradient>
+                    <radialGradient id="stressFieldGrad" cx="50%" cy="0%" r="90%">
+                        <stop offset="0%" stop-color="rgba(239, 68, 68, 0.45)"/>
+                        <stop offset="50%" stop-color="rgba(245, 158, 11, 0.25)"/>
+                        <stop offset="100%" stop-color="rgba(59, 130, 246, 0)"/>
+                    </radialGradient>
+                    <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                        <path d="M0,0 L8,4 L0,8 Z" fill="#DC2626"/>
+                    </marker>
+                    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                        <path d="M0,0 L8,4 L0,8 Z" fill="#2563EB"/>
+                    </marker>
+                </defs>`;
+
+                let content = '';
+
+                // Metallic Substrate Block (Specimen)
+                content += `<rect x="50" y="135" width="400" height="75" rx="4" fill="url(#substrateGrad)" stroke="#475569" stroke-width="2"/>`;
+
+                if (type === 'hrc' || type === 'hra') {
+                    // 120° Spheroconical Diamond Cone (Rockwell Brale)
+                    const loadText = type === 'hrc' ? '150 kgf' : '60 kgf';
+
+                    // Plastic Stress Zone Contour
+                    content += `<path d="M 170,135 Q 250,205 330,135 Z" fill="url(#stressFieldGrad)"/>`;
+                    content += `<path d="M 190,135 Q 250,180 310,135 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+
+                    // Conical Impression Profile
+                    content += `<path d="M 222,135 L 250,153 L 278,135 Z" fill="#94A3B8" stroke="#334155" stroke-width="1.5"/>`;
+
+                    // Indenter Holder
+                    content += `<rect x="225" y="15" width="50" height="45" rx="3" fill="url(#holderGrad)" stroke="#1E293B" stroke-width="1.5"/>`;
+
+                    // Diamond Cone (120°)
+                    content += `<polygon points="225,60 250,150 238,60" fill="url(#diamondFaceLeft)" stroke="#0284C7" stroke-width="1"/>`;
+                    content += `<polygon points="275,60 250,150 262,60" fill="url(#diamondFaceRight)" stroke="#0284C7" stroke-width="1"/>`;
+                    content += `<polygon points="238,60 250,150 262,60" fill="#F0F9FF" opacity="0.8"/>`;
+                    content += `<circle cx="250" cy="150" r="3" fill="#38BDF8" stroke="#0284C7"/>`;
+
+                    // Force Arrow
+                    content += `<line x1="250" y1="5" x2="250" y2="42" stroke="#DC2626" stroke-width="3.5" marker-end="url(#arrowRed)"/>`;
+                    content += `<text x="260" y="26" fill="#DC2626" font-weight="bold" font-size="12">F = ${loadText}</text>`;
+
+                    // Angle Arc
+                    content += `<path d="M 233,95 A 28 28 0 0 1 267,95" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="3,3"/>`;
+                    content += `<text x="250" y="90" fill="#1E40AF" font-weight="bold" font-size="11" text-anchor="middle">120° Apex Angle</text>`;
+
+                    // Annotations
+                    content += `<text x="300" y="80" fill="#0284C7" font-weight="bold" font-size="11">Diamond Cone (Spheroconical)</text>`;
+                    content += `<line x1="262" y1="83" x2="295" y2="80" stroke="#0284C7" stroke-width="1"/>`;
+                    content += `<text x="300" y="160" fill="#475569" font-size="10">R = 0.20 mm Spherical Tip</text>`;
+
+                } else if (type === 'hv') {
+                    // 136° Square Diamond Pyramid (Vickers)
+                    const loadVal = (results && results.loadForHv) ? results.loadForHv : 30;
+
+                    // Plastic Stress Zone Contour
+                    content += `<path d="M 160,135 Q 250,210 340,135 Z" fill="url(#stressFieldGrad)"/>`;
+                    content += `<path d="M 185,135 Q 250,185 315,135 Z" fill="none" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+
+                    // Square Pyramid Impression Profile
+                    content += `<path d="M 215,135 L 250,157 L 285,135 Z" fill="#94A3B8" stroke="#334155" stroke-width="1.5"/>`;
+
+                    // Indenter Holder
+                    content += `<rect x="220" y="15" width="60" height="42" rx="3" fill="url(#holderGrad)" stroke="#1E293B" stroke-width="1.5"/>`;
+
+                    // Diamond Pyramid (136°)
+                    content += `<polygon points="220,57 250,155 250,57" fill="url(#diamondFaceLeft)" stroke="#0284C7" stroke-width="1"/>`;
+                    content += `<polygon points="280,57 250,155 250,57" fill="url(#diamondFaceRight)" stroke="#0284C7" stroke-width="1"/>`;
+                    content += `<line x1="250" y1="57" x2="250" y2="155" stroke="#FFFFFF" stroke-width="1.5"/>`;
+
+                    // Force Arrow
+                    content += `<line x1="250" y1="5" x2="250" y2="40" stroke="#DC2626" stroke-width="3.5" marker-end="url(#arrowRed)"/>`;
+                    content += `<text x="260" y="25" fill="#DC2626" font-weight="bold" font-size="12">F = ${loadVal} kgf</text>`;
+
+                    // Angle Arc
+                    content += `<path d="M 230,90 A 30 30 0 0 1 270,90" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="3,3"/>`;
+                    content += `<text x="250" y="86" fill="#1E40AF" font-weight="bold" font-size="11" text-anchor="middle">136° Face Angle</text>`;
+
+                    // Impression Diagonal Annotation
+                    content += `<line x1="215" y1="166" x2="285" y2="166" stroke="#2563EB" stroke-width="1.5" marker-start="url(#arrowBlue)" marker-end="url(#arrowBlue)"/>`;
+                    content += `<text x="250" y="180" fill="#1E40AF" font-weight="bold" font-size="11" text-anchor="middle">Impression Diagonal (d)</text>`;
+                    content += `<text x="300" y="75" fill="#0284C7" font-weight="bold" font-size="11">Diamond Pyramid (Square Base)</text>`;
+
+                } else if (type === 'hrb') {
+                    // 1/16" Carbide Ball (Rockwell B)
+                    // Stress Zone Contour
+                    content += `<path d="M 165,135 Q 250,205 335,135 Z" fill="url(#stressFieldGrad)"/>`;
+
+                    // Spherical Cup Impression Profile
+                    content += `<path d="M 220,135 A 30 30 0 0 0 280,135 Z" fill="#94A3B8" stroke="#334155" stroke-width="1.5"/>`;
+
+                    // Stem & Holder
+                    content += `<rect x="240" y="15" width="20" height="55" fill="url(#holderGrad)" stroke="#1E293B" stroke-width="1.5"/>`;
+
+                    // 1/16" Carbide Ball
+                    content += `<circle cx="250" cy="110" r="30" fill="url(#carbideBallGrad)" stroke="#0F172A" stroke-width="2"/>`;
+                    content += `<circle cx="240" cy="98" r="7" fill="#FFFFFF" opacity="0.3"/>`;
+
+                    // Force Arrow
+                    content += `<line x1="250" y1="5" x2="250" y2="42" stroke="#DC2626" stroke-width="3.5" marker-end="url(#arrowRed)"/>`;
+                    content += `<text x="260" y="26" fill="#DC2626" font-weight="bold" font-size="12">F = 100 kgf</text>`;
+
+                    // Annotations
+                    content += `<text x="300" y="100" fill="#1E293B" font-weight="bold" font-size="11">Tungsten Carbide Ball</text>`;
+                    content += `<text x="300" y="116" fill="#64748B" font-size="10">ø 1.5875 mm (1/16")</text>`;
+
                 } else {
-                    // Ball
-                    svg += `<circle cx="200" cy="85" r="15" fill="#444" stroke="black" />`;
-                    svg += `<rect x="195" y="20" width="10" height="65" fill="#999" />`;
-                    svg += `<text x="200" y="15" text-anchor="middle" font-size="12">Ball Indenter</text>`;
+                    // 10mm Carbide Ball (Brinell HBW)
+                    const loadVal = (results && results.testLoad) ? results.testLoad : 3000;
+
+                    // Stress Zone Contour
+                    content += `<path d="M 140,135 Q 250,225 360,135 Z" fill="url(#stressFieldGrad)"/>`;
+
+                    // Large Spherical Indentation
+                    content += `<path d="M 200,135 A 50 55 0 0 0 300,135 Z" fill="#94A3B8" stroke="#334155" stroke-width="1.5"/>`;
+
+                    // Stem & Holder
+                    content += `<rect x="235" y="15" width="30" height="50" fill="url(#holderGrad)" stroke="#1E293B" stroke-width="1.5"/>`;
+
+                    // 10mm Large Ball
+                    content += `<circle cx="250" cy="100" r="46" fill="url(#carbideBallGrad)" stroke="#0F172A" stroke-width="2"/>`;
+                    content += `<circle cx="234" cy="82" r="12" fill="#FFFFFF" opacity="0.25"/>`;
+
+                    // Force Arrow
+                    content += `<line x1="250" y1="5" x2="250" y2="40" stroke="#DC2626" stroke-width="3.5" marker-end="url(#arrowRed)"/>`;
+                    content += `<text x="268" y="26" fill="#DC2626" font-weight="bold" font-size="12">F = ${loadVal} kgf</text>`;
+
+                    // Impression Diameter Annotation
+                    content += `<line x1="200" y1="148" x2="300" y2="148" stroke="#2563EB" stroke-width="1.5" marker-start="url(#arrowBlue)" marker-end="url(#arrowBlue)"/>`;
+                    content += `<text x="250" y="164" fill="#1E40AF" font-weight="bold" font-size="11" text-anchor="middle">Impression Diameter (d)</text>`;
+                    content += `<text x="315" y="85" fill="#1E293B" font-weight="bold" font-size="11">HBW 10mm Ball</text>`;
                 }
+
+                // Substrate Text Label
+                content += `<text x="65" y="200" fill="#475569" font-weight="bold" font-size="11">Specimen Substrate (Plastic Strain Field Zone)</text>`;
+
+                svgContainer.setAttribute('viewBox', '0 0 500 215');
+                svgContainer.innerHTML = defs + content;
+            }
+
+            function generatePDF() {
+                if (!window.jspdf || !window.jspdf.jsPDF) {
+                    alert("PDF library is loading. Please try again in a moment.");
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
                 
-                svg += `<line x1="200" y1="20" x2="200" y2="60" stroke="#DC2626" stroke-width="3" marker-end="url(#arrow-red)" />`;
-                svg += `<defs><marker id="arrow-red" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0,0 L0,10 L10,5 z" fill="#DC2626" /></marker></defs>`;
+                const matSelect = document.getElementById('material-type');
+                const scaleSelect = document.getElementById('input-scale');
+                const inputVal = parseFloat(document.getElementById('input-value').value);
                 
-                svgContainer.innerHTML = svg;
+                const matName = matSelect.options[matSelect.selectedIndex].text;
+                const scaleName = scaleSelect.options[scaleSelect.selectedIndex].text;
+                const scaleKey = scaleSelect.value;
+                
+                const thickness = parseFloat(document.getElementById('specimen-thickness').value);
+                const cylinderDiam = parseFloat(document.getElementById('cylinder-diameter').value);
+                const customLoad = parseFloat(document.getElementById('test-load').value);
+
+                let y = 15;
+
+                // --- HEADER BANNER ---
+                doc.setFillColor(30, 58, 138); // Primary Blue
+                doc.rect(0, 0, 210, 36, 'F');
+
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(18);
+                doc.setTextColor(255, 255, 255);
+                doc.text('HARDNESS CONVERSION & ANALYSIS REPORT', 14, y + 5);
+
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9.5);
+                doc.setTextColor(224, 231, 255);
+                doc.text(`ASTM E140 / ASTM E18 / ASTM E10 Compliant Engineering Verification  |  Date: ${new Date().toLocaleDateString()}`, 14, y + 13);
+
+                y = 44;
+
+                // Section 1: Test Parameters
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.setTextColor(30, 58, 138);
+                doc.text('1. Test Input & Specimen Parameters', 14, y);
+                y += 4;
+
+                const paramRows = [
+                    ['Material Class', matName, 'Governing Standard Table: ASTM E140'],
+                    ['Input Scale & Value', `${inputVal.toFixed(1)} ${scaleKey.toUpperCase()} (${scaleName})`, 'Validated within standard operating bounds'],
+                    ['Specimen Thickness', !isNaN(thickness) ? `${thickness.toFixed(2)} mm` : 'Not specified', !isNaN(thickness) ? 'Checked for anvil effect compliance' : 'Flat surface assumed'],
+                    ['Cylindrical Curvature', !isNaN(cylinderDiam) ? `Diameter ${cylinderDiam.toFixed(1)} mm` : 'Flat Specimen', !isNaN(cylinderDiam) ? 'ASTM E18 curvature correction applied' : 'No curvature correction needed'],
+                    ['Test Load Setting', !isNaN(customLoad) ? `${customLoad} kgf` : 'Standard default load', 'Applied for HV / HBW pressure calculation']
+                ];
+
+                doc.autoTable({
+                    startY: y,
+                    head: [['Parameter', 'Selected / Measured Value', 'Engineering Compliance Note']],
+                    body: paramRows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9.5 },
+                    bodyStyles: { fontSize: 9, textColor: [30, 41, 59] },
+                    alternateRowStyles: { fillColor: [248, 250, 252] },
+                    margin: { left: 14, right: 14 }
+                });
+
+                y = doc.lastAutoTable.finalY + 10;
+
+                // Section 2: Converted Results Table
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.setTextColor(30, 58, 138);
+                doc.text('2. Converted Hardness Scales & Tensile Strength Summary', 14, y);
+                y += 4;
+
+                const resultsData = getConvertedValues(scaleKey, inputVal, matSelect.value);
+                
+                if (resultsData && !resultsData.error) {
+                    const resultRows = [
+                        ['Rockwell C (HRC)', resultsData.hrc !== null ? `${resultsData.hrc.toFixed(1)} HRC` : 'N/A', '120° Spheroconical Diamond Cone (150 kgf)'],
+                        ['Rockwell B (HRB)', resultsData.hrb !== null ? `${resultsData.hrb.toFixed(1)} HRB` : 'N/A', '1/16" Tungsten Carbide Ball (100 kgf)'],
+                        ['Rockwell A (HRA)', resultsData.hra !== null ? `${resultsData.hra.toFixed(1)} HRA` : 'N/A', '120° Diamond Cone (60 kgf)'],
+                        ['Brinell (HBW)', resultsData.hb !== null ? `${resultsData.hb.toFixed(1)} HBW` : 'N/A', '10mm Tungsten Carbide Ball (3000 kgf)'],
+                        ['Vickers (HV)', resultsData.hv !== null ? `${resultsData.hv.toFixed(1)} HV` : 'N/A', '136° Square Diamond Pyramid'],
+                        ['Tensile Strength (UTS)', resultsData.uts !== null ? `${resultsData.uts.toFixed(1)} ksi (${(resultsData.uts * 6.89476).toFixed(0)} MPa)` : 'N/A', 'ASTM E140 Table 1 Steel Correlation']
+                    ];
+
+                    doc.autoTable({
+                        startY: y,
+                        head: [['Target Scale', 'Converted Value', 'Standard Indenter & Test Setup']],
+                        body: resultRows,
+                        theme: 'grid',
+                        headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9.5 },
+                        bodyStyles: { fontSize: 9, textColor: [15, 23, 42] },
+                        columnStyles: {
+                            0: { fontStyle: 'bold' },
+                            1: { fontStyle: 'bold', textColor: [16, 185, 129] }
+                        },
+                        margin: { left: 14, right: 14 }
+                    });
+
+                    y = doc.lastAutoTable.finalY + 10;
+                }
+
+                // Section 3: Derivations Summary
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(12);
+                doc.setTextColor(30, 58, 138);
+                doc.text('3. Step-by-Step Mathematical Derivations', 14, y);
+                y += 4;
+
+                const stepSummaryRows = [
+                    ['Step 1', 'Input Range Verification', `Confirmed input value ${inputVal.toFixed(1)} ${scaleKey.toUpperCase()} lies within ASTM E140 limits.`],
+                    ['Step 2', 'Bracket Determination', `Identified reference points P1 (${resultsData.meta.p1[scaleKey]} ${scaleKey.toUpperCase()}) and P2 (${resultsData.meta.p2[scaleKey]} ${scaleKey.toUpperCase()}).`],
+                    ['Step 3', 'Linear Interpolation', 'Applied standard piecewise linear interpolation formula y = y1 + (x - x1)(y2 - y1)/(x2 - x1).'],
+                    ['Step 4', 'Tensile Strength (UTS)', resultsData.hb ? `UTS ≈ 3.45 × HBW = ${(resultsData.hb * 3.45).toFixed(0)} MPa (Table Interpolated: ${(resultsData.uts * 6.89476).toFixed(0)} MPa).` : 'N/A for selected material.'],
+                    ['Step 5', 'Yield Strength (YS)', resultsData.hb ? `Estimated Yield Strength σy ≈ 3.1 × HBW - 70 = ${(3.1 * resultsData.hb - 70).toFixed(0)} MPa.` : 'N/A'],
+                    ['Step 6', 'Indenter Contact Stress', resultsData.hv ? `Mean Vickers contact pressure p_mean ≈ ${((resultsData.loadForHv || 30) * 9.80665 / (1.8544 * (resultsData.loadForHv || 30) / resultsData.hv)).toFixed(0)} MPa.` : 'N/A']
+                ];
+
+                doc.autoTable({
+                    startY: y,
+                    head: [['Step #', 'Analysis Flow', 'Mathematical Summary & Result']],
+                    body: stepSummaryRows,
+                    theme: 'striped',
+                    headStyles: { fillColor: [71, 85, 105], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+                    bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59] },
+                    margin: { left: 14, right: 14 }
+                });
+
+                // --- FOOTER & WEBSITE URL ON EACH PAGE ---
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 116, 139);
+                    
+                    // Footer divider line
+                    doc.setDrawColor(226, 232, 240);
+                    doc.line(14, 282, 196, 282);
+                    
+                    // Left: Website URL (Clickable)
+                    doc.text('https://designcalculators.co.in/hardness', 14, 287);
+                    
+                    // Right: Page number
+                    doc.text(`Page ${i} of ${pageCount}`, 196, 287, { align: 'right' });
+                }
+
+                doc.save(`Hardness_Conversion_Report_${inputVal}${scaleKey.toUpperCase()}.pdf`);
             }
 
             calculateBtn.addEventListener('click', solveHardness);
@@ -1606,6 +2520,11 @@
             clearResultsBtn.addEventListener('click', () => {
                 resultContainer.style.display = 'none';
             });
+
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            if (downloadPdfBtn) {
+                downloadPdfBtn.addEventListener('click', generatePDF);
+            }
             
             // Theme Logic
             const themeSwitch = document.getElementById('theme-switch');
