@@ -816,7 +816,62 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 .tooltip .tooltiptext { width: 200px; margin-left: -100px; }
 .footer-content { flex-direction: column; }
 }
+
+/* FAQ Section */
+.faq-item {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    overflow: hidden;
+}
+.faq-question {
+    width: 100%;
+    text-align: left;
+    background: #F8FAFC;
+    border: none;
+    padding: 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--heading-color);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+.faq-question:hover {
+    background: #f1f5f9;
+    color: var(--secondary-color);
+}
+.faq-question::after {
+    content: '\f107'; /* FontAwesome down arrow */
+    font-family: 'Font Awesome 5 Free', 'Font Awesome 6 Free';
+    font-weight: 900;
+    transition: transform 0.3s ease;
+}
+.faq-question.active {
+    background: var(--primary-color);
+    color: white;
+}
+.faq-question.active::after {
+    transform: rotate(180deg);
+}
+.faq-answer {
+    padding: 0 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease;
+    background: white;
+}
+.faq-answer.show {
+    padding: 20px;
+    max-height: 1000px;
+    border-top: 1px solid var(--border-color);
+}
 </style>
+
     <link rel="stylesheet" href="styles.css">
     <meta property="og:title" content="Mechanical Gear Design Calculator (AGMA) - Professional Edition">
     <meta property="og:description" content="A professional tool for designing spur, helical, and bevel gears based on AGMA standards, providing detailed, step-by-step calculations for engineers and students.">
@@ -1042,7 +1097,7 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 <div class="form-row">
 <div class="form-group">
 <label for="power">Power (kW) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">The power to be transmitted by the gear set.</span></span></label>
-<input type="number" id="power" value="10" min="0.1" step="0.1" required>
+<input type="number" id="power" value="5" min="0.1" step="0.1" required>
 </div>
 <div class="form-group">
 <label for="pinion-speed">Pinion Speed (RPM) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Rotational speed of the smaller gear (pinion).</span></span></label>
@@ -1071,11 +1126,11 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 <div class="form-row">
 <div class="form-group">
 <label for="material-strength">Allowable Bending Stress, S<sub>at_base</sub> (MPa) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Base allowable <em>bending</em> stress for the gear material (e.g., Carburized Steel: 380-450 MPa).</span></span></label>
-<input type="number" id="material-strength" value="400" min="50" step="10" required>
+<input type="number" id="material-strength" value="500" min="50" step="10" required>
 </div>
 <div class="form-group">
 <label for="surface-hardness">Surface Hardness (BHN) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Brinell Hardness Number for the gear material. Used to estimate allowable <em>contact</em> stress.</span></span></label>
-<input type="number" id="surface-hardness" value="300" min="100" step="10" required>
+<input type="number" id="surface-hardness" value="450" min="100" step="10" required>
 </div>
 <div class="form-group">
 <label for="elastic-coefficient">Elastic Coefficient, C<sub>p</sub> <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">From AGMA 2001-D04, Table 13-10. 191 MPa<sup>0.5</sup> is for Steel/Steel.</span></span></label>
@@ -1134,7 +1189,7 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 </div>
 <div class="form-group">
 <label for="factor-of-safety">Required Factor of Safety (FoS) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Desired factor of safety for both bending and wear. Typically 1.5 to 2.5.</span></span></label>
-<input type="number" id="factor-of-safety" value="2" min="1.2" max="4" step="0.1" required>
+<input type="number" id="factor-of-safety" value="1.5" min="1.2" max="4" step="0.1" required>
 </div>
 </div>
 
@@ -1168,7 +1223,7 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 
 <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
 <button type="button" id="calculate-btn" class="calculate-btn" style="flex: 1; min-width: 200px;">Calculate Gear Design</button>
-<button type="button" id="pdf-export-btn" class="calculate-btn" style="flex: 0; min-width: 160px; display:none; background: var(--secondary-color);"><i class="fas fa-file-pdf"></i> Export PDF</button>
+
 <button type="button" onclick="window.print()" class="calculate-btn" style="flex: 0; min-width: 120px; background: var(--accent-color); color: #333;"><i class="fas fa-print"></i> Print</button>
 </div>
 </form>
@@ -1177,9 +1232,14 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 <h3>Step-by-Step Design Calculation</h3>
 <div id="calculation-steps"><!-- Calculation steps will be dynamically inserted here --></div>
 
-<div class="geometry-visualization">
-<h4>Gear Geometry Visualization</h4>
-<canvas id="gear-geometry-canvas" role="img" aria-label="Gear-geometry-canvas"><p class="sr-only">Interactive data visualization for Gear-geometry-canvas</p></canvas>
+<div class="geometry-visualization" style="background: linear-gradient(135deg, #0F172A, #1E293B); padding: 30px; border-radius: 12px; margin-top: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); border-left: 5px solid var(--secondary-color);">
+<h4 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-top: 0; display:flex; justify-content:space-between; align-items:center;">
+    <span><i class="fas fa-drafting-compass" style="color: var(--secondary-color);"></i> Premium Gear Set Geometry Visualization</span>
+    <span style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 20px;">To Scale (Proportional)</span>
+</h4>
+<div id="gear-geometry-svg-container" style="width: 100%; display: flex; justify-content: center; align-items: center; min-height: 350px; position: relative;">
+<!-- SVG will be injected here -->
+</div>
 </div>
 
 <div class="stress-analysis">
@@ -1213,225 +1273,273 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 <!-- ============================================== -->
 <!-- ADVANCED EDUCATIONAL CONTENT SUITE              -->
 <!-- ============================================== -->
-<div id="education-section" class="tool-container" style="margin-top: 40px; animation: fadeInSlideIn 0.8s ease;">
-
-    <!-- ===== 1. THE WHAT ===== -->
-    <div style="background: linear-gradient(135deg, var(--card-bg), rgba(37,99,235,0.04)); border-radius: 16px; padding: 30px; margin: 24px 0; border-left: 5px solid var(--secondary-color); box-shadow: var(--card-shadow); transition: all 0.3s;">
-        <h3 style="color: var(--secondary-color); font-size: 1.4rem; margin: 0 0 18px 0; display: flex; align-items: center; gap: 12px;"><i class="fas fa-cogs"></i> The 'What' — What Is AGMA Gear Design?</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
-            <div style="flex: 1.5; min-width: 300px;">
-                <p style="margin: 10px 0; line-height: 1.9; color: var(--text-color);">Gear design per <strong>AGMA (American Gear Manufacturers Association)</strong> is a systematic engineering methodology that determines the geometry, material, and manufacturing requirements for gears to safely transmit power. The fundamental approach evaluates every gear against <strong>two simultaneous failure modes:</strong></p>
-                <ul style="margin: 12px 0; padding-left: 22px; line-height: 2.0; color: var(--text-color); font-size: 0.95rem;">
-                    <li><strong>Bending Fatigue (σ<sub>b</sub>):</strong> Will the tooth <strong>break off</strong> at its root? (Lewis equation, refined by AGMA)</li>
-                    <li><strong>Surface Pitting (σ<sub>c</sub>):</strong> Will the tooth <strong>surface flake away</strong> under contact pressure? (Hertzian contact theory)</li>
-                </ul>
-                <p style="margin: 10px 0; line-height: 1.9; color: var(--text-color);">The core AGMA bending stress equation is:</p>
-                <div style="text-align: center; padding: 16px; background: var(--bg-color); border: 2px dashed var(--border-color); border-radius: 10px; margin: 14px 0; font-size: 1.1rem;">
-                    $$ \sigma_b = \frac{W_t \cdot K_o \cdot K_v \cdot K_m}{b \cdot m \cdot J} \cdot K_T \cdot K_R $$
-                </div>
-                <p style="margin: 10px 0; line-height: 1.9; color: var(--text-color);">And the AGMA contact stress equation is:</p>
-                <div style="text-align: center; padding: 16px; background: var(--bg-color); border: 2px dashed var(--border-color); border-radius: 10px; margin: 14px 0; font-size: 1.1rem;">
-                    $$ \sigma_c = C_p \sqrt{\frac{W_t \cdot K_o \cdot K_v \cdot K_m}{b \cdot d_p \cdot I} \cdot C_H \cdot K_T \cdot K_R} $$
-                </div>
-            </div>
-            <div style="flex: 0 1 280px; min-width: 220px; max-width: 280px; text-align: center; margin: 0 auto;">
-                <svg viewBox="0 0 280 240" style="max-width: 280px; width: 100%; height: auto; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));">
-                    <!-- Gear tooth cross-section -->
-                    <text x="140" y="18" font-family="Inter" font-size="10" fill="#3B82F6" font-weight="700" text-anchor="middle">Involute Gear Tooth Forces</text>
-                    <!-- Tooth outline -->
-                    <path d="M100,220 L100,120 Q100,80 120,60 L140,40 Q150,35 160,40 L180,60 Q200,80 200,120 L200,220" fill="none" stroke="#334155" stroke-width="2.5"/>
-                    <!-- Root fillet -->
-                    <path d="M100,220 Q90,220 85,210" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="4,2"/>
-                    <path d="M200,220 Q210,220 215,210" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="4,2"/>
-                    <text x="75" y="205" font-family="Inter" font-size="8" fill="#EF4444" font-weight="600">Root</text>
-                    <!-- Pitch circle intersection -->
-                    <line x1="80" y1="100" x2="220" y2="100" stroke="#3B82F6" stroke-width="1" stroke-dasharray="5,3"/>
-                    <text x="225" y="103" font-family="Inter" font-size="8" fill="#3B82F6" font-weight="600">Pitch</text>
-                    <!-- Wt force arrow -->
-                    <line x1="150" y1="55" x2="230" y2="55" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
-                    <text x="195" y="48" font-family="Inter" font-size="10" fill="#10B981" font-weight="700">W_t</text>
-                    <!-- Fr force arrow -->
-                    <line x1="150" y1="55" x2="150" y2="-5" stroke="#F59E0B" stroke-width="2" marker-end="url(#arrowAmber)"/>
-                    <text x="158" y="18" font-family="Inter" font-size="9" fill="#F59E0B" font-weight="600">F_r</text>
-                    <!-- Bending stress zone -->
-                    <rect x="95" y="195" width="110" height="30" rx="4" fill="rgba(239,68,68,0.15)" stroke="#EF4444" stroke-width="1"/>
-                    <text x="150" y="215" font-family="Inter" font-size="9" fill="#EF4444" font-weight="700" text-anchor="middle">σ_b max zone</text>
-                    <!-- Contact stress point -->
-                    <circle cx="165" cy="70" r="6" fill="rgba(59,130,246,0.3)" stroke="#3B82F6" stroke-width="1.5"/>
-                    <text x="185" y="75" font-family="Inter" font-size="8" fill="#3B82F6" font-weight="600">σ_c</text>
-                    <!-- Arrow defs -->
-                    <defs>
-                        <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#10B981"/></marker>
-                        <marker id="arrowAmber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#F59E0B"/></marker>
-                    </defs>
-                </svg>
-                <p style="font-size: 0.8rem; color: var(--text-color); margin-top: 6px; opacity: 0.7;">Gear Tooth Force & Stress Diagram</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== 2. THE WHY ===== -->
-    <div style="background: linear-gradient(135deg, var(--card-bg), rgba(220,38,38,0.04)); border-radius: 16px; padding: 30px; margin: 24px 0; border-left: 5px solid var(--fail-color); box-shadow: var(--card-shadow); transition: all 0.3s;">
-        <h3 style="color: var(--fail-color); font-size: 1.4rem; margin: 0 0 18px 0; display: flex; align-items: center; gap: 12px;"><i class="fas fa-exclamation-triangle"></i> The 'Why' — Why Does Gear Design Matter?</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
-            <div style="flex: 1; min-width: 300px;">
-                <p style="margin: 10px 0; line-height: 1.9; color: var(--text-color);">Gear failure is one of the <strong>most costly mechanical failures</strong> in industry. A single gearbox failure in a wind turbine costs <strong>$200,000-$500,000</strong> including crane rental, parts, and lost generation:</p>
-                <ul style="margin: 12px 0; padding-left: 22px; line-height: 2.0; color: var(--text-color); font-size: 0.95rem;">
-                    <li><strong>Tooth Bending Fracture:</strong> Catastrophic — the broken tooth becomes FOD (Foreign Object Debris), destroying downstream components. Causes <strong>$50K-$2M</strong> in secondary damage.</li>
-                    <li><strong>Surface Pitting:</strong> Progressive — starts as micro-pitting, creates noise/vibration. Eventually destroys tooth profile leading to <strong>unplanned downtime</strong>.</li>
-                    <li><strong>Scoring/Scuffing:</strong> Lubrication failure causes metal-to-metal welding. An <strong>instantly destructive</strong> failure mode.</li>
-                    <li><strong>Misalignment:</strong> Causes edge loading (high K<sub>m</sub>). Localizes stress to 20% of face width, effectively <strong>multiplying stress 5×</strong>.</li>
-                </ul>
-            </div>
-            <div style="flex: 0 1 400px; min-width: 280px; max-width: 400px; background: var(--bg-color); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); margin: 0 auto;">
-                <p style="margin: 0 0 8px 0; font-weight: 700; color: var(--heading-color); font-size: 0.9rem; text-align: center;">Gear Failure Mode Distribution in Industrial Gearboxes</p>
-                <div style="position: relative; height: 260px; max-height: 280px;">
-                    <canvas id="gearFailureChart" role="img" aria-label="Gear Failure  Analysis Chart"><p class="sr-only">Interactive data visualization for Gear Failure  Analysis Chart</p></canvas>
+<div id="education-section" class="tool-container" style="padding: 40px 30px; margin-top: 40px;">
+    <h2 style="font-size: 2rem; margin-bottom: 30px; border-bottom: 3px solid var(--secondary-color); padding-bottom: 10px; display: inline-block;"><i class="fas fa-cogs"></i> Gear Design: The Complete Engineering Knowledge Base</h2>
+    <p style="font-size: 1.1rem; color: #475569; margin-bottom: 40px; line-height: 1.7;">Welcome to the definitive guide on AGMA Gear Design. This section unpacks the core principles of power transmission, failure modes, stress analysis, and international standards used by mechanical engineers worldwide.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;">
+        
+        <!-- WHAT -->
+        <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border-top: 5px solid #2563EB; transition: transform 0.3s ease;">
+            <div style="padding: 25px;">
+                <h3 style="margin-top:0; color: #1E3A8A; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: rgba(37,99,235,0.1); color: #2563EB; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border-radius: 50%;"><i class="fas fa-cog"></i></span> 
+                    WHAT is AGMA Gear Design?
+                </h3>
+                <p style="color: #475569; line-height: 1.6;">Gear design per <strong>AGMA (American Gear Manufacturers Association)</strong> is a systematic engineering methodology that determines the geometry, material, and manufacturing requirements for gears to safely transmit power.</p>
+                <div style="margin-top: 20px; padding: 15px; background: #F8FAFC; border-left: 4px solid #2563EB; border-radius: 4px;">
+                    <strong style="color: #1E3A8A; display: block; margin-bottom: 5px;"><i class="fas fa-balance-scale"></i> Dual Failure Criteria:</strong>
+                    <ul style="padding-left: 20px; margin-bottom: 0; font-size: 0.95rem; color: #334155;">
+                        <li style="margin-bottom: 6px;"><strong>Bending Fatigue:</strong> Evaluates if the tooth will snap at the root.</li>
+                        <li><strong>Surface Pitting (Contact):</strong> Evaluates if the tooth surface will flake away under Hertzian pressure.</li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- ===== 3. THE WHERE ===== -->
-    <div style="background: linear-gradient(135deg, var(--card-bg), rgba(16,185,129,0.04)); border-radius: 16px; padding: 30px; margin: 24px 0; border-left: 5px solid var(--success-color); box-shadow: var(--card-shadow); transition: all 0.3s;">
-        <h3 style="color: var(--success-color); font-size: 1.4rem; margin: 0 0 18px 0; display: flex; align-items: center; gap: 12px;"><i class="fas fa-globe-americas"></i> The 'Where' — Where Are Gears Used?</h3>
-        <p style="margin: 10px 0 22px 0; line-height: 1.9; color: var(--text-color);">Gears are the <strong>backbone of mechanical power transmission</strong>, found in virtually every industry on Earth.</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
-            <div style="background: var(--bg-color); padding: 16px; border-radius: 10px; border-left: 4px solid #3B82F6;">
-                <h5 style="margin: 0 0 6px 0; color: #3B82F6; font-size: 1rem;"><i class="fas fa-wind"></i> Wind Energy</h5>
-                <p style="margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-color);">Planetary gearboxes convert 15 RPM blade rotation to 1500+ RPM for generators. 3-stage designs handle 5+ MW.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 16px; border-radius: 10px; border-left: 4px solid #10B981;">
-                <h5 style="margin: 0 0 6px 0; color: #10B981; font-size: 1rem;"><i class="fas fa-car"></i> Automotive</h5>
-                <p style="margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-color);">Transmissions (6-10 speed), differentials (bevel gears), EV single-speed reducers with 97% efficiency.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 16px; border-radius: 10px; border-left: 4px solid #F59E0B;">
-                <h5 style="margin: 0 0 6px 0; color: #F59E0B; font-size: 1rem;"><i class="fas fa-industry"></i> Heavy Industry</h5>
-                <p style="margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-color);">Cement mills, sugar crushers, mining conveyors. Helical gears handle 10,000+ kW with extreme reliability demands.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 16px; border-radius: 10px; border-left: 4px solid #8B5CF6;">
-                <h5 style="margin: 0 0 6px 0; color: #8B5CF6; font-size: 1rem;"><i class="fas fa-ship"></i> Marine & Offshore</h5>
-                <p style="margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-color);">Ship propulsion gearboxes, offshore crane winches. Bevel gears for right-angle drives in confined engine rooms.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 16px; border-radius: 10px; border-left: 4px solid #EC4899;">
-                <h5 style="margin: 0 0 6px 0; color: #EC4899; font-size: 1rem;"><i class="fas fa-robot"></i> Robotics & Precision</h5>
-                <p style="margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-color);">Harmonic drives, cycloidal reducers for zero-backlash positioning. Surgical robots use micro-gears at 0.1mm scale.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 16px; border-radius: 10px; border-left: 4px solid #EF4444;">
-                <h5 style="margin: 0 0 6px 0; color: #EF4444; font-size: 1rem;"><i class="fas fa-plane"></i> Aerospace</h5>
-                <p style="margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-color);">Turbofan accessory gearboxes, helicopter main rotor transmissions. Extreme weight/reliability requirements (AMS standards).</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== 4. THE HOW ===== -->
-    <div style="background: linear-gradient(135deg, var(--card-bg), rgba(245,158,11,0.04)); border-radius: 16px; padding: 30px; margin: 24px 0; border-left: 5px solid var(--accent-color); box-shadow: var(--card-shadow); transition: all 0.3s;">
-        <h3 style="color: var(--accent-color); font-size: 1.4rem; margin: 0 0 18px 0; display: flex; align-items: center; gap: 12px;"><i class="fas fa-superscript"></i> The 'How' — Key Equations & Design Methodology</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 24px;">
-            <div style="flex: 1; min-width: 300px;">
-                <h4 style="color: var(--heading-color); margin: 0 0 10px 0;">Lewis Bending Equation (Foundation)</h4>
-                <p style="line-height: 1.8; color: var(--text-color);">Wilfred Lewis (1892) modeled the gear tooth as a <strong>cantilever beam</strong>. AGMA refined this with correction factors:</p>
-                <div style="text-align: center; padding: 16px; background: var(--bg-color); border: 2px dashed var(--border-color); border-radius: 10px; margin: 14px 0;">
-                    $$ \sigma_b = \frac{W_t}{b \cdot m \cdot J} \cdot K_o \cdot K_v \cdot K_m $$
-                </div>
-                <p style="line-height: 1.7; color: var(--text-color); font-size: 0.92rem;">Where \(W_t\) = tangential force, \(b\) = face width, \(m\) = module, \(J\) = geometry factor. Must satisfy: \(\sigma_b \leq S_{at} \cdot Y_N / (K_T \cdot K_R \cdot FoS)\)</p>
-            </div>
-            <div style="flex: 1; min-width: 300px;">
-                <h4 style="color: var(--heading-color); margin: 0 0 10px 0;">Hertzian Contact Stress (Pitting)</h4>
-                <p style="line-height: 1.8; color: var(--text-color);">Based on <strong>Hertz contact theory</strong> for two curved surfaces in contact under load:</p>
-                <div style="text-align: center; padding: 16px; background: var(--bg-color); border: 2px dashed var(--border-color); border-radius: 10px; margin: 14px 0;">
+        <!-- HOW -->
+        <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border-top: 5px solid #F59E0B; transition: transform 0.3s ease;">
+            <div style="padding: 25px;">
+                <h3 style="margin-top:0; color: #78350F; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: rgba(245,158,11,0.1); color: #F59E0B; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border-radius: 50%;"><i class="fas fa-superscript"></i></span> 
+                    HOW is Stress Calculated?
+                </h3>
+                <p style="color: #475569; line-height: 1.6;">AGMA refines Wilfred Lewis's cantilever beam model and Hertz's contact theory using empirical modifiers (\(K_o, K_v, K_m\)) to reflect real-world imperfections.</p>
+                <div style="margin-top: 20px; padding: 15px; background: #FFFBEB; border-left: 4px solid #F59E0B; border-radius: 4px; text-align: center;">
+                    <strong style="color: #92400E; display: block; margin-bottom: 10px;">Bending Stress Equation:</strong>
+                    $$ \sigma_b = \frac{W_t \cdot K_o \cdot K_v \cdot K_m}{b \cdot m \cdot J} $$
+                    <strong style="color: #92400E; display: block; margin: 15px 0 10px 0;">Contact Stress Equation:</strong>
                     $$ \sigma_c = C_p \sqrt{\frac{W_t \cdot K_o \cdot K_v \cdot K_m}{b \cdot d_p \cdot I}} $$
                 </div>
-                <h4 style="color: var(--heading-color); margin: 20px 0 10px 0;">Gear Geometry Fundamentals</h4>
-                <p style="line-height: 1.8; color: var(--text-color);">Pitch diameter relates to module and tooth count:</p>
-                <div style="text-align: center; padding: 16px; background: var(--bg-color); border: 2px dashed var(--border-color); border-radius: 10px; margin: 14px 0;">
-                    $$ d = m \cdot Z \qquad T = \frac{P \times 60}{2\pi n} \qquad W_t = \frac{P}{v} $$
+            </div>
+        </div>
+
+        <!-- WHY (With Chart) -->
+        <div style="grid-column: 1 / -1; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border-top: 5px solid #EF4444; transition: transform 0.3s ease;">
+            <div style="padding: 25px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h3 style="margin-top:0; color: #7F1D1D; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: rgba(239,68,68,0.1); color: #EF4444; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border-radius: 50%;"><i class="fas fa-exclamation-triangle"></i></span> 
+                        WHY does Gear Design Matter?
+                    </h3>
+                    <p style="color: #475569; line-height: 1.6;">Gear failure is one of the most costly mechanical failures in heavy industry. A single gearbox failure in a wind turbine costs $200,000–$500,000 in repair and crane rental.</p>
+                    <ul style="padding-left: 20px; margin-bottom: 0; font-size: 0.95rem; color: #334155; line-height: 1.8;">
+                        <li><strong style="color: #DC2626;">Bending Fracture:</strong> Catastrophic. Broken teeth act as shrapnel inside the gearbox.</li>
+                        <li><strong style="color: #D97706;">Surface Pitting:</strong> Progressive fatigue. Destroys the involute profile over time.</li>
+                        <li><strong style="color: #2563EB;">Scuffing:</strong> Instantaneous welding and tearing due to lubrication breakdown.</li>
+                    </ul>
+                </div>
+                <div style="flex: 0 1 400px; min-width: 280px; max-width: 400px; background: #F8FAFC; padding: 18px; border-radius: 12px; border: 1px solid #E2E8F0; margin: 0 auto;">
+                    <p style="margin: 0 0 8px 0; font-weight: 700; color: #1E293B; font-size: 0.9rem; text-align: center;">Industrial Gear Failure Modes</p>
+                    <div style="position: relative; height: 260px;">
+                        <canvas id="gearFailureChart" role="img" aria-label="Gear Failure Analysis Chart"><p class="sr-only">Interactive data visualization for Gear Failure Analysis Chart</p></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- ===== 5. THE WHEN ===== -->
-    <div style="background: linear-gradient(135deg, var(--card-bg), rgba(139,92,246,0.04)); border-radius: 16px; padding: 30px; margin: 24px 0; border-left: 5px solid #8B5CF6; box-shadow: var(--card-shadow); transition: all 0.3s;">
-        <h3 style="color: #8B5CF6; font-size: 1.4rem; margin: 0 0 18px 0; display: flex; align-items: center; gap: 12px;"><i class="fas fa-clock"></i> The 'When' — When to Choose Each Gear Type</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
-            <div style="flex: 1; min-width: 300px;">
-                <h4 style="color: #10B981; margin: 0 0 10px 0;"><i class="fas fa-check-circle"></i> Gear Type Selection Guide</h4>
-                <ul style="margin: 8px 0 16px 0; padding-left: 22px; line-height: 2.0; color: var(--text-color); font-size: 0.93rem;">
-                    <li><strong>Spur Gears:</strong> Simplest, cheapest. Use when shafts are <strong>parallel</strong>, speed is moderate, and noise is acceptable.</li>
-                    <li><strong>Helical Gears:</strong> Smoother, quieter. Preferred for <strong>high-speed, high-power</strong> applications. Creates axial thrust (needs thrust bearings).</li>
-                    <li><strong>Bevel Gears:</strong> For <strong>intersecting shafts</strong> (usually 90°). Straight, spiral, or hypoid variants for different loads.</li>
-                    <li><strong>Worm Gears:</strong> For <strong>very high ratios</strong> (5:1 to 100:1) in a single stage. Self-locking capability but lower efficiency (40-90%).</li>
-                    <li><strong>Planetary:</strong> For <strong>compact, high-ratio</strong> designs. Distributes load across multiple planets. Used in wind turbines, automatics.</li>
-                </ul>
-                <h4 style="color: #EF4444; margin: 0 0 10px 0;"><i class="fas fa-times-circle"></i> Critical Design Checks</h4>
-                <ul style="margin: 8px 0; padding-left: 22px; line-height: 2.0; color: var(--text-color); font-size: 0.93rem;">
-                    <li>Contact pattern check with <strong>Prussian blue dye</strong></li>
-                    <li>Profile & lead tolerance per <strong>AGMA Quality Number</strong></li>
-                    <li>Backlash measurement for <strong>thermal expansion allowance</strong></li>
-                </ul>
-            </div>
-            <div style="flex: 0 1 380px; min-width: 260px; max-width: 380px; background: var(--bg-color); padding: 18px; border-radius: 12px; border: 1px solid var(--border-color); margin: 0 auto;">
-                <p style="margin: 0 0 8px 0; font-weight: 700; color: var(--heading-color); font-size: 0.9rem; text-align: center;">Gear Type Performance Comparison</p>
-                <div style="position: relative; height: 280px; max-height: 320px;">
-                    <canvas id="gearTypeCompareChart" role="img" aria-label="Gear Type Compare  Analysis Chart"><p class="sr-only">Interactive data visualization for Gear Type Compare  Analysis Chart</p></canvas>
+        <!-- WHEN (With Chart) -->
+        <div style="grid-column: 1 / -1; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border-top: 5px solid #8B5CF6; transition: transform 0.3s ease;">
+            <div style="padding: 25px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h3 style="margin-top:0; color: #4C1D95; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: rgba(139,92,246,0.1); color: #8B5CF6; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border-radius: 50%;"><i class="fas fa-clock"></i></span> 
+                        WHEN to Choose Which Gear Type?
+                    </h3>
+                    <ul style="padding-left: 20px; margin-bottom: 0; font-size: 0.95rem; color: #334155; line-height: 1.8;">
+                        <li><strong>Spur Gears:</strong> Lowest cost, simplest geometry. Good for moderate speeds with parallel shafts. Generates radial load only.</li>
+                        <li><strong>Helical Gears:</strong> Teeth cut on a helix angle. Smoother and quieter than spur gears because multiple teeth engage gradually. Excellent for high speeds and high power. Generates axial thrust load.</li>
+                        <li><strong>Bevel Gears:</strong> Used for transmitting power between intersecting shafts (usually 90 degrees), like in automotive differentials.</li>
+                    </ul>
+                </div>
+                <div style="flex: 0 1 380px; min-width: 260px; max-width: 380px; background: #F8FAFC; padding: 18px; border-radius: 12px; border: 1px solid #E2E8F0; margin: 0 auto;">
+                    <p style="margin: 0 0 8px 0; font-weight: 700; color: #1E293B; font-size: 0.9rem; text-align: center;">Gear Type Performance</p>
+                    <div style="position: relative; height: 260px;">
+                        <canvas id="gearTypeCompareChart" role="img" aria-label="Gear Type Compare Chart"><p class="sr-only">Interactive data visualization for Gear Type Compare Chart</p></canvas>
+                    </div>
                 </div>
             </div>
         </div>
+        
     </div>
 
-    <!-- ===== 6. THE WHO ===== -->
-    <div style="background: linear-gradient(135deg, var(--card-bg), rgba(236,72,153,0.04)); border-radius: 16px; padding: 30px; margin: 24px 0; border-left: 5px solid #EC4899; box-shadow: var(--card-shadow); transition: all 0.3s;">
-        <h3 style="color: #EC4899; font-size: 1.4rem; margin: 0 0 18px 0; display: flex; align-items: center; gap: 12px;"><i class="fas fa-user-graduate"></i> The 'Who' — Pioneers of Gear Engineering</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-top: 3px solid #3B82F6;">
-                <h5 style="margin: 0 0 8px 0; color: #3B82F6; font-size: 1.05rem;">Wilfred Lewis (1854–1929)</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">Published the <strong>Lewis bending equation (1892)</strong>, the first analytical method to calculate gear tooth bending stress. His cantilever beam model remains the foundation of all modern gear rating standards including AGMA.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-top: 3px solid #10B981;">
-                <h5 style="margin: 0 0 8px 0; color: #10B981; font-size: 1.05rem;">Earle Buckingham (1887–1978)</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">MIT professor who pioneered the <strong>dynamic load analysis</strong> of gears. His work on the Buckingham dynamic factor and pitting resistance equations became the basis for AGMA's contact stress methodology.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-top: 3px solid #F59E0B;">
-                <h5 style="margin: 0 0 8px 0; color: #F59E0B; font-size: 1.05rem;">Leonhard Euler (1707–1783)</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">Swiss mathematician who mathematically described the <strong>involute curve</strong> — the optimal gear tooth profile still used universally today. His work ensures constant velocity ratio during tooth engagement.</p>
-            </div>
+    <!-- RULES (Full Width Table) -->
+    <div style="background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border-top: 5px solid #10B981; margin-top: 30px; padding: 25px;">
+        <h3 style="margin-top:0; color: #064E3B; font-size: 1.4rem; display: flex; align-items: center; gap: 10px;">
+            <span style="background: rgba(16,185,129,0.1); color: #10B981; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; border-radius: 50%;"><i class="fas fa-gavel"></i></span> 
+            Approved Applicable Standards Matrix
+        </h3>
+        <p style="color: #475569; margin-bottom: 20px;">Gear design is governed by strict international standards that dictate rating methodologies, material quality, and tolerance limits.</p>
+        <div style="overflow-x: auto;">
+            <table style="width:100%; border-collapse: collapse; font-size:0.95rem;">
+                <thead>
+                    <tr style="background: linear-gradient(90deg, #10B981, #059669); color:white; text-align: left;">
+                        <th style="padding:15px; border-radius: 8px 0 0 0;">Standard</th>
+                        <th style="padding:15px;">Focus Area</th>
+                        <th style="padding:15px; border-radius: 0 8px 0 0;">Key Application / Requirements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid #E2E8F0; background: #F8FAFC;">
+                        <td style="padding:15px; font-weight: 600; color: #1E293B;"><i class="fas fa-book" style="color: #10B981; margin-right: 8px;"></i> AGMA 2001-D04 / 2101-D04</td>
+                        <td style="padding:15px; color: #475569;">Spur & Helical Rating</td>
+                        <td style="padding:15px; color: #334155;">The fundamental methodology used for calculating load capacity, bending, and contact stress.</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #E2E8F0;">
+                        <td style="padding:15px; font-weight: 600; color: #1E293B;"><i class="fas fa-globe-europe" style="color: #3B82F6; margin-right: 8px;"></i> ISO 6336</td>
+                        <td style="padding:15px; color: #475569;">Cylindrical Gear Capacity</td>
+                        <td style="padding:15px; color: #334155;">International equivalent of AGMA 2001. Evaluates identical physics using differing terminology.</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #E2E8F0; background: #F8FAFC;">
+                        <td style="padding:15px; font-weight: 600; color: #1E293B;"><i class="fas fa-oil-can" style="color: #F59E0B; margin-right: 8px;"></i> AGMA 9005</td>
+                        <td style="padding:15px; color: #475569;">Gear Lubrication</td>
+                        <td style="padding:15px; color: #334155;">Specifies viscosity selection and Extreme Pressure (EP) additive requirements to prevent scoring.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:15px; font-weight: 600; color: #1E293B;"><i class="fas fa-industry" style="color: #8B5CF6; margin-right: 8px;"></i> API 613</td>
+                        <td style="padding:15px; color: #475569;">Special Purpose Gears</td>
+                        <td style="padding:15px; color: #334155;">Stringent design, vibration, and testing standards for mission-critical gears in Petrochemical applications.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <!-- ===== 7. THE RULES ===== -->
-    <div style="background: linear-gradient(135deg, var(--card-bg), rgba(30,58,138,0.04)); border-radius: 16px; padding: 30px; margin: 24px 0; border-left: 5px solid var(--primary-color); box-shadow: var(--card-shadow); transition: all 0.3s;">
-        <h3 style="color: var(--primary-color); font-size: 1.4rem; margin: 0 0 18px 0; display: flex; align-items: center; gap: 12px;"><i class="fas fa-gavel"></i> The 'Rules' — Governing Standards & Best Practices</h3>
-        <p style="margin: 10px 0 22px 0; line-height: 1.9; color: var(--text-color);">Gear design is governed by international standards that define rating methods, quality grades, materials, and lubrication requirements.</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-left: 4px solid var(--primary-color);">
-                <h5 style="margin: 0 0 8px 0; color: var(--primary-color); font-size: 1.05rem;">AGMA 2001-D04</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">Fundamental Rating Factors for Involute Spur and Helical Gear Teeth. The primary standard used by this calculator for bending and contact stress evaluation.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-left: 4px solid #3B82F6;">
-                <h5 style="margin: 0 0 8px 0; color: #3B82F6; font-size: 1.05rem;">ISO 6336</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">International standard for cylindrical gear load capacity. The European/Asian equivalent of AGMA 2001. Uses different factor nomenclature but similar physics.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-left: 4px solid #10B981;">
-                <h5 style="margin: 0 0 8px 0; color: #10B981; font-size: 1.05rem;">AGMA 2003-B97 / ISO 10300</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">Rating methods for bevel gears. Accounts for the tapered geometry, separating forces, and complex contact patterns unique to bevel gear sets.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-left: 4px solid #F59E0B;">
-                <h5 style="margin: 0 0 8px 0; color: #F59E0B; font-size: 1.05rem;">AGMA 9005</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">Industrial Gear Lubrication. Specifies viscosity selection, application methods, and lubricant types to prevent scoring and manage operating temperature.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-left: 4px solid #EF4444;">
-                <h5 style="margin: 0 0 8px 0; color: #EF4444; font-size: 1.05rem;">AGMA 2000-A88</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">Gear Classification and Inspection Handbook. Defines AGMA Quality Numbers (Q3–Q15) that directly determine the Dynamic Factor K<sub>v</sub> used in stress calculations.</p>
-            </div>
-            <div style="background: var(--bg-color); padding: 18px; border-radius: 10px; border-left: 4px solid #8B5CF6;">
-                <h5 style="margin: 0 0 8px 0; color: #8B5CF6; font-size: 1.05rem;">AGMA 6013 / API 613</h5>
-                <p style="margin: 0; font-size: 0.9rem; line-height: 1.7; color: var(--text-color);">Special Purpose Enclosed Gear Drives for Petroleum, Chemical, and Gas Industry Services. Stringent requirements for critical-service gearboxes.</p>
-            </div>
-        </div>
-    </div>
-
 </div>
+
+<!-- ============================================== -->
+<!-- 10 MOST ASKED INTERVIEW QUESTIONS              -->
+<!-- ============================================== -->
+<div class="tool-container" style="padding: 40px 30px; margin-top: 30px;">
+    <h2 style="font-size: 2rem; margin-bottom: 30px; border-bottom: 3px solid var(--secondary-color); padding-bottom: 10px; display: inline-block;"><i class="fas fa-graduation-cap"></i> 10 Most Asked Gear Design Interview Questions</h2>
+    
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">1. What is the difference between AGMA bending stress and contact stress?</button>
+        <div class="faq-answer">
+            <p><strong>Dual Failure Analysis:</strong> Gears fail in two fundamentally different ways simultaneously.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 15px 0;">
+                <div style="background: rgba(239,68,68,0.08); border-left: 4px solid #EF4444; padding: 12px; border-radius: 6px;">
+                    <strong style="color:#DC2626;">Bending Stress (Root):</strong><br>
+                    Evaluates maximum tensile stress at the tooth root (cantilever beam). Failure leads to catastrophic tooth breakage.
+                </div>
+                <div style="background: rgba(37,99,235,0.08); border-left: 4px solid #2563EB; padding: 12px; border-radius: 6px;">
+                    <strong style="color:#2563EB;">Contact Stress (Surface):</strong><br>
+                    Evaluates Hertzian pressure where the teeth mesh. Failure causes micro-cracking and progressive metal flaking (pitting).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">2. Why is the AGMA Geometry Factor (J) so critical?</button>
+        <div class="faq-answer">
+            <p><strong>Geometry Factor (\(J\))</strong> accounts for the shape of the tooth and the root fillet radius where stress concentrates.</p>
+            <div style="background: rgba(16,185,129,0.08); border-left: 4px solid #10B981; padding: 12px; border-radius: 6px; margin: 12px 0;">
+                <i class="fas fa-check-circle" style="color:#10B981;"></i> <strong>Importance:</strong> A higher \(J\) value means the tooth is geometrically stronger (thicker root). It also accounts for <strong>load sharing</strong> between teeth in high-contact-ratio gears.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">3. What causes gear surface pitting?</button>
+        <div class="faq-answer">
+            <p><strong>Pitting</strong> is a surface fatigue failure.</p>
+            <p>It occurs when the localized Hertzian contact pressure between meshing gear teeth repeatedly exceeds the surface endurance limit of the material. Over millions of cycles, subsurface micro-cracks form and propagate to the surface, causing tiny pieces of metal to flake out.</p>
+            <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px;">
+                <i class="fas fa-shield-alt" style="color: #3B82F6;"></i> <strong>Solution:</strong> Increase gear face width, increase pitch diameter, or case-harden the gear surfaces.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">4. How does the Dynamic Factor (\(K_v\)) affect gear design?</button>
+        <div class="faq-answer">
+            <p>The <strong>Dynamic Factor (\(K_v\))</strong> penalizes the design for internally generated shock loads caused by manufacturing inaccuracies.</p>
+            <ul style="margin: 12px 0;">
+                <li>No gear tooth profile is perfect. Small spacing errors cause the teeth to impact each other, generating dynamic vibration forces that act in addition to the transmitted load.</li>
+                <li>Gears with higher AGMA Quality numbers (more precise) have lower \(K_v\) penalties.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">5. What is the role of the Overload Factor (\(K_o\))?</button>
+        <div class="faq-answer">
+            <p><strong>Overload Factor (\(K_o\))</strong> adjusts for external shock loads applied to the gearbox by the prime mover (motor) and the driven machinery.</p>
+            <table style="width:100%; border-collapse: collapse; margin: 12px 0; font-size:0.9rem;">
+                <thead>
+                    <tr style="background: var(--primary-color); color: white;">
+                        <th style="padding: 8px; border: 1px solid #ddd;">Prime Mover</th>
+                        <th style="padding: 8px; border: 1px solid #ddd;">Driven Machine</th>
+                        <th style="padding: 8px; border: 1px solid #ddd;">Typical \(K_o\)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Electric Motor (Smooth)</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Centrifugal Pump (Uniform)</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align:center;">1.00</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Multi-cylinder Engine</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">Rock Crusher (Heavy Shock)</td>
+                        <td style="padding: 8px; border: 1px solid #ddd; text-align:center;">2.00 - 2.25</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">6. Why are Helical gears quieter than Spur gears?</button>
+        <div class="faq-answer">
+            <p><strong>Continuous Engagement:</strong> Spur gear teeth engage instantly across their entire face width, causing a sudden impact (whine).</p>
+            <div style="background: rgba(139,92,246,0.08); border-left: 4px solid #8B5CF6; padding: 12px; border-radius: 6px; margin: 12px 0;">
+                <i class="fas fa-volume-mute" style="color:#8B5CF6;"></i> Helical gear teeth are cut at an angle (helix angle). The teeth engage gradually, starting at one end and smoothly sweeping across to the other. This prevents impact loading, making them much quieter and capable of transmitting higher loads.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">7. What is the purpose of the Load Distribution Factor (\(K_m\))?</button>
+        <div class="faq-answer">
+            <p>The <strong>Load Distribution Factor (\(K_m\))</strong> penalizes gears for misaligned contact across their face width.</p>
+            <p>If a gear is very wide or the shafts deflect under load, the gear teeth won't mesh perfectly parallel. The load will concentrate on one edge of the tooth. \(K_m\) drastically increases the calculated stress to reflect this non-uniform edge loading.</p>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">8. When should you use Bevel gears?</button>
+        <div class="faq-answer">
+            <p><strong>Intersecting Shafts:</strong> Bevel gears are designed for transmitting power between shafts whose axes intersect (typically at exactly 90 degrees).</p>
+            <p>They are widely used in automotive differentials, helicopter transmissions, and right-angle industrial gearboxes.</p>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">9. How do you prevent gear scoring or scuffing?</button>
+        <div class="faq-answer">
+            <p><strong>Scoring</strong> is caused by the instantaneous breakdown of the elastohydrodynamic (EHD) lubricant film under extreme pressure and high sliding velocity, causing the metal surfaces to temporarily weld together and tear apart.</p>
+            <div style="background: rgba(245,158,11,0.08); border-left: 4px solid #F59E0B; padding: 10px 15px; border-radius: 6px; margin-top: 10px;">
+                <i class="fas fa-oil-can" style="color:#D97706;"></i> <strong>Prevention:</strong> Use higher viscosity lubricants, reduce operating oil temperature, or use oils with Extreme Pressure (EP) additives (like sulfur-phosphorus) that chemically bond to the gear teeth.
+            </div>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <button class="faq-question" onclick="toggleFaq(this)">10. What is a typical Factor of Safety (FoS) in gear design?</button>
+        <div class="faq-answer">
+            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                <div style="flex: 1; background: rgba(239,68,68,0.05); padding: 15px; border-radius: 8px;">
+                    <strong style="color: #DC2626;">Bending FoS (1.5 - 2.0+):</strong> Requires a higher FoS because a tooth snapping off is an immediate, catastrophic failure.
+                </div>
+                <div style="flex: 1; background: rgba(37,99,235,0.05); padding: 15px; border-radius: 8px;">
+                    <strong style="color: #2563EB;">Contact FoS (1.0 - 1.3):</strong> Can be much lower because pitting is a slow, progressive failure that gives ample warning (noise, vibration) before shutdown.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 </main>
 
@@ -1441,15 +1549,21 @@ box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
         <div class="container">
             <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
+            <div style="display:flex; flex-direction:column; gap:15px; max-width:700px; margin:0 auto;">
+                    <a href="allowable-stress-safety-factor.html" style="text-decoration:none; display:block; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:white; padding: 15px 25px; border-radius: 50px; box-shadow: 0 8px 20px rgba(37,99,235,0.3); transition: transform 0.2s; text-align:center;">
+                        <h3 style="color:white; font-size:1.2rem; margin:0; display:flex; justify-content:center; align-items:center;"><i class="fas fa-shield-alt" style="margin-right:8px;"></i> Allowable Stress & Safety Factor</h3>
+                        <p style="font-size:0.9rem; color:rgba(255,255,255,0.9); margin: 8px 0 0 0;"><strong>What it does:</strong> Calculates maximum permissible working stress from material yield strength using strict FoS guidelines.</p>
+                        <p style="font-size:0.9rem; color:rgba(255,255,255,0.9); margin: 4px 0 0 0;"><strong>Importance:</strong> The first line of defense against structural failure in critical mechanical & civil engineering design.</p>
                     </a>
-                    <a href="/bolt-torque" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
+                    <a href="bolt-torque.html" style="text-decoration:none; display:block; background:linear-gradient(135deg, #d97706, #b45309); color:white; padding: 15px 25px; border-radius: 50px; box-shadow: 0 8px 20px rgba(217,119,6,0.3); transition: transform 0.2s; text-align:center;">
+                        <h3 style="color:white; font-size:1.2rem; margin:0; display:flex; justify-content:center; align-items:center;"><i class="fas fa-wrench" style="margin-right:8px;"></i> Bolt Torque & Preload</h3>
+                        <p style="font-size:0.9rem; color:rgba(255,255,255,0.9); margin: 8px 0 0 0;"><strong>What it does:</strong> Accurately determines the tightening torque required to achieve the correct clamping force (preload).</p>
+                        <p style="font-size:0.9rem; color:rgba(255,255,255,0.9); margin: 4px 0 0 0;"><strong>Importance:</strong> Prevents catastrophic joint loosening under vibration and avoids shearing bolts due to over-tightening.</p>
                     </a>
-                    <a href="/darcy-weisbach" class="silo-card" style="text-decoration:none;">
-                        <span>Darcy Weisbach</span>
+                    <a href="darcy-weisbach.html" style="text-decoration:none; display:block; background:linear-gradient(135deg, #059669, #047857); color:white; padding: 15px 25px; border-radius: 50px; box-shadow: 0 8px 20px rgba(5,150,105,0.3); transition: transform 0.2s; text-align:center;">
+                        <h3 style="color:white; font-size:1.2rem; margin:0; display:flex; justify-content:center; align-items:center;"><i class="fas fa-water" style="margin-right:8px;"></i> Darcy-Weisbach Friction Loss</h3>
+                        <p style="font-size:0.9rem; color:rgba(255,255,255,0.9); margin: 8px 0 0 0;"><strong>What it does:</strong> Computes the exact pressure drop and head loss in piping systems due to fluid friction.</p>
+                        <p style="font-size:0.9rem; color:rgba(255,255,255,0.9); margin: 4px 0 0 0;"><strong>Importance:</strong> Essential for sizing industrial pumps, designing HVAC systems, and ensuring efficient fluid transport.</p>
                     </a>
             </div>
         </div>
@@ -1553,13 +1667,7 @@ const stressAnalysisDiv = document.getElementById('stress-analysis-content');
 const failureAnalysisDiv = document.getElementById('failure-analysis-content');
 const exportReportBtn = document.getElementById('export-report');
 
-// Canvas for gear visualization
-const canvas = document.getElementById('gear-geometry-canvas');
-const ctx = canvas.getContext('2d');
-
-// Set canvas dimensions
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
+// Canvas replaced by SVG in premium 10-step layout.
 
 // --- HELPER FUNCTIONS ---
 const toRad = (deg) => deg * Math.PI / 180;
@@ -1616,270 +1724,281 @@ return false;
 return true;
 }
 
-// --- CALCULATION LOGIC (UPGRADED TO AGMA) ---
+// --- CALCULATION LOGIC (PREMIUM 10-STEP AGMA) ---
 function performCalculation() {
-// 1. Get all inputs
-const inputs = {
-gearType: gearTypeSelect.value,
-P: parseFloat(document.getElementById('power').value), // kW
-n_p: parseFloat(document.getElementById('pinion-speed').value), // RPM
-i: parseFloat(document.getElementById('gear-ratio').value),
-phi_deg: parseFloat(document.getElementById('pressure-angle').value),
-psi_deg: gearTypeSelect.value === 'helical' ? parseFloat(document.getElementById('helix-angle').value) : 0,
-Sigma_deg: gearTypeSelect.value === 'bevel' ? parseFloat(document.getElementById('shaft-angle').value) : 90,
-Sat_base: parseFloat(document.getElementById('material-strength').value), // MPa
-BHN: parseFloat(document.getElementById('surface-hardness').value),
-Cp: parseFloat(document.getElementById('elastic-coefficient').value),
-Ko: parseFloat(document.getElementById('overload-factor').value),
-FoS_req: parseFloat(document.getElementById('factor-of-safety').value),
-KR: parseFloat(document.getElementById('reliability-factor').value),
-KT: parseFloat(document.getElementById('temperature-factor').value),
-Km: parseFloat(document.getElementById('load-distribution').value),
-Kv: parseFloat(document.getElementById('dynamic-factor').value),
-J: parseFloat(document.getElementById('bending-geometry-factor').value),
-I: parseFloat(document.getElementById('pitting-geometry-factor').value),
-CH: parseFloat(document.getElementById('hardness-ratio-factor').value),
-YN: parseFloat(document.getElementById('bending-life-factor').value),
-ZN: parseFloat(document.getElementById('pitting-life-factor').value)
-};
+    const inputs = {
+        gearType: gearTypeSelect.value,
+        P: parseFloat(document.getElementById('power').value),
+        n_p: parseFloat(document.getElementById('pinion-speed').value),
+        i: parseFloat(document.getElementById('gear-ratio').value),
+        phi_deg: parseFloat(document.getElementById('pressure-angle').value),
+        psi_deg: gearTypeSelect.value === 'helical' ? parseFloat(document.getElementById('helix-angle').value) : 0,
+        Sigma_deg: gearTypeSelect.value === 'bevel' ? parseFloat(document.getElementById('shaft-angle').value) : 90,
+        Sat_base: parseFloat(document.getElementById('material-strength').value),
+        BHN: parseFloat(document.getElementById('surface-hardness').value),
+        Cp: parseFloat(document.getElementById('elastic-coefficient').value),
+        Ko: parseFloat(document.getElementById('overload-factor').value),
+        FoS_req: parseFloat(document.getElementById('factor-of-safety').value),
+        KR: parseFloat(document.getElementById('reliability-factor').value),
+        KT: parseFloat(document.getElementById('temperature-factor').value),
+        Km: parseFloat(document.getElementById('load-distribution').value),
+        Kv: parseFloat(document.getElementById('dynamic-factor').value),
+        J: parseFloat(document.getElementById('bending-geometry-factor').value),
+        I: parseFloat(document.getElementById('pitting-geometry-factor').value),
+        CH: parseFloat(document.getElementById('hardness-ratio-factor').value),
+        YN: parseFloat(document.getElementById('bending-life-factor').value),
+        ZN: parseFloat(document.getElementById('pitting-life-factor').value)
+    };
 
-calculationStepsDiv.innerHTML = '';
-stressAnalysisDiv.innerHTML = '';
-failureAnalysisDiv.innerHTML = '';
+    calculationStepsDiv.innerHTML = '<div style="display: flex; flex-direction: column; gap: 20px;"></div>';
+    const gridContainer = calculationStepsDiv.querySelector('div');
+    stressAnalysisDiv.innerHTML = '';
+    failureAnalysisDiv.innerHTML = '';
 
-const phi_rad = toRad(inputs.phi_deg);
-const psi_rad = toRad(inputs.psi_deg);
+    const phi_rad = toRad(inputs.phi_deg);
+    const psi_rad = toRad(inputs.psi_deg);
 
-// --- Step 1: Initial Torque ---
-const T_p = (inputs.P * 1000 * 60) / (2 * Math.PI * inputs.n_p); // Pinion Torque in N-m
-addCalculationStep(1, 'Input Torque (T_p)',
-'$$T_p = \\frac{P \\times 1000 \\times 60}{2 \\pi n_p}$$',
-`$$T_p = \\frac{${inputs.P} \\times 1000 \\times 60}{2 \\pi \\times ${inputs.n_p}}$$`,
-`Pinion Torque (T_p) = ${T_p.toFixed(2)} N-m`);
+    // --- STEP 1: Input Power & Torque Analysis ---
+    const T_p = (inputs.P * 1000 * 60) / (2 * Math.PI * inputs.n_p);
+    addPremiumStep(gridContainer, 1, 'Input Power & Torque Analysis', 'fas fa-bolt', '#F59E0B',
+        'Calculate the driving torque on the pinion based on input motor power and rotational speed.',
+        '\\( T_p = \\frac{P \\times 60,000}{2 \\pi n_p} \\)',
+        `\\( T_p = \\frac{${inputs.P} \\times 60,000}{2 \\pi \\times ${inputs.n_p}} = \\mathbf{${T_p.toFixed(2)}\\ N\\cdot m} \\)`);
 
-// --- Step 2: Initial Sizing (Teeth & Module) ---
-let Zp = inputs.gearType === 'bevel' ? Math.max(15, 20 / (Math.sin(toRad(inputs.Sigma_deg / (1 + inputs.i))))) : 18; // Assume number of teeth on pinion
-Zp = Math.round(Zp);
-const Zg = Math.round(Zp * inputs.i); // Number of teeth on gear
+    // --- STEP 2: Gear Ratio & Tooth Count Determination ---
+    let Zp = inputs.gearType === 'bevel' ? Math.max(15, 20 / (Math.sin(toRad(inputs.Sigma_deg / (1 + inputs.i))))) : 18;
+    Zp = Math.round(Zp);
+    const Zg = Math.round(Zp * inputs.i);
+    const actual_ratio = Zg / Zp;
+    addPremiumStep(gridContainer, 2, 'Tooth Count Determination', 'fas fa-cogs', '#3B82F6',
+        'Determine minimum teeth to avoid interference and calculate the exact gear tooth count based on the requested ratio.',
+        '\\( Z_g = Z_p \\times i \\)',
+        `Assumed minimum Pinion Teeth, \\( Z_p = ${Zp} \\)<br>Calculated Gear Teeth, \\( Z_g = ${Zp} \\times ${inputs.i} = ${Zg} \\)<br>Actual Ratio = \\( \\mathbf{${actual_ratio.toFixed(3)}} \\)`);
 
-// Estimate module 'm' based on torque and allowable *bending* stress
-// This is a rough starting point
-let m_cubed_term = (2 * T_p * 1000 * inputs.Ko * inputs.Km) / (inputs.Sat_base * inputs.Kv * 10 * Zp * inputs.J);
-if (inputs.gearType === 'helical') {
-m_cubed_term /= Math.cos(psi_rad);
-}
-let m = Math.pow(m_cubed_term, 1/3);
+    // --- STEP 3: Module Sizing (Bending & Pitting Constraint) ---
+    // Bending Requirement
+    let m_cubed_bend = (2 * T_p * 1000 * inputs.Ko * inputs.Km * inputs.FoS_req) / (inputs.Sat_base * inputs.Kv * 10 * Zp * inputs.J);
+    if (inputs.gearType === 'helical') m_cubed_bend /= Math.cos(psi_rad);
+    let m_bend = Math.pow(m_cubed_bend, 1/3);
+    
+    // Pitting Requirement
+    const Sac_allowable = (2.8 * inputs.BHN - 69) / Math.sqrt(inputs.FoS_req);
+    let m_cubed_pit = (Math.pow(inputs.Cp, 2) * 2 * T_p * 1000 * inputs.Ko * inputs.Km) / (10 * Math.pow(Zp, 2) * inputs.I * Math.pow(Sac_allowable, 2));
+    if (inputs.gearType === 'helical') m_cubed_pit /= Math.cos(psi_rad);
+    let m_pit = Math.pow(m_cubed_pit, 1/3);
 
-// Standardize module
-const standardModules = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 16, 20];
-m = standardModules.find(sm => sm >= m) || standardModules[standardModules.length - 1];
-const b = 10 * m; // Face width (assume b = 10*m)
+    let m_calc = Math.max(m_bend, m_pit);
 
-addCalculationStep(2, 'Initial Geometry Sizing (Teeth & Module)',
-'Estimate minimum number of teeth (Zp). Calculate required module (m) based on bending strength.',
-`Assumed Pinion Teeth (Zp) = ${Zp}<br>Calculated Gear Teeth (Zg) = ${Zg}<br>Calculated minimum module â‰ˆ ${m.toFixed(2)} mm.<br>Selecting next standard module.`,
-`Zp = ${Zp}, Zg = ${Zg}<br>Standard Module (m) = ${m} mm<br>Face Width (b) = ${b} mm`);
+    const standardModules = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 16, 20, 25, 32, 40, 50];
+    const m = standardModules.find(sm => sm >= m_calc) || standardModules[standardModules.length - 1];
+    const b = 10 * m;
+    
+    addPremiumStep(gridContainer, 3, 'Module Sizing (Bending & Pitting)', 'fas fa-ruler-combined', '#10B981',
+        'Estimate module required for both bending and surface durability, strictly incorporating the Safety Factor.',
+        '\\( m \\ge \\max(m_{bend}, m_{pit}) \\)',
+        `Req. Module (Bending) \\( = ${m_bend.toFixed(2)}\\ mm \\)<br>Req. Module (Pitting) \\( = ${m_pit.toFixed(2)}\\ mm \\)<br>Selected Standard Module, \\( m = \\mathbf{${m}\\ mm} \\)<br>Face Width, \\( b = 10m = \\mathbf{${b}\\ mm} \\)`);
 
-// --- Step 3: Gear Geometry & Velocity ---
-const d_p = m * Zp / (inputs.gearType === 'helical' ? Math.cos(psi_rad) : 1);
-const d_g = m * Zg / (inputs.gearType === 'helical' ? Math.cos(psi_rad) : 1);
-const center_distance = (d_p + d_g) / 2;
-const v = (Math.PI * d_p * inputs.n_p) / (60 * 1000); // Pitch line velocity in m/s
+    // --- STEP 4: Gear Geometry (Diameters & Center Distance) ---
+    const d_p = m * Zp / (inputs.gearType === 'helical' ? Math.cos(psi_rad) : 1);
+    const d_g = m * Zg / (inputs.gearType === 'helical' ? Math.cos(psi_rad) : 1);
+    const center_distance = (d_p + d_g) / 2;
+    addPremiumStep(gridContainer, 4, 'Macro Geometry Calculation', 'fas fa-compass', '#8B5CF6',
+        'Calculate the pitch diameters and the exact center distance between shafts.',
+        '\\( d = \\frac{m \\cdot Z}{\\cos\\psi} \\)',
+        `Pinion Pitch Dia, \\( d_p = \\mathbf{${d_p.toFixed(2)}\\ mm} \\)<br>Gear Pitch Dia, \\( d_g = \\mathbf{${d_g.toFixed(2)}\\ mm} \\)<br>Center Distance, \\( a = \\mathbf{${center_distance.toFixed(2)}\\ mm} \\)`);
 
-addCalculationStep(3, 'Main Gear Dimensions & Velocity',
-'$$d_p = m Z_p$$ $$d_g = m Z_g$$ $$v = \\frac{\\pi d_p n_p}{60,000}$$',
-`dp = ${m} * ${Zp} = ${d_p.toFixed(2)} mm<br>dg = ${m} * ${Zg} = ${d_g.toFixed(2)} mm<br>a = ${center_distance.toFixed(2)} mm<br>v = (Ï€ * ${d_p.toFixed(2)} * ${inputs.n_p}) / 60000 = ${v.toFixed(2)} m/s`,
-`Pinion Pitch Diameter (dp) = ${d_p.toFixed(2)} mm<br>Pitch Line Velocity (v) = ${v.toFixed(2)} m/s`);
+    // --- STEP 5: Pitch Line Velocity & Dynamic Evaluation ---
+    const v = (Math.PI * d_p * inputs.n_p) / 60000;
+    let dyn_eval = v > 20 ? "High Speed (Precision gears required)" : "Moderate Speed";
+    addPremiumStep(gridContainer, 5, 'Pitch Line Velocity Analysis', 'fas fa-tachometer-alt', '#EC4899',
+        'Determine the linear velocity at the pitch circle, which dictates the severity of dynamic impact forces.',
+        '\\( v = \\frac{\\pi d_p n_p}{60,000} \\)',
+        `Pitch Line Velocity, \\( v = \\mathbf{${v.toFixed(2)}\\ m/s} \\)<br><em>${dyn_eval}</em>`);
 
-// --- Step 4: Load Calculation ---
-const Wt = (inputs.P * 1000) / v; // Tangential force in N
-const Fr = Wt * Math.tan(phi_rad); // Radial force (for spur)
-const Fa = Wt * Math.tan(psi_rad); // Axial force (for helical)
+    // --- STEP 6: Transmitted Loads ---
+    const Wt = (inputs.P * 1000) / v;
+    const Fr = Wt * Math.tan(phi_rad);
+    const Fa = inputs.gearType === 'helical' ? Wt * Math.tan(psi_rad) : 0;
+    addPremiumStep(gridContainer, 6, 'Transmitted Load Vectors', 'fas fa-arrows-alt', '#EF4444',
+        'Decompose the transmitted power into tangential, radial, and axial (if helical) force vectors.',
+        '\\( W_t = \\frac{P}{v}, F_r = W_t \\tan\\phi \\)',
+        `Tangential Force, \\( W_t = \\mathbf{${Wt.toFixed(0)}\\ N} \\)<br>Radial Force, \\( F_r = \\mathbf{${Fr.toFixed(0)}\\ N} \\)` + (Fa > 0 ? `<br>Axial Force, \\( F_a = \\mathbf{${Fa.toFixed(0)}\\ N} \\)` : ''));
 
-let forcesText = `Wt = (${inputs.P} * 1000) / ${v.toFixed(2)} = ${Wt.toFixed(2)} N`;
-if (inputs.gearType === 'spur') {
-forcesText += `<br>Fr = ${Wt.toFixed(2)} * tan(${inputs.phi_deg}Â°) = ${Fr.toFixed(2)} N`;
-} else if (inputs.gearType === 'helical') {
-forcesText += `<br>Fa = ${Wt.toFixed(2)} * tan(${inputs.psi_deg}Â°) = ${Fa.toFixed(2)} N`;
-}
+    // --- STEP 7: AGMA Bending Stress ---
+    const sigma_b = (Wt * inputs.Ko * inputs.Kv * inputs.Km) / (b * m * inputs.J) * inputs.KT * inputs.KR;
+    addPremiumStep(gridContainer, 7, 'AGMA Bending Stress (Root)', 'fas fa-compress-arrows-alt', '#DC2626',
+        'Calculate the maximum tensile bending stress induced at the root fillet of the gear tooth.',
+        '\\( \\sigma_b = \\frac{W_t K_o K_v K_m}{b m J} K_T K_R \\)',
+        `\\( \\sigma_b = \\frac{${Wt.toFixed(0)} \\cdot ${inputs.Ko} \\cdot ${inputs.Kv} \\cdot ${inputs.Km}}{${b} \\cdot ${m} \\cdot ${inputs.J}} \\cdot ${inputs.KT} \\cdot ${inputs.KR} \\)<br>Induced Bending, \\( \\sigma_b = \\mathbf{${sigma_b.toFixed(2)}\\ MPa} \\)`);
 
-addCalculationStep(4, 'Transmitted Load (Wt)',
-'$$W_t = \\frac{P \\times 1000}{v}$$',
-forcesText,
-`Tangential Load (Wt) = ${Wt.toFixed(2)} N`);
+    // --- STEP 8: Bending Safety Factor (FoS) ---
+    const Sat = inputs.Sat_base * (inputs.YN / (inputs.KT * inputs.KR));
+    const FoS_bending = Sat / sigma_b;
+    const b_status = FoS_bending >= inputs.FoS_req ? "<span style='color:var(--success-color);font-weight:bold;'>SAFE</span>" : "<span style='color:var(--fail-color);font-weight:bold;'>FAIL</span>";
+    addPremiumStep(gridContainer, 8, 'Bending Fatigue Validation', 'fas fa-shield-alt', '#059669',
+        'Compare the induced root stress against the material\'s endurance limit adjusted for life cycle and temperature.',
+        '\\( S_{at} = S_{at,base} \\frac{Y_N}{K_T K_R} \\)',
+        `Allowable Bending, \\( S_{at} = \\mathbf{${Sat.toFixed(2)}\\ MPa} \\)<br>Bending FoS = \\( \\frac{${Sat.toFixed(2)}}{${sigma_b.toFixed(2)}} = \\mathbf{${FoS_bending.toFixed(2)}} \\) [${b_status}]`);
 
-// --- Step 5: AGMA Bending Stress ---
-// sigma_b = Wt * Ko * Kv * Km * (1 / (b * m * J)) * KT * KR (Note: 1/m = P_d / pi, m is metric)
-// The formula in AGMA is Wt * Ko * Kv * Km * Pd / (F * J)
-// Pd = 25.4 / m (diametral pitch)
-// F = b (face width)
-// Let's use the metric version: sigma_b = Wt * Ko * Kv * Km * (1 / (b * m_t * J)) * KT * KR
-// where m_t is transverse module (which is just 'm' for spur, m_n / cos(psi) for helical)
-// The J factor is for transverse plane.
-// Let's use the provided 'm' as the transverse module for simplicity.
-// A more correct formula uses metric module m_n
-// For Helical: m_t = m_n / cos(psi). But we sized m based on d_p = m*Zp / cos(psi).
-// This implies our 'm' is already the normal module (m_n). Let's assume m = m_n.
-// d_p = m_n * Zp / cos(psi).
-// Let's assume the input J factor is in the normal plane.
-// sigma_b = Wt * Ko * Kv * Km / (b * m * J) * KT * KR
-// This seems to be the most consistent interpretation.
-const sigma_b = (Wt * inputs.Ko * inputs.Kv * inputs.Km) / (b * m * inputs.J) * inputs.KT * inputs.KR;
+    // --- STEP 9: AGMA Contact Stress (Pitting) ---
+    const sigma_c_term = (Wt * inputs.Ko * inputs.Kv * inputs.Km) / (b * d_p * inputs.I) * inputs.CH * inputs.KT * inputs.KR;
+    const sigma_c = inputs.Cp * Math.sqrt(sigma_c_term);
+    addPremiumStep(gridContainer, 9, 'AGMA Contact Stress (Flank)', 'fas fa-compress', '#EA580C',
+        'Evaluate the maximum Hertzian contact pressure generated at the pitch point during meshing.',
+        '\\( \\sigma_c = C_p \\sqrt{\\frac{W_t K_o K_v K_m}{b d_p I} C_H K_T K_R} \\)',
+        `Induced Contact Stress, \\( \\sigma_c = \\mathbf{${sigma_c.toFixed(2)}\\ MPa} \\)`);
 
-addCalculationStep(5, 'AGMA Bending Stress (Ïƒ_b)',
-'$$\\sigma_b = \\frac{W_t K_o K_v K_m}{b m J} K_T K_R$$',
-`Ïƒ_b = (${Wt.toFixed(2)} * ${inputs.Ko} * ${inputs.Kv} * ${inputs.Km}) / (${b} * ${m} * ${inputs.J}) * ${inputs.KT} * ${inputs.KR}`,
-`Induced Bending Stress (Ïƒ_b) = ${sigma_b.toFixed(2)} MPa`);
+    // --- STEP 10: Pitting Safety Factor (FoS) ---
+    const Sac_base = 2.8 * inputs.BHN - 69;
+    const Sac = Sac_base * (inputs.ZN * inputs.CH / (inputs.KT * inputs.KR));
+    const FoS_pitting = Math.pow((Sac / sigma_c), 2);
+    const c_status = FoS_pitting >= inputs.FoS_req ? "<span style='color:var(--success-color);font-weight:bold;'>SAFE</span>" : "<span style='color:var(--fail-color);font-weight:bold;'>FAIL</span>";
+    addPremiumStep(gridContainer, 10, 'Surface Durability Validation', 'fas fa-check-double', '#0284C7',
+        'Verify that the gear flanks will resist surface pitting (fatigue flaking) over the required life cycles.',
+        '\\( S_{ac} = S_{ac,base} \\frac{Z_N C_H}{K_T K_R} \\)',
+        `Allowable Contact, \\( S_{ac} = \\mathbf{${Sac.toFixed(2)}\\ MPa} \\)<br>Contact FoS = \\( \\mathbf{${FoS_pitting.toFixed(2)}} \\) [${c_status}]`);
 
-// --- Step 6: AGMA Allowable Bending Stress & FoS ---
-const Sat = inputs.Sat_base * (inputs.YN / (inputs.KT * inputs.KR));
-const FoS_bending = Sat / sigma_b;
-let b_check_result = FoS_bending >= inputs.FoS_req ? "SAFE" : "FAIL";
+    if (window.MathJax) {
+        try { window.MathJax.typesetPromise([calculationStepsDiv]); } catch (e) { console.error("MathJax error: ", e); }
+    }
+    
+    resultContainer.classList.add('show');
+    const eduSection = document.getElementById('education-section');
+    if (eduSection) eduSection.style.display = 'none';
+    
+    
+    setTimeout(() => resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
 
-addCalculationStep(6, 'AGMA Allowable Bending Stress (S_at) & FoS',
-'$$S_{at} = S_{at,base} \\frac{Y_N}{K_T K_R}$$ $$FoS_b = \\frac{S_{at}}{\\sigma_b}$$',
-`Allowable Bending Stress (S_at) = ${inputs.Sat_base} * (${inputs.YN} / (${inputs.KT} * ${inputs.KR})) = ${Sat.toFixed(2)} MPa<br>Factor of Safety (Bending) = ${Sat.toFixed(2)} / ${sigma_b.toFixed(2)} = ${FoS_bending.toFixed(2)}`,
-`Allowable Bending Stress (S_at) = ${Sat.toFixed(2)} MPa<br>Bending FoS = ${FoS_bending.toFixed(2)} (Req: ${inputs.FoS_req}) [${b_check_result}]`);
+    drawPremiumGearVisualization(d_p, d_g, Zp, Zg, inputs.gearType, Wt, center_distance);
+    performStressAnalysis(inputs, sigma_b, sigma_c, FoS_bending, FoS_pitting, Sat, Sac);
+    performFailureAnalysis(inputs, Wt, d_p, v, FoS_bending, FoS_pitting);
 
-// --- Step 7: AGMA Contact Stress (Ïƒ_c) ---
-// sigma_c = Cp * sqrt(Wt * Ko * Kv * Km / (b * d_p * I) * CH * KT * KR)
-// This is slightly simplified. Let's use it.
-const sigma_c_term = (Wt * inputs.Ko * inputs.Kv * inputs.Km) / (b * d_p * inputs.I) * inputs.CH * inputs.KT * inputs.KR;
-const sigma_c = inputs.Cp * Math.sqrt(sigma_c_term);
-
-addCalculationStep(7, 'AGMA Contact Stress (Ïƒ_c)',
-'$$\\sigma_c = C_p \\sqrt{\\frac{W_t K_o K_v K_m}{b d_p I} C_H K_T K_R}$$',
-`Term inside sqrt = (${Wt.toFixed(2)} * ${inputs.Ko} * ...) / (${b} * ${d_p.toFixed(2)} * ${inputs.I}) * ... = ${sigma_c_term.toFixed(2)}<br>Ïƒ_c = ${inputs.Cp} * sqrt(${sigma_c_term.toFixed(2)})`,
-`Induced Contact Stress (Ïƒ_c) = ${sigma_c.toFixed(2)} MPa`);
-
-// --- Step 8: AGMA Allowable Contact Stress & FoS ---
-const Sac_base = 2.8 * inputs.BHN - 69; // (MPa) Approximation
-const Sac = Sac_base * (inputs.ZN * inputs.CH / (inputs.KT * inputs.KR));
-const FoS_pitting = Math.pow((Sac / sigma_c), 2);
-let w_check_result = FoS_pitting >= inputs.FoS_req ? "SAFE" : "FAIL";
-
-addCalculationStep(8, 'AGMA Allowable Contact Stress (S_ac) & FoS',
-'$$S_{ac,base} \\approx 2.8 \\times BHN - 69$$ $$S_{ac} = S_{ac,base} \\frac{Z_N C_H}{K_T K_R}$$ $$FoS_c = (\\frac{S_{ac}}{\\sigma_c})^2$$',
-`Base Allowable Contact Stress (S_ac,base) â‰ˆ ${Sac_base.toFixed(2)} MPa<br>Allowable Contact Stress (S_ac) = ${Sac_base.toFixed(2)} * (...) = ${Sac.toFixed(2)} MPa<br>Factor of Safety (Pitting) = (${Sac.toFixed(2)} / ${sigma_c.toFixed(2)})^2`,
-`Allowable Contact Stress (S_ac) = ${Sac.toFixed(2)} MPa<br>Pitting FoS = ${FoS_pitting.toFixed(2)} (Req: ${inputs.FoS_req}) [${w_check_result}]`);
-
-// --- Final Rendering ---
-if (window.MathJax) {
-try {
-window.MathJax.typesetPromise([calculationStepsDiv]);
-} catch (e) {
-console.error("MathJax typesetting error: ", e);
-}
-}
-resultContainer.classList.add('show');
-// Hide theory section when results appear
-const eduSection = document.getElementById('education-section');
-if (eduSection) eduSection.style.display = 'none';
-// Show PDF button
-const pdfBtn = document.getElementById('pdf-export-btn');
-if (pdfBtn) pdfBtn.style.display = 'inline-flex';
-setTimeout(() => resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
-
-// Draw gear visualization
-drawGearVisualization(d_p, d_g, Zp, Zg, inputs.gearType);
-
-// Perform stress analysis
-performStressAnalysis(inputs, sigma_b, sigma_c, FoS_bending, FoS_pitting, Sat, Sac);
-
-// Perform failure analysis
-performFailureAnalysis(inputs, Wt, d_p, v, FoS_bending, FoS_pitting);
-
-// --- Recommendations ---
-recommendationsDiv.innerHTML = `
-<ul>
-<li><strong>AGMA 2001-D04:</strong> This is the primary standard for the 'Fundamental Rating Factors and Calculation Methods for Involute Spur and Helical Gear Teeth'. The factors used (K, Y, Z, I, J) are key components of this standard.</li>
-<li><strong>AGMA 2003-B97:</strong> For the bevel gear design, refer to this standard, 'Rating the Pitting Resistance and Bending Strength of Bevel Gear Teeth'.</li>
-<li><strong>Material Selection:</strong> The selected material must have an allowable bending stress (S<sub>at</sub>) of at least <strong>${sigma_b.toFixed(2)} MPa</strong> and an allowable contact stress (S<sub>ac</sub>) of at least <strong>${sigma_c.toFixed(2)} MPa</strong> (when FoS=1).</li>
-<li><strong>Design Iteration:</strong> If the design is not safe (FAIL), consider the following:
-<ul>
-<li><strong>To Fix Bending (FoS_b):</strong> Increase module (m), increase face width (b), select a stronger material (higher S<sub>at_base</sub>), or use a better geometry (higher J-factor).</li>
-<li><strong>To Fix Pitting (FoS_c):</strong> Increase pinion diameter (d_p via module or Zp), increase face width (b), increase surface hardness (BHN), or use a better geometry (higher I-factor).</li>
-</ul>
-</li>
-<li><strong>Factor Validation:</strong> The 'J' and 'I' factors are estimates. For a final design, these must be calculated precisely from AGMA charts based on exact tooth counts, addendum, and helix angle.</li>
-</ul>`;
+    recommendationsDiv.innerHTML = `
+    <ul>
+    <li><strong>AGMA 2001-D04:</strong> Primary standard used for 'Fundamental Rating Factors and Calculation Methods'.</li>
+    <li><strong>Design Iteration:</strong> If the design is not safe:
+        <ul>
+        <li><strong>To Fix Bending:</strong> Increase module (\\(m\\)), increase face width (\\(b\\)), or select a stronger material.</li>
+        <li><strong>To Fix Pitting:</strong> Increase pinion diameter, increase face width (\\(b\\)), or case-harden the surface to increase BHN.</li>
+        </ul>
+    </li>
+    </ul>`;
+    if (window.MathJax) window.MathJax.typesetPromise([recommendationsDiv]);
 }
 
-function addCalculationStep(step, title, formula, calculation, result) {
-const stepDiv = document.createElement('div');
-stepDiv.className = 'calculation-step-container';
-stepDiv.style.animationDelay = `${step * 0.05}s`;
-
-let content = `<div class="step-header"><span><strong>Step ${step}:</strong> ${title}</span></div>
-<div class="step-content">`;
-if (formula) content += `<p class="formula">${formula}</p>`;
-if (calculation) content += `<p class="calculation">${calculation}</p>`;
-if (result) content += `<p class="final-result">${result}</p>`;
-content += `</div>`;
-
-stepDiv.innerHTML = content;
-calculationStepsDiv.appendChild(stepDiv);
+function addPremiumStep(container, stepNum, title, iconClass, color, description, formula, result) {
+    const div = document.createElement('div');
+    div.style.background = '#fff';
+    div.style.borderRadius = '10px';
+    div.style.border = '1px solid #E2E8F0';
+    div.style.borderTop = `4px solid ${color}`;
+    div.style.padding = '20px';
+    div.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.05)';
+    div.style.display = 'flex';
+    div.style.flexDirection = 'column';
+    div.style.animation = `fadeInSlideIn 0.5s ease backwards`;
+    div.style.animationDelay = `${stepNum * 0.05}s`;
+    
+    div.className = 'calculation-step-container'; // ADDED CLASS FOR PDF
+    div.style.opacity = '1';
+    div.style.animation = 'none'; // Prevent CSS animation conflicts
+    div.style.transform = 'none';
+    div.innerHTML = `
+        <div class="step-header" style="display: flex; align-items: center; margin-bottom: 15px;">
+            <div style="background: ${color}22; color: ${color}; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 0.9rem;">
+                ${stepNum}
+            </div>
+            <h5 style="margin: 0; font-size: 1.05rem; color: var(--heading-color);"><span>${title}</span></h5>
+        </div>
+        <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 12px; flex-grow: 1;">${description}</p>
+        <div style="background: #F8FAFC; border-radius: 6px; padding: 10px; margin-bottom: 12px; text-align: center; font-size: 0.95rem; overflow-x: auto;">
+            ${formula}
+        </div>
+        <div class="final-result" style="background: ${color}11; border-left: 3px solid ${color}; padding: 12px; border-radius: 0 6px 6px 0; font-size: 0.95rem; color: var(--heading-color);" data-pdf-text="${result.replace(/"/g, '&quot;')}">
+            ${result}
+        </div>
+    `;
+    container.appendChild(div);
 }
 
-function drawGearVisualization(d_p, d_g, Zp, Zg, gearType) {
-    // Set canvas dimensions based on current visibility
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--card-bg');
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-
-// Scale factors for visualization
-const totalDiameter = d_p + d_g;
-const scale = Math.min(canvas.width / (totalDiameter * 1.1), canvas.height / (Math.max(d_p, d_g) * 1.2));
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
-const center_dist_scaled = (d_p + d_g) / 2 * scale;
-
-const pinionX = centerX - d_g / 2 * scale;
-const gearX = centerX + d_p / 2 * scale;
-const pinionR = d_p / 2 * scale;
-const gearR = d_g / 2 * scale;
-
-ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--secondary-color');
-ctx.lineWidth = 2;
-
-// Pinion
-ctx.beginPath();
-ctx.arc(pinionX, centerY, pinionR, 0, 2 * Math.PI);
-ctx.stroke();
-
-// Gear
-ctx.beginPath();
-ctx.arc(gearX, centerY, gearR, 0, 2 * Math.PI);
-ctx.stroke();
-
-// Add labels
-ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--heading-color');
-ctx.font = '14px Inter';
-ctx.textAlign = 'center';
-ctx.fillText(`Pinion (${Zp} teeth)`, pinionX, centerY - pinionR - 15);
-ctx.fillText(`Gear (${Zg} teeth)`, gearX, centerY - gearR - 15);
-
-// Add dimensions
-ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--text-color');
-ctx.setLineDash([5, 3]);
-ctx.beginPath();
-ctx.moveTo(pinionX, centerY);
-ctx.lineTo(gearX, centerY);
-ctx.stroke();
-ctx.setLineDash([]);
-
-ctx.fillText(`${((d_p + d_g)/2).toFixed(2)} mm`, centerX, centerY + 20);
-
-// Add gear type indicator
-ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent-color');
-ctx.font = 'bold 16px Montserrat';
-ctx.fillText(`${gearType.charAt(0).toUpperCase() + gearType.slice(1)} Gear Set`, centerX, 30);
+function drawPremiumGearVisualization(dp, dg, zp, zg, type, wt, centerDist) {
+    const container = document.getElementById('gear-geometry-svg-container');
+    if(!container) return;
+    
+    // Scale to fit visually
+    const totalD = dp + dg;
+    // max radius is dg/2, we need padding
+    const viewBoxSize = 400;
+    const padding = 60;
+    
+    // Ratios for drawing
+    const maxDrawD = viewBoxSize - (padding * 2);
+    const scale = maxDrawD / totalD;
+    
+    const r1 = (dp / 2) * scale;
+    const r2 = (dg / 2) * scale;
+    
+    const cy = viewBoxSize / 2;
+    const cx1 = padding + r1;
+    const cx2 = cx1 + r1 + r2;
+    
+    // Add grid background to SVG
+    let svgHTML = `
+    <svg width="100%" height="400px" viewBox="0 0 ${viewBoxSize} ${viewBoxSize}" preserveAspectRatio="xMidYMid meet" style="filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); max-height: 400px;">
+        <!-- Grid Pattern -->
+        <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect width="20" height="20" fill="none"></rect>
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"></path>
+            </pattern>
+            <linearGradient id="gradPinion" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.8" />
+                <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.9" />
+            </linearGradient>
+            <linearGradient id="gradGear" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#10B981" stop-opacity="0.7" />
+                <stop offset="100%" stop-color="#047857" stop-opacity="0.8" />
+            </linearGradient>
+            <marker id="arrowHead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#F59E0B" />
+            </marker>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+        
+        <!-- Center Line -->
+        <line x1="${padding/2}" y1="${cy}" x2="${viewBoxSize - padding/2}" y2="${cy}" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="5,5" />
+        
+        <!-- Pitch Circles -->
+        <circle cx="${cx1}" cy="${cy}" r="${r1}" fill="url(#gradPinion)" stroke="#60A5FA" stroke-width="2" />
+        <circle cx="${cx2}" cy="${cy}" r="${r2}" fill="url(#gradGear)" stroke="#34D399" stroke-width="2" />
+        
+        <!-- Centers -->
+        <circle cx="${cx1}" cy="${cy}" r="4" fill="#FFFFFF" />
+        <circle cx="${cx2}" cy="${cy}" r="4" fill="#FFFFFF" />
+        
+        <!-- Tangential Force Vector at Mesh Point -->
+        <line x1="${cx1 + r1}" y1="${cy}" x2="${cx1 + r1}" y2="${cy - 40}" stroke="#F59E0B" stroke-width="3" marker-end="url(#arrowHead)" />
+        <text x="${cx1 + r1 + 10}" y="${cy - 20}" fill="#F59E0B" font-family="monospace" font-weight="bold" font-size="12">W_t = ${wt.toFixed(0)} N</text>
+        
+        <!-- Labels -->
+        <text x="${cx1}" y="${cy + r1 + 25}" fill="#93C5FD" font-family="sans-serif" font-weight="bold" font-size="14" text-anchor="middle">Pinion (${zp}T)</text>
+        <text x="${cx1}" y="${cy + r1 + 40}" fill="#93C5FD" font-family="monospace" font-size="12" text-anchor="middle">Ã˜${dp.toFixed(1)} mm</text>
+        
+        <text x="${cx2}" y="${cy + r2 + 25}" fill="#6EE7B7" font-family="sans-serif" font-weight="bold" font-size="14" text-anchor="middle">Gear (${zg}T)</text>
+        <text x="${cx2}" y="${cy + r2 + 40}" fill="#6EE7B7" font-family="monospace" font-size="12" text-anchor="middle">Ã˜${dg.toFixed(1)} mm</text>
+        
+        <!-- Center Distance Dimension -->
+        <line x1="${cx1}" y1="${cy - Math.max(r1, r2) - 30}" x2="${cx2}" y2="${cy - Math.max(r1, r2) - 30}" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" />
+        <line x1="${cx1}" y1="${cy}" x2="${cx1}" y2="${cy - Math.max(r1, r2) - 35}" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+        <line x1="${cx2}" y1="${cy}" x2="${cx2}" y2="${cy - Math.max(r1, r2) - 35}" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="3,3" />
+        <rect x="${cx1 + (cx2-cx1)/2 - 50}" y="${cy - Math.max(r1, r2) - 40}" width="100" height="20" fill="#0F172A" rx="4" />
+        <text x="${cx1 + (cx2-cx1)/2}" y="${cy - Math.max(r1, r2) - 26}" fill="white" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle">a = ${centerDist.toFixed(1)} mm</text>
+    </svg>`;
+    
+    container.innerHTML = svgHTML;
 }
+
+// Function to replace old performStressAnalysis so we dont break execution chain
 
 function performStressAnalysis(inputs, sigma_b, sigma_c, FoS_bending, FoS_pitting, Sat, Sac) {
 let analysisHTML = '';
@@ -2001,7 +2120,6 @@ analysisHTML = `
 failureAnalysisDiv.innerHTML = analysisHTML;
 }
 
-
 function displayMessage(message, type = "info") {
 const messageBox = document.getElementById('custom-message-box');
 messageBox.textContent = message;
@@ -2038,8 +2156,9 @@ exportReportBtn.addEventListener('click', function() {
         const rows = [];
         steps.forEach(step => {
             const title = step.querySelector('.step-header span')?.textContent || '';
-            const result = step.querySelector('.final-result')?.textContent || '';
-            if (title && result) rows.push([title.trim(), result.trim()]);
+            const rawResult = step.querySelector('.final-result')?.getAttribute('data-pdf-text') || '';
+            let cleanResult = rawResult.replace(/<br\s*[\/]?>/gi, " | ").replace(/<[^>]*>?/gm, "").replace(/\\[a-zA-Z]+/g, '').replace(/[\(\)\{\}]/g, '').replace(/&nbsp;/g, ' ').replace(/_/g, '').trim();
+            if (title && cleanResult) rows.push([title.trim(), cleanResult]);
         });
         if (rows.length > 0) {
             pdf.setFont('helvetica', 'bold'); pdf.setFontSize(12);
@@ -2050,7 +2169,12 @@ exportReportBtn.addEventListener('click', function() {
                 headStyles: { fillColor: [30, 58, 138], textColor: [255,255,255], fontSize: 9, fontStyle: 'bold' },
                 bodyStyles: { fontSize: 8, cellPadding: 2 },
                 columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 'auto' } },
-                alternateRowStyles: { fillColor: [248, 250, 252] }
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                didDrawPage: function (data) {
+                    pdf.setFontSize(8);
+                    pdf.setTextColor(150);
+                    pdf.text('https://designcalculators.co.in/gear-design', data.settings.margin.left, pdf.internal.pageSize.height - 10);
+                }
             });
             y = pdf.autoTable.previous.finalY + 10;
         }
@@ -2171,7 +2295,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<script>
+// robust toggle for FAQ accordion
+function toggleFaq(btn) {
+    btn.classList.toggle("active");
+    var item = btn.closest('.faq-item');
+    var answer = item.querySelector('.faq-answer');
+    answer.classList.toggle("show");
+}
+</script>
 </body>
+
 </html>
 
 
