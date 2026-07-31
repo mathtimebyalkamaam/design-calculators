@@ -21,64 +21,6 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://designcalculators.co.in/openchannelflow" />
 
-    <!-- JSON-LD Schema: Software Application -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Open Channel Flow Calculator",
-      "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "A professional hydraulic engineering tool to calculate discharge for Weirs, Parshall Flumes, and Open Channels using Manning's Equation and ISO/ASTM standards.",
-      "featureList": "Weir Calculation (ISO 1438), Parshall Flume Sizing (ASTM D1941), Manning's Channel Flow, Froude Number Analysis",
-      "author": {
-        "@type": "Organization",
-        "name": "Design Calculators"
-      }
-    }
-    </script>
-
-    <!-- JSON-LD Schema: FAQ Page -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [{
-        "@type": "Question",
-        "name": "What is the difference between a Weir and a Flume?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A weir acts as a dam, forcing water to rise and flow over a crest; it is simple and accurate but causes significant head loss and can trap sediment. A flume (like the Parshall Flume) constricts the channel width to force critical depth; it is self-cleaning and has low head loss, making it ideal for wastewater with solids."
-        }
-      }, {
-        "@type": "Question",
-        "name": "When should I use a V-Notch weir?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "V-Notch (triangular) weirs are best suited for low flow rates where high accuracy is required. The V-shape allows the measuring head (H) to change significantly even with small changes in flow (Q), providing superior resolution compared to rectangular weirs at low volumes."
-        }
-      }, {
-        "@type": "Question",
-        "name": "What is a Froude Number?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The Froude Number (Fr) is a dimensionless ratio of inertial forces to gravitational forces. If Fr < 1, flow is Subcritical (slow, deep). If Fr > 1, flow is Supercritical (fast, shallow). If Fr = 1, flow is Critical. Hydraulic structures often force flow through critical depth to measure discharge."
-        }
-      }, {
-        "@type": "Question",
-        "name": "How do I choose Manning's roughness coefficient (n)?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Manning's 'n' represents the channel's resistance to flow. Common values are 0.013 for clean concrete pipes, 0.010 for PVC/glass, 0.022 for straight earth channels, and 0.035+ for natural rocky streams. Using the wrong 'n' value directly impacts the accuracy of the discharge calculation."
-        }
-      }]
-    }
-    </script>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -505,11 +447,397 @@
         .footer-bottom { text-align: center; padding-top: 20px; font-size: 0.85rem; }
         .hidden { display: none; }
 
-        /* Responsive */
+        /* Responsive CSS Overrides */
+        .mathjax-scroll {
+            overflow-x: auto;
+            overflow-y: hidden;
+            max-width: 100%;
+            display: block;
+            margin: 10px 0;
+            padding: 8px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-scroll {
+            overflow-x: auto;
+            max-width: 100%;
+            display: block;
+            margin: 15px 0;
+            -webkit-overflow-scrolling: touch;
+        }
         @media (max-width: 768px) {
             .navbar { flex-direction: column; gap: 20px; }
             .nav-links { flex-direction: column; width: 100%; text-align: center; }
-            .tool-switcher { flex-direction: column; }
+            .tool-switcher { flex-direction: column; gap: 10px; }
+            .tool-btn { width: 100%; justify-content: center; }
+            .container { padding: 0 16px; }
+            .card { padding: 24px; margin-bottom: 20px; }
+            .res-grid { grid-template-columns: 1fr; gap: 15px; }
+            .qa-card { grid-template-columns: 1fr !important; gap: 20px; padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            .container { padding: 0 12px; }
+            .card { padding: 16px; border-radius: 12px; }
+            .card h2 { font-size: 1.35rem; gap: 8px; padding-bottom: 10px; }
+            h3 { font-size: 1.15rem; margin-top: 20px; margin-bottom: 12px; }
+            .form-row { gap: 16px; margin-bottom: 16px; }
+            .form-group input, .form-group select { padding: 10px 12px; font-size: 0.95rem; }
+            .main-value { font-size: 1.85rem; }
+            .sub-value { font-size: 0.95rem; }
+            .calc-steps { padding: 16px; font-size: 0.8rem; }
+            .flow-viz-container { height: 200px; }
+            .btn { width: 100%; padding: 12px 20px; font-size: 0.95rem; }
+            .faq-static-grid { grid-template-columns: 1fr; gap: 16px; }
+            .faq-static-card { padding: 16px; }
+            .faq-static-question { font-size: 1.05rem; padding-bottom: 8px; margin-bottom: 10px; }
+            .faq-static-answer { font-size: 0.9rem; line-height: 1.6; }
+        }
+
+        /* --- QA Encyclopedia Grid & Cards --- */
+        .qa-section {
+            margin: 60px 0;
+        }
+        .qa-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 35px;
+            margin-top: 30px;
+        }
+        .qa-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 35px;
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        @media (min-width: 992px) {
+            .qa-card {
+                grid-template-columns: 1.2fr 0.8fr;
+                align-items: center;
+            }
+        }
+        .qa-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary);
+        }
+        .qa-left {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .qa-left h3 {
+            margin: 0;
+            font-size: 1.45rem;
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .qa-left p {
+            margin: 0;
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: var(--text);
+        }
+        .qa-right {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px dashed var(--border);
+        }
+        .qa-right svg {
+            max-width: 100%;
+            height: auto;
+            max-height: 220px;
+        }
+
+        /* --- Dynamic calculation step cards --- */
+        .step-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary);
+        }
+        .step-card-header {
+            background: var(--bg);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: var(--heading);
+        }
+        .step-card-header .number {
+            background: var(--grad);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+        .step-card-body {
+            padding: 24px;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+        .step-card-body p {
+            margin: 0 0 15px 0;
+        }
+        .step-card-body p:last-child {
+            margin-bottom: 0;
+        }
+        .step-card-body ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .step-card-body li {
+            margin-bottom: 6px;
+        }
+        .step-card-body strong {
+            color: var(--heading);
+        }
+        .step-title-text {
+            display: flex;
+            align-items: center;
+        }
+        .audit-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .audit-pass { background-color: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .audit-warn { background-color: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .audit-fail { background-color: rgba(220, 38, 38, 0.15); color: var(--danger); }
+        .warn-text {
+            color: #d97706;
+            font-style: normal;
+            font-weight: 700;
+        }
+
+        /* --- Premium Static FAQ Grid --- */
+        .faq-static-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            margin-top: 25px;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .faq-static-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .faq-static-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+        .faq-static-card:hover {
+            transform: translateY(-4px);
+        }
+        .faq-static-question {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .faq-static-question i {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .faq-static-answer {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text);
+        }
+        .faq-static-answer ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .faq-static-answer li {
+            margin-bottom: 6px;
+        }
+        .faq-static-answer strong {
+            color: var(--heading);
+        }
+
+        /* Theme Classes for Card Left Borders & Shadow Glows */
+        .faq-blue { border-left: 5px solid #3b82f6 !important; }
+        .faq-blue:hover { border-color: #2563eb !important; box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15); }
+
+        .faq-red { border-left: 5px solid #ef4444 !important; }
+        .faq-red:hover { border-color: #dc2626 !important; box-shadow: 0 12px 30px rgba(239, 68, 68, 0.15); }
+
+        .faq-green { border-left: 5px solid #10b981 !important; }
+        .faq-green:hover { border-color: #059669 !important; box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15); }
+
+        .faq-orange { border-left: 5px solid #f59e0b !important; }
+        .faq-orange:hover { border-color: #d97706 !important; box-shadow: 0 12px 30px rgba(245, 158, 11, 0.15); }
+
+        .faq-purple { border-left: 5px solid #8b5cf6 !important; }
+        .faq-purple:hover { border-color: #7c3aed !important; box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15); }
+
+        .faq-pink { border-left: 5px solid #ec4899 !important; }
+        .faq-pink:hover { border-color: #db2777 !important; box-shadow: 0 12px 30px rgba(236, 72, 153, 0.15); }
+
+        .faq-cyan { border-left: 5px solid #06b6d4 !important; }
+        .faq-cyan:hover { border-color: #0891b2 !important; box-shadow: 0 12px 30px rgba(6, 182, 212, 0.15); }
+
+        .faq-teal { border-left: 5px solid #14b8a6 !important; }
+        .faq-teal:hover { border-color: #0d9488 !important; box-shadow: 0 12px 30px rgba(20, 184, 166, 0.15); }
+
+        .faq-indigo { border-left: 5px solid #6366f1 !important; }
+        .faq-indigo:hover { border-color: #4f46e5 !important; box-shadow: 0 12px 30px rgba(99, 102, 241, 0.15); }
+
+        .faq-emerald { border-left: 5px solid #059669 !important; }
+        .faq-emerald:hover { border-color: #047857 !important; box-shadow: 0 12px 30px rgba(5, 150, 105, 0.15); }
+
+        /* Related Tools Cards */
+        .related-section {
+            padding: 60px 0;
+            background: var(--bg-color, #f8fafc);
+            border-top: 1px solid var(--border, #e2e8f0);
+        }
+        .related-section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            text-align: center;
+            font-size: 1.75rem;
+            margin-bottom: 30px;
+            color: var(--heading, #1e293b);
+        }
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .related-card {
+            background: var(--card, #ffffff);
+            border: 1px solid var(--border, #e2e8f0);
+            border-radius: 12px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .related-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--secondary, #3b82f6);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.2s ease;
+        }
+        .related-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--secondary, #3b82f6);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .related-card:hover::before {
+            transform: scaleY(1);
+        }
+        .related-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .related-icon {
+            font-size: 1.5rem;
+            color: var(--secondary, #3b82f6);
+            background: rgba(59, 130, 246, 0.1);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .related-card:hover .related-icon {
+            background: var(--secondary, #3b82f6);
+            color: #ffffff;
+        }
+        .related-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--heading, #1e293b);
+            margin: 0;
+        }
+        .related-desc {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: var(--text, #475569);
+            margin: 0;
+        }
+        .related-action {
+            margin-top: auto;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--secondary, #3b82f6);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: gap 0.2s ease;
+        }
+        .related-card:hover .related-action {
+            gap: 10px;
+        }
+        body.dark-mode .related-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        body.dark-mode .related-card .related-title {
+            color: #f1f5f9;
+        }
+        body.dark-mode .related-card .related-desc {
+            color: #94a3b8;
         }
     </style>
     <link rel="stylesheet" href="styles.css">
@@ -581,9 +909,9 @@
     "@graph": [
         {
             "@type": "SoftwareApplication",
-            "name": "Open Channel Flow Calculator & Hydraulic Standards Guide",
+            "name": "Industrial Open Channel Flow Calculator - Design Calculators",
             "url": "https://designcalculators.co.in/openchannelflow",
-            "description": "Professional Open Channel Flow Calculator. Calculate discharge (Q) for V-Notch Weirs, Rectangular Weirs (ISO 1438), Parshall Flumes (ASTM D1941), and Channels (Manning's Eq). Features Froude number analysis and hydraulic design guide.",
+            "description": "Professional Open Channel Flow Calculator. Calculate volumetric discharge (Q) for Weirs (Rectangular, V-Notch, Cippoletti), Parshall Flumes (ASTM D1941), and Channels using Manning's Equation.",
             "applicationCategory": "UtilityApplication",
             "operatingSystem": "Web",
             "author": {
@@ -592,7 +920,7 @@
                 "name": "Anil Sharma",
                 "url": "https://designcalculators.co.in/about.html",
                 "image": "https://designcalculators.co.in/logo.png",
-                "description": "Expert engineering consultant with over 15 years of experience in Electrical, Mechanical, and Instrumentation design. Specialist in IEC and IEEE standards.",
+                "description": "Expert engineering consultant with over 15 years of experience in Electrical, Mechanical, and Instrumentation design. Specialist in IEC, IEEE, and ASME standards.",
                 "sameAs": [
                     "https://www.linkedin.com/in/anil-sharma-engineering",
                     "https://www.youtube.com/@designcalculators"
@@ -622,8 +950,93 @@
                 {
                     "@type": "ListItem",
                     "position": 3,
-                    "name": "Open Channel Flow Calculator & Hydraulic Standards Guide",
+                    "name": "Open Channel Flow Calculator",
                     "item": "https://designcalculators.co.in/openchannelflow"
+                }
+            ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is the difference between a Weir and a Flume?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "A weir acts as a dam, forcing water to rise and flow over a crest; it is simple and highly accurate but causes significant head loss and traps sediment. A flume (like the Parshall Flume) constricts the channel width to force critical depth; it is self-cleaning and has low head loss, making it ideal for wastewater with solids."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "When should I use a V-Notch weir?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "V-Notch (triangular) weirs are best suited for low flow rates where high accuracy is required. The V-shape allows the measuring head (H) to change significantly even with small changes in flow (Q), providing superior resolution compared to rectangular weirs at low volumes."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the Froude Number and why is it important in open channel design?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The Froude Number (Fr) is a dimensionless ratio of inertial forces to gravitational forces. Fr < 1 represents subcritical flow (tranquil, deep). Fr > 1 represents supercritical flow (rapid, shallow). Fr = 1 represents critical depth. Engineers monitor Fr because supercritical flows can cause channel erosion and unstable surfaces."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How do I choose Manning's roughness coefficient (n)?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Manning's 'n' represents the channel's resistance to flow. Common values are 0.013 for finished concrete, 0.010 for PVC, 0.022 for straight earth, and 0.035+ for natural rocky streams. Selecting the correct roughness is critical because flow rate scales inversely with 'n'."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is critical flow depth and how does it relate to flow measurement?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Critical depth is the depth at which a specific discharge flows with minimum specific energy. It represents the transition between subcritical and supercritical flow regimes. Venturi flumes and weirs force flow through critical depth because it creates a direct mathematical relationship between upstream head height and flow rate."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does channel slope (S) affect velocity and discharge?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "According to Manning's equation, flow velocity is proportional to the square root of the channel slope (S^0.5). Steeper slopes accelerate gravity flow, increasing velocity and discharge capacity, but can trigger supercritical conditions that cause erosion."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What are the common failure modes of weirs and flumes?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Common failures include: (1) Submergence, where downstream water level rises and floods the crest, invalidating free-flow calibration. (2) Siltation/sediment build-up behind weir plates. (3) Velocity of approach issues where turbulence affects head measurements."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the difference between subcritical, critical, and supercritical flow?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Subcritical flow (Fr < 1) is slow and deep, with waves able to travel upstream (backwater effects). Supercritical flow (Fr > 1) is fast and shallow, where downstream disturbances cannot affect upstream flow. Critical flow (Fr = 1) is the minimum energy point and is highly unstable."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How do I calculate hydraulic radius and why is it useful?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Hydraulic radius (R) is flow area (A) divided by wetted perimeter (P). It measures channel efficiency: a higher wetted perimeter increases friction drag against wetted surfaces, reducing wetted velocity. The semi-circular section is the most hydraulically efficient shape."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What are wetted perimeter and wetted area and how do they change with geometry?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Wetted area is the cross-sectional area of water, and wetted perimeter is the length of the channel boundary in contact with water. In rectangular channels, perimeter is b + 2y. In circular pipes, it is defined by the subtended sector angle. As water depth changes, these parameters vary non-linearly."
+                    }
                 }
             ]
         }
@@ -730,33 +1143,50 @@
                     <div class="form-group">
                         <label>Weir Type</label>
                         <select id="weir-type" onchange="updateWeirUI()">
-                            <option value="rect-suppressed">Rectangular (Suppressed)</option>
-                            <option value="rect-contracted">Rectangular (Contracted)</option>
-                            <option value="v-90">V-Notch (90°)</option>
-                            <option value="v-60">V-Notch (60°)</option>
-                            <option value="v-45">V-Notch (45°)</option>
-                            <option value="cippoletti">Cippoletti (Trapezoidal)</option>
+                            <option value="rect-suppressed">Rectangular (Suppressed) - ISO 1438</option>
+                            <option value="rect-contracted">Rectangular (Contracted) - ISO 1438</option>
+                            <option value="v-90">V-Notch (90° Triangular) - IS 9108 / ISO 1438</option>
+                            <option value="v-60">V-Notch (60° Triangular) - IS 9108 / ISO 1438</option>
+                            <option value="v-45">V-Notch (45° Triangular) - IS 9108 / ISO 1438</option>
+                            <option value="v-30">V-Notch (30° Triangular) - IS 9108 / ISO 1438</option>
+                            <option value="v-22.5">V-Notch (22.5° Triangular) - IS 9108 / ISO 1438</option>
+                            <option value="cippoletti">Cippoletti (Trapezoidal, 1:4 Slopes)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Hydraulic Head ($H$) [m]</label>
-                        <input type="number" id="weir-head" value="0.3" step="0.01">
-                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Height of water above crest</p>
+                        <label>Upstream Hydraulic Head ($H$) [m]</label>
+                        <input type="number" id="weir-head" value="0.3" step="0.01" min="0.001">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Water level height measured above crest</p>
                     </div>
                 </div>
-                <div class="form-row" id="weir-len-row">
-                    <div class="form-group">
+                <div class="form-row" id="weir-geom-row">
+                    <div class="form-group" id="weir-len-group">
                         <label>Crest Length ($L$) [m]</label>
-                        <input type="number" id="weir-len" value="1.0" step="0.1">
+                        <input type="number" id="weir-len" value="1.0" step="0.1" min="0.01">
+                    </div>
+                    <div class="form-group" id="weir-width-group">
+                        <label>Upstream Channel Width ($B$) [m]</label>
+                        <input type="number" id="weir-width" value="1.5" step="0.1" min="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Crest Height above Bed ($P$) [m]</label>
+                        <input type="number" id="weir-height" value="1.0" step="0.1" min="0.01">
                     </div>
                     <div class="form-group">
-                        <label>Discharge Coeff ($C_d$)</label>
-                        <input type="number" id="weir-cd" value="0.62" step="0.01">
-                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Standard: 0.62 (ISO 1438)</p>
+                        <label>Downstream Head ($H_d$) [m] (Optional)</label>
+                        <input type="number" id="weir-hd" value="0" step="0.01" min="0">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Water level height downstream of weir. 0 for free outfall.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Manual Discharge Coeff ($C_d$) Override</label>
+                        <input type="number" id="weir-cd" value="" placeholder="Calculated dynamically" step="0.001" min="0.1" max="1.5">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Leave empty to calculate per standards (ISO 1438/IS 9108)</p>
                     </div>
                 </div>
                 <div class="button-wrapper">
-                    <button type="button" class="btn" onclick="calcWeir()">Calculate Discharge</button>
+                    <button type="button" class="btn" onclick="calcWeir()"><i class="fas fa-calculator"></i> Calculate Discharge</button>
                 </div>
             </div>
 
@@ -766,77 +1196,115 @@
                     <div class="form-group">
                         <label>Throat Width ($W$)</label>
                         <select id="flume-width">
-                            <option value="1in">1 inch (25mm)</option>
-                            <option value="3in">3 inch (76mm)</option>
-                            <option value="6in">6 inch (152mm)</option>
-                            <option value="9in">9 inch (229mm)</option>
-                            <option value="1ft">1 ft (305mm)</option>
-                            <option value="1.5ft">1.5 ft (457mm)</option>
-                            <option value="2ft">2 ft (610mm)</option>
-                            <option value="3ft">3 ft (914mm)</option>
-                            <option value="4ft">4 ft (1219mm)</option>
+                            <option value="1in">1 inch (25.4 mm) - ASTM D1941</option>
+                            <option value="2in">2 inch (50.8 mm) - ASTM D1941</option>
+                            <option value="3in">3 inch (76.2 mm) - ASTM D1941</option>
+                            <option value="6in">6 inch (152.4 mm) - ASTM D1941</option>
+                            <option value="9in">9 inch (228.6 mm) - ASTM D1941</option>
+                            <option value="1ft">1.0 ft (304.8 mm) - ASTM D1941</option>
+                            <option value="1.5ft">1.5 ft (457.2 mm) - ASTM D1941</option>
+                            <option value="2ft">2.0 ft (609.6 mm) - ASTM D1941</option>
+                            <option value="3ft">3.0 ft (914.4 mm) - ASTM D1941</option>
+                            <option value="4ft">4.0 ft (1219 mm) - ASTM D1941</option>
+                            <option value="5ft">5.0 ft (1524 mm) - ASTM D1941</option>
+                            <option value="6ft">6.0 ft (1829 mm) - ASTM D1941</option>
+                            <option value="8ft">8.0 ft (2438 mm) - ASTM D1941</option>
+                            <option value="10ft">10.0 ft (3048 mm) - ASTM D1941</option>
+                            <option value="12ft">12.0 ft (3658 mm) - ASTM D1941</option>
+                            <option value="15ft">15.0 ft (4572 mm) - ASTM D1941</option>
+                            <option value="20ft">20.0 ft (6096 mm) - ASTM D1941</option>
+                            <option value="25ft">25.0 ft (7620 mm) - ASTM D1941</option>
+                            <option value="30ft">30.0 ft (9144 mm) - ASTM D1941</option>
+                            <option value="40ft">40.0 ft (12192 mm) - ASTM D1941</option>
+                            <option value="50ft">50.0 ft (15240 mm) - ASTM D1941</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Head at $H_a$ [m]</label>
-                        <input type="number" id="flume-head" value="0.4" step="0.01">
-                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Upstream measurement point</p>
+                        <label>Upstream Head ($H_a$) [m]</label>
+                        <input type="number" id="flume-head" value="0.4" step="0.01" min="0.001">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Measured at 2/3 of converging wall length</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Downstream Head ($H_b$) [m] (Optional)</label>
+                        <input type="number" id="flume-hb" value="0" step="0.01" min="0">
+                        <p style="font-size:0.75rem; color:var(--text); margin-top:2px;">Measured in throat. Leave 0/blank for free flow.</p>
                     </div>
                 </div>
                 <div class="button-wrapper">
-                    <button type="button" class="btn" onclick="calcFlume()">Calculate Flume Flow</button>
+                    <button type="button" class="btn" onclick="calcFlume()"><i class="fas fa-calculator"></i> Calculate Flume Flow</button>
                 </div>
             </div>
 
             <!-- MODULE 3: MANNING'S CHANNEL -->
             <div id="mod-manning" class="tool-module">
                 <div class="form-row">
-                    <!-- Col 1 -->
-                    <div class="vector-input-group" style="flex:1;">
-                        <div class="vector-input-header">Geometry</div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label><i class="fas fa-crosshairs"></i> Sizing & Optimization Solver (Solve For)</label>
+                        <select id="man-solve-for" onchange="updateManningSolveForUI()">
+                            <option value="q">Discharge Capacity (Q) [m³/s] — Given Water Depth y</option>
+                            <option value="yn">Normal Flow Depth (yn) [m] — Given Design Discharge Q</option>
+                            <option value="s">Required Channel Bed Slope (S) [m/m] — Given y and Q</option>
+                            <option value="n">Manning's Roughness (n) — Given y, Slope S, and Q</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <!-- Col 1: Geometry -->
+                    <div class="vector-input-group" style="flex:1; border: 1px solid var(--border); padding: 15px; border-radius: 8px; background: var(--bg);">
+                        <div class="vector-input-header" style="font-weight: 700; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-shapes"></i> Channel Cross-Section Geometry</div>
                         <div class="form-group">
                             <label>Channel Shape</label>
                             <select id="man-shape" onchange="updateManningUI()">
-                                <option value="rect">Rectangular</option>
-                                <option value="trap">Trapezoidal</option>
-                                <option value="circ">Circular (Pipe)</option>
+                                <option value="rect">Rectangular Channel</option>
+                                <option value="trap">Trapezoidal Channel</option>
+                                <option value="circ">Circular Pipe (Partially Filled)</option>
                             </select>
                         </div>
-                        <div class="form-group" style="margin-top:10px;">
-                            <label>Bottom Width / Diameter [m]</label>
-                            <input type="number" id="man-width" value="2.0">
+                        <div class="form-group" style="margin-top:10px;" id="man-width-grp">
+                            <label id="man-width-label">Bottom Width ($b$) [m]</label>
+                            <input type="number" id="man-width" value="2.0" step="0.1" min="0.01">
                         </div>
                         <div class="form-group" style="margin-top:10px; display:none;" id="man-slope-side-grp">
-                            <label>Side Slope ($z$:1)</label>
-                            <input type="number" id="man-z" value="1.5">
+                            <label>Side Slope ($z$:1, Horizontal:Vertical)</label>
+                            <input type="number" id="man-z" value="1.5" step="0.1" min="0">
                         </div>
                     </div>
                     
-                    <!-- Col 2 -->
-                    <div class="vector-input-group" style="flex:1;">
-                        <div class="vector-input-header">Flow Parameters</div>
-                        <div class="form-group">
-                            <label>Flow Depth ($y$) [m]</label>
-                            <input type="number" id="man-depth" value="1.0">
+                    <!-- Col 2: Flow Parameters -->
+                    <div class="vector-input-group" style="flex:1; border: 1px solid var(--border); padding: 15px; border-radius: 8px; background: var(--bg);">
+                        <div class="vector-input-header" style="font-weight: 700; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; color: var(--primary);"><i class="fas fa-sliders-h"></i> Flow & Hydraulic Parameters</div>
+                        <div class="form-group" id="man-depth-grp">
+                            <label>Water Depth ($y$) [m]</label>
+                            <input type="number" id="man-depth" value="1.0" step="0.1" min="0.001">
                         </div>
-                        <div class="form-group" style="margin-top:10px;">
-                            <label>Longitudinal Slope ($S$) [m/m]</label>
-                            <input type="number" id="man-slope" value="0.001" step="0.0001">
+                        <div class="form-group" id="man-q-grp" style="display:none;">
+                            <label>Design Volumetric Discharge ($Q_{design}$) [m³/s]</label>
+                            <input type="number" id="man-q" value="2.5" step="0.1" min="0.001">
                         </div>
-                        <div class="form-group" style="margin-top:10px;">
-                            <label>Manning's $n$</label>
-                            <select id="man-n">
-                                <option value="0.013">Concrete (Finished) - 0.013</option>
-                                <option value="0.015">Concrete (Unfinished) - 0.015</option>
-                                <option value="0.022">Earth (Straight) - 0.022</option>
-                                <option value="0.030">Natural Stream - 0.030</option>
-                                <option value="0.012">Steel / PVC - 0.012</option>
+                        <div class="form-group" style="margin-top:10px;" id="man-slope-grp">
+                            <label>Longitudinal Energy Slope ($S$) [m/m]</label>
+                            <input type="number" id="man-slope" value="0.001" step="0.0001" min="0.000001">
+                        </div>
+                        <div class="form-group" style="margin-top:10px;" id="man-n-grp">
+                            <label>Manning's Roughness Coefficient ($n$)</label>
+                            <select id="man-n" onchange="toggleCustomN()">
+                                <option value="0.013">Concrete (Finished/Slick) - 0.013</option>
+                                <option value="0.015">Concrete (Rough/Unfinished) - 0.015</option>
+                                <option value="0.012">Smooth Steel / PVC / Glazed Pipe - 0.012</option>
+                                <option value="0.022">Earth Canal (Straight, Clean) - 0.022</option>
+                                <option value="0.030">Natural River Bed (Clean/Straight) - 0.030</option>
+                                <option value="0.040">Natural Winding Stream (Weedy) - 0.040</option>
+                                <option value="custom">Custom Roughness Value...</option>
                             </select>
+                        </div>
+                        <div class="form-group" style="margin-top:10px; display:none;" id="man-n-custom-grp">
+                            <label>Custom Roughness ($n$)</label>
+                            <input type="number" id="man-n-custom" value="0.015" step="0.001" min="0.001" max="0.2">
                         </div>
                     </div>
                 </div>
-                <div class="button-wrapper">
-                    <button type="button" class="btn" onclick="calcManning()">Calculate Uniform Flow</button>
+                <div class="button-wrapper" style="margin-top: 20px;">
+                    <button type="button" class="btn" onclick="calcManning()"><i class="fas fa-calculator"></i> Solve Uniform Flow</button>
                 </div>
             </div>
 
@@ -876,86 +1344,278 @@
         <!-- NEW SEO/LLM OPTIMIZED SECTION: Engineering Knowledge Base -->
         <div class="card education-section">
             <h2><i class="fas fa-book-open"></i> Hydraulic Engineering Knowledge Base</h2>
-            <div class="article-content">
+            <p style="color: var(--text); font-size: 1.05rem; margin-bottom: 30px; line-height: 1.6;">
+                Unlock standard mechanical and civil fluid dynamics design principles. Learn the core principles of free-surface gravity flows, discharge calibration structures, and Manning channel parameters.
+            </p>
+
+            <!-- The 5 Ws of Open Channel Flow -->
+            <div class="qa-section">
+                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.6rem; color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 25px;"><i class="fas fa-cubes"></i> The 5 Ws of Open Channel Hydraulics</h3>
+                <div class="qa-grid">
+                    
+                    <!-- What Card -->
+                    <div class="qa-card">
+                        <div class="qa-left">
+                            <h3><i class="fas fa-info-circle"></i> WHAT is Open Channel Flow?</h3>
+                            <p>Open channel flow refers to the fluid dynamics of liquid flowing in a conduit where the upper surface is completely open to the atmosphere (free water surface). Unlike pressurized piping networks driven by mechanical pumping heads, open channel flows are strictly driven by the parallel component of gravity along the channel slope bed.</p>
+                            <p><strong>Physical Principles:</strong> Standard calculations balance the boundary shear resistance forces against the gravimetric downslope force. Wetted perimeter (P) represents the boundary perimeter dragging against the flow, directly defining hydraulic efficiency.</p>
+                        </div>
+                        <div class="qa-right">
+                            <svg viewBox="0 0 300 180" width="100%" height="180">
+                                <defs>
+                                    <linearGradient id="wall-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#475569" />
+                                        <stop offset="100%" stop-color="#1e293b" />
+                                    </linearGradient>
+                                    <linearGradient id="water-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.8" />
+                                        <stop offset="100%" stop-color="#2563eb" stop-opacity="0.9" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M40,30 V130 H260 V30" fill="none" stroke="url(#wall-grad)" stroke-width="12" stroke-linejoin="round" />
+                                <rect x="46" y="80" width="208" height="44" fill="url(#water-grad)" />
+                                <line x1="46" y1="80" x2="254" y2="80" stroke="#3b82f6" stroke-width="3" stroke-dasharray="4 2" />
+                                <path d="M150,35 V65 M145,58 L150,65 L155,58" fill="none" stroke="#ef4444" stroke-width="2" />
+                                <text x="150" y="25" fill="#ef4444" font-size="10" font-weight="700" text-anchor="middle">Atmospheric Pressure (p = 0)</text>
+                                <line x1="46" y1="148" x2="254" y2="148" stroke="#334155" stroke-width="1.5" />
+                                <path d="M46,144 V152 M254,144 V152" stroke="#334155" stroke-width="1.5" />
+                                <text x="150" y="162" fill="#334155" font-size="11" font-weight="600" text-anchor="middle">Width (b)</text>
+                                <line x1="272" y1="80" x2="272" y2="130" stroke="#059669" stroke-width="1.5" />
+                                <path d="M268,80 H276 M268,130 H276" stroke="#059669" stroke-width="1.5" />
+                                <text x="282" y="110" fill="#059669" font-size="11" font-weight="600" text-anchor="start">Depth (y)</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Why Card -->
+                    <div class="qa-card">
+                        <div class="qa-left">
+                            <h3><i class="fas fa-question-circle"></i> WHY do we calculate flow capacity?</h3>
+                            <p>Designing storm drains, highway culverts, and sewer lines requires strict calculations to ensure wetted flow volumes do not cause surcharging or structural overflowing during heavy rain storm events. Surcharging changes the hydraulic profile from open channel flow to pressurized flow, which can blow off manhole covers and cause massive structural erosion.</p>
+                            <p><strong>Safety Boundaries:</strong> Standard practices require maintaining a minimum &ldquo;freeboard&rdquo; margin (unfilled space) to safely accommodate surge waves, hydraulic jumps, and localized sediment deposits.</p>
+                        </div>
+                        <div class="qa-right">
+                            <svg viewBox="0 0 300 180" width="100%" height="180">
+                                <defs>
+                                    <linearGradient id="concrete-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#94a3b8" />
+                                        <stop offset="100%" stop-color="#475569" />
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="150" cy="90" r="70" fill="none" stroke="url(#concrete-grad)" stroke-width="12" />
+                                <path d="M84,115 A70,70 0 0,0 216,115 Z" fill="url(#water-grad)" />
+                                <circle cx="150" cy="90" r="70" fill="none" stroke="#ef4444" stroke-dasharray="3 3" stroke-width="2" />
+                                <text x="150" y="80" fill="#ef4444" font-size="11" font-weight="700" text-anchor="middle">Capacity Safe Limit (85% Fill)</text>
+                                <path d="M130,130 Q150,135 170,130" fill="none" stroke="#60a5fa" stroke-width="3" />
+                                <path d="M168,127 L174,130 L168,133" fill="#60a5fa" />
+                                <text x="150" y="152" fill="#2563eb" font-size="10" font-weight="700" text-anchor="middle">Uniform Gravity flow</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Which Card -->
+                    <div class="qa-card">
+                        <div class="qa-left">
+                            <h3><i class="fas fa-sliders-h"></i> WHICH standard system should you choose?</h3>
+                            <p>Depending on the system layout and target wetted conditions, engineers select one of three main structures:</p>
+                            <ul>
+                                <li><strong>Manning's Equation:</strong> Used for uniform channels (concrete pipes, trapezoidal channels) without constrictions.</li>
+                                <li><strong>Weirs (ISO 1438):</strong> Dam-like barriers ideal for clean water streams. V-notches provide high accuracy for low flows, while rectangular shapes handle massive volumetric discharge.</li>
+                                <li><strong>Parshall Flumes (ASTM D1941):</strong> Constricted channel liners that accelerate water to critical velocity. Excellent for wastewater due to self-cleaning properties.</li>
+                            </ul>
+                        </div>
+                        <div class="qa-right">
+                            <svg viewBox="0 0 300 180" width="100%" height="180">
+                                <rect x="15" y="40" width="80" height="90" rx="6" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2" />
+                                <path d="M25,40 H40 L55,100 L70,40 H85 V130 H25 Z" fill="#94a3b8" />
+                                <path d="M40,40 L55,100 L70,40" fill="url(#water-grad)" />
+                                <text x="55" y="150" fill="#334155" font-size="10" font-weight="700" text-anchor="middle">V-Notch Weir</text>
+
+                                <rect x="110" y="40" width="80" height="90" rx="6" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2" />
+                                <path d="M120,40 H135 V85 H165 V40 H180 V130 H120 Z" fill="#94a3b8" />
+                                <rect x="135" y="55" width="30" height="30" fill="url(#water-grad)" />
+                                <text x="150" y="150" fill="#334155" font-size="10" font-weight="700" text-anchor="middle">Rectangular Weir</text>
+
+                                <rect x="205" y="40" width="80" height="90" rx="6" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2" />
+                                <path d="M215,50 L235,90 L245,90 L250,50 H275 V120 H215 Z" fill="#94a3b8" />
+                                <path d="M215,50 L235,90 H245 L250,50" fill="url(#water-grad)" opacity="0.6" />
+                                <text x="245" y="150" fill="#334155" font-size="10" font-weight="700" text-anchor="middle">Parshall Flume</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Where Card -->
+                    <div class="qa-card">
+                        <div class="qa-left">
+                            <h3><i class="fas fa-map-marker-alt"></i> WHERE are these equations applied?</h3>
+                            <p>Flow measurement calculations are used in municipal infrastructure planning, natural river basin monitors, sewage treatment plants, and industrial drainage systems. They are necessary to calculate chemical dosing rates in wastewater treatment, plan reservoir spillway channels, and measure discharge rates for state environmental compliance reporting.</p>
+                        </div>
+                        <div class="qa-right">
+                            <svg viewBox="0 0 300 180" width="100%" height="180">
+                                <path d="M20,40 L110,60 L140,80 L180,80 L210,60 L280,40" fill="none" stroke="#475569" stroke-width="6" />
+                                <path d="M20,140 L110,120 L140,100 L180,100 L210,120 L280,140" fill="none" stroke="#475569" stroke-width="6" />
+                                <path d="M20,43 L110,63 L140,83 H180 L210,63 L280,43 L280,137 L210,117 L140,97 H180 L110,117 L20,137 Z" fill="url(#water-grad)" opacity="0.5" />
+                                <circle cx="160" cy="90" r="8" fill="#ef4444" />
+                                <line x1="160" y1="90" x2="160" y2="25" stroke="#ef4444" stroke-dasharray="2 2" stroke-width="1.5" />
+                                <rect x="120" y="10" width="80" height="20" rx="4" fill="#ef4444" />
+                                <text x="160" y="24" fill="white" font-size="9" font-weight="700" text-anchor="middle">Ultrasonic Sensor</text>
+                                <path d="M40,90 H90 M82,85 L90,90 L82,95" fill="none" stroke="#2563eb" stroke-width="2.5" />
+                                <text x="65" y="108" fill="#1e3a8a" font-size="10" font-weight="700" text-anchor="middle">Flow Inflow</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- How Card -->
+                    <div class="qa-card">
+                        <div class="qa-left">
+                            <h3><i class="fas fa-drafting-compass"></i> HOW do wetted dimensions control velocity?</h3>
+                            <p>Channel geometry directly impacts the wetted perimeter. A higher wetted perimeter introduces more drag friction, lowering the average section velocity. The hydraulic radius (R = Area/Perimeter) represents the ratio of wetted area to friction perimeter; a higher hydraulic radius indicates a more efficient channel profile.</p>
+                            <p><strong>Flow States:</strong> The Froude number (Fr) classifies the flow into subcritical (Fr &lt; 1, tranquil), critical (Fr = 1), or supercritical (Fr &gt; 1, fast/unstable) regimes.</p>
+                        </div>
+                        <div class="qa-right">
+                            <svg viewBox="0 0 300 180" width="100%" height="180">
+                                <line x1="30" y1="90" x2="270" y2="140" stroke="#475569" stroke-width="8" />
+                                <line x1="30" y1="90" x2="270" y2="90" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 5" />
+                                <path d="M120,90 A90,90 0 0,1 120,110" fill="none" stroke="#f59e0b" stroke-width="2" />
+                                <text x="135" y="105" fill="#f59e0b" font-size="10" font-weight="700">Slope angle &theta;</text>
+                                <path d="M30,90 L270,140 L270,105 L30,55 Z" fill="url(#water-grad)" opacity="0.6" />
+                                <path d="M80,72 H130 M122,67 L130,72 L122,77" fill="none" stroke="#2563eb" stroke-width="2" />
+                                <path d="M170,91 H230 M222,86 L230,91 L222,96" fill="none" stroke="#2563eb" stroke-width="2" />
+                                <text x="120" y="50" fill="#2563eb" font-size="11" font-weight="700">Velocity Vector (V)</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Static FAQ Section -->
+            <div class="content-panel">
+                <h3 style="font-family: 'Montserrat', sans-serif; font-size: 1.6rem; color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 25px;"><i class="fas fa-question-circle"></i> Frequently Asked Questions (FAQ)</h3>
+                <p style="color: var(--text); font-size: 1.05rem; margin-bottom: 25px; line-height: 1.6;">
+                    Explore standard engineering solutions to common challenges faced during open channel flow design, weir selections, flume configurations, and Manning parameter analysis.
+                </p>
                 
-                <div class="article-block">
-                    <h3>1. What This Tool Does</h3>
-                    <p>This software is a comprehensive <strong>Open Channel Flow Calculator</strong> designed for civil, environmental, and hydraulic engineers. It solves the governing equations for the three most common methods of measuring water flow in open (non-pressurized) conduits:</p>
-                    <ul>
-                        <li><strong>Weirs (ISO 1438):</strong> Calculates flow over dam-like structures using standard weir equations (Rectangular, V-Notch, Cippoletti).</li>
-                        <li><strong>Parshall Flumes (ASTM D1941):</strong> Determines discharge through constricted throats based on empirical power laws designated by throat width.</li>
-                        <li><strong>Open Channels (Manning's Equation):</strong> Solves for uniform flow in artificial and natural channels (pipes, ditches, canals) using the Manning formula.</li>
-                    </ul>
-                </div>
-
-                <div class="article-block">
-                    <h3>2. Benefits of Accurate Flow Measurement</h3>
-                    <ul>
-                        <li><strong>Regulatory Compliance:</strong> Industrial facilities must accurately report effluent discharge to environmental agencies (EPA/ISO standards).</li>
-                        <li><strong>Process Efficiency:</strong> In wastewater treatment plants (WWTP), accurate flow data controls dosing of chemicals (chlorine, flocculants).</li>
-                        <li><strong>Flood Control:</strong> Engineers use Manning's equation to size storm drains and culverts to prevent overflow during peak rain events.</li>
-                    </ul>
-                </div>
-
-                <div class="article-block">
-                    <h3>3. Deep Dive: Weir Flow Physics (ISO 1438)</h3>
-                    <p>A weir measures flow by forcing water to pass over a crest. The relationship between the height of water above the crest (Head, $H$) and the flow rate ($Q$) is derived from Bernoulli's principle.</p>
+                <div class="faq-static-grid">
                     
-                    <div class="highlight-box">
-                        <h4>Weir Types Explained</h4>
-                        <ul>
-                            <li><strong>Rectangular Weir:</strong> Standard for large flows. The formula follows a $Q \propto H^{1.5}$ relationship. It requires end contraction corrections if the weir is narrower than the channel.</li>
-                            <li><strong>V-Notch (Triangular) Weir:</strong> Ideal for low or variable flow rates. The "V" shape means the flow area decreases rapidly as head drops, maintaining a measurable head even at trickle flows. It follows a $Q \propto H^{2.5}$ law, offering high precision.</li>
-                            <li><strong>Cippoletti Weir:</strong> A trapezoidal weir with 1:4 side slopes. The sloping sides compensate for end contractions, simplifying the calculation formula.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="article-block">
-                    <h3>4. Deep Dive: Parshall Flumes (ASTM D1941)</h3>
-                    <p>The Parshall Flume is a fixed hydraulic structure that constricts flow to force it through "Critical Depth." It acts like a Venturi meter for open channels.</p>
-                    <p><strong>Advantages over Weirs:</strong></p>
-                    <ul>
-                        <li><strong>Self-Cleaning:</strong> The high velocity in the throat flushes away sediment and debris, making it standard for raw sewage.</li>
-                        <li><strong>Low Head Loss:</strong> It requires less elevation drop than a weir, saving energy in gravity-fed systems.</li>
-                        <li><strong>Wide Rangeability:</strong> A single flume can accurately measure a wide range of flow rates without modification.</li>
-                    </ul>
-                </div>
-
-                <div class="article-block">
-                    <h3>5. Deep Dive: Manning's Equation</h3>
-                    <p>For uniform flow in canals and sewers, engineers rely on the Manning Formula (1889):</p>
-                    <div class="formula">$$ V = \frac{1}{n} R^{2/3} S^{1/2} $$</div>
-                    <p>Where $n$ is the roughness coefficient. This factor is critical and varies widely:</p>
-                    <ul>
-                        <li><strong>0.013:</strong> Finished Concrete (Standard Sewer Pipe).</li>
-                        <li><strong>0.010:</strong> Smooth Plastic (PVC) or Glass.</li>
-                        <li><strong>0.022:</strong> Straight Earth Channel.</li>
-                        <li><strong>0.035+:</strong> Natural streams with rocks and vegetation.</li>
-                    </ul>
-                </div>
-
-                <div class="article-block">
-                    <h3>6. Frequently Asked Questions (FAQ)</h3>
-                    
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What is the difference between a Weir and a Flume? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">A weir acts as a dam, forcing water to rise and flow over a crest; it is simple and accurate but causes significant head loss and can trap sediment. A flume (like the Parshall Flume) constricts the channel width to force critical depth; it is self-cleaning and has low head loss, making it ideal for wastewater with solids.</div>
+                    <div class="faq-static-card faq-blue">
+                        <div class="faq-static-question">
+                            <i class="fas fa-exchange-alt" style="color: #3b82f6;"></i>
+                            <span>1. What is the difference between a Weir and a Flume?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            A weir acts as a dam, forcing water to rise and flow over a crest; it is simple and highly accurate but causes significant head loss and traps sediment. A flume (like the Parshall Flume) constricts the channel width to force critical depth; it is self-cleaning and has low head loss, making it ideal for wastewater with solids.
+                            <br><br>
+                            <strong>Engineering Example:</strong> In a municipal sewage treatment inlet, a V-notch weir would quickly accumulate sludge, leading to inaccurate readings. A Parshall flume accelerates the wetted flow through the throat, flushing solids out.
+                        </div>
                     </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">When should I use a V-Notch weir? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">V-Notch (triangular) weirs are best suited for low flow rates where high accuracy is required. The V-shape allows the measuring head (H) to change significantly even with small changes in flow (Q), providing superior resolution compared to rectangular weirs at low volumes.</div>
+                    <div class="faq-static-card faq-red">
+                        <div class="faq-static-question">
+                            <i class="fas fa-compress" style="color: #ef4444;"></i>
+                            <span>2. When should I use a V-Notch weir?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            V-Notch (triangular) weirs are best suited for low flow rates where high accuracy is required. The V-shape allows the measuring head (H) to change significantly even with small changes in flow (Q), providing superior resolution compared to rectangular weirs at low volumes.
+                            <br><br>
+                            <strong>Engineering Example:</strong> For monitoring environmental seepage flow rates around 2&thinsp;L/s, a rectangular weir head height changes by just a few millimeters, making it unmeasurable. A 90&deg; V-notch weir provides a head height of over 60&thinsp;mm, ensuring clean, readable measurements.
+                        </div>
                     </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">What is a Froude Number? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">The Froude Number (Fr) is a dimensionless ratio of inertial forces to gravitational forces. If Fr < 1, flow is Subcritical (slow, deep). If Fr > 1, flow is Supercritical (fast, shallow). If Fr = 1, flow is Critical. Hydraulic structures often force flow through critical depth to measure discharge.</div>
+                    <div class="faq-static-card faq-green">
+                        <div class="faq-static-question">
+                            <i class="fas fa-chart-line" style="color: #10b981;"></i>
+                            <span>3. What is the Froude Number and why is it important in open channel design?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            The Froude Number (Fr) is a dimensionless ratio of inertial forces to gravitational forces. Fr &lt; 1 represents subcritical flow (tranquil, deep). Fr &gt; 1 represents supercritical flow (rapid, shallow). Fr = 1 represents critical depth. Engineers monitor Fr because supercritical flows can cause channel erosion and unstable surfaces.
+                            <br><br>
+                            <strong>Engineering Example:</strong> In natural storm drainage canals, designing for a Froude number of 1.4 creates supercritical flow that will wash away earthen embankments. Channel slopes are designed to maintain subcritical flow (Fr &lt; 0.8) to prevent structural damage.
+                        </div>
                     </div>
 
-                    <div class="faq-item">
-                        <div class="faq-question" onclick="toggleFaq(this)">How do I choose Manning's roughness coefficient (n)? <i class="fas fa-chevron-down faq-icon"></i></div>
-                        <div class="faq-answer">Manning's 'n' represents the channel's resistance to flow. Common values are 0.013 for clean concrete pipes, 0.010 for PVC/glass, 0.022 for straight earth channels, and 0.035+ for natural rocky streams. Using the wrong 'n' value directly impacts the accuracy of the discharge calculation.</div>
+                    <div class="faq-static-card faq-orange">
+                        <div class="faq-static-question">
+                            <i class="fas fa-align-left" style="color: #f59e0b;"></i>
+                            <span>4. How do I choose Manning's roughness coefficient (n)?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            Manning's 'n' represents the channel's resistance to flow. Common values are 0.013 for finished concrete, 0.010 for PVC, 0.022 for straight earth, and 0.035+ for natural rocky streams. Selecting the correct roughness is critical because flow rate scales inversely with 'n'.
+                            <br><br>
+                            <strong>Engineering Example:</strong> Designing a concrete sewer pipe using n = 0.010 (instead of 0.013) overestimates flow capacity by 30%. Under peak storm loads, the pipeline will surcharge and overflow.
+                        </div>
+                    </div>
+
+                    <div class="faq-static-card faq-purple">
+                        <div class="faq-static-question">
+                            <i class="fas fa-wave-square" style="color: #8b5cf6;"></i>
+                            <span>5. What is critical flow depth and how does it relate to flow measurement?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            Critical depth is the depth at which a specific discharge flows with minimum specific energy. It represents the transition between subcritical and supercritical flow regimes. Venturi flumes and weirs force flow through critical depth because it creates a direct mathematical relationship between upstream head height and flow rate.
+                            <br><br>
+                            <strong>Engineering Example:</strong> In a Parshall flume throat, forcing critical depth allows an upstream ultrasonic sensor to calculate the exact flow rate using just a single depth measurement, eliminating the need to measure wetted velocity directly.
+                        </div>
+                    </div>
+
+                    <div class="faq-static-card faq-pink">
+                        <div class="faq-static-question">
+                            <i class="fas fa-ruler-horizontal" style="color: #ec4899;"></i>
+                            <span>6. How does channel slope (S) affect velocity and discharge?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            According to Manning's equation, flow velocity is proportional to the square root of the channel slope (S^0.5). Steeper slopes accelerate gravity flow, increasing velocity and discharge capacity, but can trigger supercritical conditions that cause erosion.
+                            <br><br>
+                            <strong>Engineering Example:</strong> Increasing a stormwater canal slope from 0.1% to 0.4% doubles the flow velocity and wetted discharge capacity, which allows the channel width to be downsized.
+                        </div>
+                    </div>
+
+                    <div class="faq-static-card faq-cyan">
+                        <div class="faq-static-question">
+                            <i class="fas fa-exclamation-triangle" style="color: #06b6d4;"></i>
+                            <span>7. What are the common failure modes of weirs and flumes?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            Common failures include: (1) Submergence, where downstream water level rises and floods the crest, invalidating free-flow calibration. (2) Siltation/sediment build-up behind weir plates. (3) Velocity of approach issues where turbulence affects head measurements.
+                            <br><br>
+                            <strong>Engineering Example:</strong> In a river monitoring weir, sediment build-up behind the weir plate reduces the wetted depth space, increasing the velocity of approach and causing the weir to overestimate flow rates.
+                        </div>
+                    </div>
+
+                    <div class="faq-static-card faq-teal">
+                        <div class="faq-static-question">
+                            <i class="fas fa-tint" style="color: #14b8a6;"></i>
+                            <span>8. What is the difference between subcritical, critical, and supercritical flow?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            Subcritical flow (Fr &lt; 1) is slow and deep, with waves able to travel upstream (backwater effects). Supercritical flow (Fr &gt; 1) is fast and shallow, where downstream disturbances cannot affect upstream flow. Critical flow (Fr = 1) is the minimum energy point and is highly unstable.
+                            <br><br>
+                            <strong>Engineering Example:</strong> A hydraulic jump occurs when rapid supercritical flow transitions to tranquil subcritical flow, releasing massive turbulent energy. Spillways use this transition to dissipate energy and prevent riverbed erosion.
+                        </div>
+                    </div>
+
+                    <div class="faq-static-card faq-indigo">
+                        <div class="faq-static-question">
+                            <i class="fas fa-draw-polygon" style="color: #6366f1;"></i>
+                            <span>9. How do I calculate hydraulic radius and why is it useful?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            Hydraulic radius (R) is flow area (A) divided by wetted perimeter (P). It measures channel efficiency: a higher wetted perimeter increases friction drag against wetted surfaces, reducing wetted velocity. The semi-circular section is the most hydraulically efficient shape.
+                            <br><br>
+                            <strong>Engineering Example:</strong> A wide, shallow channel (10&thinsp;m wide, 0.1&thinsp;m deep) has the same flow area as a square channel (1&thinsp;m wide, 1&thinsp;m deep), but its hydraulic radius is much smaller (0.098&thinsp;m vs. 0.333&thinsp;m). The square channel will carry flow at a much higher velocity.
+                        </div>
+                    </div>
+
+                    <div class="faq-static-card faq-emerald">
+                        <div class="faq-static-question">
+                            <i class="fas fa-th-large" style="color: #059669;"></i>
+                            <span>10. What are wetted perimeter and wetted area and how do they change?</span>
+                        </div>
+                        <div class="faq-static-answer">
+                            Wetted area is the cross-sectional area of water, and wetted perimeter is the length of the channel boundary in contact with water. In rectangular channels, perimeter is b + 2y. In circular pipes, it is defined by the subtended sector angle. As water depth changes, these parameters vary non-linearly.
+                            <br><br>
+                            <strong>Engineering Example:</strong> In a circular storm sewer pipe running partially full, wetted perimeter increases rapidly up to 81% full height. Above this level, wetted perimeter continues to increase while the wetted flow capacity decreases due to ceiling friction drag.
+                        </div>
                     </div>
 
                 </div>
@@ -964,20 +1624,35 @@
     </main>
 
         
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <!-- Related Tools Section -->
+    <section class="related-section">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/bolt-torque" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
-                    </a>
-                    <a href="/darcy-weisbach" class="silo-card" style="text-decoration:none;">
-                        <span>Darcy Weisbach</span>
-                    </a>
+            <h2>Related Engineering Calculators</h2>
+            <div class="related-grid">
+                <a href="/allowable-stress-safety-factor" class="related-card">
+                    <div class="related-header">
+                        <div class="related-icon"><i class="fas fa-shield-alt"></i></div>
+                        <h3 class="related-title">Allowable Stress & Safety Factor</h3>
+                    </div>
+                    <p class="related-desc">Calculates allowable design stress limits and mechanical safety factors using materials yield/ultimate tensile strengths under ASME/IS structural guidelines.</p>
+                    <span class="related-action">Open Calculator <i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="/bolt-torque" class="related-card">
+                    <div class="related-header">
+                        <div class="related-icon"><i class="fas fa-wrench"></i></div>
+                        <h3 class="related-title">Bolt Torque Sizing</h3>
+                    </div>
+                    <p class="related-desc">Computes tightening torque required for imperial and metric fasteners under different dry or lubricated thread friction factors.</p>
+                    <span class="related-action">Open Calculator <i class="fas fa-arrow-right"></i></span>
+                </a>
+                <a href="/darcy-weisbach" class="related-card">
+                    <div class="related-header">
+                        <div class="related-icon"><i class="fas fa-water"></i></div>
+                        <h3 class="related-title">Darcy-Weisbach Head Loss</h3>
+                    </div>
+                    <p class="related-desc">Determines friction factor, major head losses, and pressure drops inside circular closed pipes using flow velocities and Moody chart properties.</p>
+                    <span class="related-action">Open Calculator <i class="fas fa-arrow-right"></i></span>
+                </a>
             </div>
         </div>
     </section>
@@ -1012,11 +1687,10 @@
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1024,10 +1698,10 @@
                         <ul>
                             <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
                                     rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
@@ -1060,7 +1734,6 @@
             </div>
             <div class="footer-bottom">
                 <p>&copy; 2026 Design Calculators. Created by <span style="color: var(--secondary); font-weight: bold;">Anil Sharma</span>. All rights reserved.</p>
-            </div>
         </div>
     </footer>
 
@@ -1068,34 +1741,47 @@
         // Global State
         let lastResult = {};
 
-        // PARSHALL FLUME DATA (Metric: Q = k * H^n, output m3/s)
+        // PARSHALL FLUME DATA (Metric: Q = k * H^n, output m3/s, W in feet/inches)
         const FLUME_DATA = {
-            '1in': { k: 0.0604, n: 1.55 },
-            '3in': { k: 0.176, n: 1.55 },
-            '6in': { k: 0.381, n: 1.58 },
-            '9in': { k: 0.535, n: 1.53 },
-            '1ft': { k: 0.690, n: 1.522 },
-            '1.5ft': { k: 1.056, n: 1.538 },
-            '2ft': { k: 1.428, n: 1.55 },
-            '3ft': { k: 2.184, n: 1.566 },
-            '4ft': { k: 2.954, n: 1.578 }
+            '1in': { W: 0.0833, k: 0.0604, n: 1.55, limit: 0.50, name: "1-inch (25.4 mm) Throat" },
+            '2in': { W: 0.1667, k: 0.1207, n: 1.55, limit: 0.50, name: "2-inch (50.8 mm) Throat" },
+            '3in': { W: 0.25, k: 0.176, n: 1.55, limit: 0.50, name: "3-inch (76.2 mm) Throat" },
+            '6in': { W: 0.50, k: 0.381, n: 1.58, limit: 0.60, name: "6-inch (152.4 mm) Throat" },
+            '9in': { W: 0.75, k: 0.535, n: 1.53, limit: 0.60, name: "9-inch (228.6 mm) Throat" },
+            '1ft': { W: 1.0, k: 0.690, n: 1.522, limit: 0.70, name: "1.0 ft (304.8 mm) Throat" },
+            '1.5ft': { W: 1.5, k: 1.056, n: 1.538, limit: 0.70, name: "1.5 ft (457.2 mm) Throat" },
+            '2ft': { W: 2.0, k: 1.428, n: 1.550, limit: 0.70, name: "2.0 ft (609.6 mm) Throat" },
+            '3ft': { W: 3.0, k: 2.184, n: 1.566, limit: 0.70, name: "3.0 ft (914.4 mm) Throat" },
+            '4ft': { W: 4.0, k: 2.954, n: 1.578, limit: 0.70, name: "4.0 ft (1219 mm) Throat" },
+            '5ft': { W: 5.0, k: 3.732, n: 1.587, limit: 0.70, name: "5.0 ft (1524 mm) Throat" },
+            '6ft': { W: 6.0, k: 4.516, n: 1.595, limit: 0.70, name: "6.0 ft (1829 mm) Throat" },
+            '8ft': { W: 8.0, k: 6.101, n: 1.607, limit: 0.70, name: "8.0 ft (2438 mm) Throat" },
+            '10ft': { W: 10.0, k: 7.399, n: 1.600, limit: 0.80, name: "10 ft (3048 mm) Throat" },
+            '12ft': { W: 12.0, k: 8.878, n: 1.600, limit: 0.80, name: "12 ft (3658 mm) Throat" },
+            '15ft': { W: 15.0, k: 11.098, n: 1.600, limit: 0.80, name: "15 ft (4572 mm) Throat" },
+            '20ft': { W: 20.0, k: 14.799, n: 1.600, limit: 0.80, name: "20 ft (6096 mm) Throat" },
+            '25ft': { W: 25.0, k: 18.499, n: 1.600, limit: 0.80, name: "25 ft (7620 mm) Throat" },
+            '30ft': { W: 30.0, k: 22.198, n: 1.600, limit: 0.80, name: "30 ft (9144 mm) Throat" },
+            '40ft': { W: 40.0, k: 29.598, n: 1.600, limit: 0.80, name: "40 ft (12192 mm) Throat" },
+            '50ft': { W: 50.0, k: 36.997, n: 1.600, limit: 0.80, name: "50 ft (15240 mm) Throat" }
         };
 
-        // UI Logic
+        // UI Initialization
         document.addEventListener('DOMContentLoaded', () => {
             const themeSwitch = document.getElementById('theme-switch');
             if (themeSwitch && localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
                 themeSwitch.checked = true;
             }
-            if(themeSwitch) {
+            if (themeSwitch) {
                 themeSwitch.addEventListener('change', function() {
                     document.body.classList.toggle('dark-mode');
                     localStorage.setItem('theme', this.checked ? 'dark' : 'light');
                 });
             }
             document.getElementById('pdf-btn').addEventListener('click', generatePDF);
-            updateWeirViz('rect-suppressed'); // Init Viz
+            updateWeirUI();
+            updateManningSolveForUI();
         });
 
         function switchTool(toolId) {
@@ -1106,25 +1792,23 @@
             document.getElementById('mod-' + toolId).classList.add('active');
             document.getElementById('main-result').style.display = 'none';
             
-            // Viz Update triggers
-            if(toolId === 'weir') updateWeirUI();
-            if(toolId === 'manning') updateManningUI();
+            if (toolId === 'weir') updateWeirUI();
+            if (toolId === 'manning') updateManningUI();
         }
         
-        // FAQ Toggle
         function toggleFaq(element) {
-            const item = element.parentElement;
-            item.classList.toggle('active');
+            element.parentElement.classList.toggle('active');
         }
 
         function updateWeirUI() {
             const type = document.getElementById('weir-type').value;
-            const lenRow = document.getElementById('weir-len-row');
+            const lenGroup = document.getElementById('weir-len-group');
+            const widthGroup = document.getElementById('weir-width-group');
             
-            if(type.startsWith('v-')) {
-                lenRow.style.display = 'none'; // V-notch has no length
+            if (type.startsWith('v-')) {
+                lenGroup.style.display = 'none';
             } else {
-                lenRow.style.display = 'flex';
+                lenGroup.style.display = 'block';
             }
             updateWeirViz(type);
         }
@@ -1132,144 +1816,909 @@
         function updateManningUI() {
             const shape = document.getElementById('man-shape').value;
             const sideGrp = document.getElementById('man-slope-side-grp');
-            if(shape === 'trap') sideGrp.style.display = 'block';
-            else sideGrp.style.display = 'none';
+            const widthLabel = document.getElementById('man-width-label');
             
-            updateChannelViz(shape);
-        }
-
-        // --- MATH ENGINES ---
-
-        function calcWeir() {
-            const type = document.getElementById('weir-type').value;
-            const H = parseFloat(document.getElementById('weir-head').value);
-            const L = parseFloat(document.getElementById('weir-len').value);
-            const Cd = parseFloat(document.getElementById('weir-cd').value);
-            const g = 9.81;
-
-            if(H <= 0) return;
-
-            let Q = 0;
-            let formulaStr = "";
-            let stepStr = "";
-
-            if (type === 'rect-suppressed') {
-                const constant = (2/3) * Math.sqrt(2*g); // approx 2.95
-                const geometric_term = L * Math.pow(H, 1.5);
-                Q = Cd * constant * geometric_term;
-                
-                formulaStr = `$$ Q = C_d \\cdot \\frac{2}{3} \\sqrt{2g} \\cdot L \\cdot H^{1.5} $$`;
-                stepStr = `<div class="step-block"><span class="step-title">Step 1: Physics Constants</span>Gravity $g = 9.81 m/s^2$.<br>Base Term $\\frac{2}{3}\\sqrt{2g} = \\frac{2}{3}\\sqrt{19.62} = ${constant.toFixed(3)}$.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 2: Geometric Head Term</span>Head $H = ${H}m$.<br>$H^{1.5} = ${Math.pow(H, 1.5).toFixed(4)}$.<br>Length $L = ${L}m$.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 3: Discharge Calculation</span>$Q = ${Cd} (C_d) \\times ${constant.toFixed(3)} \\times ${L} \\times ${Math.pow(H, 1.5).toFixed(4)} = \\mathbf{${Q.toFixed(4)} m^3/s}$</div>`;
-            } else if (type === 'rect-contracted') {
-                const Leff = L - (0.2 * H);
-                const constant = (2/3) * Math.sqrt(2*g);
-                Q = Cd * constant * Leff * Math.pow(H, 1.5);
-                
-                formulaStr = `$$ Q = C_d \\cdot \\frac{2}{3} \\sqrt{2g} \\cdot (L - 0.2H) \\cdot H^{1.5} $$`;
-                stepStr = `<div class="step-block"><span class="step-title">Step 1: Effective Length (Contraction)</span>$L_{eff} = L - 0.1(n)H$ where $n=2$ contractions.<br>$L_{eff} = ${L} - 0.2(${H}) = ${Leff.toFixed(3)}m$.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 2: Physics Constants</span>Base Term $\\frac{2}{3}\\sqrt{2g} = ${constant.toFixed(3)}$.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 3: Final Calculation</span>$Q = ${Cd} \\times ${constant.toFixed(3)} \\times ${Leff.toFixed(3)} \\times ${Math.pow(H, 1.5).toFixed(4)} = \\mathbf{${Q.toFixed(4)} m^3/s}$.</div>`;
-            } else if (type.startsWith('v-')) {
-                let thetaDeg = 90;
-                if(type === 'v-60') thetaDeg = 60;
-                if(type === 'v-45') thetaDeg = 45;
-                const thetaRad = (thetaDeg * Math.PI) / 180;
-                const tanHalf = Math.tan(thetaRad/2);
-                const constant = (8/15) * Math.sqrt(2*g);
-                
-                Q = Cd * constant * tanHalf * Math.pow(H, 2.5);
-                
-                formulaStr = `$$ Q = C_d \\cdot \\frac{8}{15} \\sqrt{2g} \\cdot \\tan(\\frac{\\theta}{2}) \\cdot H^{2.5} $$`;
-                stepStr = `<div class="step-block"><span class="step-title">Step 1: Notch Geometry</span>Angle $\\theta = ${thetaDeg}^{\\circ}$. $\\tan(\\theta/2) = \\tan(${thetaDeg/2}^{\\circ}) = ${tanHalf.toFixed(3)}$.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 2: Physics Constants</span>Base Term $\\frac{8}{15}\\sqrt{2g} = \\frac{8}{15}\\sqrt{19.62} \\approx ${constant.toFixed(3)}$.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 3: Power Law</span>$H^{2.5} = ${H}^{2.5} = ${Math.pow(H, 2.5).toFixed(4)}$.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 4: Discharge</span>$Q = ${Cd} \\times ${constant.toFixed(3)} \\times ${tanHalf.toFixed(3)} \\times ${Math.pow(H, 2.5).toFixed(4)} = \\mathbf{${Q.toFixed(4)} m^3/s}$.</div>`;
-            } else if (type === 'cippoletti') {
-                // Metric standard approx: Q = 1.86 * L * H^1.5
-                Q = 1.86 * L * Math.pow(H, 1.5); 
-                formulaStr = `$$ Q = 1.86 \\cdot L \\cdot H^{1.5} $$`;
-                stepStr = `<div class="step-block"><span class="step-title">Step 1: Cippoletti Formula</span>Standard Metric Coefficient $K = 1.86$ (which integrates $C_d$ and geometry).<br>Trapezoidal shape (1H:4V) inherently compensates for side contractions.</div>`;
-                stepStr += `<div class="step-block"><span class="step-title">Step 2: Calculation</span>$Q = 1.86 \\times ${L} \\times ${Math.pow(H, 1.5).toFixed(4)} = \\mathbf{${Q.toFixed(4)} m^3/s}$.</div>`;
-            }
-
-            displayResults(Q, formulaStr, stepStr, H, "Weir Flow");
-            updateWeirViz(type, H);
-        }
-
-        function calcFlume() {
-            const size = document.getElementById('flume-width').value;
-            const H = parseFloat(document.getElementById('flume-head').value);
-            
-            const consts = FLUME_DATA[size];
-            if(!consts || H <= 0) return;
-
-            const Q = consts.k * Math.pow(H, consts.n);
-            const formulaStr = `$$ Q = k \\cdot H^n $$`;
-            let stepStr = `<div class="step-block"><span class="step-title">Step 1: Select Flume Constants (ASTM D1941)</span>Selected Throat Width: <strong>${size}</strong>.<br>Empirical Coefficient $k = ${consts.k}$.<br>Empirical Exponent $n = ${consts.n}$.</div>`;
-            stepStr += `<div class="step-block"><span class="step-title">Step 2: Power Law Evaluation</span>$H^n = ${H}^{${consts.n}} = ${Math.pow(H, consts.n).toFixed(4)}$.</div>`;
-            stepStr += `<div class="step-block"><span class="step-title">Step 3: Discharge</span>$Q = ${consts.k} \\times ${Math.pow(H, consts.n).toFixed(4)} = \\mathbf{${Q.toFixed(4)} m^3/s}$.</div>`;
-
-            displayResults(Q, formulaStr, stepStr, H, "Parshall Flume");
-        }
-
-        function calcManning() {
-            const shape = document.getElementById('man-shape').value;
-            const b = parseFloat(document.getElementById('man-width').value);
-            const y = parseFloat(document.getElementById('man-depth').value);
-            const S = parseFloat(document.getElementById('man-slope').value);
-            const n = parseFloat(document.getElementById('man-n').value);
-            const z = parseFloat(document.getElementById('man-z').value); // side slope
-
-            if(y <= 0 || b <= 0 || S <= 0) return;
-
-            let A = 0, P = 0, T = 0; // Area, Perimeter, Top Width
-            let calcStep = "";
-
-            if(shape === 'rect') {
-                A = b * y;
-                P = b + 2*y;
-                T = b;
-                calcStep = `Rectangular Shape.<br>Area $A = b \\cdot y = ${b} \\cdot ${y} = ${A.toFixed(3)} m^2$.<br>Wetted Perimeter $P = b + 2y = ${b} + 2(${y}) = ${P.toFixed(3)} m$.<br>Top Width $T = b = ${b}m$.`;
-            } else if (shape === 'trap') {
-                A = (b + z*y) * y;
-                P = b + 2*y*Math.sqrt(1 + z*z);
-                T = b + 2*z*y;
-                calcStep = `Trapezoidal Shape ($z=${z}$).<br>Area $A = (b + zy)y = (${b} + ${z}\\cdot${y})${y} = ${A.toFixed(3)} m^2$.<br>Perimeter $P = b + 2y\\sqrt{1+z^2} = ${P.toFixed(3)} m$.<br>Top Width $T = b + 2zy = ${T.toFixed(3)}m$.`;
+            if (shape === 'trap') {
+                sideGrp.style.display = 'block';
+                widthLabel.innerHTML = "Bottom Width ($b$) [m]";
+            } else if (shape === 'rect') {
+                sideGrp.style.display = 'none';
+                widthLabel.innerHTML = "Bottom Width ($b$) [m]";
             } else if (shape === 'circ') {
-                const D = b;
-                if(y > D) { alert("Depth cannot exceed Diameter"); return; }
-                const theta = 2 * Math.acos(1 - (2*y/D)); // Radians
-                const thetaDeg = (theta * 180 / Math.PI).toFixed(1);
-                A = (D*D/8) * (theta - Math.sin(theta));
-                P = (theta * D) / 2;
-                T = D * Math.sin(theta/2); 
-                calcStep = `Circular Segment ($D=${D}m$).<br>Angle $\\theta = 2\\arccos(1 - 2y/D) = ${theta.toFixed(3)} rad$ (${thetaDeg}^{\\circ})$.<br>Area $A = \\frac{D^2}{8}(\\theta - \\sin\\theta) = ${A.toFixed(3)} m^2$.<br>Perimeter $P = \\frac{\\theta D}{2} = ${P.toFixed(3)} m$.<br><strong>Pipe Fill: ${(y/D*100).toFixed(1)}%</strong>`;
+                sideGrp.style.display = 'none';
+                widthLabel.innerHTML = "Pipe Diameter ($D$) [m]";
             }
-
-            const R = A / P;
-            const Q = (1/n) * A * Math.pow(R, 2/3) * Math.sqrt(S);
-            const V = Q / A;
+            if (window.MathJax) window.MathJax.typesetPromise();
             
-            // Froude
-            const D_hyd = A / T; // Hydraulic Depth
-            const g = 9.81;
-            const Fr = V / Math.sqrt(g * D_hyd);
-
-            const formulaStr = `$$ Q = \\frac{1}{n} A R^{2/3} S^{1/2} $$`;
-            let stepStr = `<div class="step-block"><span class="step-title">Step 1: Geometric Properties</span>${calcStep}</div>`;
-            stepStr += `<div class="step-block"><span class="step-title">Step 2: Hydraulic Radius</span>Hydraulic Radius $R = \\frac{A}{P} = \\frac{${A.toFixed(3)}}{${P.toFixed(3)}} = ${R.toFixed(3)} m$.</div>`;
-            stepStr += `<div class="step-block"><span class="step-title">Step 3: Manning Terms</span>Roughness Factor ($1/n$): ${(1/n).toFixed(2)}.<br>Radius Term ($R^{2/3}$): ${Math.pow(R, 2/3).toFixed(3)}.<br>Slope Term ($S^{1/2}$): ${Math.sqrt(S).toFixed(4)}.</div>`;
-            stepStr += `<div class="step-block"><span class="step-title">Step 4: Discharge Calculation</span>$Q = ${(1/n).toFixed(2)} \\times ${A.toFixed(3)} \\times ${Math.pow(R, 2/3).toFixed(3)} \\times ${Math.sqrt(S).toFixed(4)} = \\mathbf{${Q.toFixed(4)} m^3/s}$</div>`;
-            stepStr += `<div class="step-block"><span class="step-title">Step 5: Flow Regime Analysis (Froude)</span>Mean Velocity $V = Q/A = ${V.toFixed(2)} m/s$.<br>Hydraulic Mean Depth $D_h = A/T = ${A.toFixed(3)} / ${T.toFixed(3)} = ${D_hyd.toFixed(3)} m$.<br>Froude Number $Fr = \\frac{V}{\\sqrt{g D_h}} = \\frac{${V.toFixed(2)}}{\\sqrt{9.81 \\times ${D_hyd.toFixed(3)}}} = \\mathbf{${Fr.toFixed(2)}}$.</div>`;
-            
-            displayResults(Q, formulaStr, stepStr, y, "Manning Open Channel", V, Fr);
+            // Re-trigger viz
+            const y = parseFloat(document.getElementById('man-depth').value) || 0.5;
+            const b = parseFloat(document.getElementById('man-width').value) || 1.0;
             updateChannelViz(shape, y, b);
         }
 
-        // --- VISUALIZATION & OUTPUT ---
+        function updateManningSolveForUI() {
+            const solveFor = document.getElementById('man-solve-for').value;
+            const depthGrp = document.getElementById('man-depth-grp');
+            const qGrp = document.getElementById('man-q-grp');
+            const slopeGrp = document.getElementById('man-slope-grp');
+            const nGrp = document.getElementById('man-n-grp');
+            const nCustomGrp = document.getElementById('man-n-custom-grp');
 
+            depthGrp.style.display = (solveFor === 'yn') ? 'none' : 'block';
+            qGrp.style.display = (solveFor === 'q') ? 'none' : 'block';
+            slopeGrp.style.display = (solveFor === 's') ? 'none' : 'block';
+            
+            if (solveFor === 'n') {
+                nGrp.style.display = 'none';
+                nCustomGrp.style.display = 'none';
+            } else {
+                nGrp.style.display = 'block';
+                toggleCustomN();
+            }
+        }
+
+        function toggleCustomN() {
+            const nSelect = document.getElementById('man-n').value;
+            const nCustomGrp = document.getElementById('man-n-custom-grp');
+            nCustomGrp.style.display = (nSelect === 'custom') ? 'block' : 'none';
+        }
+
+        // --- LOOKUP FUNCTIONS FOR ISO 1438 RECTANGULAR WEIR Cd ---
+        function getWeirKL(ratio) {
+            if (ratio <= 0.2) return 0.0015;
+            if (ratio <= 0.4) return 0.0015 + (ratio - 0.2) / 0.2 * (0.0025 - 0.0015);
+            if (ratio <= 0.6) return 0.0025 + (ratio - 0.4) / 0.2 * (0.0045 - 0.0025);
+            if (ratio <= 0.8) return 0.0045 + (ratio - 0.6) / 0.2 * (0.0040 - 0.0045);
+            if (ratio <= 1.0) return 0.0040 + (ratio - 0.8) / 0.2 * (0.0000 - 0.0040);
+            return 0.0;
+        }
+
+        function getWeirCdCoeffs(ratio) {
+            const ratios = [0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+            const alphas = [0.589, 0.591, 0.592, 0.593, 0.595, 0.597, 0.599, 0.602];
+            const betas  = [-0.001, 0.005, 0.011, 0.018, 0.030, 0.045, 0.064, 0.075];
+            
+            if (ratio <= ratios[0]) return { alpha: alphas[0], beta: betas[0] };
+            if (ratio >= ratios[ratios.length-1]) return { alpha: alphas[alphas.length-1], beta: betas[betas.length-1] };
+            
+            for (let i = 0; i < ratios.length - 1; i++) {
+                if (ratio >= ratios[i] && ratio <= ratios[i+1]) {
+                    const f = (ratio - ratios[i]) / (ratios[i+1] - ratios[i]);
+                    const alpha = alphas[i] + f * (alphas[i+1] - alphas[i]);
+                    const beta = betas[i] + f * (betas[i+1] - betas[i]);
+                    return { alpha, beta };
+                }
+            }
+            return { alpha: 0.602, beta: 0.075 };
+        }
+
+        // --- DYNAMIC CARD GENERATOR FOR STEPS ---
+        function generateStepCard(stepNumber, title, body, status="Pass") {
+            const badgeClass = status === "Pass" ? "audit-pass" : (status === "Warning" ? "audit-warn" : "audit-fail");
+            return `
+                <div class="step-card">
+                    <div class="step-card-header">
+                        <div class="step-title-text">
+                            <span class="number">${stepNumber}</span>
+                            <span>${title}</span>
+                        </div>
+                        <span class="audit-badge ${badgeClass}">${status}</span>
+                    </div>
+                    <div class="step-card-body">
+                        ${body}
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- WEIR CALCULATION ENGINE ---
+        function calcWeir() {
+            const type = document.getElementById('weir-type').value;
+            const H = parseFloat(document.getElementById('weir-head').value);
+            const L = parseFloat(document.getElementById('weir-len').value) || 0;
+            const B = parseFloat(document.getElementById('weir-width').value) || 0;
+            const P = parseFloat(document.getElementById('weir-height').value) || 1.0;
+            const Hd = parseFloat(document.getElementById('weir-hd').value) || 0;
+            const manualCd = parseFloat(document.getElementById('weir-cd').value);
+            const g = 9.81;
+
+            if (H <= 0) {
+                alert("Hydraulic Head H must be greater than zero.");
+                return;
+            }
+            if (P <= 0) {
+                alert("Weir crest height P must be greater than zero.");
+                return;
+            }
+            if (!type.startsWith('v-') && L <= 0) {
+                alert("Rectangular or trapezoidal weirs require a crest length L > 0.");
+                return;
+            }
+            if (B <= 0) {
+                alert("Channel Width B must be greater than zero.");
+                return;
+            }
+
+            let Q_free = 0;
+            let Q_sub = 0;
+            let stepsHtml = "";
+            let weirName = document.getElementById('weir-type').options[document.getElementById('weir-type').selectedIndex].text;
+            
+            // Step 1: Input Check
+            let step1Status = "Pass";
+            let step1Msg = `Validating input parameters:<br>
+            <ul>
+                <li>Hydraulic Upstream Head: $H = ${H.toFixed(4)}\\text{ m}$</li>
+                <li>Channel Width: $B = ${B.toFixed(3)}\\text{ m}$</li>
+                <li>Weir Crest Height: $P = ${P.toFixed(3)}\\text{ m}$</li>
+                ${!type.startsWith('v-') ? `<li>Crest Length: $L = ${L.toFixed(3)}\\text{ m}$</li>` : ''}
+                <li>Downstream Tailwater Head: $H_d = ${Hd.toFixed(4)}\\text{ m}$</li>
+            </ul>`;
+            
+            if (H < 0.02) {
+                step1Status = "Warning";
+                step1Msg += `<span class="warn-text">&#9888; Warning:</span> Upstream head is extremely low ($H < 0.02\\text{ m}$). Water may cling to the weir face instead of springing clear, causing significant errors.`;
+            } else if (H / P > 2.5) {
+                step1Status = "Warning";
+                step1Msg += `<span class="warn-text">&#9888; Warning:</span> The ratio $H/P = ${(H/P).toFixed(2)}$ exceeds the recommended standard limit ($H/P \\le 2.5$). Velocity of approach will dominate, introducing instability.`;
+            } else {
+                step1Msg += `Inputs satisfy standard operational bounds.`;
+            }
+            stepsHtml += generateStepCard(1, "Input Parameters & Standards Compliance", step1Msg, step1Status);
+
+            // Step 2: Governing Standards & Constants
+            let step2Msg = `Governing standard for thin-plate weirs: <strong>ISO 1438 (International)</strong> and <strong>IS 9108 (Indian Standard)</strong>.<br>
+            The physical acceleration of gravity is set to:<br>
+            <div class="mathjax-scroll">$$g = ${g}\\text{ m/s}^2$$</div>`;
+            stepsHtml += generateStepCard(2, "Governing Standards & Gravity Constant", step2Msg);
+
+            // Step 3: Effective Upstream Head Correction (kh)
+            let kh = 0.001; // default 1mm for rect
+            if (type.startsWith('v-')) {
+                const angle = type.split('-')[1];
+                if (angle === '90') kh = 0.00085;
+                else if (angle === '60') kh = 0.0010;
+                else if (angle === '45') kh = 0.0012;
+                else if (angle === '30') kh = 0.0014;
+                else kh = 0.0016; // 22.5
+            }
+            let he = H + kh;
+            let step3Msg = `Due to surface tension and boundary layer drag, standard equations use an effective head $h_e = H + k_h$.<br>
+            For this structure, head correction $k_h = ${kh.toFixed(5)}\\text{ m}$.<br>
+            Effective head:<br>
+            <div class="mathjax-scroll">$$h_e = H + k_h = ${H.toFixed(4)} + ${kh.toFixed(5)} = \\mathbf{${he.toFixed(5)}\\text{ m}}$$</div>`;
+            stepsHtml += generateStepCard(3, "Effective Head Height Correction ($h_e$)", step3Msg);
+
+            // Step 4: Effective Crest Length Correction (kL)
+            let kL = 0;
+            let Le = L;
+            let step4Msg = "";
+            if (type.startsWith('v-')) {
+                step4Msg = `V-Notch weir is triangular. Crest length is not applicable. Effective crest length $L_e$ is not evaluated.`;
+            } else if (type === 'rect-suppressed') {
+                step4Msg = `For suppressed rectangular weirs, the crest spans the full channel width ($L = B$). Thus, $k_L = 0$.<br>
+                Effective crest length:<br>
+                <div class="mathjax-scroll">$$L_e = L = \\mathbf{${Le.toFixed(3)}\\text{ m}}$$</div>`;
+            } else if (type === 'rect-contracted') {
+                kL = getWeirKL(L/B);
+                Le = L + kL;
+                step4Msg = `For contracted rectangular weirs ($L < B$), the width contractions reduce the flow path.<br>
+                Interpolated length correction for $L/B = ${(L/B).toFixed(2)}$ is $k_L = ${kL.toFixed(4)}\\text{ m}$.<br>
+                Effective length:<br>
+                <div class="mathjax-scroll">$$L_e = L + k_L = ${L.toFixed(3)} + ${kL.toFixed(4)} = \\mathbf{${Le.toFixed(4)}\\text{ m}}$$</div>`;
+            } else {
+                step4Msg = `For Cippoletti weirs, trapezoidal side slopes (1H:4V) compensate for width contractions. No length correction is applied ($L_e = L = ${Le.toFixed(3)}\\text{ m}$).`;
+            }
+            stepsHtml += generateStepCard(4, "Effective Crest Length ($L_e$)", step4Msg);
+
+            // Step 5: Weir Constants & Geometry Ratio
+            let step5Msg = "";
+            let tanHalf = 1.0;
+            if (type.startsWith('v-')) {
+                const angle = parseFloat(type.split('-')[1]);
+                const rad = (angle * Math.PI) / 180;
+                tanHalf = Math.tan(rad / 2);
+                step5Msg = `Triangular notch angle $\\theta = ${angle}^{\\circ}$.<br>
+                Notch expansion term $\\tan(\\theta/2)$:<br>
+                <div class="mathjax-scroll">$$\\tan\\left(\\frac{${angle}^{\\circ}}{2}\\right) = \\tan(${angle/2}^{\\circ}) = \\mathbf{${tanHalf.toFixed(5)}}$$</div>`;
+            } else {
+                step5Msg = `Geometry ratio for discharge coefficient calculations:<br>
+                Ratio $L/B = ${B > 0 ? (L/B).toFixed(4) : "N/A"}$, Height Ratio $H/P = ${(H/P).toFixed(4)}$.`;
+            }
+            stepsHtml += generateStepCard(5, "Geometry & Angle Coefficient Evaluation", step5Msg);
+
+            // Step 6: Discharge Coefficient (Cd) Calculation
+            let Cd = 0.62;
+            let step6Msg = "";
+            if (!isNaN(manualCd)) {
+                Cd = manualCd;
+                step6Msg = `User override detected. Manual discharge coefficient is applied:<br>
+                <div class="mathjax-scroll">$$C_d = \\mathbf{${Cd.toFixed(4)}}$$</div>`;
+            } else {
+                if (type === 'rect-suppressed') {
+                    Cd = 0.602 + 0.075 * (H/P);
+                    step6Msg = `Discharge coefficient per Rehbock's formula:<br>
+                    <div class="mathjax-scroll">$$C_d = 0.602 + 0.075 \\cdot \\left(\\frac{H}{P}\\right) = 0.602 + 0.075 \\cdot ${ (H/P).toFixed(4) } = \\mathbf{${Cd.toFixed(4)}}$$</div>`;
+                } else if (type === 'rect-contracted') {
+                    const coeffs = getWeirCdCoeffs(L/B);
+                    Cd = coeffs.alpha + coeffs.beta * (H/P);
+                    step6Msg = `Discharge coefficient per Kindsvater-Carter formula for $L/B = ${(L/B).toFixed(2)}$ (where $\\alpha = ${coeffs.alpha.toFixed(3)}$, $\\beta = ${coeffs.beta.toFixed(3)}$):<br>
+                    <div class="mathjax-scroll">$$C_d = \\alpha + \\beta \\cdot \\left(\\frac{H}{P}\\right) = ${coeffs.alpha.toFixed(3)} + ${coeffs.beta.toFixed(3)} \\cdot ${ (H/P).toFixed(4) } = \\mathbf{${Cd.toFixed(4)}}$$</div>`;
+                } else if (type.startsWith('v-')) {
+                    const angle = type.split('-')[1];
+                    if (angle === '90') Cd = 0.578;
+                    else if (angle === '60') Cd = 0.576;
+                    else if (angle === '45') Cd = 0.580;
+                    else if (angle === '30') Cd = 0.585;
+                    else Cd = 0.590; // 22.5
+                    step6Msg = `Kindsvater-Shen discharge coefficient for standard $\\theta = ${angle}^{\\circ}$ triangular notch:<br>
+                    <div class="mathjax-scroll">$$C_d = \\mathbf{${Cd.toFixed(4)}}$$</div>`;
+                } else {
+                    Cd = 0.63; // Cippoletti Cd approx
+                    step6Msg = `Standard Cippoletti discharge coefficient under metric guidelines:<br>
+                    <div class="mathjax-scroll">$$C_d \\approx \\mathbf{0.6300}$$</div>`;
+                }
+            }
+            stepsHtml += generateStepCard(6, "Discharge Coefficient ($C_d$)", step6Msg);
+
+            // Step 7: Head Exponent Term Evaluation
+            let headPower = 0;
+            let step7Msg = "";
+            if (type.startsWith('v-')) {
+                headPower = Math.pow(he, 2.5);
+                step7Msg = `Triangular notch follows a 2.5 exponent:<br>
+                <div class="mathjax-scroll">$$h_e^{2.5} = ${he.toFixed(5)}^{2.5} = \\mathbf{${headPower.toFixed(6)}}$$</div>`;
+            } else {
+                headPower = Math.pow(he, 1.5);
+                step7Msg = `Rectangular/trapezoidal crest profile follows a 1.5 exponent:<br>
+                <div class="mathjax-scroll">$$h_e^{1.5} = ${he.toFixed(5)}^{1.5} = \\mathbf{${headPower.toFixed(6)}}$$</div>`;
+            }
+            stepsHtml += generateStepCard(7, "Head Exponent Evaluation ($h_e^{n}$)", step7Msg);
+
+            // Step 8: Governing Sizing Formulas
+            let formulaStr = "";
+            let step8Msg = "";
+            if (type.startsWith('v-')) {
+                formulaStr = `$$Q = C_d \\cdot \\frac{8}{15} \\sqrt{2g} \\cdot \\tan\\left(\\frac{\\theta}{2}\\right) \\cdot h_e^{2.5}$$`;
+                step8Msg = `Kindsvater-Shen formula for triangular notch flows:<br>${formulaStr}`;
+            } else if (type.includes('rect')) {
+                formulaStr = `$$Q = C_d \\cdot \\frac{2}{3} \\sqrt{2g} \\cdot L_e \\cdot h_e^{1.5}$$`;
+                step8Msg = `Kindsvater-Carter formula for rectangular flows:<br>${formulaStr}`;
+            } else {
+                formulaStr = `$$Q = 1.86 \\cdot L \\cdot H^{1.5}$$`;
+                step8Msg = `Standard Cippoletti discharge formula (discharge coefficient integrated):<br>${formulaStr}`;
+            }
+            stepsHtml += generateStepCard(8, "Standard Sizing Formula Definition", step8Msg);
+
+            // Step 9: Free Flow Volumetric Discharge Calculation
+            let gConst = Math.sqrt(2 * g);
+            if (type.startsWith('v-')) {
+                Q_free = Cd * (8/15) * gConst * tanHalf * headPower;
+            } else if (type.includes('rect')) {
+                Q_free = Cd * (2/3) * gConst * Le * headPower;
+            } else {
+                Q_free = 1.86 * L * Math.pow(H, 1.5);
+            }
+            let step9Msg = `Volumetric discharge capacity under free flow condition:<br>
+            <div class="mathjax-scroll">$$Q_{free} = \\mathbf{${Q_free.toFixed(5)}\\text{ m}^3\\text{/s}}$$</div>`;
+            stepsHtml += generateStepCard(9, "Volumetric Flow Rate (Free Outfall)", step9Msg);
+
+            // Step 10: Submergence Check and Correction
+            let step10Status = "Pass";
+            let step10Msg = "";
+            if (Hd > 0) {
+                const subRatio = Hd / H;
+                if (subRatio >= 1.0) {
+                    Q_sub = 0;
+                    step10Status = "Warning";
+                    step10Msg = `Submergence ratio is $S = H_d / H = ${subRatio.toFixed(3)} \\ge 1.0$. The downstream water level drowns the weir completely. The net discharge capacity drops to zero:<br>
+                    <div class="mathjax-scroll">$$Q_{sub} = \\mathbf{0.0000\\text{ m}^3\\text{/s}}$$</div>`;
+                } else {
+                    // Villemonte's formula
+                    const exp = type.startsWith('v-') ? 2.5 : 1.5;
+                    const factor = Math.pow(1 - Math.pow(subRatio, exp), 0.385);
+                    Q_sub = Q_free * factor;
+                    step10Status = "Warning";
+                    step10Msg = `Submergence ratio is $S = H_d / H = ${subRatio.toFixed(3)}$. Flow is submerged (drowned).<br>
+                    Applying Villemonte's correction formula:<br>
+                    <div class="mathjax-scroll">$$Q_{sub} = Q_{free} \\cdot \\left[ 1 - \\left(\\frac{H_d}{H}\\right)^{${exp}}\\right]^{0.385} = ${Q_free.toFixed(5)} \\cdot \\left[ 1 - ${subRatio.toFixed(4)}^{${exp}}\\right]^{0.385} = \\mathbf{${Q_sub.toFixed(5)}\\text{ m}^3\\text{/s}}$$</div>`;
+                }
+            } else {
+                Q_sub = Q_free;
+                step10Msg = `Flow is completely free-discharging ($H_d = 0$). No submergence reduction is required.<br>
+                Final volumetric flow rate:<br>
+                <div class="mathjax-scroll">$$Q = Q_{free} = \\mathbf{${Q_sub.toFixed(5)}\\text{ m}^3\\text{/s}}$$</div>`;
+            }
+            stepsHtml += generateStepCard(10, "Submergence Assessment & Corrected Flow", step10Msg, step10Status);
+
+            displayResults(Q_sub, formulaStr, stepsHtml, H, weirName);
+            updateWeirViz(type, H);
+        }
+
+        // --- PARSHALL FLUME CALCULATION ENGINE ---
+        function calcFlume() {
+            const size = document.getElementById('flume-width').value;
+            const Ha = parseFloat(document.getElementById('flume-head').value);
+            const Hb = parseFloat(document.getElementById('flume-hb').value) || 0;
+
+            const consts = FLUME_DATA[size];
+            if (!consts || Ha <= 0) {
+                alert("Invalid size or head configuration.");
+                return;
+            }
+
+            let Q_free = consts.k * Math.pow(Ha, consts.n);
+            let Q_final = Q_free;
+            let stepsHtml = "";
+            let formulaStr = `$$Q = k \\cdot H_a^n$$`;
+
+            // Step 1: Input check
+            let step1Status = (Ha >= 0.03 && Ha <= 1.0) ? "Pass" : "Warning";
+            let step1Msg = `Validating upstream water head level: $H_a = ${Ha.toFixed(4)}\\text{ m}$.<br>
+            Throat configuration: <strong>${consts.name}</strong>.<br>`;
+            if (step1Status === "Warning") {
+                step1Msg += `<span class="warn-text">&#9888; Warning:</span> Upstream head is outside standard ASTM D1941 calibration bounds ($0.03\\text{ m} \\le H_a \\le 1.00\\text{ m}$). Discharge accuracy may be reduced.`;
+            } else {
+                step1Msg += `Upstream head level satisfies standard ASTM D1941 requirements.`;
+            }
+            stepsHtml += generateStepCard(1, "Input Parameters & Calibration Check", step1Msg, step1Status);
+
+            // Step 2: Throat configuration
+            let step2Msg = `Parshall flume throat width is fixed to standard width:<br>
+            <div class="mathjax-scroll">$$W = ${consts.W.toFixed(4)}\\text{ ft} = ${(consts.W * 304.8).toFixed(1)}\\text{ mm}$$</div>`;
+            stepsHtml += generateStepCard(2, "Throat Width Verification", step2Msg);
+
+            // Step 3: Empirical sizing coefficients
+            let step3Msg = `For throat size <strong>${consts.name}</strong>, the ASTM D1941 empirical discharge coefficient is:<br>
+            <div class="mathjax-scroll">$$k = ${consts.k}$$</div>`;
+            stepsHtml += generateStepCard(3, "Empirical Coefficient Retrieval ($k$)", step3Msg);
+
+            // Step 4: Empirical sizing exponent
+            let step4Msg = `For throat size <strong>${consts.name}</strong>, the ASTM D1941 empirical flow exponent is:<br>
+            <div class="mathjax-scroll">$$n = ${consts.n}$$</div>`;
+            stepsHtml += generateStepCard(4, "Empirical Exponent Retrieval ($n$)", step4Msg);
+
+            // Step 5: Head Power term
+            let headPower = Math.pow(Ha, consts.n);
+            let step5Msg = `Head exponent term calculation:<br>
+            <div class="mathjax-scroll">$$H_a^n = ${Ha.toFixed(4)}^{${consts.n}} = \\mathbf{${headPower.toFixed(6)}}$$</div>`;
+            stepsHtml += generateStepCard(5, "Head Power Term Evaluation", step5Msg);
+
+            // Step 6: Governing Empirical Formulas
+            let step6Msg = `Standard ASTM D1941 / IS 14371 free-flow equation:<br>
+            ${formulaStr}`;
+            stepsHtml += generateStepCard(6, "Governing Sizing Formula Definition", step6Msg);
+
+            // Step 7: Free Flow Discharge
+            let step7Msg = `Discharge capacity under free discharge conditions:<br>
+            <div class="mathjax-scroll">$$Q_{free} = k \\cdot H_a^n = ${consts.k} \\cdot ${headPower.toFixed(6)} = \\mathbf{${Q_free.toFixed(5)}\\text{ m}^3\\text{/s}}$$</div>`;
+            stepsHtml += generateStepCard(7, "Free Discharge Calculation ($Q_{free}$)", step7Msg);
+
+            // Step 8: Submergence check
+            const subRatio = Hb / Ha;
+            let step8Status = "Pass";
+            let step8Msg = `Measured tailwater ratio: $S = H_b / H_a = ${subRatio.toFixed(4)}$.<br>
+            Modular limit for throat width of <strong>${size}</strong> is <strong>${(consts.limit * 100)}%</strong>.<br>`;
+            if (Hb > 0 && subRatio > consts.limit) {
+                step8Status = "Warning";
+                step8Msg += `<span class="warn-text">&#9888; Warning:</span> Submergence ratio exceeds the modular limit of ${(consts.limit * 100)}%. Flow is submerged (drowned). Backwater effects must be corrected.`;
+            } else {
+                step8Msg += `Flow operates under free outfall conditions. No downstream corrections required.`;
+            }
+            stepsHtml += generateStepCard(8, "Submergence Limit Check ($S_{limit}$)", step8Msg, step8Status);
+
+            // Step 9: Submerged flow correction
+            let Q_corr = 0;
+            let step9Msg = "";
+            let step9Status = "Pass";
+            if (Hb > 0 && subRatio > consts.limit) {
+                step9Status = "Warning";
+                if (subRatio >= 1.0) {
+                    Q_final = 0;
+                    step9Msg = `Submergence ratio is $1.0$ or higher. Net throat discharge capacity falls to zero:<br>
+                    <div class="mathjax-scroll">$$Q = \\mathbf{0.0000\\text{ m}^3\\text{/s}}$$</div>`;
+                } else {
+                    const Ha_ft = Ha * 3.28084;
+                    const S_p = subRatio * 100;
+                    let Q_corr_cfs = 0;
+
+                    // Interpolate correction factor from standard curves
+                    if (size.endsWith('ft') && consts.W >= 1.0 && consts.W <= 8.0) {
+                        const M_factors = { '1ft': 1.0, '1.5ft': 1.4, '2ft': 1.8, '3ft': 2.4, '4ft': 3.1, '5ft': 3.7, '6ft': 4.3, '8ft': 5.4 };
+                        const M = M_factors[size] || 1.0;
+                        Q_corr_cfs = M * 0.0000859 * Math.pow(S_p - 60, 1.44) * Math.pow(Ha_ft, 1.522);
+                    } else if (size === '9in') {
+                        Q_corr_cfs = 0.75 * 0.0000859 * Math.pow(S_p - 57, 1.44) * Math.pow(Ha_ft, 1.53);
+                    } else if (size === '6in') {
+                        Q_corr_cfs = 0.50 * 0.0000859 * Math.pow(S_p - 57, 1.44) * Math.pow(Ha_ft, 1.58);
+                    } else if (size === '3in') {
+                        Q_corr_cfs = 0.25 * 0.0000859 * Math.pow(S_p - 48, 1.44) * Math.pow(Ha_ft, 1.55);
+                    } else if (consts.W >= 10.0) {
+                        Q_corr_cfs = consts.W * 0.0000859 * Math.pow(S_p - 72, 1.44) * Math.pow(Ha_ft, 1.6);
+                    } else {
+                        // 1in, 2in approximation
+                        Q_corr_cfs = 0.1 * 0.0000859 * Math.pow(S_p - 45, 1.44) * Math.pow(Ha_ft, 1.55);
+                    }
+
+                    Q_corr = Q_corr_cfs * 0.0283168; // Convert to m3/s
+                    if (Q_corr >= Q_free) {
+                        Q_final = 0;
+                    } else {
+                        Q_final = Q_free - Q_corr;
+                    }
+
+                    step9Msg = `ASTM D1941 submerged flow correction terms:<br>
+                    Calculated flow reduction: $Q_{corr} = \\mathbf{${Q_corr.toFixed(5)}\\text{ m}^3\\text{/s}}$<br>
+                    Corrected Flow capacity:<br>
+                    <div class="mathjax-scroll">$$Q = Q_{free} - Q_{corr} = ${Q_free.toFixed(5)} - ${Q_corr.toFixed(5)} = \\mathbf{${Q_final.toFixed(5)}\\text{ m}^3\\text{/s}}$$</div>`;
+                }
+            } else {
+                Q_final = Q_free;
+                step9Msg = `Flow is completely free-flowing. Submergence correction term $Q_{corr} = 0$.<br>
+                Net discharge:<br>
+                <div class="mathjax-scroll">$$Q = Q_{free} = \\mathbf{${Q_final.toFixed(5)}\\text{ m}^3\\text{/s}}$$</div>`;
+            }
+            stepsHtml += generateStepCard(9, "Discharge Correction for Submergence", step9Msg, step9Status);
+
+            // Step 10: Sizing Recommendations
+            let step10Msg = `Standard ASTM D1941 recommendations: <br>
+            <ul>
+                <li>Keep the converging inlet free from silts or weeds. Wall roughness changes the discharge coefficient $k$, causing a 3% to 5% calculation error.</li>
+                <li>Make sure that the flume floor is strictly horizontal to avoid downstream lateral flow currents.</li>
+            </ul>`;
+            stepsHtml += generateStepCard(10, "Operational Sizing Recommendations", step10Msg);
+
+            displayResults(Q_final, formulaStr, stepsHtml, Ha, `Parshall Flume (${size})`);
+            updateWeirViz('cippoletti', Ha); // schematic viz update
+        }
+
+        // --- MANNING CHANNEL HELPER FUNCTIONS ---
+        function calcManningQ(shape, b, y, S, n, z) {
+            let A = 0, P = 0;
+            if (shape === 'rect') {
+                A = b * y;
+                P = b + 2 * y;
+            } else if (shape === 'trap') {
+                A = (b + z * y) * y;
+                P = b + 2 * y * Math.sqrt(1 + z * z);
+            } else if (shape === 'circ') {
+                const D = b;
+                if (y >= D) {
+                    A = (Math.PI * D * D) / 4;
+                    P = Math.PI * D;
+                } else {
+                    const theta = 2 * Math.acos(1 - (2 * y / D));
+                    A = (D * D / 8) * (theta - Math.sin(theta));
+                    P = (theta * D) / 2;
+                }
+            }
+            if (P === 0) return 0;
+            const R = A / P;
+            return (1 / n) * A * Math.pow(R, 2/3) * Math.sqrt(S);
+        }
+
+        function solveNormalDepth(shape, b, S, n, z, Q) {
+            let y_low = 0.0001;
+            let y_high = (shape === 'circ') ? b - 0.0001 : 50.0;
+            
+            // Check pipe maximum capacity
+            if (shape === 'circ') {
+                const maxQ = calcManningQ(shape, b, b * 0.938, S, n, z);
+                if (Q > maxQ) {
+                    return { error: `Design flow Q = ${Q.toFixed(3)} m³/s exceeds the maximum capacity of this circular pipe (${maxQ.toFixed(3)} m³/s at 93.8% full). Please increase pipe diameter.` };
+                }
+            }
+
+            let iter = 0;
+            let y = 1.0;
+            while (iter < 100) {
+                y = (y_low + y_high) / 2;
+                let Q_calc = calcManningQ(shape, b, y, S, n, z);
+                if (Math.abs(Q_calc - Q) < 1e-6) {
+                    break;
+                }
+                if (Q_calc > Q) {
+                    y_high = y;
+                } else {
+                    y_low = y;
+                }
+                iter++;
+            }
+            return { y, iterations: iter };
+        }
+
+        function solveCriticalDepth(shape, b, z, Q) {
+            const g = 9.81;
+            let y_low = 0.0001;
+            let y_high = (shape === 'circ') ? b - 0.0001 : 50.0;
+            
+            let iter = 0;
+            let y = 1.0;
+            while (iter < 100) {
+                y = (y_low + y_high) / 2;
+                let A = 0, T = 0;
+                if (shape === 'rect') {
+                    A = b * y;
+                    T = b;
+                } else if (shape === 'trap') {
+                    A = (b + z * y) * y;
+                    T = b + 2 * z * y;
+                } else if (shape === 'circ') {
+                    const D = b;
+                    const theta = 2 * Math.acos(1 - (2 * y / D));
+                    A = (D * D / 8) * (theta - Math.sin(theta));
+                    T = D * Math.sin(theta / 2);
+                }
+                
+                const f = 1 - (Q * Q * T) / (g * A * A * A);
+                if (Math.abs(f) < 1e-6) {
+                    break;
+                }
+                if (f > 0) {
+                    // Q2 T / g A3 < 1 => subcritical velocity, critical depth must be higher
+                    y_low = y;
+                } else {
+                    y_high = y;
+                }
+                iter++;
+            }
+            return y;
+        }
+
+        // --- MANNING CALCULATION ENGINE ---
+        function calcManning() {
+            const solveFor = document.getElementById('man-solve-for').value;
+            const shape = document.getElementById('man-shape').value;
+            const b = parseFloat(document.getElementById('man-width').value);
+            const z = parseFloat(document.getElementById('man-z').value) || 0;
+            
+            let y = parseFloat(document.getElementById('man-depth').value) || 0;
+            let Q_design = parseFloat(document.getElementById('man-q').value) || 0;
+            let S = parseFloat(document.getElementById('man-slope').value);
+            
+            let n = 0.015;
+            const nSelect = document.getElementById('man-n').value;
+            if (nSelect === 'custom' || solveFor === 'n') {
+                n = parseFloat(document.getElementById('man-n-custom').value) || 0.015;
+            } else {
+                n = parseFloat(nSelect);
+            }
+            
+            const g = 9.81;
+
+            if (b <= 0) {
+                alert("Width/Diameter must be greater than zero.");
+                return;
+            }
+            if (S <= 0 && solveFor !== 's') {
+                alert("Slope S must be greater than zero.");
+                return;
+            }
+            if (n <= 0 && solveFor !== 'n') {
+                alert("Manning n must be greater than zero.");
+                return;
+            }
+            if (solveFor === 'q' && y <= 0) {
+                alert("Water depth y must be greater than zero.");
+                return;
+            }
+            if (solveFor !== 'q' && Q_design <= 0) {
+                alert("Design discharge Q must be greater than zero.");
+                return;
+            }
+
+            let Q_final = 0;
+            let y_final = y;
+            let S_final = S;
+            let n_final = n;
+            let stepsHtml = "";
+            let solverInfo = "";
+
+            // Step 1: Solve for Variable
+            let step1Status = "Pass";
+            if (solveFor === 'q') {
+                Q_final = calcManningQ(shape, b, y, S, n, z);
+                solverInfo = `Solving for <strong>Discharge capacity (Q)</strong> given water depth $y = ${y.toFixed(4)}\\text{ m}$.`;
+            } else if (solveFor === 'yn') {
+                const res = solveNormalDepth(shape, b, S, n, z, Q_design);
+                if (res.error) {
+                    alert(res.error);
+                    return;
+                }
+                y_final = res.y;
+                Q_final = Q_design;
+                solverInfo = `Solving for <strong>Normal flow depth ($y_n$)</strong> given design flow $Q = ${Q_design.toFixed(3)}\\text{ m}^3\\text{/s}$ (Solved in ${res.iterations} iterations).`;
+            } else if (solveFor === 's') {
+                let A = 0, P = 0;
+                if (shape === 'rect') {
+                    A = b * y; P = b + 2 * y;
+                } else if (shape === 'trap') {
+                    A = (b + z * y) * y; P = b + 2 * y * Math.sqrt(1 + z * z);
+                } else if (shape === 'circ') {
+                    const D = b;
+                    const theta = 2 * Math.acos(1 - (2 * y / D));
+                    A = (D * D / 8) * (theta - Math.sin(theta)); P = (theta * D) / 2;
+                }
+                const R = A / P;
+                S_final = Math.pow((Q_design * n) / (A * Math.pow(R, 2/3)), 2);
+                Q_final = Q_design;
+                solverInfo = `Solving for <strong>Bed slope ($S$)</strong> given water depth $y = ${y.toFixed(4)}\\text{ m}$ and discharge $Q = ${Q_design.toFixed(3)}\\text{ m}^3\\text{/s}$.`;
+            } else if (solveFor === 'n') {
+                let A = 0, P = 0;
+                if (shape === 'rect') {
+                    A = b * y; P = b + 2 * y;
+                } else if (shape === 'trap') {
+                    A = (b + z * y) * y; P = b + 2 * y * Math.sqrt(1 + z * z);
+                } else if (shape === 'circ') {
+                    const D = b;
+                    const theta = 2 * Math.acos(1 - (2 * y / D));
+                    A = (D * D / 8) * (theta - Math.sin(theta)); P = (theta * D) / 2;
+                }
+                const R = A / P;
+                n_final = (A * Math.pow(R, 2/3) * Math.sqrt(S)) / Q_design;
+                Q_final = Q_design;
+                solverInfo = `Solving for <strong>Manning's roughness ($n$)</strong> given water depth $y = ${y.toFixed(4)}\\text{ m}$ and slope $S = ${S.toFixed(5)}$.`;
+            }
+            stepsHtml += generateStepCard(1, "Sizing Solver Parameter Configuration", solverInfo, step1Status);
+
+            // Step 2: Channel Geometry Calculations
+            let A = 0, P = 0, T = 0;
+            let geomFormula = "";
+            if (shape === 'rect') {
+                A = b * y_final;
+                P = b + 2 * y_final;
+                T = b;
+                geomFormula = `For Rectangular Channel:<br>
+                Wetted Area: $A = b \\cdot y_n = ${b.toFixed(3)} \\cdot ${y_final.toFixed(4)} = \\mathbf{${A.toFixed(4)}\\text{ m}^2}$<br>
+                Wetted Perimeter: $P = b + 2y_n = ${b.toFixed(3)} + 2 \\cdot ${y_final.toFixed(4)} = \\mathbf{${P.toFixed(4)}\\text{ m}}$<br>
+                Top Width: $T = b = \\mathbf{${T.toFixed(3)}\\text{ m}}$`;
+            } else if (shape === 'trap') {
+                A = (b + z * y_final) * y_final;
+                P = b + 2 * y_final * Math.sqrt(1 + z * z);
+                T = b + 2 * z * y_final;
+                geomFormula = `For Trapezoidal Channel ($z = ${z.toFixed(2)}$):<br>
+                Wetted Area: $A = (b + z \\cdot y_n) \\cdot y_n = (${b.toFixed(3)} + ${z.toFixed(2)} \\cdot ${y_final.toFixed(4)}) \\cdot ${y_final.toFixed(4)} = \\mathbf{${A.toFixed(4)}\\text{ m}^2}$<br>
+                Wetted Perimeter: $P = b + 2y_n\\sqrt{1+z^2} = ${b.toFixed(3)} + 2 \\cdot ${y_final.toFixed(4)}\\sqrt{1+${z.toFixed(2)}^2} = \\mathbf{${P.toFixed(4)}\\text{ m}}$<br>
+                Top Width: $T = b + 2zy_n = ${b.toFixed(3)} + 2 \\cdot ${z.toFixed(2)} \\cdot ${y_final.toFixed(4)} = \\mathbf{${T.toFixed(3)}\\text{ m}}$`;
+            } else if (shape === 'circ') {
+                const D = b;
+                const theta = 2 * Math.acos(1 - (2 * y_final / D));
+                A = (D * D / 8) * (theta - Math.sin(theta));
+                P = (theta * D) / 2;
+                T = D * Math.sin(theta / 2);
+                geomFormula = `For Circular Pipe ($D = ${D.toFixed(3)}\\text{ m}$):<br>
+                Wetted Angle: $\\theta = 2\\arccos\\left(1 - \\frac{2y_n}{D}\\right) = \\mathbf{${theta.toFixed(4)}\\text{ rad}}$<br>
+                Wetted Area: $A = \\frac{D^2}{8}(\\theta - \\sin\\theta) = \\mathbf{${A.toFixed(4)}\\text{ m}^2}$<br>
+                Wetted Perimeter: $P = \\frac{\\theta D}{2} = \\mathbf{${P.toFixed(4)}\\text{ m}}$<br>
+                Top Width: $T = D\\sin(\\theta/2) = \\mathbf{${T.toFixed(3)}\\text{ m}}$`;
+            }
+            stepsHtml += generateStepCard(2, "Cross-Sectional Channel Geometry", geomFormula);
+
+            // Step 3: Hydraulic Radius
+            const R = A / P;
+            let step3Msg = `Hydraulic radius (flow efficiency parameter):<br>
+            <div class="mathjax-scroll">$$R_h = \\frac{A}{P} = \\frac{${A.toFixed(4)}}{${P.toFixed(4)}} = \\mathbf{${R.toFixed(4)}\\text{ m}}$$</div>`;
+            stepsHtml += generateStepCard(3, "Hydraulic Radius ($R_h$)", step3Msg);
+
+            // Step 4: Longitudinal Slope Energy Term
+            let slopeTerm = Math.sqrt(S_final);
+            let step4Msg = `Longitudinal Energy Slope $S = ${S_final.toFixed(6)}\\text{ m/m}$:<br>
+            <div class="mathjax-scroll">$$S^{1/2} = \\sqrt{${S_final.toFixed(6)}} = \\mathbf{${slopeTerm.toFixed(6)}}$$</div>`;
+            stepsHtml += generateStepCard(4, "Slope Energy Term ($S^{1/2}$)", step4Msg);
+
+            // Step 5: Manning Roughness term
+            let step5Msg = `Manning's roughness coefficient $n = ${n_final.toFixed(4)}$:<br>
+            Conduit Flow Conductivity Term:<br>
+            <div class="mathjax-scroll">$$\\frac{1}{n} = \\frac{1}{${n_final.toFixed(4)}} = \\mathbf{${(1 / n_final).toFixed(2)}}$$</div>`;
+            stepsHtml += generateStepCard(5, "Roughness Conductivity Term ($1/n$)", step5Msg);
+
+            // Step 6: Governing Manning Equation
+            let formulaStr = `$$Q = \\frac{1}{n} \\cdot A \\cdot R_h^{2/3} \\cdot S^{1/2}$$`;
+            let step6Msg = `Governing Manning formula for open channel uniform flow:<br>${formulaStr}`;
+            stepsHtml += generateStepCard(6, "Governing Manning Equation Sizing", step6Msg);
+
+            // Step 7: Sized Volumetric Discharge Q
+            const radTerm = Math.pow(R, 2/3);
+            let step7Msg = `Substituting all variables to verify discharge capacity:<br>
+            <div class="mathjax-scroll">$$Q = ${(1 / n_final).toFixed(2)} \\cdot ${A.toFixed(4)} \\cdot ${radTerm.toFixed(4)} \\cdot ${slopeTerm.toFixed(6)} = \\mathbf{${Q_final.toFixed(5)}\\text{ m}^3\\text{/s}}$$</div>`;
+            stepsHtml += generateStepCard(7, "Sized Volumetric Discharge ($Q$)", step7Msg);
+
+            // Step 8: Flow Velocity
+            const V = Q_final / A;
+            let step8Msg = `Average cross-sectional velocity:<br>
+            <div class="mathjax-scroll">$$V = \\frac{Q}{A} = \\frac{${Q_final.toFixed(4)}}{${A.toFixed(4)}} = \\mathbf{${V.toFixed(3)}\\text{ m/s}}$$</div>`;
+            stepsHtml += generateStepCard(8, "Average Flow Velocity ($V$)", step8Msg);
+
+            // Step 9: Critical Depth & Froude Number
+            const yc = solveCriticalDepth(shape, b, z, Q_final);
+            const D_hyd = A / T;
+            const Fr = V / Math.sqrt(g * D_hyd);
+            
+            let step9Status = "Pass";
+            let regime = "Subcritical (Tranquil flow)";
+            if (Fr > 1.05) {
+                step9Status = "Warning";
+                regime = "Supercritical (Rapid / Torrential flow)";
+            } else if (Math.abs(Fr - 1.0) <= 0.05) {
+                step9Status = "Warning";
+                regime = "Critical (Unstable)";
+            }
+
+            let step9Msg = `Calculated Critical Depth: $y_c = \\mathbf{${yc.toFixed(4)}\\text{ m}}$.<br>
+            Froude Number (dimensionless inertial/gravitational ratio):<br>
+            <div class="mathjax-scroll">$$Fr = \\frac{V}{\\sqrt{g \\cdot D_h}} = \\frac{${V.toFixed(3)}}{\\sqrt{9.81 \\cdot ${D_hyd.toFixed(4)}}} = \\mathbf{${Fr.toFixed(4)}}$$</div>
+            Flow Regime: <strong>${regime}</strong> (since $y_n ${y_final > yc ? ">" : "<"} y_c$).`;
+            stepsHtml += generateStepCard(9, "Critical Flow & Flow Regime Analysis ($Fr$)", step9Msg, step9Status);
+
+            // Step 10: Hydraulic Jump & Sizing Recommendations
+            let step10Status = "Pass";
+            let step10Msg = "";
+            
+            // Check self-cleansing
+            if (V < 0.60) {
+                step10Status = "Warning";
+                step10Msg += `<span class="warn-text">&#9888; Velocity warning:</span> Velocity ($V = ${V.toFixed(2)}\\text{ m/s}$) is below the standard self-cleansing threshold ($0.60\\text{ m/s}$). Sediments will deposit.<br>`;
+            } else if (V > 3.0) {
+                step10Status = "Warning";
+                step10Msg += `<span class="warn-text">&#9888; Velocity warning:</span> Velocity ($V = ${V.toFixed(2)}\\text{ m/s}$) is high. Risks channel lining erosion/scour.<br>`;
+            }
+
+            if (Fr > 1.0) {
+                // Hydraulic jump calculation
+                const y2 = (y_final / 2) * (Math.sqrt(1 + 8 * Fr * Fr) - 1);
+                const hL = Math.pow(y2 - y_final, 3) / (4 * y_final * y2);
+                const L_jump = 6.0 * (y2 - y_final);
+                const E1 = y_final + (V * V) / (2 * g);
+                const eff = (hL / E1) * 100;
+                step10Status = "Warning";
+                step10Msg += `Since flow is supercritical, a <strong>Hydraulic Jump</strong> will form downstream when transitioning to subcritical flow:<br>
+                Conjugate Sequent Depth: $y_2 = \\mathbf{${y2.toFixed(4)}\\text{ m}}$<br>
+                Jump Energy Dissipation Head Loss: $h_L = \\mathbf{${hL.toFixed(4)}\\text{ m}}$<br>
+                Jump Length Estimate: $L_{jump} \\approx 6 \\cdot (y_2 - y_n) = \\mathbf{${L_jump.toFixed(3)}\\text{ m}}$<br>
+                Energy Dissipation Efficiency: $\\eta = \\mathbf{${eff.toFixed(1)}\\%}$`;
+            } else {
+                step10Msg += `Flow is subcritical. No downstream hydraulic jump risks. Keep canal freeboard at minimum $15\\%$ of flow depth to prevent splashes.`;
+            }
+            stepsHtml += generateStepCard(10, "Hydraulic Jump Sizing & Validation", step10Msg, step10Status);
+
+            let methodStr = `Manning's Channel Solver (${shape.toUpperCase()})`;
+            displayResults(Q_final, formulaStr, stepsHtml, y_final, methodStr, V, Fr);
+            updateChannelViz(shape, y_final, b);
+        }
+
+        // --- SVG GRAPHICS DRAWING ENGINE ---
+        function updateWeirViz(type, H = 0.3) {
+            const svg = document.getElementById('flow-svg');
+            svg.innerHTML = '';
+            
+            const w = 300, h = 200;
+            const bottomY = 170;
+            const crestY = 110;
+            const scale = 80; // pixels per meter
+            
+            const H_scaled = Math.min(H * scale, 50);
+            const waterY = crestY - H_scaled;
+            
+            let pathD = "";
+            let waterD = "";
+
+            if (type.includes('rect') || type === 'cippoletti') {
+                const notchW = 120;
+                const leftX = (w - notchW) / 2;
+                const rightX = leftX + notchW;
+                
+                pathD = `M0,${bottomY} V40 H${leftX} V${crestY} H${rightX} V40 H${w} V${bottomY} Z`;
+                waterD = `M0,${bottomY} V${waterY} H${w} V${bottomY} Z`;
+            } else {
+                // V-Notch
+                const centerX = w / 2;
+                let angle = 90;
+                if (type.includes('60')) angle = 60;
+                else if (type.includes('45')) angle = 45;
+                else if (type.includes('30')) angle = 30;
+                else if (type.includes('22.5')) angle = 22.5;
+
+                const rad = (angle * Math.PI) / 180;
+                const notchHeight = 60;
+                const halfW = notchHeight * Math.tan(rad / 2);
+
+                pathD = `M0,${bottomY} V40 H${centerX - halfW - 15} L${centerX},${crestY + 20} L${centerX + halfW + 15},40 H${w} V${bottomY} Z`;
+                waterD = `M0,${bottomY} V${waterY} H${w} V${bottomY} Z`;
+            }
+
+            // Append elements
+            const water = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            water.setAttribute("d", waterD);
+            water.setAttribute("fill", "rgba(37, 99, 235, 0.45)");
+            svg.appendChild(water);
+
+            const struct = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            struct.setAttribute("d", pathD);
+            struct.setAttribute("fill", "#475569");
+            svg.appendChild(struct);
+
+            // Labels
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", "150");
+            label.setAttribute("y", "190");
+            label.setAttribute("fill", "#0f172a");
+            label.setAttribute("font-size", "11");
+            label.setAttribute("font-weight", "600");
+            label.setAttribute("text-anchor", "middle");
+            label.textContent = weirNameText(type);
+            svg.appendChild(label);
+        }
+
+        function weirNameText(type) {
+            if (type === 'rect-suppressed') return "Rectangular (Suppressed) Weir";
+            if (type === 'rect-contracted') return "Rectangular (Contracted) Weir";
+            if (type === 'cippoletti') return "Cippoletti Trapezoidal Weir";
+            return `${type.split('-')[1]}° V-Notch Weir`;
+        }
+
+        function updateChannelViz(shape, y = 1.0, b = 2.0) {
+            const svg = document.getElementById('flow-svg');
+            svg.innerHTML = '';
+            
+            const w = 300, h = 200;
+            const floorY = 160;
+            const centerX = w / 2;
+            const scale = 50; // visual scaling px per m
+
+            let structD = "";
+            let waterD = "";
+
+            const b_px = Math.min(b * scale, 220);
+            const y_scaled = Math.min(y * scale, 100);
+
+            if (shape === 'rect') {
+                const halfB = b_px / 2;
+                structD = `M${centerX - halfB},40 V${floorY} H${centerX + halfB} V40`;
+                waterD = `M${centerX - halfB},${floorY} V${floorY - y_scaled} H${centerX + halfB} V${floorY} Z`;
+            } else if (shape === 'trap') {
+                const halfB = b_px / 2;
+                const sideDelta = y_scaled * 1.5; // Visual fix slope
+                structD = `M${centerX - halfB - 40},40 L${centerX - halfB},${floorY} H${centerX + halfB} L${centerX + halfB + 40},40`;
+                waterD = `M${centerX - halfB},${floorY} L${centerX - halfB - sideDelta},${floorY - y_scaled} H${centerX + halfB + sideDelta} L${centerX + halfB},${floorY} Z`;
+            } else if (shape === 'circ') {
+                const r = Math.min(b * scale / 2, 70);
+                const cy = floorY - r;
+                structD = `M${centerX},${cy} m -${r},0 a ${r},${r} 0 1,0 ${r*2},0 a ${r},${r} 0 1,0 -${r*2},0`;
+                
+                // Draw water line inside circular channel
+                const fillRatio = Math.min(y / b, 1.0);
+                const waterH = fillRatio * 2 * r;
+                const waterTopY = floorY - waterH;
+                const angle = 2 * Math.acos(1 - 2 * fillRatio);
+                const halfChord = r * Math.sin(angle / 2);
+                
+                waterD = `M${centerX - halfChord},${waterTopY} A ${r},${r} 0 0,0 ${centerX + halfChord},${waterTopY} L${centerX + halfChord},${floorY} H${centerX - halfChord} Z`;
+            }
+
+            const water = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            water.setAttribute("d", waterD);
+            water.setAttribute("fill", "rgba(37, 99, 235, 0.45)");
+            svg.appendChild(water);
+
+            const struct = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            struct.setAttribute("d", structD);
+            struct.setAttribute("fill", "none");
+            struct.setAttribute("stroke", "#475569");
+            struct.setAttribute("stroke-width", "4");
+            svg.appendChild(struct);
+
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", "150");
+            label.setAttribute("y", "190");
+            label.setAttribute("fill", "#0f172a");
+            label.setAttribute("font-size", "11");
+            label.setAttribute("font-weight", "600");
+            label.setAttribute("text-anchor", "middle");
+            label.textContent = `${shape.toUpperCase()} Channel Cross-Section`;
+            svg.appendChild(label);
+        }
+
+        // --- RESULTS PANEL DISPLAY ---
         function displayResults(Q, formula, steps, depth, title, vel=null, fr=null) {
             document.getElementById('main-result').style.display = 'block';
             document.getElementById('res-qty').innerText = Q.toFixed(4) + " m³/s";
@@ -1277,173 +2726,150 @@
             
             // Conversions
             const lps = Q * 1000;
-            const cfs = Q * 35.3147;
             const gpm = Q * 15850.3;
-            document.getElementById('res-conv').innerHTML = `${lps.toFixed(1)} L/s <br> ${gpm.toFixed(0)} GPM`;
+            document.getElementById('res-conv').innerHTML = `${lps.toLocaleString(undefined, {maximumFractionDigits:1})} L/s <br> ${gpm.toLocaleString(undefined, {maximumFractionDigits:0})} GPM`;
 
-            if(vel !== null) {
-                document.getElementById('res-vel').innerText = vel.toFixed(2) + " m/s";
-                document.getElementById('res-area').innerText = (Q/vel).toFixed(2) + " m²";
+            if (vel !== null) {
+                document.getElementById('res-vel').innerText = vel.toFixed(3) + " m/s";
+                document.getElementById('res-area').innerText = (Q / vel).toFixed(3) + " m²";
                 
                 let regime = "Subcritical (Tranquil)";
                 let color = "var(--success)";
-                let note = "Stable flow. Low erosion.";
-                if(fr > 1) { 
+                let note = "Stable flow. Low erosion risk.";
+                if (fr > 1.05) { 
                     regime = "Supercritical (Rapid)"; 
                     color = "var(--danger)"; 
-                    note = "High Velocity. Erosion Risk.";
-                }
-                else if (Math.abs(fr-1) < 0.1) { 
+                    note = "High Velocity. Severe scour/erosion risk.";
+                } else if (Math.abs(fr - 1.0) <= 0.05) { 
                     regime = "Critical"; 
                     color = "var(--warning)"; 
-                    note = "Unstable surface.";
+                    note = "Unstable water surface.";
                 }
-                
-                document.getElementById('res-froude').innerHTML = `<span style="color:${color}; font-weight:bold">${fr.toFixed(2)}</span><br>${regime}<br><span style="font-size:0.8rem;color:#666">${note}</span>`;
+                document.getElementById('res-froude').innerHTML = `<span style="color:${color}; font-weight:bold">${fr.toFixed(3)}</span><br>${regime}<br><span style="font-size:0.8rem;color:#666">${note}</span>`;
             } else {
                 document.getElementById('res-vel').innerText = "N/A (Weir)";
                 document.getElementById('res-area').innerText = "N/A";
                 document.getElementById('res-froude').innerText = "N/A";
             }
 
-            document.getElementById('calc-steps-box').innerHTML = `<h4>Forensic Calculation Breakdown</h4>${formula}${steps}`;
-            if(window.MathJax) window.MathJax.typesetPromise();
+            document.getElementById('calc-steps-box').innerHTML = `<h4>Detailed Hydraulic Sizing Calculations</h4>${steps}`;
+            if (window.MathJax) window.MathJax.typesetPromise();
             
-            lastResult = { Q, title, formula };
+            // Save state for PDF
+            lastResult = { Q, title, formula, depth, vel, fr };
         }
 
-        // --- SVG DRAWING ---
-        function updateWeirViz(type, H=0.5) {
-            const svg = document.getElementById('flow-svg');
-            svg.innerHTML = ''; // Clear
-            
-            // Structure Color
-            const structColor = "#475569";
-            const waterColor = "rgba(59, 130, 246, 0.5)";
-            
-            // Base Rect
-            const w = 300, h = 200;
-            const bottomY = 180;
-            
-            // Draw logic based on type
-            let pathD = "";
-            let waterD = "";
-            const crestY = 100;
-            const waterY = crestY - (H * 50); // Scale H visually
-            
-            if(type.includes('rect') || type === 'cippoletti') {
-                // Draw Notch
-                const notchW = 100;
-                const leftX = (w - notchW)/2;
-                const rightX = leftX + notchW;
-                
-                // Structure
-                pathD = `M0,${bottomY} V50 H${leftX} V${crestY} H${rightX} V50 H${w} V${bottomY} Z`;
-                
-                // Water
-                waterD = `M0,${bottomY} V${waterY} H${w} V${bottomY} Z`;
-                
-            } else if (type.startsWith('v-')) {
-                // V Notch
-                const centerX = w/2;
-                const angle = parseInt(type.split('-')[1]);
-                const rad = (angle * Math.PI)/180;
-                const halfW = 80 * Math.tan(rad/2); // height 80 arb
-                
-                pathD = `M0,${bottomY} V50 H${centerX - halfW - 20} L${centerX},${crestY + 50} L${centerX + halfW + 20},50 H${w} V${bottomY} Z`;
-                
-                // Water logic implies water level determines width
-                waterD = `M0,${bottomY} V${waterY} H${w} V${bottomY} Z`; // Simplified full width water behind
-            }
-
-            // Append Water first (behind)
-            const water = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            water.setAttribute("d", waterD);
-            water.setAttribute("fill", waterColor);
-            svg.appendChild(water);
-
-            // Append Structure
-            const struct = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            struct.setAttribute("d", pathD);
-            struct.setAttribute("fill", structColor);
-            svg.appendChild(struct);
-        }
-
-        function updateChannelViz(shape, y=1, b=2) {
-            const svg = document.getElementById('flow-svg');
-            svg.innerHTML = '';
-            
-            // Simple Cross Section
-            const w = 300, h = 200;
-            const floorY = 180;
-            const scale = 40; // px per m approx
-            
-            let structD = "";
-            let waterD = "";
-            
-            const b_px = b * scale;
-            const y_px = y * scale;
-            const centerX = w/2;
-            
-            if (shape === 'rect') {
-                const halfB = b_px/2;
-                structD = `M${centerX-halfB},50 V${floorY} H${centerX+halfB} V50`;
-                waterD = `M${centerX-halfB},${floorY} V${floorY-y_px} H${centerX+halfB} V${floorY} Z`;
-            } else if (shape === 'trap') {
-                const z = 1.5; // Visual fix
-                const topDelta = (y*z) * scale;
-                const halfB = b_px/2;
-                
-                structD = `M${centerX-halfB-50},50 L${centerX-halfB},${floorY} H${centerX+halfB} L${centerX+halfB+50},50`;
-                waterD = `M${centerX-halfB},${floorY} L${centerX-halfB-topDelta},${floorY-y_px} H${centerX+halfB+topDelta} L${centerX+halfB},${floorY} Z`;
-            } else if (shape === 'circ') {
-                // Circle
-                const r = b_px/2;
-                const cy = floorY - r;
-                structD = `M${centerX},${cy} m -${r},0 a ${r},${r} 0 1,0 ${r*2},0 a ${r},${r} 0 1,0 -${r*2},0`; // Full circle path
-                // Water clip? Complex. Just draw circle container.
-                // Simple rect water for now inside circle visual
-                waterD = `M${centerX-r},${floorY} H${centerX+r} V${floorY - y_px} H${centerX-r} Z`;
-            }
-
-            // Draw Water
-            const water = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            water.setAttribute("d", waterD);
-            water.setAttribute("fill", "rgba(59, 130, 246, 0.5)");
-            if(shape==='circ') {
-                 // Clip path would be better but simple overlay works for schematic
-            }
-            svg.appendChild(water);
-
-            // Draw Struct (Stroke only)
-            const struct = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            struct.setAttribute("d", structD);
-            struct.setAttribute("fill", "none");
-            struct.setAttribute("stroke", "#334155");
-            struct.setAttribute("stroke-width", "4");
-            svg.appendChild(struct);
-        }
-
+        // --- COMPRESSED BRANDED PDF GENERATION ENGINE ---
         function generatePDF() {
-            if(!lastResult.Q) { alert("Calculate first!"); return; }
+            if (!lastResult.Q) {
+                alert("Please run a calculation first!");
+                return;
+            }
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFontSize(18); doc.setTextColor(30, 58, 138);
-            doc.text("Hydraulic Flow Report", 14, 20);
-            doc.setFontSize(12); doc.setTextColor(0);
             
-            doc.text(`Method: ${lastResult.title}`, 14, 40);
-            doc.text(`Calculated Discharge: ${lastResult.Q.toFixed(4)} m³/s`, 14, 50);
+            // Enable compression to keep PDF size small
+            const doc = new jsPDF({ compress: true });
             
-            doc.setDrawColor(30, 58, 138);
-            doc.setLineWidth(0.5);
-            doc.line(14, 55, 196, 55);
+            const siteTitle = "Design Calculators";
+            const siteUrl = "https://designcalculators.co.in";
             
-            const stepsText = document.getElementById('calc-steps-box').innerText;
-            const split = doc.splitTextToSize(stepsText, 180);
-            doc.text(split, 14, 65);
+            const pageHeight = doc.internal.pageSize.height;
+            const pageWidth = doc.internal.pageSize.width;
+            const margin = 15;
             
-            doc.save('flow_report.pdf');
+            // Collect steps
+            const stepsBox = document.getElementById('calc-steps-box');
+            const stepCards = stepsBox.querySelectorAll('.step-card');
+            
+            let tableData = [
+                ['Parameter Description', 'Symbol', 'Calculated Value'],
+                ['Volumetric Discharge', 'Q', `${lastResult.Q.toFixed(5)} m3/s (${(lastResult.Q * 1000).toFixed(1)} L/s)`],
+                ['Calculation Method', 'Method', lastResult.title],
+            ];
+            if (lastResult.vel !== null) {
+                tableData.push(['Flow Velocity', 'V', `${lastResult.vel.toFixed(3)} m/s`]);
+                tableData.push(['Froude Number', 'Fr', `${lastResult.fr.toFixed(3)}`]);
+            }
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(30, 58, 138);
+            doc.text("HYDRAULIC ENGINEERING SIZING REPORT", margin, 25);
+            
+            // Render Table for results
+            doc.autoTable({
+                head: [tableData[0]],
+                body: tableData.slice(1),
+                startY: 30,
+                margin: { left: margin, right: margin },
+                theme: 'striped',
+                styles: { fontSize: 9, cellPadding: 3 },
+                headStyles: { fillColor: [30, 58, 138] }
+            });
+            
+            let yPos = doc.lastAutoTable.finalY + 12;
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("Step-by-Step Mathematical Validation:", margin, yPos);
+            yPos += 7;
+            
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8.5);
+            doc.setTextColor(51, 65, 85);
+            
+            stepCards.forEach(card => {
+                const num = card.querySelector('.number').innerText;
+                const titleText = card.querySelector('.step-title-text span:last-child').innerText;
+                const statusText = card.querySelector('.audit-badge').innerText;
+                
+                // Clean LaTeX expressions for raw text PDF
+                let rawBody = card.querySelector('.step-card-body').innerText;
+                rawBody = rawBody.replace(/\$\$([\s\S]*?)\$\$/g, '$1').replace(/\$([\s\S]*?)\$/g, '$1');
+                
+                const lines = doc.splitTextToSize(`Step ${num}: ${titleText} [Status: ${statusText}]\n${rawBody.trim()}`, pageWidth - (2 * margin));
+                
+                lines.forEach(line => {
+                    if (yPos > pageHeight - 20) {
+                        doc.addPage();
+                        yPos = 25; // Reset Y position on new page
+                    }
+                    doc.text(line, margin, yPos);
+                    yPos += 4.8;
+                });
+                yPos += 4; // space between cards
+            });
+            
+            // Loop through pages to stamp Header/Footer
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                
+                // Stamp Header
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(7.5);
+                doc.setTextColor(30, 58, 138);
+                doc.text(siteTitle, margin, 12);
+                
+                doc.setFont("helvetica", "normal");
+                doc.text(siteUrl, pageWidth - margin - 35, 12);
+                
+                doc.setDrawColor(226, 232, 240);
+                doc.line(margin, 15, pageWidth - margin, 15);
+                
+                // Stamp Footer
+                doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+                
+                doc.setFont("helvetica", "italic");
+                doc.setTextColor(148, 163, 184);
+                doc.text(`Report generated by ${siteTitle} (${siteUrl})`, margin, pageHeight - 10);
+                
+                doc.setFont("helvetica", "normal");
+                doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 15, pageHeight - 10);
+            }
+            
+            doc.save('hydraulic_flow_report.pdf');
         }
     </script>
 </body>
