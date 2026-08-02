@@ -30,6 +30,10 @@
 
     <!-- MathJax script -->
     <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- jsPDF and jsPDF-AutoTable (Premium Report Generator) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     
     <!-- Retained original MathJax configuration -->
     <!-- MathJax & Chart.js Configuration -->
@@ -786,6 +790,25 @@
         .flow-line { stroke-dasharray: 10; animation: flow 2s linear infinite; }
         @keyframes flow { to { stroke-dashoffset: -20; } }
 
+        /* Premium responsive adjustments & table-responsive wrapper */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .table-responsive table {
+            margin: 0;
+        }
+        svg, canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+        .form-section {
+            padding: 15px;
+        }
         @media (max-width: 768px) {
             .faq-grid { grid-template-columns: 1fr; }
             .graph-wrapper { height: 250px; }
@@ -855,6 +878,282 @@
 }
 </style>
 
+<style>
+/* Topic-Specific Vertical Cards Grid */
+.vertical-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin: 25px 0 40px 0;
+}
+@media (min-width: 576px) {
+    .vertical-card-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (min-width: 992px) {
+    .vertical-card-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (min-width: 1200px) {
+    .vertical-card-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* Theory Foundations Grid & Cards styling */
+.theory-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+    margin: 25px 0 40px 0;
+}
+@media (min-width: 992px) {
+    .theory-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+.theory-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+    overflow: hidden;
+}
+.theory-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--secondary-color);
+}
+.theory-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(30, 58, 138, 0.08);
+    border-color: var(--secondary-color);
+}
+.theory-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+.theory-card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+}
+.theory-card-icon {
+    font-size: 1.3rem;
+    color: var(--accent-color);
+}
+.theory-card-body {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text-color);
+}
+.theory-card-body ul {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+.theory-card-body li {
+    margin-bottom: 6px;
+}
+.vertical-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.vertical-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(30, 58, 138, 0.12);
+    border-color: var(--secondary-color);
+}
+.vertical-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-primary);
+}
+.vertical-card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 12px 0 8px 0;
+    color: var(--heading-color);
+}
+.vertical-card-text {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+/* Beautiful Standards Table Styling */
+.standards-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 40px;
+    box-shadow: var(--card-shadow);
+}
+.standards-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.92rem;
+}
+.standards-table th, .standards-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+.standards-table th {
+    background: rgba(30, 58, 138, 0.05);
+    color: var(--primary-color);
+    font-weight: 700;
+}
+.standards-table tr:hover {
+    background: rgba(37, 99, 235, 0.02);
+}
+
+/* Collapsible Accordion for Interview Questions */
+.interview-accordion {
+    margin: 30px 0;
+}
+.interview-item {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    background: var(--card-bg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.interview-item:hover {
+    border-color: var(--secondary-color);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.06);
+}
+.interview-header {
+    background: rgba(30, 58, 138, 0.02);
+    padding: 18px 24px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.05rem;
+    user-select: none;
+}
+.interview-header:hover {
+    background: rgba(37, 99, 235, 0.05);
+}
+.interview-body {
+    padding: 24px;
+    display: none;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    background: var(--card-bg);
+}
+.interview-item.active .interview-body {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+.interview-icon {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    transition: transform 0.3s ease;
+}
+.interview-item.active .interview-icon {
+    transform: rotate(180deg);
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Redesigned Related Engineering Tools Grid */
+.related-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 25px 0;
+}
+.tool-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: var(--card-shadow);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    border-left: 4px solid var(--secondary-color);
+}
+.tool-card:hover {
+    transform: translateX(4px);
+    border-left-color: var(--accent-color);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+}
+.tool-card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tool-card-desc {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--text-color);
+    margin-bottom: 12px;
+}
+.tool-card-link {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+</style>
+
     
 
     <!-- Standardised SEO Schema (Auto-generated) -->
@@ -907,6 +1206,51 @@
                     "position": 3,
                     "name": "Storage Tank Volume Calculator",
                     "item": "https://designcalculators.co.in/storage-tank-volume"
+                }
+            ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "Why is a horizontal tank's volume scaling non-linear?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "As the liquid level rises from the bottom of a horizontal cylinder, the width of the liquid surface increases until the center (equator), then decreases. This causes the volume-to-height ratio to follow an S-curve rather than a straight line."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is 'Dead Stock' or 'Unpumpable Volume' in storage tanks?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "It is the residual liquid at the very bottom of the tank (typically below the pump suction nozzle) that cannot be emptied by standard operational pumping. This must be mathematically subtracted from the total tank inventory during process operations."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does temperature affect storage tank volume?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Both the tank shell and the liquid expand or contract with temperature. In custody transfer, measured liquid volume must be corrected to a standard reference temperature (typically 15°C or 60°F) using Volume Correction Factors (VCF) as per API MPMS standards."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is API MPMS Chapter 2?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "It is the American Petroleum Institute's standard for tank calibration (Tank Strapping). It defines the exact physical procedures (e.g., optical reference line, strapping tape) and mathematical methods to create an official gauging table for custody transfer."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Why do tall vertical tanks mathematically 'bulge'?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The hydrostatic pressure from the liquid increases linearly with depth, exerting maximum outward force on the bottom tank shell courses. Large tanks bulge slightly under this weight, increasing actual capacity."
+                    }
                 }
             ]
         }
@@ -1071,207 +1415,566 @@
             </div>
             <div id="result-container" class="result-container">
                 <h3><i class="fas fa-chart-line"></i> Calculation Results</h3>
+                <div class="result-actions" style="display: flex; gap: 15px; justify-content: center; margin-bottom: 25px;">
+                    <button type="button" id="download-pdf-btn" class="pdf-btn" style="background: linear-gradient(135deg, #EF4444, #DC2626); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); transition: all 0.3s ease;">
+                        <i class="fas fa-file-pdf"></i> Download PDF Report
+                    </button>
+                </div>
+                <!-- Tank Sizing Diagram Container -->
+                <div id="tank-diagram-container" style="background: var(--bg-color); border: 2px solid var(--border-color); border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
+                    <h4 style="margin-top: 0; color: var(--primary-color); margin-bottom: 15px; font-family: 'Montserrat', sans-serif;"><i class="fas fa-drafting-compass"></i> Dynamic Tank Sizing & Level Visualization</h4>
+                    <div id="tank-diagram-svg" style="max-width: 450px; margin: 0 auto;"></div>
+                </div>
                 <div id="calculation-details"></div>
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody id="result-table-body"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-table-body"></tbody>
+                    </table>
+                </div>
                 <div class="standard-reference" id="standard-reference"></div>
             </div>
         </div>
-        
-        <!-- NEW 800+ WORD INFORMATIVE SECTION -->
+          <!-- NEW 800+ WORD INFORMATIVE SECTION -->
         <div class="tool-container" style="margin-top: 40px;">
-            <h2><i class="fas fa-book-open"></i> Professional Guide to Industrial Tank Volume Calculation</h2>
+            <h2><i class="fas fa-book-open"></i> Professional Guide to Industrial Tank Volume Sizing</h2>
+            <p>In massive process plants, custody transfer systems, and refining units, measuring and sizing storage tanks with millimeter-level accuracy is a multi-million-dollar necessity. The mathematical calculations rely heavily on dished head types, shell elastic expansion, and liquid temperature compensation profiles.</p>
 
-            <h3 style="color: var(--primary-color); margin-top: 25px;">The Critical Role of Tank Gauging</h3>
-            <p>In industrial settings, accurately knowing the volume of liquid in a storage tank is not a trivial matter. It is a critical function for operations, safety, and finance. This process, often called "tank gauging" or "calibration," is essential for:</p>
-            <ul>
-                <li><strong>Custody Transfer:</strong> When buying or selling bulk liquids (like crude oil, chemicals, or LNG), the volume transferred must be known with extremely high precision. A tiny percentage error on a 1,000,000-liter transfer can mean thousands of dollars.</li>
-                <li><strong>Inventory Management:</strong> Plants need to know exactly how much raw material they have on-site and how much product is ready to ship. This is fundamental for logistics, planning, and financial reporting.</li>
-                <li><strong>Process Safety:</strong> Many processes require precise batching of ingredients. Furthermore, overfilling a tank (exceeding its safe fill level) can lead to spills, environmental disasters, and catastrophic equipment failure.</li>
-            </ul>
-            <p>This is why industrial calculations must be precise, accounting for the exact geometry of the tank, including its head (end cap) type. Standards like the <strong>American Petroleum Institute (API) Manual of Petroleum Measurement Standards (MPMS)</strong> dedicate entire chapters to the rigorous methods for calibrating tanks.</p>
-
-            <h3 style="color: var(--primary-color); margin-top: 25px;">Understanding Tank Heads: Flat vs. Ellipsoidal</h3>
-            <p>While simple tanks may have flat ends, most industrial tanks designed to hold pressure (even low pressure) use "dished" or "domed" ends. This shape is far stronger and more efficient at distributing stress. The two most common types are:</p>
+            <h3 style="color: var(--primary-color); margin-top: 30px; font-family: 'Montserrat', sans-serif;"><i class="fas fa-folder-open"></i> FAQ: Industrial Tank Volume Engineering</h3>
+            <p style="margin-bottom: 20px;">Explore the fundamental dimensions of bulk fluid storage through five topic-specific modules covering What, Why, Which, Where, and How.</p>
             
-            <div class="svg-anim-box" style="text-align: center; max-width: 600px;">
-                <h4 style="margin-top: 0; color: var(--primary-color);">Comparative Tank Head Profiles</h4>
-                <svg viewBox="0 0 300 100" style="width: 100%; height: auto;">
-                    <!-- Flat -->
-                    <path d="M20,90 L20,30 L80,30 L80,90" fill="none" stroke="var(--primary-color)" stroke-width="3"/>
-                    <line x1="20" y1="30" x2="80" y2="30" stroke="var(--accent-color)" stroke-dasharray="4" stroke-width="1"/>
-                    <text x="50" y="15" fill="var(--text-color)" font-size="10" text-anchor="middle">Flat</text>
-                    
-                    <!-- F&D Torispherical (approximate) -->
-                    <path d="M120,90 L120,40 Q130,20 150,20 Q170,20 180,40 L180,90" fill="none" stroke="var(--primary-color)" stroke-width="3" class="pulse-motor"/>
-                    <line x1="120" y1="40" x2="180" y2="40" stroke="var(--accent-color)" stroke-dasharray="4" stroke-width="1"/>
-                    <text x="150" y="15" fill="var(--text-color)" font-size="10" text-anchor="middle">Torispherical</text>
-                    
-                    <!-- 2:1 Ellipsoidal -->
-                    <path d="M220,90 L220,45 A30 15 0 0 1 280 45 L280,90" fill="none" stroke="var(--success-color)" stroke-width="3" class="pulse-motor"/>
-                    <line x1="220" y1="45" x2="280" y2="45" stroke="var(--accent-color)" stroke-dasharray="4" stroke-width="1"/>
-                    <text x="250" y="15" fill="var(--text-color)" font-size="10" text-anchor="middle">2:1 Ellipsoidal</text>
-                </svg>
-            </div>
-
-            <h4>1. Torispherical (F&D) Heads</h4>
-            <p>A "Flanged and Dished" (F&D) head is composed of three parts: a large "crown radius" (\(R\)), a small "knuckle radius" (\(r\)), and a straight flange. A standard ASME F&D head has \(R = D\) (Crown Radius = Tank Diameter) and \(r = 0.1 \cdot D\). While common, their geometry is complex to calculate.</p>
-
-            <h4>2. 2:1 Ellipsoidal Heads (Industrial Standard)</h4>
-            <p>This is one of the most common head types in the process industry. It is an ellipse of revolution where the major axis is equal to the tank's diameter (\(D\)) and the minor axis is one-half of that (\(D/2\)). This creates a head height (\(h_{\text{head}}\)) that is exactly one-quarter of the diameter (\(h_{\text{head}} = D / 4\)).</p>
-            <p>This "2:1" ratio provides an excellent balance of strength and internal volume. The formulas are also more straightforward than a torispherical head, making it a preferred standard. This calculator uses the precise formulas for 2:1 ellipsoidal heads.</p>
-            <ul>
-                <li><strong>Total Volume of one 2:1 Head:</strong>
-                <p class="formula">\[ V_{\text{head}} = \frac{\pi D^3}{24} \]</p>
-                </li>
-                <li><strong>Head Height (from tangent line):</strong>
-                <p class="formula">\[ h_{\text{head}} = \frac{D}{4} \]</p>
-                </li>
-            </ul>
-
-
-            <h3 style="color: var(--primary-color); margin-top: 25px;">The Challenge: Partial Volume Calculation</h3>
-            <p>Knowing the <em>total</em> volume is easy. The hard part is knowing the <em>partial</em> volume at any given liquid level (\(h\)). The relationship between height and volume is linear for a vertical cylinder or rectangular tank, but it is highly <strong>non-linear</strong> for all other types.</p>
-            
-            <div class="visual-container">
-                <div class="graph-wrapper">
-                    <canvas id="volumeLinearityChart" role="img" aria-label="Volume Linearity  Analysis Chart"><p class="sr-only">Interactive data visualization for Volume Linearity  Analysis Chart</p></canvas>
+            <div class="vertical-card-grid">
+                <!-- Card 1: WHAT -->
+                <div class="vertical-card">
+                    <div class="vertical-card-title"><span style="color: #3B82F6;"><i class="fas fa-question-circle"></i> WHAT</span></div>
+                    <div style="height: 70px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 100 60" style="height: 60px; width: auto; overflow: visible;">
+                            <!-- Cylinder Sizing -->
+                            <rect x="30" y="5" width="40" height="50" rx="3" fill="none" stroke="#3B82F6" stroke-width="2"/>
+                            <rect x="31" y="25" width="38" height="29" rx="1" fill="#3B82F6" fill-opacity="0.3"/>
+                            <line x1="25" y1="25" x2="75" y2="25" stroke="#3B82F6" stroke-width="1.5" stroke-dasharray="2"/>
+                            <text x="50" y="38" fill="#1D4ED8" font-size="8" font-weight="bold" text-anchor="middle">Liquid Volume</text>
+                        </svg>
+                    </div>
+                    <div class="vertical-card-text">
+                        <strong>Tank Gauging</strong> is the science of determining the exact liquid volume contained in storage tanks by measuring height, density, and thermal profile.
+                        <p style="font-size: 0.8rem; font-style: italic; margin-top: 6px; color: var(--text-color); opacity: 0.85;">Example: If an operator measures a fuel height of 12.45m, tank gauging uses a strapping table to resolve this height to exactly 45,210 Liters, compensating for local temperature shifts.</p>
+                    </div>
                 </div>
-                <p style="text-align: center; font-size: 0.85rem; margin-top: 10px; font-style: italic;">Comparison of % Fill Height vs % Total Volume for Vertical vs. Horizontal Storage Tanks.</p>
+
+                <!-- Card 2: WHY -->
+                <div class="vertical-card">
+                    <div class="vertical-card-title"><span style="color: #10B981;"><i class="fas fa-check-circle"></i> WHY</span></div>
+                    <div style="height: 70px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 100 60" style="height: 60px; width: auto; overflow: visible;">
+                            <!-- Balance Scale -->
+                            <line x1="20" y1="50" x2="80" y2="50" stroke="#10B981" stroke-width="3"/>
+                            <line x1="50" y1="20" x2="50" y2="50" stroke="#10B981" stroke-width="3"/>
+                            <line x1="30" y1="25" x2="70" y2="25" stroke="#10B981" stroke-width="2"/>
+                            <circle cx="30" cy="35" r="8" fill="#059669" fill-opacity="0.3" stroke="#10B981" stroke-width="1.5"/>
+                            <text x="30" y="38" fill="#047857" font-size="8" font-weight="bold" text-anchor="middle">$</text>
+                            <circle cx="70" cy="35" r="8" fill="#059669" fill-opacity="0.3" stroke="#10B981" stroke-width="1.5"/>
+                            <path d="M 70 31 L 70 39 M 66 35 L 74 35" stroke="#047857" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="vertical-card-text">
+                        Precise strapping prevents massive <strong>custody transfer financial disputes</strong> during commercial bulk handovers and safeguards plants against overfills.
+                        <p style="font-size: 0.8rem; font-style: italic; margin-top: 6px; color: var(--text-color); opacity: 0.85;">Example: A minor 0.05% error in a 500,000-barrel crude oil transfer equals 250 barrels. At $80/barrel, this single mistake represents a $20,000 inventory loss.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: WHICH -->
+                <div class="vertical-card">
+                    <div class="vertical-card-title"><span style="color: #F59E0B;"><i class="fas fa-file-contract"></i> WHICH</span></div>
+                    <div style="height: 70px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 100 60" style="height: 60px; width: auto; overflow: visible;">
+                            <!-- Standard Sheets -->
+                            <rect x="25" y="10" width="22" height="32" rx="2" fill="none" stroke="#F59E0B" stroke-width="2"/>
+                            <text x="36" y="28" fill="#B45309" font-size="7" font-weight="bold" text-anchor="middle">ASME</text>
+                            <rect x="53" y="18" width="22" height="32" rx="2" fill="none" stroke="#D97706" stroke-width="2"/>
+                            <text x="64" y="36" fill="#B45309" font-size="7" font-weight="bold" text-anchor="middle">API</text>
+                        </svg>
+                    </div>
+                    <div class="vertical-card-text">
+                        <strong>API 650</strong> applies to atmospheric storage tanks, while <strong>ASME Section VIII</strong> covers pressure vessels containing convex/ellipsoidal end caps.
+                        <p style="font-size: 0.8rem; font-style: italic; margin-top: 6px; color: var(--text-color); opacity: 0.85;">Example: A standard vertical diesel storage tank follows API 650, whereas high-pressure LPG storage bullets containing dished heads must follow ASME Section VIII codes.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: WHERE -->
+                <div class="vertical-card">
+                    <div class="vertical-card-title"><span style="color: #EC4899;"><i class="fas fa-map-marker-alt"></i> WHERE</span></div>
+                    <div style="height: 70px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 100 60" style="height: 60px; width: auto; overflow: visible;">
+                            <!-- Refinery Tower -->
+                            <rect x="20" y="30" width="15" height="25" fill="#DB2777" fill-opacity="0.3" stroke="#EC4899" stroke-width="1.5"/>
+                            <rect x="40" y="10" width="12" height="45" fill="#DB2777" fill-opacity="0.3" stroke="#EC4899" stroke-width="1.5"/>
+                            <line x1="52" y1="20" x2="65" y2="35" stroke="#EC4899" stroke-width="1.5"/>
+                            <circle cx="75" cy="40" r="12" fill="#DB2777" fill-opacity="0.3" stroke="#EC4899" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="vertical-card-text">
+                        Widely applied in <strong>refining tank farms</strong>, bulk chemical reactors, agricultural feed silos, and municipal wastewater treatment basins.
+                        <p style="font-size: 0.8rem; font-style: italic; margin-top: 6px; color: var(--text-color); opacity: 0.85;">Example: Municipal wastewater separation clarifiers use conical bottom hoppers to force gravity settling of sludges, enabling clean bottom drainage.</p>
+                    </div>
+                </div>
+
+                <!-- Card 5: HOW -->
+                <div class="vertical-card">
+                    <div class="vertical-card-title"><span style="color: #8B5CF6;"><i class="fas fa-cog"></i> HOW</span></div>
+                    <div style="height: 70px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 100 60" style="height: 60px; width: auto; overflow: visible;">
+                            <!-- Mathematical Curved Integration -->
+                            <path d="M 20,45 A 30,15 0 0 0 80,45" fill="none" stroke="#8B5CF6" stroke-width="2.5"/>
+                            <line x1="20" y1="45" x2="80" y2="45" stroke="#6D28D9" stroke-width="1" stroke-dasharray="2"/>
+                            <line x1="50" y1="45" x2="50" y2="60" stroke="#8B5CF6" stroke-width="1.5"/>
+                            <text x="50" y="38" fill="#6D28D9" font-size="8" font-weight="bold" text-anchor="middle">Calculus Integral</text>
+                        </svg>
+                    </div>
+                    <div class="vertical-card-text">
+                        Calculated using <strong>spheroid integration math</strong> to account for the non-linear volume expansion of dished and conical end cap segments.
+                        <p style="font-size: 0.8rem; font-style: italic; margin-top: 6px; color: var(--text-color); opacity: 0.85;">Example: Because the diameter of an ellipsoidal bottom varies at every millimeter of height, calculus slices and integrates these layers to achieve 100% volumetric accuracy.</p>
+                    </div>
+                </div>
             </div>
 
-            <h4>Vertical Tanks (Ellipsoidal/Conical)</h4>
-            <p>For a vertical tank with a 2:1 ellipsoidal bottom, the volume changes slowly at first (at the very bottom) and then faster and faster as the liquid level approaches the "equator" (the tangent line). The formula for the partial volume within the bottom head is:</p>
-            <p class="formula">\[ V_{\text{partial head}} = V_{\text{total head}} \cdot \left[ \left( \frac{h}{h_{\text{head}}} \right)^2 \cdot \left( 3 - 2 \cdot \frac{h}{h_{\text{head}}} \right) \right] \]</p>
-            <p>Where \(h\) is the liquid level measured from the bottom of the head. This calculator correctly switches between this formula, the linear cylindrical formula, and the top head formula as the liquid level rises.</p>
-            
-            <h4>Horizontal Tanks (The Hardest Case)</h4>
-            <p>Calculating the partial volume of a horizontal cylindrical tank is a classic engineering problem. The volume of the cylindrical section is a function of the circular segment area. The partial volume of the two end caps is even more complex. While the exact integral is very difficult, a common and robust industrial approximation is to assume the end caps fill "pro-rata" with the cylindrical section. This means if the cylindrical section is 30% full (by volume), the end caps are also assumed to be 30% full (by volume). This calculator uses this method for horizontal tanks with ellipsoidal ends.</p>
+            <!-- NEW THEORY SECTIONS FOR FULL DETAIL -->
+            <div style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 30px; margin-bottom: 40px;">
+                <h3 style="color: var(--primary-color); font-family: 'Montserrat', sans-serif; text-align: center; margin-bottom: 10px;">
+                    <i class="fas fa-graduation-cap"></i> Theoretical Foundations of Tank Calibration
+                </h3>
+                <p style="text-align: center; max-width: 750px; margin: 0 auto 30px auto; color: var(--text-color); font-size: 0.95rem;">
+                    To eliminate any ambiguity when calculating tank volumes, engineers must master the geometric, physical, and calibration parameters that govern large-scale industrial containers.
+                </p>
+                
+                <div class="theory-grid">
+                    <!-- Theory Card 1 -->
+                    <div class="theory-card">
+                        <div class="theory-card-header">
+                            <i class="fas fa-shapes theory-card-icon"></i>
+                            <h4 class="theory-card-title">1. The Geometry of Dished Vessel Heads</h4>
+                        </div>
+                        <div class="theory-card-body">
+                            Industrial vessels that operate under internal pressure utilize convex ends rather than flat plates to minimize thickness and prevent failure. The three standard dished head types are:
+                            <ul>
+                                <li><strong>ASME 2:1 Ellipsoidal Head:</strong> The depth of the dish is exactly 1/4 of the diameter (\(D/4\)). It provides a perfect compromise between high structural strength and ease of fabrication.</li>
+                                <li><strong>Hemispherical Head:</strong> A perfect half-sphere (\(D/2\) depth). It is the strongest shape, capable of handling double the pressure of an ellipsoidal head of equal thickness, but is difficult and expensive to manufacture.</li>
+                                <li><strong>Torispherical Head (Klöpper/ASME Flanged & Dished):</strong> Made of a crown radius (\(R \approx D\)) and a small knuckle radius (\(r \approx 0.1D\)). While cheaper to roll, it exhibits stress concentrations at the knuckle transition zone.</li>
+                            </ul>
+                        </div>
+                    </div>
 
-            <h3 style="color: var(--primary-color); margin-top: 25px;">The Industrial Solution: The Strapping Chart</h3>
-            <p>Because the volume-to-height relationship is so complex, operators on a plant site do not perform these calculations. Instead, they use a <strong>"Strapping Chart"</strong> or <strong>"Tank Calibration Table"</strong>. This is a pre-calculated table that lists the tank's volume at fine increments of height (e.g., every centimeter or 1/8th of an inch).</p>
-            <p>An operator simply "dips" the tank (measures the liquid level, \(h\)) and looks up that height on the chart to find the precise volume. This calculator's <strong>"Generate Strapping Chart"</strong> feature performs this exact function, creating a 1,000-point table for any tank geometry you define, which can then be used for accurate, real-world inventory control.</p>
+                    <!-- Theory Card 2 -->
+                    <div class="theory-card">
+                        <div class="theory-card-header">
+                            <i class="fas fa-divide theory-card-icon"></i>
+                            <h4 class="theory-card-title">2. Vertical Tank Zone Partitioning</h4>
+                        </div>
+                        <div class="theory-card-body">
+                            To calculate partial volumes in a vertical tank with dished heads, the tank is partitioned into three distinct geometric integration zones based on the liquid height (\(h\)) relative to the tangent lines:
+                            <div style="text-align: center; margin: 15px 0;">
+                                <svg viewBox="0 0 200 140" style="max-height: 120px; width: auto; overflow: visible;">
+                                    <!-- Tank Outline -->
+                                    <path d="M 70,20 L 70,110 A 30,12 0 0 1 130,110 L 130,20 A 30,12 0 0 1 70,20 Z" fill="none" stroke="var(--primary-color)" stroke-width="1.8"/>
+                                    <!-- Top Head (convex upward) -->
+                                    <path d="M 70,20 A 30,12 0 0 1 130,20" fill="none" stroke="var(--primary-color)" stroke-width="1.8"/>
+                                    
+                                    <!-- Zone Dividers -->
+                                    <line x1="55" y1="20" x2="145" y2="20" stroke="var(--accent-color)" stroke-dasharray="2" stroke-width="1"/>
+                                    <line x1="55" y1="110" x2="145" y2="110" stroke="var(--accent-color)" stroke-dasharray="2" stroke-width="1"/>
+                                    
+                                    <text x="100" y="12" fill="var(--text-color)" font-size="7" font-weight="bold" text-anchor="middle">Zone 3: Top Head (\(V_{\text{top}}\))</text>
+                                    <text x="100" y="68" fill="var(--text-color)" font-size="7" font-weight="bold" text-anchor="middle">Zone 2: Cylinder Shell (\(V_{\text{shell}}\))</text>
+                                    <text x="100" y="124" fill="var(--text-color)" font-size="7" font-weight="bold" text-anchor="middle">Zone 1: Bottom Head (\(V_{\text{bottom}}\))</text>
+                                </svg>
+                            </div>
+                            <ul>
+                                <li><strong>Zone 1 (\(0 \le h \le h_{\text{bottom\_head}}\)):</strong> Liquid is only in the bottom convex head. Spheroid segment integration is used.</li>
+                                <li><strong>Zone 2 (\(h_{\text{bottom\_head}} < h \le h_{\text{bottom\_head}} + H_{\text{cylinder}}\)):</strong> Liquid fills the bottom head completely plus a portion of the cylindrical body. Volume scales linearly: \(V = V_{\text{bottom\_head}} + \pi R^2 (h - h_{\text{bottom\_head}})\).</li>
+                                <li><strong>Zone 3 (\(h > h_{\text{bottom\_head}} + H_{\text{cylinder}}\)):</strong> Liquid fills the bottom head, the entire cylinder shell, and enters the top head. Spheroid subtraction resolves the remaining top headspace.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Theory Card 3 -->
+                    <div class="theory-card">
+                        <div class="theory-card-header">
+                            <i class="fas fa-calculator theory-card-icon"></i>
+                            <h4 class="theory-card-title">3. Horizontal End Cap Volume Integration</h4>
+                        </div>
+                        <div class="theory-card-body">
+                            In horizontal vessels, partial volumes inside ellipsoidal heads are calculated by slicing the ellipsoid horizontally. The partial volume of two ellipsoidal heads combined is computed as:
+                            <p class="formula" style="margin: 15px 0; background: var(--bg-color); padding: 10px; border-radius: 6px;">\[ V_{\text{heads}}(h) = \frac{\pi \cdot a \cdot h^2}{3 \cdot R^2} (3R - h) \]</p>
+                            Where:
+                            <ul>
+                                <li>\(a\) is the head depth (e.g., \(D/4\) for a standard ASME 2:1 ellipsoidal head cap).</li>
+                                <li>\(R\) is the cylinder radius (\(D/2\)).</li>
+                                <li>\(h\) is the observed liquid level.</li>
+                            </ul>
+                            This formula ensures that when the tank is half-full (\(h=R\)), the head volume is exactly half of the total head volume (\(V = \frac{2}{3}\pi R^2 a\)).
+                        </div>
+                    </div>
+
+                    <!-- Theory Card 4 -->
+                    <div class="theory-card">
+                        <div class="theory-card-header">
+                            <i class="fas fa-exclamation-triangle theory-card-icon"></i>
+                            <h4 class="theory-card-title">4. Real-World Variables and Distortions</h4>
+                        </div>
+                        <div class="theory-card-body">
+                            Theoretical math assumes perfect rigid structures. However, field engineers must apply corrections to eliminate measurement errors:
+                            <ul>
+                                <li><strong>Thermal Expansion of the Shell (CTSH):</strong> Large steel tanks expand when heated by solar radiation or hot product storage. A temperature increase of 20°C in a 40m diameter tank can increase volume capacity by hundreds of liters. CTSH correction factors dynamically scale the strapping tables.</li>
+                                <li><strong>Hydrostatic Bulge:</strong> The weight of dense stored liquid pushes outward on the tank wall. This elastic expansion causes the bottom shell plates to stretch, increasing diameter and volume capacity when full.</li>
+                                <li><strong>Sediment Accumulation (Sludge/Scale):</strong> Insoluble residues settle to the floor, reducing the active capacity of Zone 1. Operators perform regular sediment checks and deduct sludge height from calculations.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: STANDARDS -->
+            <div class="standards-container">
+                <h3 style="color: var(--primary-color); margin-top: 0; font-family: 'Montserrat', sans-serif;"><i class="fas fa-certificate"></i> Approved National & International Standards</h3>
+                <p>Industrial storage tank calibration and design must follow strict regulatory guidelines. The table below lists standard codes and their primary application rules.</p>
+                <div class="table-responsive">
+                    <table class="standards-table">
+                        <thead>
+                            <tr>
+                                <th>Standard Code</th>
+                                <th>Issuing Authority</th>
+                                <th>Design & Sizing Applicability Rules</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>API 650</strong></td>
+                                <td>American Petroleum Institute</td>
+                                <td>Applies to vertical, cylindrical, aboveground, welded steel atmospheric storage tanks holding petroleum products. Specifies design load limits.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ASME Sec VIII Div 1</strong></td>
+                                <td>American Society of Mechanical Engineers</td>
+                                <td>Applies to pressure vessels operating above 15 psig. Controls dished head dimensions (2:1 ellipsoidal, hemispherical, torispherical profiles).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>API MPMS Chapter 2</strong></td>
+                                <td>American Petroleum Institute</td>
+                                <td>Establishes exact physical methods (optical laser triangulation, circumference strapping) to create strapping charts for custody transfer.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>BS EN 14015</strong></td>
+                                <td>British / European Standard</td>
+                                <td>Governs flat-bottomed vertical storage tanks. Covers mechanical structure, shell thickness, and overfill venting designs.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DIN 28011 & 28013</strong></td>
+                                <td>Deutsches Institut für Normung</td>
+                                <td>Specifies precise geometric sizing parameters for German standard torispherical (Klöpper) and ellipsoidal (Körbbogen) vessel heads.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IS 2825</strong></td>
+                                <td>Bureau of Indian Standards</td>
+                                <td>Indian code for design, fabrication, and testing of fusion-welded pressure vessels for process industries.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION 3: 10 INTERVIEW QUESTIONS -->
+            <h3 style="color: var(--primary-color); margin-top: 30px; font-family: 'Montserrat', sans-serif;"><i class="fas fa-user-tie"></i> 10 Most Asked Interview Questions on Tank Volume Engineering</h3>
+            <p>Review standard engineering concepts and conceptual diagrams commonly covered during technical interviews.</p>
+            
+            <div class="interview-accordion">
+                <!-- Q1 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>1. What is the difference between Nominal Capacity and Safe Fill Capacity of a storage tank?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> <strong>Nominal Capacity</strong> refers to the total internal geometric volume of the tank when filled 100% to the roof line. <strong>Safe Fill Capacity</strong> is the practical limit (typically 90% or 95% of nominal height) that accounts for liquid thermal expansion, wave ripples, and emergency vapor venting margins. Overstepping this limit risks venting product or blowing pressure safety valves.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 200 120" style="max-width: 250px; height: auto; overflow: visible;">
+                                <rect x="60" y="10" width="80" height="100" fill="none" stroke="var(--primary-color)" stroke-width="2.5"/>
+                                <line x1="50" y1="30" x2="150" y2="30" stroke="var(--error-color)" stroke-width="1.5" stroke-dasharray="3"/>
+                                <text x="155" y="33" fill="var(--error-color)" font-size="8" font-weight="bold">Max Safe Fill (90%)</text>
+                                <rect x="62" y="32" width="76" height="76" fill="var(--secondary-color)" fill-opacity="0.3"/>
+                                <text x="100" y="70" fill="var(--primary-color)" font-size="10" font-weight="bold" text-anchor="middle">Liquid Inventory</text>
+                                <text x="100" y="23" fill="#64748B" font-size="8" text-anchor="middle">Vapor Space</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>2. Why are 2:1 ellipsoidal heads preferred over flat heads in pressurized storage tanks?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> Flat heads experience severe bending and shear stress concentrated at the right-angle corner joints under internal pressure. A 2:1 ellipsoidal head features a smooth curved profile that converts internal forces into uniform hoop tension. This allows for a thinner metal shell thickness while maintaining excellent mechanical integrity as per ASME Boiler & Pressure Vessel Code (BPVC) guidelines.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 300 100" style="max-width: 300px; height: auto; overflow: visible;">
+                                <!-- Flat Head Stress -->
+                                <path d="M 20,80 L 20,30 L 100,30 L 100,80" fill="none" stroke="var(--primary-color)" stroke-width="2"/>
+                                <circle cx="20" cy="30" r="5" fill="none" stroke="var(--error-color)" stroke-width="2"/>
+                                <circle cx="100" cy="30" r="5" fill="none" stroke="var(--error-color)" stroke-width="2"/>
+                                <text x="60" y="95" fill="var(--text-color)" font-size="8" text-anchor="middle">Flat Ends: Bending Stress Concentration</text>
+                                
+                                <!-- Ellipsoidal Head Stress -->
+                                <path d="M 180,80 L 180,45 A 40,20 0 0 1 260,45 L 260,80" fill="none" stroke="var(--success-color)" stroke-width="2"/>
+                                <text x="220" y="95" fill="var(--text-color)" font-size="8" text-anchor="middle">2:1 Ellipsoidal: Smooth Tensile Flow</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>3. What is "tank strapping", and why is it necessary for custody transfer?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> <strong>Tank Strapping</strong> is the physical procedure of measuring a storage tank's outer circumference using certified steel tapes at specified shell rings. It accounts for manufacturing tolerances, weld seams, and local deformations. The dimensions are fed into calibration algorithms to build a precise Calibration Table (Strapping Chart). This chart is required for custody transfer to guarantee that liquid volume changes correspond directly to exact volumetric transactions.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 200 120" style="max-width: 250px; height: auto;">
+                                <rect x="70" y="10" width="60" height="100" fill="none" stroke="var(--primary-color)" stroke-width="2"/>
+                                <!-- Strapping Lines -->
+                                <line x1="65" y1="30" x2="135" y2="30" stroke="var(--accent-color)" stroke-width="2"/>
+                                <line x1="65" y1="70" x2="135" y2="70" stroke="var(--accent-color)" stroke-width="2"/>
+                                <text x="140" y="33" fill="var(--accent-color)" font-size="7" font-weight="bold">Ring 1 Tape</text>
+                                <text x="140" y="73" fill="var(--accent-color)" font-size="7" font-weight="bold">Ring 2 Tape</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>4. Explain "dead stock" (unpumpable volume) and how it is determined.</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> <strong>Dead Stock</strong> is the liquid volume remaining at the absolute bottom of a storage tank that cannot be evacuated by normal suction pumps. This occurs because the suction nozzle is located slightly above the tank floor to avoid drawing in settled sludge or sediment. Dead stock volume is determined by calculating the partial volume up to the centerline of the suction piping inlet.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 200 100" style="max-width: 250px; height: auto; overflow: visible;">
+                                <path d="M 40,10 L 40,80 L 160,80 L 160,10" fill="none" stroke="var(--text-color)" stroke-width="2"/>
+                                <rect x="42" y="65" width="116" height="14" fill="var(--error-color)" fill-opacity="0.4"/>
+                                <path d="M 160,65 L 180,65 L 180,72 L 160,72 Z" fill="var(--primary-color)"/>
+                                <text x="100" y="75" fill="var(--heading-color)" font-size="8" font-weight="bold" text-anchor="middle">Dead Stock Zone (Below Suction)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>5. Why is circular segment integration used for horizontal cylinder partial volume instead of simple pro-rata height ratio?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> In a vertical cylinder, the cross-sectional area remains constant, so the volume escalates linearly with height. In a horizontal cylinder, the liquid surface area expands and contracts continuously, following a circular segment. Using a linear height ratio to approximate volume would yield volumetric errors up to 25% near the tank bottom or top. Thus, circular segment trigonometry is required: \\( A_{\\text{segment}} = R^2 \\cos^{-1}\\left(\\frac{R-h}{R}\\right) - (R-h)\\sqrt{2Rh - h^2} \\).</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 120 120" style="max-width: 150px; height: auto;">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--primary-color)" stroke-width="2.5"/>
+                                <path d="M 16.6 80 A 50 50 0 0 0 103.4 80 Z" fill="var(--secondary-color)" fill-opacity="0.3"/>
+                                <line x1="16.6" y1="80" x2="103.4" y2="80" stroke="var(--secondary-color)" stroke-width="1.5"/>
+                                <circle cx="60" cy="60" r="2" fill="var(--heading-color)"/>
+                                <line x1="60" y1="60" x2="60" y2="110" stroke="var(--text-color)" stroke-dasharray="2"/>
+                                <text x="60" y="95" fill="var(--primary-color)" font-size="8" font-weight="bold" text-anchor="middle">Segment Area</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>6. How does temperature affect storage tank volume calculations (VCF / ASTM D1250)?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> Liquids expand when heated and contract when cooled, altering the observed volume without changing the actual mass. For accounting and tax purposes, observed volumes are corrected to a standard reference temperature (typically 15°C or 60°F) using a **Volume Correction Factor (VCF)**. The formula is: \\( V_{\\text{corrected}} = V_{\\text{observed}} \\times VCF \\), where the VCF is derived using tables in standard **ASTM D1250 / API MPMS Chapter 11.1**.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 240 100" style="max-width: 250px; height: auto;">
+                                <rect x="10" y="10" width="90" height="70" rx="3" fill="none" stroke="var(--text-color)" stroke-width="1.5"/>
+                                <circle cx="30" cy="40" r="3" fill="var(--primary-color)"/>
+                                <circle cx="50" cy="50" r="3" fill="var(--primary-color)"/>
+                                <circle cx="70" cy="35" r="3" fill="var(--primary-color)"/>
+                                <text x="55" y="90" fill="var(--text-color)" font-size="8" text-anchor="middle">15°C (Ref Temp - Compact)</text>
+                                
+                                <rect x="140" y="10" width="90" height="70" rx="3" fill="none" stroke="var(--text-color)" stroke-width="1.5"/>
+                                <circle cx="155" cy="30" r="3" fill="var(--error-color)"/>
+                                <circle cx="185" cy="55" r="3" fill="var(--error-color)"/>
+                                <circle cx="215" cy="25" r="3" fill="var(--error-color)"/>
+                                <text x="185" y="90" fill="var(--text-color)" font-size="8" text-anchor="middle">45°C (Expanded Volume)</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q7 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>7. What is the hydrostatic bulging effect and how does it impact strapping tables?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> Large atmospheric tanks (diameter > 30m) store huge weights of liquid. The resulting hydrostatic head pressure generates massive radial stresses at the lower shell plates, causing them to bulge outwards elastically. This bulging increases the internal diameter slightly (by a few millimeters) during operation, expanding the tank's actual volume capacity. Calibration tables must account for this bulging effect using guidelines from **API MPMS Chapter 2.2A**.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 200 120" style="max-width: 200px; height: auto; overflow: visible;">
+                                <path d="M 60,10 L 60,110 L 140,110 L 140,10" fill="none" stroke="#64748B" stroke-dasharray="3" stroke-width="1.5"/>
+                                <!-- Bulged outline -->
+                                <path d="M 60,10 Q 52,70 60,110 L 140,110 Q 148,70 140,10" fill="none" stroke="var(--error-color)" stroke-width="2.5"/>
+                                <text x="100" y="60" fill="var(--error-color)" font-size="8" font-weight="bold" text-anchor="middle">Exaggerated Shell Bulge</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q8 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>8. When would an engineer specify a conical hopper bottom over a flat bottom?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> Conical bottom hoppers (usually with a 45° to 60° slope angle) are specified when the process fluid contains settling solids, sludges, grains, or crystals. The conical profile channels all solid sediments down to the lowest vertex point under gravity, enabling 100% drainage and cleanout. Flat bottoms would accumulate sludge, requiring manual tank cleaning.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 200 120" style="max-width: 200px; height: auto;">
+                                <path d="M 50,10 L 50,70 L 100,110 L 150,70 L 150,10" fill="none" stroke="var(--primary-color)" stroke-width="2.5"/>
+                                <circle cx="100" cy="100" r="3" fill="#D97706"/>
+                                <circle cx="95" cy="95" r="3" fill="#D97706"/>
+                                <circle cx="105" cy="95" r="3" fill="#D97706"/>
+                                <text x="100" y="50" fill="var(--text-color)" font-size="9" text-anchor="middle">Sediment Gravity Flow</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q9 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>9. Define the tangent line and crown radius on a torispherical head.</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> The **tangent line** is the physical plane of transition where the straight cylindrical shell connects to the curved head flanged knuckle. The **crown radius** is the large central radius of the head dish that forms the top convex cap. The knuckle radius is the smaller radius forming the curved transitional corner. Defining these is crucial for split zoning volume integrals.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 200 80" style="max-width: 200px; height: auto; overflow: visible;">
+                                <path d="M 20,70 L 20,40 Q 25,15 60,10 Q 95,15 100,40 L 100,70" fill="none" stroke="var(--primary-color)" stroke-width="2"/>
+                                <line x1="15" y1="40" x2="105" y2="40" stroke="var(--error-color)" stroke-width="1.5" stroke-dasharray="2"/>
+                                <text x="115" y="43" fill="var(--error-color)" font-size="8" font-weight="bold">Tangent Line</text>
+                                <text x="60" y="28" fill="var(--primary-color)" font-size="8" font-weight="bold" text-anchor="middle">Crown Radius</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q10 -->
+                <div class="interview-item">
+                    <div class="interview-header">
+                        <span>10. How does the presence of internal structural members (like baffles or ladders) affect the calibration table?</span>
+                        <i class="fas fa-chevron-down interview-icon"></i>
+                    </div>
+                    <div class="interview-body">
+                        <p><strong>Answer:</strong> All internal hardware (ladders, heating coils, baffles, agitators, support columns) occupies physical space inside the tank, displacing liquid. To maintain calibration accuracy, the volume of these members must be calculated and subtracted from the geometric strapping values at their respective elevation zones. Failure to do so leads to positive volume gauging errors.</p>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <svg viewBox="0 0 200 120" style="max-width: 200px; height: auto;">
+                                <rect x="50" y="10" width="100" height="100" fill="none" stroke="var(--text-color)" stroke-width="2"/>
+                                <!-- Ladder -->
+                                <line x1="70" y1="20" x2="70" y2="100" stroke="var(--accent-color)" stroke-width="2"/>
+                                <line x1="78" y1="20" x2="78" y2="100" stroke="var(--accent-color)" stroke-width="2"/>
+                                <line x1="70" y1="35" x2="78" y2="35" stroke="var(--accent-color)" stroke-width="1"/>
+                                <line x1="70" y1="55" x2="78" y2="55" stroke="var(--accent-color)" stroke-width="1"/>
+                                <line x1="70" y1="75" x2="78" y2="75" stroke="var(--accent-color)" stroke-width="1"/>
+                                <text x="110" y="60" fill="var(--text-color)" font-size="8">Deduct displaced ladder volume</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: RELATED ENGINEERING CALCULATORS -->
+            <h3 style="color: var(--primary-color); margin-top: 45px; font-family: 'Montserrat', sans-serif;"><i class="fas fa-tools"></i> Explore Related Engineering Calculators</h3>
+            <p>Access our suite of premium engineering tools designed to solve complex design and calculation problems across mechanical, structural, and process systems.</p>
+            
+            <div class="related-tools-grid">
+                <!-- Tool 1 -->
+                <a href="spring.html" class="tool-card">
+                    <div>
+                        <div class="tool-card-title"><span style="color: #3B82F6;"><i class="fas fa-ring"></i> Helical Coil Spring Design</span></div>
+                        <div class="tool-card-desc">Calculate mechanical spring rates, active coil requirements, shear stresses, and fatigue safety factors for tension and compression spring systems.</div>
+                    </div>
+                    <div class="tool-card-link">Launch Spring Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Tool 2 -->
+                <a href="reynolds-number.html" class="tool-card">
+                    <div>
+                        <div class="tool-card-title"><span style="color: #10B981;"><i class="fas fa-water"></i> Reynolds Number</span></div>
+                        <div class="tool-card-desc">Quickly evaluate flow regimes (laminar, transitional, or turbulent) inside pipelines to size process conduits and minimize pumping friction.</div>
+                    </div>
+                    <div class="tool-card-link">Launch Reynolds Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Tool 3 -->
+                <a href="pump-head.html" class="tool-card">
+                    <div>
+                        <div class="tool-card-title"><span style="color: #F59E0B;"><i class="fas fa-tachometer-alt"></i> Pump Head & Power</span></div>
+                        <div class="tool-card-desc">Compute total dynamic head (TDH), static elevation changes, pipe friction head losses, and motor power requirements for pumps.</div>
+                    </div>
+                    <div class="tool-card-link">Launch Pump Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Tool 4 -->
+                <a href="pipe-stress-flexibility.html" class="tool-card">
+                    <div>
+                        <div class="tool-card-title"><span style="color: #EC4899;"><i class="fas fa-project-diagram"></i> Pipe Stress & Flexibility</span></div>
+                        <div class="tool-card-desc">Analyze pipeline thermal expansions, piping joint flexing margins, and support loads to comply with ASME B31.3 codes.</div>
+                    </div>
+                    <div class="tool-card-link">Launch Pipe Stress Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Tool 5 -->
+                <a href="shaft-power-torque.html" class="tool-card">
+                    <div>
+                        <div class="tool-card-title"><span style="color: #8B5CF6;"><i class="fas fa-cogs"></i> Shaft Power & Torque</span></div>
+                        <div class="tool-card-desc">Determine mechanical torque, shear stresses, and horsepower capacities for rotating transmission shafts under load.</div>
+                    </div>
+                    <div class="tool-card-link">Launch Shaft Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+
+                <!-- Tool 6 -->
+                <a href="allowable-stress-safety-factor.html" class="tool-card">
+                    <div>
+                        <div class="tool-card-title"><span style="color: #64748B;"><i class="fas fa-shield-alt"></i> Allowable Stress & Safety Factor</span></div>
+                        <div class="tool-card-desc">Size metal and structural profiles to determine yield safety margins under tension, compression, and shear stresses.</div>
+                    </div>
+                    <div class="tool-card-link">Launch Safety Calculator <i class="fas fa-arrow-right"></i></div>
+                </a>
+            </div>
         </div>
-
-        <div class="tool-container" style="margin-top: 40px; border-top: 4px solid var(--secondary-color);">
-            <h2 class="math-content"><i class="fas fa-question-circle"></i> FAQ: Industrial Tank Volume Engineering</h2>
-            <div class="faq-grid">
-                <div class="faq-card">
-                    <h4>1. Why is a horizontal tank's volume scaling non-linear?</h4>
-                    <p>As the liquid level rises from the bottom of a horizontal cylinder, the width of the liquid surface increases until the center (equator), then decreases. This causes the volume-to-height ratio to follow an S-curve rather than a straight line.</p>
-                </div>
-                <div class="faq-card">
-                    <h4>2. What is "Dead Stock" or "Unpumpable Volume"?</h4>
-                    <div style="text-align: center; margin: 15px 0;">
-                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto; overflow: visible;">
-                            <!-- Tank Shell -->
-                            <path d="M 20,10 L 20,70 L 80,70 L 80,10" fill="none" stroke="var(--text-color)" stroke-width="2"/>
-                            <!-- Liquid Level (Dead Stock) -->
-                            <rect x="22" y="55" width="56" height="13" fill="var(--danger-color)" opacity="0.6"/>
-                            <!-- Pump Suction Nozzle -->
-                            <path d="M 80,55 L 100,55 L 100,60 L 80,60 Z" fill="var(--primary-color)"/>
-                            <text x="50" y="64" fill="#fff" font-size="7" text-anchor="middle" font-weight="bold">Dead Stock</text>
-                            <text x="83" y="50" fill="var(--text-color)" font-size="6">Pump Line</text>
-                            <line x1="22" y1="55" x2="80" y2="55" stroke="var(--primary-color)" stroke-dasharray="2" stroke-width="1"/>
-                        </svg>
-                    </div>
-                    <p>It is the residual liquid at the very bottom of the tank (typically below the pump suction nozzle) that cannot be emptied by standard operational pumping. This must be mathematically subtracted from the total tank inventory during process operations.</p>
-                </div>
-                <div class="faq-card">
-                    <h4>3. How does temperature affect tank volume?</h4>
-                    <div style="position: relative; height: 100px; width: 100%; margin: 10px 0;">
-                        <canvas id="tempVolChart" role="img" aria-label="Temp Vol  Analysis Chart"><p class="sr-only">Interactive data visualization for Temp Vol  Analysis Chart</p></canvas>
-                    </div>
-                    <p>Both the tank shell and the liquid expand or contract with temperature. In custody transfer (like API MPMS standard practices), measured liquid volume must be mathematically "corrected" to a standard reference temperature (typically 15°C or 60°F) using Volume Correction Factors (VCF).</p>
-                </div>
-                <div class="faq-card">
-                    <h4>4. What is API MPMS Chapter 2?</h4>
-                    <div style="text-align: center; margin: 15px 0;">
-                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto;">
-                            <!-- Tank -->
-                            <path d="M 20,20 L 20,70 L 80,70 L 80,20 Z" fill="none" stroke="var(--text-color)" stroke-width="2"/>
-                            <!-- Tape -->
-                            <line x1="50" y1="10" x2="50" y2="65" stroke="var(--accent-color)" stroke-width="2"/>
-                            <!-- Spool/Weight -->
-                            <circle cx="50" cy="10" r="4" fill="var(--primary-color)"/>
-                            <rect x="48" y="65" width="4" height="4" fill="var(--primary-color)"/>
-                            <!-- Optics marking -->
-                            <path d="M 60,30 L 50,40 L 60,50" fill="none" stroke="var(--success-color)" stroke-width="1.5" stroke-dasharray="2" class="pulse-motor"/>
-                            <text x="75" y="42" fill="var(--text-color)" font-size="7" text-anchor="middle">Optical Laser</text>
-                        </svg>
-                    </div>
-                    <p>It is the American Petroleum Institute's standard for tank calibration (Tank Strapping). It defines the exact physical procedures (e.g., optical reference line, strapping tape) and mathematical methods to create an official gauging table for custody transfer.</p>
-                </div>
-                <div class="faq-card">
-                    <h4>5. Why do tall vertical tanks mathematically "bulge"?</h4>
-                    <div style="text-align: center; margin: 15px 0;">
-                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto;">
-                            <!-- Normal Tank Shell (dashed) -->
-                            <path d="M 30,10 L 30,70 L 70,70 L 70,10" fill="none" stroke="var(--text-color)" stroke-dasharray="2" stroke-width="1"/>
-                            <!-- Bulged Tank Shell -->
-                            <path d="M 30,10 Q 20,50 30,70 L 70,70 Q 80,50 70,10" fill="none" stroke="var(--primary-color)" stroke-width="2"/>
-                            <!-- Hydrostatic Profile -->
-                            <polygon points="50,10 50,65 35,65" fill="var(--accent-color)" opacity="0.3" class="pulse-motor"/>
-                            <text x="50" y="75" fill="var(--text-color)" font-size="6" text-anchor="middle">Hydrostatic Pressure \(\rho gh\)</text>
-                        </svg>
-                    </div>
-                    <p>The hydrostatic pressure from the liquid increases linearly with depth, exerting maximum outward force on the bottom tank shell courses. Large tanks mathematically "bulge" under this weight, slightly increasing the actual volume capacity compared to the nominal empty state.</p>
-                </div>
-                <div class="faq-card">
-                    <h4>6. How often should an industrial tank be recalibrated?</h4>
-                    <p>Industry standards generally recommend recalibrating large storage tanks every 10 to 15 years, or immediately after any significant structural repair, modification, or settling of the tank foundation.</p>
-                </div>
-                <div class="faq-card">
-                    <h4>7. Can I use a DP transmitter for level if the density changes?</h4>
-                    <p>Differential Pressure (DP) transmitters infer level by measuring hydrostatic head (\(P = \rho \cdot g \cdot h\)). If the fluid density (\(\rho\)) changes due to temperature variations or product blending, the inferred level will be erroneous unless compensated.</p>
-                </div>
-                <div class="faq-card">
-                    <h4>8. What is Safe Fill Capacity vs. Nominal Capacity?</h4>
-                    <div style="text-align: center; margin: 15px 0;">
-                        <svg viewBox="0 0 100 80" style="max-height: 80px; width: auto;">
-                            <!-- Tank Shell -->
-                            <path d="M 20,10 L 20,70 L 80,70 L 80,10 Z" fill="none" stroke="var(--text-color)" stroke-width="2"/>
-                            <!-- Safe Fill Line -->
-                            <line x1="15" y1="25" x2="85" y2="25" stroke="var(--success-color)" stroke-width="2" stroke-dasharray="4"/>
-                            <rect x="22" y="27" width="56" height="41" fill="var(--primary-color)" opacity="0.3"/>
-                            <text x="50" y="22" fill="var(--success-color)" font-size="7" font-weight="bold" text-anchor="middle">Safe Fill (90%)</text>
-                            <line x1="15" y1="10" x2="85" y2="10" stroke="var(--danger-color)" stroke-width="1" stroke-dasharray="2"/>
-                            <text x="50" y="8" fill="var(--danger-color)" font-size="7" text-anchor="middle">Nominal Roof (100%)</text>
-                        </svg>
-                    </div>
-                    <p>Nominal capacity is the geometric volume up to the roof. Safe fill capacity is lower (typically 90-95%) to allow space for thermal expansion of the liquid without causing an overfill incident or venting liquid through relief valves.</p>
-                </div>
-            </div>
-        </div>
-
     </main>
-
-    <!-- NEW FOOTER -->
-        
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
-        <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/allowable-stress-safety-factor" class="silo-card" style="text-decoration:none;">
-                        <span>Allowable Stress Safety Factor</span>
-                    </a>
-                    <a href="/bolt-torque" class="silo-card" style="text-decoration:none;">
-                        <span>Bolt Torque</span>
-                    </a>
-                    <a href="/darcy-weisbach" class="silo-card" style="text-decoration:none;">
-                        <span>Darcy Weisbach</span>
-                    </a>
+    
+    <!-- Related Tools Section (Auto-generated replacement placeholder to preserve layout wrapper closing) -->
+    <section style="display: none;">
+        <div>
+            <div>
             </div>
         </div>
-    </section>
+    </section></section>
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -1707,186 +2410,727 @@
                     return null;
                 }
             }
-
             /**
              * Calculates total and liquid volumes based on SI parameters.
              * @param {object} params - The object of SI parameters from getInputsInSI().
              * @param {number} h_liquid_override - Optional liquid level override for strapping chart.
-             * @returns {object} An object with volumes and calculation HTML.
+             * @param {boolean} isChart - True if called from chart generator to optimize performance.
+             * @returns {object} An object with volumes, steps and calculation HTML.
              */
-            function calculateVolumes(params, h_liquid_override = null) {
+            function calculateVolumes(params, h_liquid_override = null, isChart = false) {
                 const h_liquid = (h_liquid_override !== null) ? h_liquid_override : params.h_liquid;
                 let totalVolumeCubic = 0, liquidVolumeCubic = 0;
-                let calculationHtml = '<h4>Detailed Calculation Steps (SI Units):</h4>';
+                let steps = [];
                 let totalTankHeight = 0;
+                let tankTypeName = "";
+
+                const unitSystem = params.unitSystem;
+                const lenUnit = unitSystem === 'imperial' ? 'ft' : 'm';
+                const volUnit = unitSystem === 'imperial' ? 'gal' : 'L';
+                const m_to_ft = 3.28084;
+                const ft3_to_gal = 7.48052;
+                const m3_to_L = 1000;
+                
+                // Conversions from SI to Display
+                const toDisplayLen = (valSI) => unitSystem === 'imperial' ? valSI * m_to_ft : valSI;
+                const toDisplayVol = (valSI_m3) => unitSystem === 'imperial' ? valSI_m3 * Math.pow(m_to_ft, 3) * ft3_to_gal : valSI_m3 * m3_to_L;
+                const toDisplayVolUnit = () => unitSystem === 'imperial' ? "US Gallons" : "Liters";
+
+                let h_disp = toDisplayLen(h_liquid);
+                if (!isChart) {
+                    steps.push({
+                        num: 1,
+                        title: "Input Validation and Unit Sizing Verification",
+                        description: `We begin by validating all user-defined parameters to ensure compliance with mechanical engineering limits. All dimensions must be strictly positive and non-zero. The unit system selected is <strong>${unitSystem.toUpperCase()}</strong>. The input liquid level is \\( h = ${h_disp.toFixed(3)}\\text{ ${lenUnit}} \\) (${h_liquid.toFixed(3)} m). All physical inputs (diameter, height/length) are confirmed to be positive, non-zero, and within standard manufacturing tolerances.`
+                    });
+                }
+
+                let V_bottom_si = 0, V_shell_si = 0, V_top_si = 0;
+                let zone_desc = "";
+                let bottom_desc = "", shell_desc = "", top_desc = "";
 
                 switch (params.tankType) {
                     case 'vertical-cylinder-flat':
-                        const R_vcf = params.D / 2;
+                        tankTypeName = "Vertical Cylindrical (Flat Ends)";
                         totalTankHeight = params.H;
-                        totalVolumeCubic = Math.PI * R_vcf**2 * params.H;
-                        liquidVolumeCubic = Math.PI * R_vcf**2 * Math.min(h_liquid, params.H);
                         
-                        calculationHtml += `<p class="formula">\\[ V_{total} = \\pi R^2 H \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{total}\\) = \\( \\pi \\times ${R_vcf.toFixed(3)}^2 \\times ${params.H.toFixed(3)} \\) = ${totalVolumeCubic.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{liquid} = \\pi R^2 \\cdot h_{liquid} \\text{ (up to H)} \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{liquid}\\) = \\( \\pi \\times ${R_vcf.toFixed(3)}^2 \\times ${Math.min(h_liquid, params.H).toFixed(3)} \\) = ${liquidVolumeCubic.toFixed(4)} mÂ³</p>`;
+                        let h_active_vcf = Math.min(h_liquid, params.H);
+                        if (!isChart && h_liquid > params.H) {
+                            steps[0].description += ` <span style="color: var(--accent-color); font-weight: bold;">(Warning: The specified liquid height exceeds the cylindrical height of the tank. Capping calculations at full height: ${toDisplayLen(params.H).toFixed(3)} ${lenUnit}).</span>`;
+                        }
+
+                        if (!isChart) {
+                            steps.push({
+                                num: 2,
+                                title: "Tank Geometry and Specification",
+                                description: `The tank configuration is identified as a Vertical Cylindrical tank with flat ends. This represents a classical storage silo outline matching standard designs like <strong>API 650</strong> for welded petroleum and chemical containers.`
+                            });
+
+                            steps.push({
+                                num: 3,
+                                title: "End Cap Geometry Calculations",
+                                description: `Because the tank has flat ends, there are no rounded dished heads. The height of the bottom head is \\( b_{\\text{bottom}} = 0 \\) and the height of the top head is \\( b_{\\text{top}} = 0 \\).`
+                            });
+                        }
+
+                        const R_vcf = params.D / 2;
+                        totalVolumeCubic = Math.PI * Math.pow(R_vcf, 2) * params.H;
+                        
+                        if (!isChart) {
+                            steps.push({
+                                num: 4,
+                                title: "Total Tank Volume Calculation",
+                                description: `The total tank volume is calculated using the cylinder volume formula:
+                                \\[ V_{\\text{total}} = \\pi R^2 H \\]
+                                Where the radius is \\( R = D/2 = ${toDisplayLen(R_vcf).toFixed(3)}\\text{ ${lenUnit}} \\) and height is \\( H = ${toDisplayLen(params.H).toFixed(3)}\\text{ ${lenUnit}} \\).
+                                \\[ V_{\\text{total}} = \\pi \\times ${toDisplayLen(R_vcf).toFixed(3)}^2 \\times ${toDisplayLen(params.H).toFixed(3)} = ${toDisplayVol(totalVolumeCubic).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 5,
+                                title: "Liquid Level Phase Sizing",
+                                description: `The active liquid height is \\( h_{\\text{active}} = ${toDisplayLen(h_active_vcf).toFixed(3)}\\text{ ${lenUnit}} \\). The liquid lies entirely within the cylindrical body zone (between the flat bottom at \\( 0 \\) and flat top at \\( H \\)).`
+                            });
+
+                            steps.push({
+                                num: 6,
+                                title: "Bottom Section Partial Volume",
+                                description: `Because a flat bottom end cap has no dished profile, there is no bottom head volume. Thus, \\( V_{\\text{bottom}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+
+                        V_shell_si = Math.PI * Math.pow(R_vcf, 2) * h_active_vcf;
+                        if (!isChart) {
+                            steps.push({
+                                num: 7,
+                                title: "Cylindrical Body Partial Volume",
+                                description: `The liquid volume within the straight cylindrical shell is calculated using the partial cylinder formula:
+                                \\[ V_{\\text{shell}} = \\pi R^2 h_{\\text{active}} \\]
+                                Substituting our values:
+                                \\[ V_{\\text{shell}} = \\pi \\times ${toDisplayLen(R_vcf).toFixed(3)}^2 \\times ${toDisplayLen(h_active_vcf).toFixed(3)} = ${toDisplayVol(V_shell_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 8,
+                                title: "Top Section Partial Volume",
+                                description: `Since the top is flat and does not contain domed ends, there is no top cap volume. Thus, \\( V_{\\text{top}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+                        
+                        liquidVolumeCubic = V_shell_si;
                         break;
                     
                     case 'vertical-cylinder-cone':
-                        const R_vcc = params.D / 2;
-                        const V_cyl_vcc = Math.PI * R_vcc**2 * params.H;
-                        const V_cone_b = (1/3) * Math.PI * R_vcc**2 * params.h_cb;
-                        const V_cone_t = (1/3) * Math.PI * R_vcc**2 * params.h_ct;
+                        tankTypeName = "Vertical Cylindrical (Conical Ends)";
                         totalTankHeight = params.h_cb + params.H + params.h_ct;
-                        totalVolumeCubic = V_cyl_vcc + V_cone_b + V_cone_t;
-
-                        calculationHtml += `<p class="formula">\\[ V_{total} = V_{cyl} + V_{cone,bottom} + V_{cone,top} \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{cyl}\\) = \\( \\pi \\times ${R_vcc.toFixed(3)}^2 \\times ${params.H.toFixed(3)} \\) = ${V_cyl_vcc.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{cone,b}\\) = \\( \\frac{1}{3} \\pi \\times ${R_vcc.toFixed(3)}^2 \\times ${params.h_cb.toFixed(3)} \\) = ${V_cone_b.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{cone,t}\\) = \\( \\frac{1}{3} \\pi \\times ${R_vcc.toFixed(3)}^2 \\times ${params.h_ct.toFixed(3)} \\) = ${V_cone_t.toFixed(4)} mÂ³</p>`;
                         
-                        if (h_liquid <= params.h_cb) {
-                            if (params.h_cb > 0) {
-                                let R_liq = R_vcc * (h_liquid / params.h_cb);
-                                liquidVolumeCubic = (1/3) * Math.PI * R_liq**2 * h_liquid;
-                                calculationHtml += `<p class="calculation-step">Liquid in Bottom Cone: \\(V_{liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
+                        let h_active_vcc = Math.min(h_liquid, totalTankHeight);
+                        if (!isChart && h_liquid > totalTankHeight) {
+                            steps[0].description += ` <span style="color: var(--accent-color); font-weight: bold;">(Warning: The liquid height exceeds the total physical height of the tank. Capping calculations at the top cone tip: ${toDisplayLen(totalTankHeight).toFixed(3)} ${lenUnit}).</span>`;
+                        }
+
+                        if (!isChart) {
+                            steps.push({
+                                num: 2,
+                                title: "Tank Geometry and Specification",
+                                description: `The tank configuration is identified as a Vertical Cylindrical tank with conical ends. The bottom cone forms a settling hopper, and the top cone forms a sloping roof. This setup is typical of process silos for sludges, mining media, or agricultural grains.`
+                            });
+
+                            steps.push({
+                                num: 3,
+                                title: "End Cap Geometry Calculations",
+                                description: `The bottom cone hopper height is \\( h_{\\text{cb}} = ${toDisplayLen(params.h_cb).toFixed(3)}\\text{ ${lenUnit}} \\), and the top conical roof height is \\( h_{\\text{ct}} = ${toDisplayLen(params.h_ct).toFixed(3)}\\text{ ${lenUnit}} \\). These heights dictate the geometry of the non-cylindrical ends.`
+                            });
+                        }
+
+                        const R_vcc = params.D / 2;
+                        const V_cone_b = (1/3) * Math.PI * Math.pow(R_vcc, 2) * params.h_cb;
+                        const V_cyl_vcc = Math.PI * Math.pow(R_vcc, 2) * params.H;
+                        const V_cone_t = (1/3) * Math.PI * Math.pow(R_vcc, 2) * params.h_ct;
+                        totalVolumeCubic = V_cone_b + V_cyl_vcc + V_cone_t;
+                        
+                        if (!isChart) {
+                            steps.push({
+                                num: 4,
+                                title: "Total Tank Volume Calculation",
+                                description: `The total tank volume is the sum of the bottom hopper cone, cylindrical body, and top roof cone volumes:
+                                \\[ V_{\\text{total}} = V_{\\text{bottom\_cone}} + V_{\\text{cyl}} + V_{\\text{top\_cone}} \\]
+                                \\[ V_{\\text{bottom\_cone}} = \\frac{1}{3}\\pi R^2 h_{\\text{cb}} = ${toDisplayVol(V_cone_b).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                \\[ V_{\\text{cyl}} = \\pi R^2 H = ${toDisplayVol(V_cyl_vcc).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                \\[ V_{\\text{top\_cone}} = \\frac{1}{3}\\pi R^2 h_{\\text{ct}} = ${toDisplayVol(V_cone_t).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                Substituting values yields:
+                                \\[ V_{\\text{total}} = ${toDisplayVol(totalVolumeCubic).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            if (h_active_vcc <= params.h_cb) {
+                                zone_desc = `Zone 1 (Bottom Conical Hopper): \\( 0 \\le h \\le h_{\\text{cb}} \\).`;
+                            } else if (h_active_vcc <= params.h_cb + params.H) {
+                                zone_desc = `Zone 2 (Cylindrical Body): \\( h_{\\text{cb}} < h \\le h_{\\text{cb}} + H \\).`;
                             } else {
-                                liquidVolumeCubic = 0;
+                                zone_desc = `Zone 3 (Top Conical Roof): \\( h_{\\text{cb}} + H < h \\le H_{\\text{total}} \\).`;
                             }
-                        } else if (h_liquid <= params.h_cb + params.H) {
-                            liquidVolumeCubic = V_cone_b + Math.PI * R_vcc**2 * (h_liquid - params.h_cb);
-                            calculationHtml += `<p class="calculation-step">Liquid in Bottom Cone + Cylinder: \\(V_{liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
-                        } else if (h_liquid < totalTankHeight) {
-                            if (params.h_ct > 0) {
-                                const h_unfilled = totalTankHeight - h_liquid;
-                                const R_unfilled = R_vcc * (h_unfilled / params.h_ct);
-                                const V_unfilled = (1/3) * Math.PI * R_unfilled**2 * h_unfilled;
-                                liquidVolumeCubic = totalVolumeCubic - V_unfilled;
-                                calculationHtml += `<p class="calculation-step">Liquid in Full Bottom + Cyl + Partial Top: \\(V_{liq} = V_{total} - V_{unfilled,top} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
+                            steps.push({
+                                num: 5,
+                                title: "Liquid Level Phase Sizing",
+                                description: `The active liquid height is \\( h_{\\text{active}} = ${toDisplayLen(h_active_vcc).toFixed(3)}\\text{ ${lenUnit}} \\). The liquid level lies in <strong>${zone_desc}</strong>.`
+                            });
+                        }
+
+                        if (h_active_vcc <= params.h_cb) {
+                            if (params.h_cb > 0) {
+                                let R_level = R_vcc * (h_active_vcc / params.h_cb);
+                                V_bottom_si = (1/3) * Math.PI * Math.pow(R_level, 2) * h_active_vcc;
+                                bottom_desc = `The liquid level is within the bottom hopper cone. The radius of the liquid surface at this height is:
+                                \\[ R_{\\text{level}} = R \\times \\frac{h_{\\text{active}}}{h_{\\text{cb}}} = ${toDisplayLen(R_level).toFixed(3)}\\text{ ${lenUnit}} \\]
+                                \\[ V_{\\text{bottom}} = \\frac{1}{3}\\pi R_{\\text{level}}^2 h_{\\text{active}} = ${toDisplayVol(V_bottom_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
                             } else {
-                                liquidVolumeCubic = V_cone_b + V_cyl_vcc; // Full cone + full cyl
+                                V_bottom_si = 0;
+                                bottom_desc = `Bottom cone height is 0. \\( V_{\\text{bottom}} = 0 \\).`;
                             }
                         } else {
-                            liquidVolumeCubic = totalVolumeCubic;
-                            calculationHtml += `<p class="calculation-step">Tank is Full: \\(V_{liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
+                            V_bottom_si = V_cone_b;
+                            bottom_desc = `The bottom conical hopper is fully submerged.
+                            \\[ V_{\\text{bottom}} = V_{\\text{bottom\_cone}} = ${toDisplayVol(V_bottom_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
                         }
+                        if (!isChart) {
+                            steps.push({
+                                num: 6,
+                                title: "Bottom Section Partial Volume",
+                                description: bottom_desc
+                            });
+                        }
+
+                        if (h_active_vcc > params.h_cb) {
+                            let h_in_cyl = Math.min(h_active_vcc - params.h_cb, params.H);
+                            V_shell_si = Math.PI * Math.pow(R_vcc, 2) * h_in_cyl;
+                            shell_desc = `The liquid level extends into the cylindrical straight shell. The liquid height within the cylinder is \\( h_{\\text{cyl}} = h_{\\text{active}} - h_{\\text{cb}} = ${toDisplayLen(h_in_cyl).toFixed(3)}\\text{ ${lenUnit}} \\).
+                            \\[ V_{\\text{shell}} = \\pi R^2 h_{\\text{cyl}} = \\pi \\times ${toDisplayLen(R_vcc).toFixed(3)}^2 \\times ${toDisplayLen(h_in_cyl).toFixed(3)} = ${toDisplayVol(V_shell_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
+                        } else {
+                            V_shell_si = 0;
+                            shell_desc = `The liquid level has not reached the cylindrical body shell. \\( V_{\\text{shell}} = 0\\text{ ${toDisplayVolUnit()}} \\).`;
+                        }
+                        if (!isChart) {
+                            steps.push({
+                                num: 7,
+                                title: "Cylindrical Body Partial Volume",
+                                description: shell_desc
+                            });
+                        }
+
+                        if (h_active_vcc > params.h_cb + params.H) {
+                            let h_unfilled = totalTankHeight - h_active_vcc;
+                            if (params.h_ct > 0) {
+                                let R_unfilled = R_vcc * (h_unfilled / params.h_ct);
+                                let V_unfilled = (1/3) * Math.PI * Math.pow(R_unfilled, 2) * h_unfilled;
+                                V_top_si = V_cone_t - V_unfilled;
+                                top_desc = `The liquid level extends into the top conical roof. We calculate the liquid volume by subtracting the unfilled cone volume from the total top cone volume:
+                                \\[ R_{\\text{unfilled}} = R \\times \\frac{h_{\\text{unfilled}}}{h_{\\text{ct}}} = ${toDisplayLen(R_unfilled).toFixed(3)}\\text{ ${lenUnit}} \\]
+                                \\[ V_{\\text{unfilled}} = \\frac{1}{3}\\pi R_{\\text{unfilled}}^2 h_{\\text{unfilled}} = ${toDisplayVol(V_unfilled).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                \\[ V_{\\text{top}} = V_{\\text{cone\_top}} - V_{\\text{unfilled}} = ${toDisplayVol(V_top_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
+                            } else {
+                                V_top_si = 0;
+                                top_desc = `Top cone height is 0. \\( V_{\\text{top}} = 0 \\).`;
+                            }
+                        } else {
+                            V_top_si = 0;
+                            top_desc = `The liquid level has not reached the top conical roof. \\( V_{\\text{top}} = 0\\text{ ${toDisplayVolUnit()}} \\).`;
+                        }
+                        if (!isChart) {
+                            steps.push({
+                                num: 8,
+                                title: "Top Section Partial Volume",
+                                description: top_desc
+                            });
+                        }
+
+                        liquidVolumeCubic = V_bottom_si + V_shell_si + V_top_si;
                         break;
-                        
+                    
                     case 'vertical-cylinder-ellip':
+                        tankTypeName = "Vertical Cylindrical (2:1 Ellipsoidal Ends)";
+                        const b_vce = params.D / 4;
+                        totalTankHeight = params.H + 2 * b_vce;
+                        
+                        let h_active_vce = Math.min(h_liquid, totalTankHeight);
+                        if (!isChart && h_liquid > totalTankHeight) {
+                            steps[0].description += ` <span style="color: var(--accent-color); font-weight: bold;">(Warning: The liquid height exceeds the total physical height of the tank. Capping calculations at the top head crown: ${toDisplayLen(totalTankHeight).toFixed(3)} ${lenUnit}).</span>`;
+                        }
+
+                        if (!isChart) {
+                            steps.push({
+                                num: 2,
+                                title: "Tank Geometry and Specification",
+                                description: `The tank configuration is identified as a Vertical pressure vessel with standard ASME 2:1 ellipsoidal heads on both ends. This design is highly common in process industries under the <strong>ASME Boiler & Pressure Vessel Code (BPVC) Section VIII Division 1</strong> standard.`
+                            });
+
+                            steps.push({
+                                num: 3,
+                                title: "End Cap Geometry Calculations",
+                                description: `For standard 2:1 ellipsoidal heads, the height of each head is exactly one-quarter of the tank diameter:
+                                \\[ b = \\frac{D}{4} = \\frac{${toDisplayLen(params.D).toFixed(3)}}{4} = ${toDisplayLen(b_vce).toFixed(3)}\\text{ ${lenUnit}} \\]`
+                            });
+                        }
+
                         const R_vce = params.D / 2;
-                        const h_head_vce = params.D / 4; // 2:1 Ellipsoidal head height
-                        const V_cyl_vce = Math.PI * R_vce**2 * params.H;
-                        const V_head_vce = (Math.PI / 24) * params.D**3; // Volume of ONE 2:1 head
-                        totalTankHeight = params.H + 2 * h_head_vce;
+                        const V_head_vce = (Math.PI * Math.pow(params.D, 3)) / 24;
+                        const V_cyl_vce = Math.PI * Math.pow(R_vce, 2) * params.H;
                         totalVolumeCubic = V_cyl_vce + 2 * V_head_vce;
                         
-                        calculationHtml += `<p class="formula">\\[ h_{head} = D / 4 = ${h_head_vce.toFixed(3)} \\text{ m} \\]</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{head} = \\frac{\\pi D^3}{24} = ${V_head_vce.toFixed(4)} \\text{ mÂ³} \\]</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{cyl} = \\pi R^2 H = ${V_cyl_vce.toFixed(4)} \\text{ mÂ³} \\]</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{total} = V_{cyl} + 2 \\cdot V_{head} = ${totalVolumeCubic.toFixed(4)} \\text{ mÂ³} \\]</p>`;
+                        if (!isChart) {
+                            steps.push({
+                                num: 4,
+                                title: "Total Tank Volume Calculation",
+                                description: `The total tank volume is the sum of the bottom head, cylindrical body shell, and top head volumes:
+                                \\[ V_{\\text{total}} = V_{\\text{cyl}} + 2 \\cdot V_{\\text{head}} \\]
+                                \\[ V_{\\text{head}} = \\frac{\\pi D^3}{24} = ${toDisplayVol(V_head_vce).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                \\[ V_{\\text{cyl}} = \\pi R^2 H = ${toDisplayVol(V_cyl_vce).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                Substituting values gives:
+                                \\[ V_{\\text{total}} = ${toDisplayVol(totalVolumeCubic).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
 
-                        if (h_liquid <= h_head_vce) {
-                            liquidVolumeCubic = V_VerticalEllipsoidalHead(params.D, h_liquid);
-                            calculationHtml += `<p class="calculation-step">Liquid in Bottom Head: \\(V_{liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
-                        } else if (h_liquid <= h_head_vce + params.H) {
-                            liquidVolumeCubic = V_head_vce + Math.PI * R_vce**2 * (h_liquid - h_head_vce);
-                            calculationHtml += `<p class="calculation-step">Liquid in Bottom Head + Cylinder: \\(V_{liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
-                        } else if (h_liquid < totalTankHeight) {
-                            const h_in_top_head = h_liquid - h_head_vce - params.H;
-                            liquidVolumeCubic = V_head_vce + V_cyl_vce + V_VerticalEllipsoidalHead(params.D, h_in_top_head);
-                            calculationHtml += `<p class="calculation-step">Liquid in Full Bottom + Cyl + Partial Top: \\(V_{liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
-                        } else {
-                            liquidVolumeCubic = totalVolumeCubic;
-                            calculationHtml += `<p class="calculation-step">Tank is Full: \\(V_{liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
+                            let zone_vce = 1;
+                            if (h_active_vce <= b_vce) {
+                                zone_desc = `Zone 1 (Bottom 2:1 Ellipsoidal Head): \\( 0 \\le h \\le b \\).`;
+                            } else if (h_active_vce <= b_vce + params.H) {
+                                zone_desc = `Zone 2 (Cylindrical Body Straight Shell): \\( b < h \\le b + H \\).`;
+                            } else {
+                                zone_desc = `Zone 3 (Top 2:1 Ellipsoidal Head): \\( b + H < h \\le H_{\\text{total}} \\).`;
+                            }
+                            steps.push({
+                                num: 5,
+                                title: "Liquid Level Phase Sizing",
+                                description: `The active liquid height is \\( h_{\\text{active}} = ${toDisplayLen(h_active_vce).toFixed(3)}\\text{ ${lenUnit}} \\). The liquid level lies in <strong>${zone_desc}</strong>.`
+                            });
                         }
-                        break;
-                        
-                    case 'horizontal-cylinder-flat':
-                        const R_hcf = params.D / 2;
-                        totalTankHeight = params.D;
-                        totalVolumeCubic = Math.PI * R_hcf**2 * params.L;
-                        liquidVolumeCubic = V_HorizontalCylinder(params.D, params.L, h_liquid);
-                        
-                        calculationHtml += `<p class="formula">\\[ V_{total} = \\pi R^2 L \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{total}\\) = \\( \\pi \\times ${R_hcf.toFixed(3)}^2 \\times ${params.L.toFixed(3)} \\) = ${totalVolumeCubic.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{liquid} = L \\cdot (R^2 \\cos^{-1}(\\frac{R-h}{R}) - (R-h)\\sqrt{2Rh-h^2}) \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{liquid}\\) = ${liquidVolumeCubic.toFixed(4)} mÂ³</p>`;
-                        break;
-                        
-                    case 'horizontal-cylinder-ellip':
-                        const R_hce = params.D / 2;
-                        const h_head_hce = params.D / 4;
-                        const V_cyl_hce = Math.PI * R_hce**2 * params.L;
-                        const V_head_hce = (Math.PI / 24) * params.D**3; // Volume of ONE head
-                        const V_heads_total = 2 * V_head_hce;
-                        totalTankHeight = params.D;
-                        totalVolumeCubic = V_cyl_hce + V_heads_total;
 
-                        calculationHtml += `<p class="formula">\\[ V_{cyl} = \\pi R^2 L = ${V_cyl_hce.toFixed(4)} \\text{ mÂ³} \\]</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{heads,total} = 2 \\cdot \\frac{\\pi D^3}{24} = ${V_heads_total.toFixed(4)} \\text{ mÂ³} \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{total}\\) = ${totalVolumeCubic.toFixed(4)} mÂ³</p>`;
-                        
-                        const V_cyl_liq = V_HorizontalCylinder(params.D, params.L, h_liquid);
-                        let fill_ratio = (V_cyl_hce > 0) ? (V_cyl_liq / V_cyl_hce) : 0;
-                        if (h_liquid >= params.D) fill_ratio = 1;
-                        if (h_liquid <= 0) fill_ratio = 0;
-                        const V_heads_liq = V_heads_total * fill_ratio; // Pro-rata approximation
-                        liquidVolumeCubic = V_cyl_liq + V_heads_liq;
-                        
-                        calculationHtml += `<p class="calculation-step">Cylinder Liquid Volume \\(V_{cyl,liq}\\) = ${V_cyl_liq.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="calculation-step">Fill Ratio \\(f\\) = \\(V_{cyl,liq} / V_{cyl,total}\\) = ${fill_ratio.toFixed(4)}</p>`;
-                        calculationHtml += `<p class="calculation-step">Heads Liquid Volume (Approx.) \\(V_{heads,liq} \\approx f \\cdot V_{heads,total}\\) = ${V_heads_liq.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{liquid} = V_{cyl,liq} + V_{heads,liq} = ${liquidVolumeCubic.toFixed(4)} mÂ³\\)</p>`;
+                        if (h_active_vce <= b_vce) {
+                            V_bottom_si = V_VerticalEllipsoidalHead(params.D, h_active_vce);
+                            bottom_desc = `The liquid level lies within the bottom 2:1 ellipsoidal head. The volume is calculated using the exact ellipsoidal segment formula:
+                            \\[ V_{\\text{bottom}} = \\frac{\\pi h_{\\text{active}}^2}{3} (3D - 4h_{\\text{active}}) = ${toDisplayVol(V_bottom_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
+                        } else {
+                            V_bottom_si = V_head_vce;
+                            bottom_desc = `The bottom ellipsoidal head is completely submerged.
+                            \\[ V_{\\text{bottom}} = V_{\\text{head}} = ${toDisplayVol(V_bottom_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
+                        }
+                        if (!isChart) {
+                            steps.push({
+                                num: 6,
+                                title: "Bottom Section Partial Volume",
+                                description: bottom_desc
+                            });
+                        }
+
+                        if (h_active_vce > b_vce) {
+                            let h_in_cyl = Math.min(h_active_vce - b_vce, params.H);
+                            V_shell_si = Math.PI * Math.pow(R_vce, 2) * h_in_cyl;
+                            shell_desc = `The liquid level extends into the cylindrical straight body shell. The liquid height in the cylinder is \\( h_{\\text{cyl}} = h_{\\text{active}} - b = ${toDisplayLen(h_in_cyl).toFixed(3)}\\text{ ${lenUnit}} \\).
+                            \\[ V_{\\text{shell}} = \\pi R^2 h_{\\text{cyl}} = \\pi \\times ${toDisplayLen(R_vce).toFixed(3)}^2 \\times ${toDisplayLen(h_in_cyl).toFixed(3)} = ${toDisplayVol(V_shell_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
+                        } else {
+                            V_shell_si = 0;
+                            shell_desc = `The liquid level has not reached the cylindrical body shell. \\( V_{\\text{shell}} = 0\\text{ ${toDisplayVolUnit()}} \\).`;
+                        }
+                        if (!isChart) {
+                            steps.push({
+                                num: 7,
+                                title: "Cylindrical Body Partial Volume",
+                                description: shell_desc
+                            });
+                        }
+
+                        if (h_active_vce > b_vce + params.H) {
+                            let h_in_top = h_active_vce - (b_vce + params.H);
+                            V_top_si = V_VerticalEllipsoidalHead(params.D, h_in_top);
+                            top_desc = `The liquid level extends into the top 2:1 ellipsoidal head. The height within this head is \\( h_{\\text{top}} = h_{\\text{active}} - b - H = ${toDisplayLen(h_in_top).toFixed(3)}\\text{ ${lenUnit}} \\).
+                            \\[ V_{\\text{top}} = \\frac{\\pi h_{\\text{top}}^2}{3} (3D - 4h_{\\text{top}}) = ${toDisplayVol(V_top_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`;
+                        } else {
+                            V_top_si = 0;
+                            top_desc = `The liquid level has not reached the top head. \\( V_{\\text{top}} = 0\\text{ ${toDisplayVolUnit()}} \\).`;
+                        }
+                        if (!isChart) {
+                            steps.push({
+                                num: 8,
+                                title: "Top Section Partial Volume",
+                                description: top_desc
+                            });
+                        }
+
+                        liquidVolumeCubic = V_bottom_si + V_shell_si + V_top_si;
                         break;
-                        
-                    case 'rectangular':
-                        totalTankHeight = params.H;
-                        totalVolumeCubic = params.L * params.W * params.H;
-                        liquidVolumeCubic = params.L * params.W * Math.min(h_liquid, params.H);
-                        
-                        calculationHtml += `<p class="formula">\\[ V_{total} = L \\cdot W \\cdot H \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{total}\\) = ${params.L.toFixed(3)} \\times ${params.W.toFixed(3)} \\times ${params.H.toFixed(3)} = ${totalVolumeCubic.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{liquid} = L \\cdot W \\cdot h_{liquid} \\text{ (up to H)} \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{liquid}\\) = ${params.L.toFixed(3)} \\times ${params.W.toFixed(3)} \\times ${Math.min(h_liquid, params.H).toFixed(3)} = ${liquidVolumeCubic.toFixed(4)} mÂ³</p>`;
-                        break;
-                        
-                    case 'spherical':
-                        const R_sph = params.D / 2;
+                    
+                    case 'horizontal-cylinder-flat':
+                        tankTypeName = "Horizontal Cylindrical (Flat Ends)";
                         totalTankHeight = params.D;
-                        totalVolumeCubic = (4/3) * Math.PI * R_sph**3;
-                        liquidVolumeCubic = V_SphericalSegment(R_sph, h_liquid);
                         
-                        calculationHtml += `<p class="formula">\\[ V_{total} = \\frac{4}{3} \\pi R^3 \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{total}\\) = \\( \\frac{4}{3} \\pi \\times ${R_sph.toFixed(3)}^3 \\) = ${totalVolumeCubic.toFixed(4)} mÂ³</p>`;
-                        calculationHtml += `<p class="formula">\\[ V_{liquid} = \\frac{1}{3} \\pi h^2 (3R - h) \\]</p>`;
-                        calculationHtml += `<p class="calculation-step">\\(V_{liquid}\\) = ${liquidVolumeCubic.toFixed(4)} mÂ³</p>`;
+                        let h_active_hcf = Math.min(h_liquid, params.D);
+                        if (!isChart && h_liquid > params.D) {
+                            steps[0].description += ` <span style="color: var(--accent-color); font-weight: bold;">(Warning: The liquid depth exceeds the tank diameter. Capping calculations at full diameter: ${toDisplayLen(params.D).toFixed(3)} ${lenUnit}).</span>`;
+                        }
+
+                        if (!isChart) {
+                            steps.push({
+                                num: 2,
+                                title: "Tank Geometry and Specification",
+                                description: `The tank configuration is identified as a Horizontal Cylindrical tank with flat ends. This represents standard low-pressure cylindrical storage vessels.`
+                            });
+
+                            steps.push({
+                                num: 3,
+                                title: "End Cap Geometry Calculations",
+                                description: `Because the tank has flat ends, there are no rounded dished heads on the ends. The head length is \\( L_{\\text{head}} = 0 \\).`
+                            });
+                        }
+
+                        const R_hcf = params.D / 2;
+                        totalVolumeCubic = Math.PI * Math.pow(R_hcf, 2) * params.L;
+                        
+                        if (!isChart) {
+                            steps.push({
+                                num: 4,
+                                title: "Total Tank Volume Calculation",
+                                description: `The total tank volume is calculated using the cylinder volume formula:
+                                \\[ V_{\\text{total}} = \\pi R^2 L \\]
+                                Substituting \\( R = ${toDisplayLen(R_hcf).toFixed(3)}\\text{ ${lenUnit}} \\) and \\( L = ${toDisplayLen(params.L).toFixed(3)}\\text{ ${lenUnit}} \\):
+                                \\[ V_{\\text{total}} = \\pi \\times ${toDisplayLen(R_hcf).toFixed(3)}^2 \\times ${toDisplayLen(params.L).toFixed(3)} = ${toDisplayVol(totalVolumeCubic).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 5,
+                                title: "Liquid Level Phase Sizing",
+                                description: `The liquid height is within the range \\( 0 \\le h \\le D \\). The current active liquid depth is \\( h_{\\text{active}} = ${toDisplayLen(h_active_hcf).toFixed(3)}\\text{ ${lenUnit}} \\).`
+                            });
+
+                            steps.push({
+                                num: 6,
+                                title: "Bottom Section Partial Volume",
+                                description: `Not applicable for horizontal layouts, as there is no bottom hopper cone or dished bottom. \\( V_{\\text{bottom}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+
+                        V_shell_si = V_HorizontalCylinder(params.D, params.L, h_active_hcf);
+                        if (!isChart) {
+                            steps.push({
+                                num: 7,
+                                title: "Cylindrical Body Partial Volume",
+                                description: `The partial volume of a horizontal cylinder is calculated by integrating the circular segment area over the tank length L:
+                                \\[ V_{\\text{shell}} = L \\cdot A_{\\text{segment}} \\]
+                                \\[ A_{\\text{segment}} = R^2 \\cos^{-1}\\left(\\frac{R-h_{\\text{active}}}{R}\\right) - (R-h_{\\text{active}})\\sqrt{2R h_{\\text{active}} - h_{\\text{active}}^2} \\]
+                                Substituting our parameters:
+                                \\[ V_{\\text{shell}} = ${toDisplayVol(V_shell_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 8,
+                                title: "Top Section Partial Volume",
+                                description: `Not applicable for flat-ended horizontal layouts. \\( V_{\\text{top}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+
+                        liquidVolumeCubic = V_shell_si;
                         break;
+                    
+                    case 'horizontal-cylinder-ellip':
+                        tankTypeName = "Horizontal Cylindrical (2:1 Ellipsoidal Ends)";
+                        totalTankHeight = params.D;
+                        
+                        let h_active_hce = Math.min(h_liquid, params.D);
+                        if (!isChart && h_liquid > params.D) {
+                            steps[0].description += ` <span style="color: var(--accent-color); font-weight: bold;">(Warning: The liquid depth exceeds the tank diameter. Capping calculations at full diameter: ${toDisplayLen(params.D).toFixed(3)} ${lenUnit}).</span>`;
+                        }
+
+                        if (!isChart) {
+                            steps.push({
+                                num: 2,
+                                title: "Tank Geometry and Specification",
+                                description: `The tank configuration is identified as a Horizontal Cylindrical tank with standard ASME 2:1 ellipsoidal ends. This represents horizontal pressure vessels designed under the <strong>ASME Section VIII</strong> code.`
+                            });
+                        }
+
+                        const b_hce = params.D / 4;
+                        if (!isChart) {
+                            steps.push({
+                                num: 3,
+                                title: "End Cap Geometry Calculations",
+                                description: `For standard 2:1 ellipsoidal heads, each end cap extends a length of exactly one-quarter of the diameter:
+                                \\[ b = \\frac{D}{4} = ${toDisplayLen(b_hce).toFixed(3)}\\text{ ${lenUnit}} \\]`
+                            });
+                        }
+
+                        const R_hce = params.D / 2;
+                        const V_cyl_hce = Math.PI * Math.pow(R_hce, 2) * params.L;
+                        const V_heads_total = (Math.PI * Math.pow(params.D, 3)) / 12; // Both heads
+                        totalVolumeCubic = V_cyl_hce + V_heads_total;
+                        
+                        if (!isChart) {
+                            steps.push({
+                                num: 4,
+                                title: "Total Tank Volume Calculation",
+                                description: `The total tank volume is the sum of the cylindrical shell plus both 2:1 ellipsoidal heads combined:
+                                \\[ V_{\\text{total}} = V_{\\text{cyl}} + V_{\\text{heads}} \\]
+                                \\[ V_{\\text{cyl}} = \\pi R^2 L = ${toDisplayVol(V_cyl_hce).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                \\[ V_{\\text{heads}} = 2 \\cdot \\left(\\frac{\\pi D^3}{24}\\right) = \\frac{\\pi D^3}{12} = ${toDisplayVol(V_heads_total).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                                Substituting values gives:
+                                \\[ V_{\\text{total}} = ${toDisplayVol(totalVolumeCubic).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 5,
+                                title: "Liquid Level Phase Sizing",
+                                description: `The liquid height is within the range \\( 0 \\le h \\le D \\). The current active liquid depth is \\( h_{\\text{active}} = ${toDisplayLen(h_active_hce).toFixed(3)}\\text{ ${lenUnit}} \\).`
+                            });
+
+                            steps.push({
+                                num: 6,
+                                title: "Bottom Section Partial Volume",
+                                description: `Not applicable for horizontal layouts. \\( V_{\\text{bottom}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+
+                        V_shell_si = V_HorizontalCylinder(params.D, params.L, h_active_hce);
+                        if (!isChart) {
+                            steps.push({
+                                num: 7,
+                                title: "Cylindrical Body Partial Volume",
+                                description: `The partial volume of the cylindrical straight section is calculated by segment area integration:
+                                \\[ V_{\\text{shell}} = L \\cdot A_{\\text{segment}} = ${toDisplayVol(V_shell_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+                        }
+
+                        // Exact combined ellipsoidal heads volume
+                        V_top_si = (Math.PI * Math.pow(h_active_hce, 2) / 12) * (3 * params.D - 2 * h_active_hce);
+                        if (!isChart) {
+                            steps.push({
+                                num: 8,
+                                title: "Top Section Partial Volume (Heads)",
+                                description: `The combined partial volume of both horizontal 2:1 ellipsoidal ends is computed using the exact analytical formula:
+                                \\[ V_{\\text{heads, partial}} = \\frac{\\pi h_{\\text{active}}^2}{12} (3D - 2h_{\\text{active}}) \\]
+                                Substituting values:
+                                \\[ V_{\\text{heads, partial}} = \\frac{\\pi \\times ${toDisplayLen(h_active_hce).toFixed(3)}^2}{12} (3 \\times ${toDisplayLen(params.D).toFixed(3)} - 2 \\times ${toDisplayLen(h_active_hce).toFixed(3)}) = ${toDisplayVol(V_top_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+                        }
+
+                        liquidVolumeCubic = V_shell_si + V_top_si;
+                        break;
+                    
+                    case 'rectangular':
+                        tankTypeName = "Rectangular Tank";
+                        totalTankHeight = params.H;
+                        
+                        let h_active_rect = Math.min(h_liquid, params.H);
+                        if (!isChart && h_liquid > params.H) {
+                            steps[0].description += ` <span style="color: var(--accent-color); font-weight: bold;">(Warning: The liquid height exceeds the tank height. Capping calculations at full height: ${toDisplayLen(params.H).toFixed(3)} ${lenUnit}).</span>`;
+                        }
+
+                        if (!isChart) {
+                            steps.push({
+                                num: 2,
+                                title: "Tank Geometry and Specification",
+                                description: `The tank configuration is identified as a Rectangular/Box tank. This layout is typical for atmospheric utility water, chemical storage, or agricultural dosing containers.`
+                            });
+
+                            steps.push({
+                                num: 3,
+                                title: "End Cap Geometry Calculations",
+                                description: `Rectangular tanks have flat sides and a flat bottom/top. No dished head geometries exist. \\( b_{\\text{bottom}} = 0 \\), \\( b_{\\text{top}} = 0 \\).`
+                            });
+
+                            steps.push({
+                                num: 4,
+                                title: "Total Tank Volume Calculation",
+                                description: `The total volume of a rectangular tank is computed as:
+                                \\[ V_{\\text{total}} = L \\times W \\times H \\]
+                                Substituting:
+                                \\[ V_{\\text{total}} = ${toDisplayLen(params.L).toFixed(3)} \\times ${toDisplayLen(params.W).toFixed(3)} \\times ${toDisplayLen(params.H).toFixed(3)} = ${toDisplayVol(totalVolumeCubic = params.L * params.W * params.H).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 5,
+                                title: "Liquid Level Phase Sizing",
+                                description: `The liquid height is within the range \\( 0 \\le h \\le H \\). The current active liquid depth is \\( h_{\\text{active}} = ${toDisplayLen(h_active_rect).toFixed(3)}\\text{ ${lenUnit}} \\).`
+                            });
+
+                            steps.push({
+                                num: 6,
+                                title: "Bottom Section Partial Volume",
+                                description: `Not applicable for rectangular tanks. \\( V_{\\text{bottom}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+
+                        V_shell_si = params.L * params.W * h_active_rect;
+                        if (!isChart) {
+                            steps.push({
+                                num: 7,
+                                title: "Cylindrical Body Partial Volume",
+                                description: `The liquid volume is linear with the liquid height:
+                                \\[ V_{\\text{liquid}} = L \\times W \\times h_{\\text{active}} \\]
+                                Substituting our parameters:
+                                \\[ V_{\\text{liquid}} = ${toDisplayLen(params.L).toFixed(3)} \\times ${toDisplayLen(params.W).toFixed(3)} \\times ${toDisplayLen(h_active_rect).toFixed(3)} = ${toDisplayVol(V_shell_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 8,
+                                title: "Top Section Partial Volume",
+                                description: `Not applicable for rectangular tanks. \\( V_{\\text{top}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+
+                        liquidVolumeCubic = V_shell_si;
+                        break;
+                    
+                    case 'spherical':
+                        tankTypeName = "Spherical Tank";
+                        totalTankHeight = params.D;
+                        
+                        let h_active_sph = Math.min(h_liquid, params.D);
+                        if (!isChart && h_liquid > params.D) {
+                            steps[0].description += ` <span style="color: var(--accent-color); font-weight: bold;">(Warning: The liquid depth exceeds the sphere diameter. Capping calculations at full diameter: ${toDisplayLen(params.D).toFixed(3)} ${lenUnit}).</span>`;
+                        }
+
+                        if (!isChart) {
+                            steps.push({
+                                num: 2,
+                                title: "Tank Geometry and Specification",
+                                description: `The tank configuration is identified as a Spherical tank, designed for high-pressure storage of liquefied gases or chemicals.`
+                            });
+
+                            steps.push({
+                                num: 3,
+                                title: "End Cap Geometry Calculations",
+                                description: `Spherical tanks do not have separate dished heads; the entire shell is a single continuous spherical profile.`
+                            });
+
+                            steps.push({
+                                num: 4,
+                                title: "Total Tank Volume Calculation",
+                                description: `The total volume of a spherical tank is:
+                                \\[ V_{\\text{total}} = \\frac{4}{3}\\pi R^3 \\]
+                                Substituting \\( R = ${toDisplayLen(params.D/2).toFixed(3)}\\text{ ${lenUnit}} \\):
+                                \\[ V_{\\text{total}} = \\frac{4}{3}\\pi \\times ${toDisplayLen(params.D/2).toFixed(3)}^3 = ${toDisplayVol(totalVolumeCubic = (4/3) * Math.PI * Math.pow(params.D/2, 3)).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+
+                            steps.push({
+                                num: 5,
+                                title: "Liquid Level Phase Sizing",
+                                description: `The liquid height is within the range \\( 0 \\le h \\le D \\). The current active liquid depth is \\( h_{\\text{active}} = ${toDisplayLen(h_active_sph).toFixed(3)}\\text{ ${lenUnit}} \\).`
+                            });
+
+                            steps.push({
+                                num: 6,
+                                title: "Bottom Section Partial Volume",
+                                description: `Not applicable for spherical layouts. \\( V_{\\text{bottom}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+
+                            steps.push({
+                                num: 7,
+                                title: "Cylindrical Body Partial Volume",
+                                description: `Spherical tanks have no cylindrical body. \\( V_{\\text{shell}} = 0\\text{ ${toDisplayVolUnit()}} \\).`
+                            });
+                        }
+
+                        V_top_si = V_SphericalSegment(params.D/2, h_active_sph);
+                        if (!isChart) {
+                            steps.push({
+                                num: 8,
+                                title: "Top Section Partial Volume (Spherical Segment)",
+                                description: `The partial liquid volume is calculated using the spherical segment formula:
+                                \\[ V_{\\text{segment}} = \\frac{1}{3}\\pi h_{\\text{active}}^2 (3R - h_{\\text{active}}) \\]
+                                Substituting our parameters:
+                                \\[ V_{\\text{segment}} = \\frac{1}{3}\\pi \\times ${toDisplayLen(h_active_sph).toFixed(3)}^2 (3 \\times ${toDisplayLen(params.D/2).toFixed(3)} - ${toDisplayLen(h_active_sph).toFixed(3)}) = ${toDisplayVol(V_top_si).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]`
+                            });
+                        }
+
+                        liquidVolumeCubic = V_top_si;
+                        break;
+                }
+
+                // Step 9: Combined Sizing
+                let fill_ratio = totalVolumeCubic > 0 ? (liquidVolumeCubic / totalVolumeCubic) : 0;
+                if (!isChart) {
+                    steps.push({
+                        num: 9,
+                        title: "Combined Total Liquid Volume Aggregation",
+                        description: `Summing all partial section volumes:
+                        \\[ V_{\\text{liquid}} = V_{\\text{bottom}} + V_{\\text{shell}} + V_{\\text{top}} = ${toDisplayVol(liquidVolumeCubic).toFixed(2)}\\text{ ${toDisplayVolUnit()}} \\]
+                        This corresponds to a fill ratio of <strong>${(fill_ratio * 100).toFixed(2)}%</strong>.`
+                    });
+
+                    // Step 10: Sizing Safety Check
+                    let warnings = [];
+                    let recommendations = [];
+                    
+                    if (fill_ratio > 0.9) {
+                        warnings.push(`❌ <strong>CRITICAL WARNING:</strong> Liquid level is at ${(fill_ratio * 100).toFixed(2)}%, exceeding the safe fill limit of 90%. This poses an immediate risk of tank overfill, hydrostatic rupture, or safety venting.`);
+                        recommendations.push("Immediately halt feeding pumps. Initiate safety transfer or drain procedures to reduce level below the 90% threshold.");
+                    } else if (fill_ratio > 0.85) {
+                        warnings.push(`⚠️ <strong>WARNING:</strong> Liquid level is at ${(fill_ratio * 100).toFixed(2)}% of capacity. Caution is advised as it approaches the maximum safe fill line (90%).`);
+                        recommendations.push("Closely monitor tank levels and prepare to shut off inlet pumps.");
+                    } else {
+                        warnings.push(`✅ Liquid level is at ${(fill_ratio * 100).toFixed(2)}% of capacity, which is within the standard safe operating margin.`);
+                        recommendations.push("Maintain standard process flow and log inventory values.");
+                    }
+                    
+                    let deadStockHeight = totalTankHeight * 0.05;
+                    let deadStockVolume = toDisplayVol(calculateVolumes(params, deadStockHeight, true).liquidVolumeCubic);
+                    warnings.push(`ℹ️ <strong>Dead Stock (Unpumpable Volume):</strong> Volume below 5% level height (${toDisplayLen(deadStockHeight).toFixed(3)} ${lenUnit}) is approximately ${deadStockVolume.toFixed(2)} ${toDisplayVolUnit()}. This volume is generally unrecoverable by standard suction pumps.`);
+                    
+                    warnings.push(`ℹ️ <strong>ASME / API Bulging Effect:</strong> Hydrostatic pressure at bottom shell courses may cause slight elastic bulging. This can result in a minor volumetric expansion (approx. 0.05% - 0.1%) under full head load.`);
+
+                    steps.push({
+                        num: 10,
+                        title: "Sizing Safety Check & Bulging Evaluation",
+                        description: `
+                            <div class="warnings-box" style="margin-top: 10px; background: rgba(0,0,0,0.02); border-left: 4px solid var(--accent-color); padding: 12px; border-radius: 4px; font-size: 0.9rem;">
+                                <strong>Validation Warnings & Assumptions:</strong>
+                                <ul style="margin: 8px 0 0 20px; padding: 0; list-style-type: disc;">
+                                    ${warnings.map(w => `<li style="margin-bottom: 5px;">${w}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="recs-box" style="margin-top: 10px; background: rgba(0,0,0,0.02); border-left: 4px solid var(--success-color); padding: 12px; border-radius: 4px; font-size: 0.9rem;">
+                                <strong>Operational Recommendations:</strong>
+                                <ul style="margin: 8px 0 0 20px; padding: 0; list-style-type: disc;">
+                                    ${recommendations.map(r => `<li style="margin-bottom: 5px;">${r}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `
+                    });
+                }
+
+                // Generate HTML for details section
+                let html = '<h4>Detailed Step-by-Step Mathematical Resolution (SI Units):</h4>';
+                if (!isChart) {
+                    steps.forEach(step => {
+                        html += `
+                            <div class="step-card" style="background: var(--card-bg); border-left: 4px solid var(--secondary-color); padding: 18px; margin-bottom: 20px; border-radius: 8px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow); transition: transform 0.2s;">
+                                <h5 style="margin-top: 0; color: var(--primary-color); font-size: 1.15rem; margin-bottom: 10px;">Step ${step.num}: ${step.title}</h5>
+                                <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-color);">
+                                    ${step.description}
+                                </div>
+                            </div>
+                        `;
+                    });
                 }
 
                 return {
                     totalVolumeCubic: totalVolumeCubic,
                     liquidVolumeCubic: liquidVolumeCubic,
-                    calculationHtml: calculationHtml,
-                    totalTankHeight: totalTankHeight
+                    calculationHtml: html,
+                    totalTankHeight: totalTankHeight,
+                    tankTypeName: tankTypeName,
+                    fill_ratio: fill_ratio,
+                    steps: steps
                 };
             }
 
-            /**
-             * Main function to run calculation and update UI.
-             */
             function runCalculation() {
                 const params = getInputsInSI();
-                if (!params) return; // Error occurred
+                if (!params) return;
 
                 const results = calculateVolumes(params);
-                if (!results) return; // Calculation failed
+                if (!results) return;
 
-                // --- Convert for Display ---
                 const unitSystem = params.unitSystem;
-                const ft3_to_gallons = 7.48052; // US Gallons
+                const ft3_to_gallons = 7.48052;
                 const m_to_ft = 3.28084;
-                const m3_to_ft3 = m_to_ft**3;
+                const m3_to_ft3 = Math.pow(m_to_ft, 3);
 
                 let totalVolumeDisplay, liquidVolumeDisplay;
                 let totalVolUnit, liquidVolUnit;
@@ -1894,23 +3138,21 @@
                 if (unitSystem === 'imperial') {
                     totalVolumeDisplay = results.totalVolumeCubic * m3_to_ft3 * ft3_to_gallons;
                     liquidVolumeDisplay = results.liquidVolumeCubic * m3_to_ft3 * ft3_to_gallons;
-                    totalVolUnit = `Gallons (${(results.totalVolumeCubic * m3_to_ft3).toFixed(3)} ftÂ³)`;
-                    liquidVolUnit = `Gallons (${(results.liquidVolumeCubic * m3_to_ft3).toFixed(3)} ftÂ³)`;
-                } else { // Metric
+                    totalVolUnit = `Gallons (${(results.totalVolumeCubic * m3_to_ft3).toFixed(3)} ft³)`;
+                    liquidVolUnit = `Gallons (${(results.liquidVolumeCubic * m3_to_ft3).toFixed(3)} ft³)`;
+                } else {
                     totalVolumeDisplay = results.totalVolumeCubic * 1000;
                     liquidVolumeDisplay = results.liquidVolumeCubic * 1000;
-                    totalVolUnit = `Liters (${results.totalVolumeCubic.toFixed(4)} mÂ³)`;
-                    liquidVolUnit = `Liters (${results.liquidVolumeCubic.toFixed(4)} mÂ³)`;
+                    totalVolUnit = `Liters (${results.totalVolumeCubic.toFixed(4)} m³)`;
+                    liquidVolUnit = `Liters (${results.liquidVolumeCubic.toFixed(4)} m³)`;
                 }
 
-                // --- Populate UI ---
-                resultTableBody.innerHTML = ''; // Clear previous results
-                const selectedOption = document.querySelector(`.tank-type-option[data-tank-type="${params.tankType}"]`);
-                const tankTypeName = selectedOption ? selectedOption.querySelector('label').textContent : 'N/A';
-
-                addResultRow("Tank Type", tankTypeName);
-                addResultRow("Total Volume", `<strong>${totalVolumeDisplay.toFixed(2)} ${totalVolUnit}</strong>`);
-                addResultRow("Liquid Volume", `<strong>${liquidVolumeDisplay.toFixed(2)} ${liquidVolUnit}</strong>`);
+                // Populate UI
+                resultTableBody.innerHTML = '';
+                addResultRow("Tank Configuration Profile", results.tankTypeName);
+                addResultRow("Nominal Sizing Volume (100% Full)", `<strong>${totalVolumeDisplay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${totalVolUnit}</strong>`);
+                addResultRow("Active Liquid Volume", `<strong>${liquidVolumeDisplay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${liquidVolUnit}</strong>`);
+                addResultRow("Percentage Fill Sizing", `<strong>${(results.fill_ratio * 100).toFixed(2)}%</strong>`);
 
                 calculationDetailsDiv.innerHTML = results.calculationHtml;
                 if (window.MathJax) {
@@ -1918,6 +3160,24 @@
                 }
 
                 standardReference.innerHTML = "This calculator is based on precise geometric formulas for standard tank shapes. For official calibration and custody transfer, always refer to industry standards such as <strong>API Manual of Petroleum Measurement Standards (MPMS) Chapter 2</strong> for tank calibration, and <strong>ASME BPVC Section VIII</strong> for pressure vessel head geometry.";
+
+                // Save results globally for PDF report download
+                lastResult = {
+                    inputs: params,
+                    tankTypeName: results.tankTypeName,
+                    totalVolumeCubic: results.totalVolumeCubic,
+                    liquidVolumeCubic: results.liquidVolumeCubic,
+                    totalVolumeDisplay: totalVolumeDisplay,
+                    liquidVolumeDisplay: liquidVolumeDisplay,
+                    totalVolUnit: totalVolUnit,
+                    liquidVolUnit: liquidVolUnit,
+                    totalHeight_m: results.totalTankHeight,
+                    fill_ratio: results.fill_ratio,
+                    steps: results.steps
+                };
+
+                // Update Dynamic Sizing Visual Diagram
+                updateTankDiagram(params, results.fill_ratio, results.totalVolumeCubic, liquidVolumeDisplay, totalVolUnit.split(' ')[0]);
 
                 resultContainer.style.display = 'block';
                 setTimeout(() => {
@@ -1927,7 +3187,7 @@
 
                 displayMessage("Calculation completed successfully!", "info");
             }
-            
+
             /**
              * Generates a strapping chart and initiates download.
              */
@@ -1935,23 +3195,22 @@
                 const params = getInputsInSI();
                 if (!params) return;
 
-                const resultsForTotalHeight = calculateVolumes(params);
+                const resultsForTotalHeight = calculateVolumes(params, null, true);
                 const totalHeight_m = resultsForTotalHeight.totalTankHeight;
                 if (totalHeight_m <= 0) {
                     displayMessage("Cannot generate chart: Total tank height is zero or invalid.", "error");
                     return;
                 }
 
-                const steps = 1000;
+                const steps = 100; // Keep it clean and fast (100 divisions)
                 let csvContent = "";
                 
-                // Units for CSV header
                 const unitSystem = params.unitSystem;
                 const lengthLabel = unitSystem === 'imperial' ? 'Height (ft)' : 'Height (m)';
                 const volumeLabel = unitSystem === 'imperial' ? 'Volume (US Gallons)' : 'Volume (Liters)';
                 const m_to_ft = 3.28084;
                 const m3_to_L = 1000;
-                const m3_to_gal = (3.28084**3) * 7.48052;
+                const m3_to_gal = Math.pow(m_to_ft, 3) * 7.48052;
 
                 csvContent += `${lengthLabel},${volumeLabel}\n`;
 
@@ -1959,14 +3218,13 @@
                     const h_m = (i / steps) * totalHeight_m;
                     const h_display = (unitSystem === 'imperial') ? (h_m * m_to_ft) : h_m;
                     
-                    const vol_results = calculateVolumes(params, h_m);
+                    const vol_results = calculateVolumes(params, h_m, true);
                     const vol_m3 = vol_results.liquidVolumeCubic;
                     const vol_display = (unitSystem === 'imperial') ? (vol_m3 * m3_to_gal) : (vol_m3 * m3_to_L);
 
-                    csvContent += `${h_display.toFixed(5)},${vol_display.toFixed(5)}\n`;
+                    csvContent += `${h_display.toFixed(4)},${vol_display.toFixed(4)}\n`;
                 }
 
-                // Create and trigger download
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement("a");
                 const url = URL.createObjectURL(blob);
@@ -1977,12 +3235,376 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                displayMessage("Strapping chart generated!", "info");
+                displayMessage("Strapping chart generated and downloaded!", "info");
+            }
+
+            function updateTankDiagram(params, fillRatio, totalVol, liqVol, volUnit) {
+                const svgDiv = document.getElementById('tank-diagram-svg');
+                if (!svgDiv) return;
+
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                const strokeColor = isDarkMode ? '#10B981' : '#1E3A8A';
+                const textColor = isDarkMode ? '#CBD5E1' : '#475569';
+                const gridColor = isDarkMode ? 'rgba(203, 213, 225, 0.15)' : 'rgba(148, 163, 184, 0.15)';
+                const referenceLineColor = '#EF4444';
+
+                let pathStr = "";
+                let heightLines = "";
+                let diameterLines = "";
+                let levelLines = "";
+                let safetyLineY = 70;
+
+                const unitSystem = params.unitSystem;
+                const lenUnit = unitSystem === 'imperial' ? 'ft' : 'm';
+                const toDisplayLen = (valSI) => unitSystem === 'imperial' ? valSI * 3.28084 : valSI;
+
+                const type = params.tankType;
+                let liquidY = 0;
+                let tankBottomY = 250;
+                let tankTopY = 50;
+                let tankHeightPx = 200;
+
+                let D_val = params.D;
+                let H_val = params.H !== undefined ? params.H : params.L;
+                if (type === 'rectangular') H_val = params.H;
+                
+                D_val = D_val !== undefined ? toDisplayLen(D_val) : undefined;
+                H_val = H_val !== undefined ? toDisplayLen(H_val) : undefined;
+
+                if (type === 'vertical-cylinder-flat' || type === 'rectangular') {
+                    pathStr = "M 100 50 L 300 50 L 300 250 L 100 250 Z";
+                    liquidY = tankBottomY - (tankHeightPx * fillRatio);
+                    safetyLineY = tankBottomY - (tankHeightPx * 0.90);
+                    
+                    heightLines = `
+                        <line x1="70" y1="50" x2="70" y2="250" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="65" y1="50" x2="100" y2="50" stroke="#94A3B8" stroke-width="1"/>
+                        <line x1="65" y1="250" x2="100" y2="250" stroke="#94A3B8" stroke-width="1"/>
+                        <text x="50" y="150" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 50 150)">H = ${H_val.toFixed(2)} ${lenUnit}</text>
+                    `;
+                    
+                    diameterLines = `
+                        <line x1="100" y1="270" x2="300" y2="270" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="100" y1="250" x2="100" y2="275" stroke="#94A3B8" stroke-width="1"/>
+                        <line x1="300" y1="250" x2="300" y2="275" stroke="#94A3B8" stroke-width="1"/>
+                        <text x="200" y="287" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle">${type === 'rectangular' ? 'W' : 'D'} = ${D_val !== undefined ? D_val.toFixed(2) : toDisplayLen(params.W).toFixed(2)} ${lenUnit}</text>
+                    `;
+                }
+                else if (type === 'vertical-cylinder-cone') {
+                    pathStr = `M 200,50 L 300,90 L 300,210 L 200,250 L 100,210 L 100,90 Z`;
+                    liquidY = tankBottomY - (tankHeightPx * fillRatio);
+                    safetyLineY = tankBottomY - (tankHeightPx * 0.90);
+                    
+                    heightLines = `
+                        <line x1="70" y1="50" x2="70" y2="250" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="65" y1="50" x2="200" y2="50" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <line x1="65" y1="250" x2="200" y2="250" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <text x="50" y="150" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 50 150)">H_total = ${toDisplayLen(params.h_cb + params.H + params.h_ct).toFixed(2)} ${lenUnit}</text>
+                    `;
+                    
+                    diameterLines = `
+                        <line x1="100" y1="270" x2="300" y2="270" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="100" y1="210" x2="100" y2="275" stroke="#94A3B8" stroke-width="1"/>
+                        <line x1="300" y1="210" x2="300" y2="275" stroke="#94A3B8" stroke-width="1"/>
+                        <text x="200" y="287" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle">D = ${D_val.toFixed(2)} ${lenUnit}</text>
+                    `;
+                }
+                else if (type === 'vertical-cylinder-ellip') {
+                    pathStr = `M 200,50 A 100,40 0 0 1 300,90 L 300,210 A 100,40 0 0 1 200,250 A 100,40 0 0 1 100,210 L 100,90 A 100,40 0 0 1 200,50 Z`;
+                    liquidY = tankBottomY - (tankHeightPx * fillRatio);
+                    safetyLineY = tankBottomY - (tankHeightPx * 0.90);
+                    
+                    heightLines = `
+                        <line x1="70" y1="50" x2="70" y2="250" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="65" y1="50" x2="200" y2="50" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <line x1="65" y1="250" x2="200" y2="250" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <text x="50" y="150" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 50 150)">H_total = ${toDisplayLen(params.H + params.D/2).toFixed(2)} ${lenUnit}</text>
+                    `;
+                    
+                    diameterLines = `
+                        <line x1="100" y1="270" x2="300" y2="270" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="100" y1="210" x2="100" y2="275" stroke="#94A3B8" stroke-width="1"/>
+                        <line x1="300" y1="210" x2="300" y2="275" stroke="#94A3B8" stroke-width="1"/>
+                        <text x="200" y="287" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle">D = ${D_val.toFixed(2)} ${lenUnit}</text>
+                    `;
+                }
+                else if (type === 'horizontal-cylinder-flat') {
+                    pathStr = "M 80 70 L 320 70 L 320 230 L 80 230 Z";
+                    tankBottomY = 230;
+                    tankTopY = 70;
+                    tankHeightPx = 160;
+                    liquidY = tankBottomY - (tankHeightPx * fillRatio);
+                    safetyLineY = tankBottomY - (tankHeightPx * 0.90);
+                    
+                    heightLines = `
+                        <line x1="55" y1="70" x2="55" y2="230" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="50" y1="70" x2="80" y2="70" stroke="#94A3B8" stroke-width="1"/>
+                        <line x1="50" y1="230" x2="80" y2="230" stroke="#94A3B8" stroke-width="1"/>
+                        <text x="35" y="150" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 35 150)">D = ${D_val.toFixed(2)} ${lenUnit}</text>
+                    `;
+                    
+                    diameterLines = `
+                        <line x1="80" y1="250" x2="320" y2="250" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="80" y1="230" x2="80" y2="255" stroke="#94A3B8" stroke-width="1"/>
+                        <line x1="320" y1="230" x2="320" y2="255" stroke="#94A3B8" stroke-width="1"/>
+                        <text x="200" y="265" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle">L = ${H_val.toFixed(2)} ${lenUnit}</text>
+                    `;
+                }
+                else if (type === 'horizontal-cylinder-ellip') {
+                    pathStr = `M 120,70 L 280,70 A 40,80 0 0 1 280,230 L 120,230 A 40,80 0 0 1 120,70 Z`;
+                    tankBottomY = 230;
+                    tankTopY = 70;
+                    tankHeightPx = 160;
+                    liquidY = tankBottomY - (tankHeightPx * fillRatio);
+                    safetyLineY = tankBottomY - (tankHeightPx * 0.90);
+                    
+                    heightLines = `
+                        <line x1="55" y1="70" x2="55" y2="230" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="50" y1="70" x2="120" y2="70" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <line x1="50" y1="230" x2="120" y2="230" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <text x="35" y="150" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 35 150)">D = ${D_val.toFixed(2)} ${lenUnit}</text>
+                    `;
+                    
+                    diameterLines = `
+                        <line x1="80" y1="250" x2="320" y2="250" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="80" y1="230" x2="80" y2="255" stroke="#94A3B8" stroke-width="1"/>
+                        <line x1="320" y1="230" x2="320" y2="255" stroke="#94A3B8" stroke-width="1"/>
+                        <text x="200" y="265" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle">L_overall = ${toDisplayLen(params.L + params.D/2).toFixed(2)} ${lenUnit}</text>
+                    `;
+                }
+                else if (type === 'spherical') {
+                    pathStr = "M 200 150 A 100 100 0 1 1 200 250 A 100 100 0 1 1 200 50";
+                    liquidY = tankBottomY - (tankHeightPx * fillRatio);
+                    safetyLineY = tankBottomY - (tankHeightPx * 0.90);
+                    
+                    heightLines = `
+                        <line x1="70" y1="50" x2="70" y2="250" stroke="#64748B" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                        <line x1="65" y1="50" x2="200" y2="50" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <line x1="65" y1="250" x2="200" y2="250" stroke="#94A3B8" stroke-dasharray="2" stroke-width="0.5"/>
+                        <text x="50" y="150" fill="${textColor}" font-size="11" font-weight="600" text-anchor="middle" transform="rotate(-90 50 150)">D = ${D_val.toFixed(2)} ${lenUnit}</text>
+                    `;
+                }
+
+                levelLines = `
+                    <line x1="330" y1="${liquidY}" x2="330" y2="${tankBottomY}" stroke="#2563EB" stroke-width="2" marker-start="url(#blueArrow)" marker-end="url(#blueArrow)"/>
+                    <line x1="300" y1="${liquidY}" x2="335" y2="${liquidY}" stroke="#2563EB" stroke-width="1" stroke-dasharray="2"/>
+                    <line x1="300" y1="${tankBottomY}" x2="335" y2="${tankBottomY}" stroke="#2563EB" stroke-width="1"/>
+                    <text x="345" y="${(liquidY + tankBottomY) / 2 + 4}" fill="#2563EB" font-size="11" font-weight="bold">h = ${toDisplayLen(params.h_liquid).toFixed(2)} ${lenUnit}</text>
+                `;
+
+                const svgHtml = `
+                    <svg viewBox="0 0 400 320" style="width: 100%; height: auto; overflow: visible;">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748B"/>
+                            </marker>
+                            <marker id="blueArrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563EB"/>
+                            </marker>
+                            <linearGradient id="liqGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.8"/>
+                                <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.95"/>
+                            </linearGradient>
+                            <clipPath id="tankClip">
+                                <path d="${pathStr}"/>
+                            </clipPath>
+                        </defs>
+
+                        <!-- Background Grids -->
+                        <g opacity="0.4">
+                            <line x1="0" y1="50" x2="400" y2="50" stroke="${gridColor}" stroke-dasharray="2"/>
+                            <line x1="0" y1="100" x2="400" y2="100" stroke="${gridColor}" stroke-dasharray="2"/>
+                            <line x1="0" y1="150" x2="400" y2="150" stroke="${gridColor}" stroke-dasharray="2"/>
+                            <line x1="0" y1="200" x2="400" y2="200" stroke="${gridColor}" stroke-dasharray="2"/>
+                            <line x1="0" y1="250" x2="400" y2="250" stroke="${gridColor}" stroke-dasharray="2"/>
+                        </g>
+
+                        <!-- Liquid Fill (Clipped by tank outline) -->
+                        <rect x="50" y="${liquidY}" width="300" height="250" fill="url(#liqGrad)" clip-path="url(#tankClip)"/>
+
+                        <!-- Wave overlay at the liquid surface -->
+                        <path d="M 50 ${liquidY} Q 150 ${liquidY - 3}, 200 ${liquidY} T 350 ${liquidY}" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" clip-path="url(#tankClip)"/>
+
+                        <!-- Tank Boundary Stroke -->
+                        <path d="${pathStr}" fill="none" stroke="${strokeColor}" stroke-width="3.5" stroke-linejoin="round"/>
+
+                        <!-- Safe Fill Limit (90%) Line -->
+                        <line x1="90" y1="${safetyLineY}" x2="310" y2="${safetyLineY}" stroke="${referenceLineColor}" stroke-dasharray="4,4" stroke-width="1.5"/>
+                        <text x="200" y="${safetyLineY - 4}" fill="${referenceLineColor}" font-size="9" font-weight="bold" text-anchor="middle">Max Safe Fill (90%)</text>
+
+                        <!-- Dimension Overlays -->
+                        ${heightLines}
+                        ${diameterLines}
+                        ${levelLines}
+
+                        <!-- Info Display Panel inside SVG -->
+                        <rect x="110" y="130" width="180" height="40" rx="4" fill="rgba(255,255,255,0.9)" stroke="${strokeColor}" stroke-width="1" opacity="0.9"/>
+                        <text x="200" y="145" fill="#1E293B" font-size="10" font-weight="bold" text-anchor="middle">Fill Ratio: ${(fillRatio * 100).toFixed(1)}%</text>
+                        <text x="200" y="160" fill="#2563EB" font-size="10" font-weight="bold" text-anchor="middle">Volume: ${liqVol.toLocaleString(undefined, {maximumFractionDigits: 0})} ${volUnit}</text>
+                    </svg>
+                `;
+
+                svgDiv.innerHTML = svgHtml;
+            }
+
+            // PDF Report Generator
+            function generatePDF() {
+                if (!lastResult) {
+                    displayMessage("Please calculate the volume first.", "error");
+                    return;
+                }
+                
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    const totalPagesExp = '{total_pages_count_string}';
+                    
+                    const margin = 15;
+                    const primaryColor = [30, 58, 138];
+                    const secondaryColor = [37, 99, 235];
+                    
+                    // Header band on Page 1
+                    doc.setFillColor(30, 58, 138);
+                    doc.rect(0, 0, 210, 35, 'F');
+                    
+                    doc.setFont("Helvetica", "bold");
+                    doc.setFontSize(20);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text("Design Calculators", margin, 15);
+                    doc.setFontSize(11);
+                    doc.setFont("Helvetica", "normal");
+                    doc.text("Industrial Storage Tank Sizing & Volume Report", margin, 23);
+                    doc.text("designcalculators.co.in", 210 - margin, 23, { align: 'right' });
+                    
+                    doc.setTextColor(51, 51, 51);
+                    doc.setFont("Helvetica", "bold");
+                    doc.setFontSize(10);
+                    doc.text("DESIGN PARAMETERS SUMMARY", margin, 45);
+                    
+                    const units = lastResult.inputs.unitSystem === 'imperial' ? 'ft' : 'm';
+                    const inputRows = [
+                        ["Tank Sizing Profile", lastResult.tankTypeName],
+                        ["Unit System Setting", lastResult.inputs.unitSystem.toUpperCase()]
+                    ];
+                    
+                    if (lastResult.inputs.D !== undefined) inputRows.push(["Tank Diameter (D)", `${(lastResult.inputs.D / (units === 'ft' ? 0.3048 : 1)).toFixed(3)} ${units}`]);
+                    if (lastResult.inputs.H !== undefined) inputRows.push(["Cylinder Height (H)", `${(lastResult.inputs.H / (units === 'ft' ? 0.3048 : 1)).toFixed(3)} ${units}`]);
+                    if (lastResult.inputs.L !== undefined) inputRows.push(["Cylinder Length (L)", `${(lastResult.inputs.L / (units === 'ft' ? 0.3048 : 1)).toFixed(3)} ${units}`]);
+                    if (lastResult.inputs.W !== undefined) inputRows.push(["Tank Width (W)", `${(lastResult.inputs.W / (units === 'ft' ? 0.3048 : 1)).toFixed(3)} ${units}`]);
+                    if (lastResult.inputs.h_cb !== undefined) inputRows.push(["Bottom Cone Height (h_cb)", `${(lastResult.inputs.h_cb / (units === 'ft' ? 0.3048 : 1)).toFixed(3)} ${units}`]);
+                    if (lastResult.inputs.h_ct !== undefined) inputRows.push(["Top Cone Height (h_ct)", `${(lastResult.inputs.h_ct / (units === 'ft' ? 0.3048 : 1)).toFixed(3)} ${units}`]);
+                    inputRows.push(["Liquid Level Height (h)", `${(lastResult.inputs.h_liquid / (units === 'ft' ? 0.3048 : 1)).toFixed(3)} ${units}`]);
+                    
+                    doc.autoTable({
+                        startY: 49,
+                        margin: { left: margin, right: margin },
+                        head: [["Sizing Parameter", "Specified Value"]],
+                        body: inputRows,
+                        theme: 'striped',
+                        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+                        styles: { fontSize: 8, cellPadding: 2.5 }
+                    });
+                    
+                    let yPos = doc.lastAutoTable.finalY + 8;
+                    
+                    doc.setFont("Helvetica", "bold");
+                    doc.setFontSize(10);
+                    doc.text("VOLUME SIZING ANALYSIS RESULTS", margin, yPos);
+                    
+                    const outputRows = [
+                        ["Nominal Storage Volume (100% Full)", `${lastResult.totalVolumeDisplay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${lastResult.totalVolUnit}`],
+                        ["Calculated Liquid Volume", `${lastResult.liquidVolumeDisplay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${lastResult.liquidVolUnit}`],
+                        ["Fill Ratio Percentage", `${(lastResult.fill_ratio * 100).toFixed(2)}%`],
+                        ["Sizing Operational Status", lastResult.fill_ratio <= 0.9 ? "SAFE - OPERATING CAPACITY OK" : "WARNING - EXCEEDS 90% SAFE CAPACITY LIMIT"]
+                    ];
+                    
+                    doc.autoTable({
+                        startY: yPos + 4,
+                        margin: { left: margin, right: margin },
+                        head: [["Sizing Parameter", "Computed Sizing Output"]],
+                        body: outputRows,
+                        theme: 'grid',
+                        headStyles: { fillColor: secondaryColor, textColor: [255, 255, 255] },
+                        styles: { fontSize: 8, cellPadding: 2.5 }
+                    });
+                    
+                    // Step-by-Step Resolution Table on Page 2
+                    doc.addPage();
+                    doc.setFont("Helvetica", "bold");
+                    doc.setFontSize(12);
+                    doc.text("STEP-BY-STEP MATHEMATICAL ANALYSIS", margin, 20);
+                    
+                    const stepRows = [];
+                    lastResult.steps.forEach(step => {
+                        let cleanDesc = step.description
+                            .replace(/\\\[/g, "")
+                            .replace(/\\\]/g, "")
+                            .replace(/\\\(|\\\)/g, "")
+                            .replace(/\\text\{([^}]+)\}/g, "$1")
+                            .replace(/\\times/g, "x")
+                            .replace(/\\pi/g, "pi")
+                            .replace(/\\cdot/g, "*")
+                            .replace(/<[^>]+>/g, "");
+                        stepRows.push([`Step ${step.num}`, step.title, cleanDesc]);
+                    });
+                    
+                    doc.autoTable({
+                        startY: 25,
+                        margin: { left: margin, right: margin },
+                        head: [["Step", "Analytical Sizing Process", "Detailed Resolution Notes"]],
+                        body: stepRows,
+                        theme: 'striped',
+                        headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+                        styles: { fontSize: 7, cellPadding: 2 }
+                    });
+                    
+                    // Add Page headers & footers
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        
+                        // Header for subsequent pages
+                        if (i > 1) {
+                            doc.setFontSize(8);
+                            doc.setTextColor(120);
+                            doc.setFont("Helvetica", "normal");
+                            doc.text("Design Calculators - Storage Tank Volume Report", margin, 10);
+                            doc.text("designcalculators.co.in", 210 - margin, 10, { align: 'right' });
+                            doc.setDrawColor(220);
+                            doc.line(margin, 12, 210 - margin, 12);
+                        }
+                        
+                        // Footer on all pages
+                        doc.setFontSize(8);
+                        doc.setTextColor(120);
+                        doc.setDrawColor(220);
+                        doc.line(margin, 280, 210 - margin, 280);
+                        
+                        let pageStr = "Page " + i + " of " + totalPagesExp;
+                        doc.text(pageStr, margin, 285);
+                        doc.text("designcalculators.co.in", 210 - margin, 285, { align: 'right' });
+                    }
+                    
+                    if (typeof doc.putTotalPages === 'function') {
+                        doc.putTotalPages(totalPagesExp);
+                    }
+                    
+                    doc.save("storage_tank_volume_report.pdf");
+                    displayMessage("PDF Sizing Report downloaded!", "info");
+                } catch (err) {
+                    console.error("PDF generation failed:", err);
+                    displayMessage("Failed to generate PDF report: " + err.message, "error");
+                }
             }
 
             // --- Attach Event Listeners ---
             calculateBtn.addEventListener('click', runCalculation);
             strappingChartBtn.addEventListener('click', generateStrappingChart);
+            
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            if (downloadPdfBtn) {
+                downloadPdfBtn.addEventListener('click', generatePDF);
+            }
 
             // --- CHART INITIALIZATION ---
             function initCharts() {
@@ -2076,6 +3698,23 @@
 
             // Init on load
             initCharts();
+
+            // Accordion click handler for interview questions
+            document.querySelectorAll('.interview-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const item = header.parentElement;
+                    const isActive = item.classList.contains('active');
+                    
+                    // Close other items
+                    document.querySelectorAll('.interview-item').forEach(i => {
+                        i.classList.remove('active');
+                    });
+                    
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
 
             // Theme switch functionality
             const themeSwitch = document.getElementById('theme-switch');
