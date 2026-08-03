@@ -544,7 +544,6 @@
             font-size: 0.9rem; color: #94A3B8;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .container { padding: 0 15px; }
             .navbar { flex-direction: column; gap: 20px; }
@@ -552,6 +551,19 @@
             .form-row { grid-template-columns: 1fr; }
             .card { padding: 20px; }
             .footer-content { flex-direction: column; gap: 25px; }
+            
+            /* Mobile-first MathJax & calculation step auto-wrap */
+            mjx-container {
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+            }
+            .calculation-step, .formula, .math-block {
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                word-break: break-word !important;
+                white-space: normal !important;
+            }
         }
         /* --- NEW ENHANCED EDUCATION STYLES --- */
         .education-section { margin-top: 60px; }
@@ -802,6 +814,51 @@
                     "item": "https://designcalculators.co.in/gascompressibility"
                 }
             ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "What is the gas compressibility factor Z?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The gas compressibility factor (Z), also called the deviation factor, is the ratio of the actual volume of a real gas to the volume predicted by the ideal gas law at the same pressure and temperature. It accounts for intermolecular forces and molecular volume."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Which Equation of State is best for natural gas compressibility?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The AGA 8 Gross or Detail method (ISO 12213) is standard for natural gas custody transfer and pipeline applications. For general hydrocarbon processing and cryogenic states, Soave-Redlich-Kwong (SRK) and Peng-Robinson (PR) cubic equations are widely preferred."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the Wichert-Aziz correction in gas calculations?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The Wichert-Aziz correction is a method used to adjust pseudo-critical temperature and pressure of sour natural gas mixtures containing carbon dioxide (CO2) and hydrogen sulfide (H2S), compensating for polar molecular interactions."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How does dynamic viscosity vary with gas density?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Unlike liquids, gas viscosity increases as temperature rises. For real gases, high pressures and high densities also increase gas viscosity. The Lee-Gonzalez-Eakin (LGE) correlation is typically used to calculate real gas dynamic viscosity."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What is the gas supercompressibility factor Fpv?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "The supercompressibility factor Fpv is defined as the square root of (Z_std / Z), where Z_std is the compressibility factor at standard conditions (typically 1.0). It is used directly in orifice plate flow measurement standards like AGA 3."
+                    }
+                }
+            ]
         }
     ]
 }
@@ -894,43 +951,102 @@
                             <label>Quick Load Scenarios:</label>
                             <div class="preset-container" style="margin-bottom: 0;">
                                 <button type="button" class="preset-btn" onclick="loadPreset('methane_high')"><i class="fas fa-fire"></i> High Pressure Methane</button>
-                                <button type="button" class="preset-btn" onclick="loadPreset('natgas_pipeline')"><i class="fas fa-industry"></i> Pipeline Nat Gas (0.6 SG)</button>
-                                <button type="button" class="preset-btn" onclick="loadPreset('nitrogen_purge')"><i class="fas fa-wind"></i> Nitrogen Purge</button>
+                                <button type="button" class="preset-btn" onclick="loadPreset('natgas_pipeline')"><i class="fas fa-industry"></i> Pipeline Nat Gas (AGA 8)</button>
+                                <button type="button" class="preset-btn" onclick="loadPreset('nitrogen_purge')"><i class="fas fa-wind"></i> Nitrogen Purge (RK)</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Fluid Selection -->
-                    <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px;">1. Fluid Composition</h4>
+                    <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 20px;">1. Fluid Composition</h4>
                     <div class="form-row">
                         <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-flask"></i> Gas Type</div>
+                            <div class="vector-input-header"><i class="fas fa-flask"></i> Composition Mode</div>
                             <div class="form-group">
-                                <label for="gas-select">Select Gas / Mixture</label>
-                                <select id="gas-select" onchange="updateGasInputs()">
+                                <label for="composition-mode">Select Input Mode</label>
+                                <select id="composition-mode" onchange="updateCompositionMode()">
+                                    <option value="pure" selected>Pure Gas Component</option>
+                                    <option value="natgas_sg">Natural Gas by SG & Inerts (AGA 8 / Standing)</option>
+                                    <option value="custom_mixture">Custom Gas Mixture (Mol %)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- PURE GAS GROUP -->
+                        <div class="vector-input-group" id="pure-gas-group">
+                            <div class="vector-input-header"><i class="fas fa-filter"></i> Pure Gas Select</div>
+                            <div class="form-group">
+                                <label for="gas-select">Pure Gas Component</label>
+                                <select id="gas-select">
                                     <option value="methane" selected>Methane (CH4)</option>
                                     <option value="ethane">Ethane (C2H6)</option>
                                     <option value="propane">Propane (C3H8)</option>
                                     <option value="nitrogen">Nitrogen (N2)</option>
                                     <option value="co2">Carbon Dioxide (CO2)</option>
+                                    <option value="h2s">Hydrogen Sulfide (H2S)</option>
                                     <option value="air">Air (Standard)</option>
-                                    <option value="natgas_sg">Natural Gas by SG (Mix)</option>
+                                    <option value="oxygen">Oxygen (O2)</option>
+                                    <option value="hydrogen">Hydrogen (H2)</option>
                                 </select>
                             </div>
                         </div>
-                        <div class="vector-input-group" id="sg-input-group">
-                            <div class="vector-input-header"><i class="fas fa-weight-hanging"></i> Properties</div>
-                            <div class="form-group">
-                                <label for="sg-val">Specific Gravity (Air=1) <span class="tooltip"><i class="fas fa-info-circle info-icon"></i><span class="tooltiptext">Used for SG-based correlations (CNGA/Standing).</span></span></label>
-                                <input type="number" id="sg-val" value="0.554" step="0.001">
+
+                        <!-- NAT GAS SG GROUP -->
+                        <div class="vector-input-group" id="natgas-sg-group" style="display:none;">
+                            <div class="vector-input-header"><i class="fas fa-weight-hanging"></i> Gas SG & Inerts</div>
+                            <div class="form-row" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="form-group">
+                                    <label for="sg-val">Specific Gravity</label>
+                                    <input type="number" id="sg-val" value="0.600" step="0.001" min="0.4" max="2.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="n2-mol">Nitrogen (Mol %)</label>
+                                    <input type="number" id="n2-mol" value="0.0" step="0.1" min="0" max="100">
+                                </div>
                             </div>
-                            <div class="form-group" style="margin-top:10px;">
-                                <label for="n2-mol">Nitrogen Mol % (Optional)</label>
-                                <input type="number" id="n2-mol" value="0" step="0.1">
+                            <div class="form-row" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-top:10px;">
+                                <div class="form-group">
+                                    <label for="co2-mol">CO2 (Mol %)</label>
+                                    <input type="number" id="co2-mol" value="0.0" step="0.1" min="0" max="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="h2s-mol">H2S (Mol %)</label>
+                                    <input type="number" id="h2s-mol" value="0.0" step="0.1" min="0" max="100">
+                                </div>
                             </div>
-                            <div class="form-group" style="margin-top:10px;">
-                                <label for="co2-mol">CO2 Mol % (Optional)</label>
-                                <input type="number" id="co2-mol" value="0" step="0.1">
+                        </div>
+
+                        <!-- CUSTOM MIXTURE GROUP -->
+                        <div class="vector-input-group" id="custom-mixture-group" style="display:none; grid-column: 1 / -1;">
+                            <div class="vector-input-header"><i class="fas fa-sliders-h"></i> Custom Mol % Mix (Must sum to 100%)</div>
+                            <div class="form-row" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px;">
+                                <div class="form-group">
+                                    <label for="mix-ch4">Methane (CH4) %</label>
+                                    <input type="number" id="mix-ch4" value="90.0" step="0.1" min="0" max="100" class="mix-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mix-c2h6">Ethane (C2H6) %</label>
+                                    <input type="number" id="mix-c2h6" value="5.0" step="0.1" min="0" max="100" class="mix-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mix-c3h8">Propane (C3H8) %</label>
+                                    <input type="number" id="mix-c3h8" value="2.0" step="0.1" min="0" max="100" class="mix-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mix-n2">Nitrogen (N2) %</label>
+                                    <input type="number" id="mix-n2" value="1.0" step="0.1" min="0" max="100" class="mix-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mix-co2">CO2 %</label>
+                                    <input type="number" id="mix-co2" value="1.5" step="0.1" min="0" max="100" class="mix-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="mix-h2s">H2S %</label>
+                                    <input type="number" id="mix-h2s" value="0.5" step="0.1" min="0" max="100" class="mix-input">
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px; font-weight: bold; text-align: right;">
+                                <span id="mix-sum-badge" style="padding: 6px 12px; border-radius: 4px; color: white; background: var(--success);">Running Sum: 100.0%</span>
                             </div>
                         </div>
                     </div>
@@ -939,26 +1055,55 @@
                     <h4 style="color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-top: 20px;">2. Process Conditions & Method</h4>
                     <div class="form-row">
                         <div class="vector-input-group">
-                            <div class="vector-input-header"><i class="fas fa-tachometer-alt"></i> State</div>
-                            <div class="form-group">
-                                <label for="pressure">Pressure [bar(g)]</label>
-                                <input type="number" id="pressure" value="50" step="1">
+                            <div class="vector-input-header"><i class="fas fa-tachometer-alt"></i> State Conditions</div>
+                            <div class="form-row" style="grid-template-columns: 1.5fr 1fr; gap: 10px;">
+                                <div class="form-group">
+                                    <label for="pressure">Pressure</label>
+                                    <input type="number" id="pressure" value="50" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pressure-unit">Unit</label>
+                                    <select id="pressure-unit">
+                                        <option value="barg" selected>bar(g)</option>
+                                        <option value="psig">psi(g)</option>
+                                        <option value="kpag">kPa(g)</option>
+                                        <option value="mpag">MPa(g)</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group" style="margin-top:10px;">
-                                <label for="temperature">Temperature [Â°C]</label>
-                                <input type="number" id="temperature" value="20" step="1">
+                            <div class="form-row" style="grid-template-columns: 1.5fr 1fr; gap: 10px; margin-top: 10px;">
+                                <div class="form-group">
+                                    <label for="temperature">Temperature</label>
+                                    <input type="number" id="temperature" value="20" step="0.1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="temperature-unit">Unit</label>
+                                    <select id="temperature-unit">
+                                        <option value="C" selected>°C</option>
+                                        <option value="F">°F</option>
+                                        <option value="K">K</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="vector-input-group">
                             <div class="vector-input-header"><i class="fas fa-calculator"></i> Calculation Method</div>
                             <div class="form-group">
-                                <label for="eos-method">Equation of State</label>
+                                <label for="eos-method">Equation / Correlation</label>
                                 <select id="eos-method">
-                                    <option value="pr" selected>Peng-Robinson (Best for HC)</option>
-                                    <option value="rk">Redlich-Kwong (General)</option>
-                                    <option value="cnga">CNGA (Simple SG correlation)</option>
-                                    <option value="ideal">Ideal Gas (Z=1 Reference)</option>
+                                    <option value="pr" selected>Peng-Robinson (PR - Hydrocarbons)</option>
+                                    <option value="srk">Soave-Redlich-Kwong (SRK - Process)</option>
+                                    <option value="rk">Redlich-Kwong (RK - Diatomics)</option>
+                                    <option value="aga8">AGA 8 Gross Method (ISO 12213-3)</option>
+                                    <option value="hy">Hall-Yarborough (SK Chart Match)</option>
+                                    <option value="dak">Dranchuk-Abu-Kassim (DAK - Reservoir)</option>
+                                    <option value="cnga">CNGA Pipeline Equation</option>
+                                    <option value="ideal">Ideal Gas Law (Z=1 Reference)</option>
                                 </select>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="gas-ratio">Isentropic exponent (&gamma;)</label>
+                                <input type="number" id="gas-ratio" value="1.30" step="0.01" min="1.0" max="2.0">
                             </div>
                         </div>
                     </div>
@@ -1368,90 +1513,136 @@
         // Gas Constants (SI)
         const R_SI = 8.31446; // J/(mol K)
         const P_STD_ATM = 101325; // Pa
-        const T_STD_K = 288.15; // 15C
+        const T_STD_K = 288.15; // 15C (288.15 K)
 
-        // Pure Component Data (Tc in K, Pc in Bar, Omega)
+        // Pure Component Database (Tc in K, Pc in Bar, acentric factor w, Mol Weight M, SG)
         const compDB = {
-            'methane': { Tc: 190.56, Pc: 45.99, w: 0.011, M: 16.043, SG: 0.554 },
-            'ethane': { Tc: 305.32, Pc: 48.72, w: 0.099, M: 30.07, SG: 1.038 },
-            'propane': { Tc: 369.83, Pc: 42.48, w: 0.152, M: 44.10, SG: 1.522 },
-            'nitrogen': { Tc: 126.2, Pc: 33.9, w: 0.037, M: 28.01, SG: 0.967 },
-            'co2': { Tc: 304.13, Pc: 73.77, w: 0.224, M: 44.01, SG: 1.519 },
-            'air': { Tc: 132.5, Pc: 37.7, w: 0.0, M: 28.97, SG: 1.000 }
+            'methane': { Tc: 190.56, Pc: 45.99, w: 0.011, M: 16.043, SG: 0.554, gamma: 1.30 },
+            'ethane': { Tc: 305.32, Pc: 48.72, w: 0.099, M: 30.07, SG: 1.038, gamma: 1.25 },
+            'propane': { Tc: 369.83, Pc: 42.48, w: 0.152, M: 44.10, SG: 1.522, gamma: 1.13 },
+            'nitrogen': { Tc: 126.2, Pc: 33.9, w: 0.037, M: 28.01, SG: 0.967, gamma: 1.40 },
+            'co2': { Tc: 304.13, Pc: 73.77, w: 0.224, M: 44.01, SG: 1.519, gamma: 1.30 },
+            'h2s': { Tc: 373.53, Pc: 89.63, w: 0.094, M: 34.08, SG: 1.176, gamma: 1.32 },
+            'air': { Tc: 132.5, Pc: 37.7, w: 0.0, M: 28.97, SG: 1.000, gamma: 1.40 },
+            'oxygen': { Tc: 154.58, Pc: 50.43, w: 0.022, M: 32.00, SG: 1.105, gamma: 1.40 },
+            'hydrogen': { Tc: 33.19, Pc: 13.13, w: -0.216, M: 2.016, SG: 0.070, gamma: 1.41 }
         };
 
-        function updateGasInputs() {
-            const key = document.getElementById('gas-select').value;
-            const sgInput = document.getElementById('sg-val');
+        function updateCompositionMode() {
+            const mode = document.getElementById('composition-mode').value;
+            document.getElementById('pure-gas-group').style.display = (mode === 'pure') ? 'block' : 'none';
+            document.getElementById('natgas-sg-group').style.display = (mode === 'natgas_sg') ? 'block' : 'none';
+            document.getElementById('custom-mixture-group').style.display = (mode === 'custom_mixture') ? 'block' : 'none';
             
-            if (key === 'natgas_sg') {
-                sgInput.readOnly = false;
-                sgInput.value = 0.6;
-            } else {
-                sgInput.readOnly = true;
-                if(compDB[key]) sgInput.value = compDB[key].SG;
+            const eos = document.getElementById('eos-method');
+            if (mode === 'natgas_sg') {
+                eos.value = 'aga8';
+            } else if (mode === 'pure') {
+                eos.value = 'pr';
             }
+            updateMixSum();
         }
 
+        const mixInputs = document.querySelectorAll('.mix-input');
+        function updateMixSum() {
+            let sum = 0;
+            mixInputs.forEach(input => {
+                sum += parseFloat(input.value) || 0;
+            });
+            const badge = document.getElementById('mix-sum-badge');
+            if (badge) {
+                badge.textContent = `Running Sum: ${sum.toFixed(1)}%`;
+                if (Math.abs(sum - 100) < 0.1) {
+                    badge.style.background = 'var(--success)';
+                } else {
+                    badge.style.background = 'var(--danger)';
+                }
+            }
+            return sum;
+        }
+
+        mixInputs.forEach(input => {
+            input.addEventListener('input', updateMixSum);
+        });
+
         function loadPreset(type) {
+            const compMode = document.getElementById('composition-mode');
+            const eos = document.getElementById('eos-method');
+            const pressure = document.getElementById('pressure');
+            const pressureUnit = document.getElementById('pressure-unit');
+            const temperature = document.getElementById('temperature');
+            const temperatureUnit = document.getElementById('temperature-unit');
+
             if (type === 'methane_high') {
+                compMode.value = 'pure';
+                updateCompositionMode();
                 document.getElementById('gas-select').value = 'methane';
-                updateGasInputs();
-                document.getElementById('pressure').value = '150';
-                document.getElementById('temperature').value = '50';
-                document.getElementById('eos-method').value = 'pr';
+                pressure.value = '150';
+                pressureUnit.value = 'barg';
+                temperature.value = '50';
+                temperatureUnit.value = 'C';
+                eos.value = 'pr';
             } else if (type === 'natgas_pipeline') {
-                document.getElementById('gas-select').value = 'natgas_sg';
-                updateGasInputs();
-                document.getElementById('sg-val').value = '0.6';
-                document.getElementById('pressure').value = '60';
-                document.getElementById('temperature').value = '15';
-                document.getElementById('eos-method').value = 'cnga';
+                compMode.value = 'natgas_sg';
+                updateCompositionMode();
+                document.getElementById('sg-val').value = '0.600';
+                document.getElementById('n2-mol').value = '1.2';
+                document.getElementById('co2-mol').value = '0.8';
+                document.getElementById('h2s-mol').value = '0.0';
+                pressure.value = '65';
+                pressureUnit.value = 'barg';
+                temperature.value = '15';
+                temperatureUnit.value = 'C';
+                eos.value = 'aga8';
             } else if (type === 'nitrogen_purge') {
+                compMode.value = 'pure';
+                updateCompositionMode();
                 document.getElementById('gas-select').value = 'nitrogen';
-                updateGasInputs();
-                document.getElementById('pressure').value = '200';
-                document.getElementById('temperature').value = '25';
-                document.getElementById('eos-method').value = 'pr';
+                pressure.value = '200';
+                pressureUnit.value = 'barg';
+                temperature.value = '25';
+                temperatureUnit.value = 'C';
+                eos.value = 'rk';
             }
             displayMessage(`${type.toUpperCase()} scenario loaded.`, "success");
         }
 
         function displayMessage(message, type = "info") {
             let messageBox = document.getElementById('message-box');
-            messageBox.textContent = message;
-            if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
-            else if (type === "success") messageBox.style.backgroundColor = 'var(--success)';
-            else messageBox.style.backgroundColor = 'var(--primary)';
-            messageBox.classList.add('show');
-            setTimeout(() => messageBox.classList.remove('show'), 4000);
+            if (messageBox) {
+                messageBox.textContent = message;
+                if (type === "error") messageBox.style.backgroundColor = 'var(--danger)';
+                else if (type === "success") messageBox.style.backgroundColor = 'var(--success)';
+                else messageBox.style.backgroundColor = 'var(--primary)';
+                messageBox.classList.add('show');
+                setTimeout(() => messageBox.classList.remove('show'), 4000);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Theme handling
             const themeSwitch = document.getElementById('theme-switch');
             if (themeSwitch && localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
                 themeSwitch.checked = true;
             }
-            if(themeSwitch) {
+            if (themeSwitch) {
                 themeSwitch.addEventListener('change', function() {
                     document.body.classList.toggle('dark-mode');
                     localStorage.setItem('theme', this.checked ? 'dark' : 'light');
                 });
             }
 
-            updateGasInputs(); // Init
+            updateCompositionMode();
             document.getElementById('calculate-btn').addEventListener('click', performCalculation);
             document.getElementById('pdf-btn').addEventListener('click', generatePDF);
-            
-            // Init Theory Visuals
             initTheoryChart();
         });
 
         // --- THEORY CHART (Standing-Katz) ---
         function initTheoryChart() {
-            const ctx = document.getElementById('theoryChart').getContext('2d');
+            const canvasEl = document.getElementById('theoryChart');
+            if (!canvasEl) return;
+            const ctx = canvasEl.getContext('2d');
             const data = {
                 labels: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
                 datasets: [
@@ -1510,175 +1701,540 @@
             });
         }
 
-        // --- EOS SOLVERS ---
-        
-        // Solve Cubic: Z^3 + a2*Z^2 + a1*Z + a0 = 0
+        // Cubic Solver (Cardano's Method)
         function solveCubic(a2, a1, a0) {
-            const Q = (3*a1 - a2*a2) / 9;
-            const R = (9*a2*a1 - 27*a0 - 2*a2*a2*a2) / 54;
-            const D = Q*Q*Q + R*R; // Discriminant
+            const Q = (3 * a1 - a2 * a2) / 9;
+            const R = (9 * a2 * a1 - 27 * a0 - 2 * a2 * a2 * a2) / 54;
+            const D = Q * Q * Q + R * R;
             
             if (D >= 0) {
                 const S = Math.cbrt(R + Math.sqrt(D));
                 const T = Math.cbrt(R - Math.sqrt(D));
-                return -a2/3 + S + T; // Real root
+                return -a2 / 3 + S + T;
             } else {
-                // 3 Real roots, use trig method. For Z, we usually want largest root for Vapor.
-                const theta = Math.acos(R / Math.sqrt(-(Q*Q*Q)));
-                const z1 = 2 * Math.sqrt(-Q) * Math.cos(theta/3) - a2/3;
-                const z2 = 2 * Math.sqrt(-Q) * Math.cos((theta + 2*Math.PI)/3) - a2/3;
-                const z3 = 2 * Math.sqrt(-Q) * Math.cos((theta + 4*Math.PI)/3) - a2/3;
+                const theta = Math.acos(R / Math.sqrt(-(Q * Q * Q)));
+                const z1 = 2 * Math.sqrt(-Q) * Math.cos(theta / 3) - a2 / 3;
+                const z2 = 2 * Math.sqrt(-Q) * Math.cos((theta + 2 * Math.PI) / 3) - a2 / 3;
+                const z3 = 2 * Math.sqrt(-Q) * Math.cos((theta + 4 * Math.PI) / 3) - a2 / 3;
                 return Math.max(z1, z2, z3); // Vapor root
             }
         }
 
-        function performCalculation() {
-            // 1. Get Inputs
-            const gasKey = document.getElementById('gas-select').value;
-            const sg = parseFloat(document.getElementById('sg-val').value);
-            const P_bar_g = parseFloat(document.getElementById('pressure').value);
-            const T_C = parseFloat(document.getElementById('temperature').value);
-            const method = document.getElementById('eos-method').value;
+        // Hall-Yarborough Correlation
+        function solveHallYarborough(Tpr, Ppr) {
+            const t = 1 / Tpr;
+            const A = 0.06125 * Ppr * t * Math.exp(-1.2 * Math.pow(1 - t, 2));
+            let Y = 0.01;
+            for (let iter = 0; iter < 100; iter++) {
+                const Y2 = Y * Y;
+                const Y3 = Y2 * Y;
+                const Y4 = Y3 * Y;
+                const term1 = (Y + Y2 + Y3 - Y4) / Math.pow(1 - Y, 3);
+                const term2 = (14.76 * t - 9.76 * t * t + 4.58 * Math.pow(t, 3)) * Y2;
+                const term3 = (90.7 * t - 242.2 * t * t + 424.4 * Math.pow(t, 3)) * Math.pow(Y, 2.18 + 2.82 * t);
+                const F = term1 - term2 + term3 - A;
+                
+                const d_term1 = (1 + 4*Y + 4*Y2 - 4*Y3 + Y4) / Math.pow(1 - Y, 4);
+                const d_term2 = 2 * (14.76 * t - 9.76 * t * t + 4.58 * Math.pow(t, 3)) * Y;
+                const powCoeff = 2.18 + 2.82 * t;
+                const d_term3 = powCoeff * (90.7 * t - 242.2 * t * t + 424.4 * Math.pow(t, 3)) * Math.pow(Y, powCoeff - 1);
+                const dF = d_term1 - d_term2 + d_term3;
+                
+                const delta = F / dF;
+                Y -= delta;
+                if (Math.abs(delta) < 1e-6) break;
+            }
+            return (0.06125 * Ppr * t * Math.exp(-1.2 * Math.pow(1 - t, 2))) / Y;
+        }
 
-            if (isNaN(sg) || isNaN(P_bar_g) || isNaN(T_C)) {
-                displayMessage("Please enter valid numbers.", "error");
+        // Dranchuk-Abu-Kassim Correlation
+        function solveDAK(Tpr, Ppr) {
+            const A1 = 0.3265, A2 = -1.0700, A3 = -0.5339, A4 = 0.01569, A5 = -0.05165;
+            const A6 = 0.5475, A7 = -0.7361, A8 = 0.1844, A9 = 0.1056, A10 = 0.6134, A11 = 0.7210;
+            
+            const C1 = A1 + A2/Tpr + A3/Math.pow(Tpr, 3) + A4/Math.pow(Tpr, 4) + A5/Math.pow(Tpr, 5);
+            const C2 = A6 + A7/Tpr + A8/(Tpr*Tpr);
+            const C3 = A9 * (A7/Tpr + A8/(Tpr*Tpr));
+            const invT3 = 1 / Math.pow(Tpr, 3);
+            
+            let rhor = 0.27 * Ppr / Tpr;
+            for (let iter = 0; iter < 100; iter++) {
+                const rhor2 = rhor * rhor;
+                const rhor5 = Math.pow(rhor, 5);
+                const expTerm = Math.exp(-A11 * rhor2);
+                
+                const Z = 0.27 * Ppr / (rhor * Tpr);
+                const term1 = 1 + C1*rhor + C2*rhor2 - C3*rhor5 + A10*rhor2*invT3*(1 + A11*rhor2)*expTerm;
+                const F = Z - term1;
+                
+                const dZ = -0.27 * Ppr / (rhor2 * Tpr);
+                const d_term1 = C1 + 2*C2*rhor - 5*C3*Math.pow(rhor, 4) + A10*invT3*expTerm*(2*rhor*(1 + A11*rhor2) + 2*A11*Math.pow(rhor, 3) - 2*A11*rhor*rhor2*(1 + A11*rhor2));
+                const dF = dZ - d_term1;
+                
+                const delta = F / dF;
+                rhor -= delta;
+                if (Math.abs(delta) < 1e-6) break;
+            }
+            return 0.27 * Ppr / (rhor * Tpr);
+        }
+
+        // AGA 8 Gross Characterization Method 1 Solver
+        function solveAGA8Gross(P_bar_abs, T_K, sg, y_n2, y_co2, y_h2s) {
+            const Tpc = 155.24 / (0.5616 + sg - 0.35 * y_n2 - y_co2 + 0.1 * y_h2s);
+            const Ppc = (4.821 / (0.0886 - 0.046 * sg + 0.05 * y_n2 + 0.09 * y_co2 + 0.01 * y_h2s)) * 10; // convert MPa to bar
+            
+            const Tr = T_K / Tpc;
+            const Pr = P_bar_abs / Ppc;
+            
+            const B_star = -0.42 * Math.pow(Tr, -1.6) - 0.05 * Math.pow(Tr, -3.3);
+            const C_star = 0.085 * Math.pow(Tr, -2.0) - 0.012 * Math.pow(Tr, -4.0);
+            
+            let Z = 1.0;
+            for (let iter = 0; iter < 100; iter++) {
+                const F = Z - 1 - B_star * Pr / Z - C_star * Pr * Pr / (Z * Z);
+                const dF = 1 + B_star * Pr / (Z * Z) + 2 * C_star * Pr * Pr / (Z * Z * Z);
+                const delta = F / dF;
+                Z -= delta;
+                if (Math.abs(delta) < 1e-6) break;
+            }
+            return { Z, Tpc, Ppc, Tr, Pr, B_star, C_star };
+        }
+
+        // Universal EOS calculation routine
+        function calcZ(method, P_bar_abs, T_K, Tc, Pc, w) {
+            if (method === 'ideal') return 1.0;
+            
+            const Tr = T_K / Tc;
+            const Pr = P_bar_abs / Pc;
+            
+            if (method === 'hy') return solveHallYarborough(Tr, Pr);
+            if (method === 'dak') return solveDAK(Tr, Pr);
+            if (method === 'cnga') {
+                const P_psig = (P_bar_abs - 1.01325) * 14.5038;
+                const T_R = T_K * 1.8;
+                const SG_approx = 0.6; // average
+                const num = 344400 * P_psig * Math.pow(10, 1.785 * SG_approx);
+                const den = Math.pow(T_R, 3.825);
+                return 1 / (1 + num/den);
+            }
+            
+            const R = 0.083144; // bar L / (mol K)
+            let a_c = 0, b_c = 0, kappa = 0, alpha = 0;
+            
+            if (method === 'pr') {
+                a_c = 0.45724 * Math.pow(R * Tc, 2) / Pc;
+                b_c = 0.07780 * (R * Tc) / Pc;
+                kappa = 0.37464 + 1.54226 * w - 0.26992 * w * w;
+                alpha = Math.pow(1 + kappa * (1 - Math.sqrt(Tr)), 2);
+                
+                const a = a_c * alpha;
+                const b = b_c;
+                
+                const A = (a * P_bar_abs) / Math.pow(R * T_K, 2);
+                const B = (b * P_bar_abs) / (R * T_K);
+                
+                const c2 = -(1 - B);
+                const c1 = A - 3 * B * B - 2 * B;
+                const c0 = -(A * B - B * B - B * B * B);
+                return solveCubic(c2, c1, c0);
+            }
+            
+            if (method === 'srk') {
+                a_c = 0.42748 * Math.pow(R * Tc, 2) / Pc;
+                b_c = 0.08664 * (R * Tc) / Pc;
+                kappa = 0.480 + 1.574 * w - 0.176 * w * w;
+                alpha = Math.pow(1 + kappa * (1 - Math.sqrt(Tr)), 2);
+                
+                const a = a_c * alpha;
+                const b = b_c;
+                
+                const A = (a * P_bar_abs) / Math.pow(R * T_K, 2);
+                const B = (b * P_bar_abs) / (R * T_K);
+                
+                const c2 = -1;
+                const c1 = A - B - B * B;
+                const c0 = -A * B;
+                return solveCubic(c2, c1, c0);
+            }
+            
+            if (method === 'rk') {
+                a_c = 0.42748 * Math.pow(R * Tc, 2) / Pc;
+                b_c = 0.08664 * (R * Tc) / Pc;
+                alpha = 1 / Math.sqrt(Tr);
+                
+                const a = a_c * alpha;
+                const b = b_c;
+                
+                const A = (a * P_bar_abs) / Math.pow(R * T_K, 2);
+                const B = (b * P_bar_abs) / (R * T_K);
+                
+                const c2 = -1;
+                const c1 = A - B - B * B;
+                const c0 = -A * B;
+                return solveCubic(c2, c1, c0);
+            }
+            
+            return 1.0;
+        }
+
+        function performCalculation() {
+            // Units Conversion - Pressure
+            const pInput = parseFloat(document.getElementById('pressure').value);
+            const pUnit = document.getElementById('pressure-unit').value;
+            let P_bar_g = 0;
+            if (pUnit === 'barg') P_bar_g = pInput;
+            else if (pUnit === 'psig') P_bar_g = pInput * 0.0689476;
+            else if (pUnit === 'kpag') P_bar_g = pInput * 0.01;
+            else if (pUnit === 'mpag') P_bar_g = pInput * 10;
+
+            const P_abs_bar = P_bar_g + 1.01325;
+            const P_abs_Pa = P_abs_bar * 1e5;
+
+            // Units Conversion - Temperature
+            const tInput = parseFloat(document.getElementById('temperature').value);
+            const tUnit = document.getElementById('temperature-unit').value;
+            let T_C = 0;
+            if (tUnit === 'C') T_C = tInput;
+            else if (tUnit === 'F') T_C = (tInput - 32) * 5/9;
+            else if (tUnit === 'K') T_C = tInput - 273.15;
+
+            const T_K = T_C + 273.15;
+            const method = document.getElementById('eos-method').value;
+            const compMode = document.getElementById('composition-mode').value;
+            const gamma = parseFloat(document.getElementById('gas-ratio').value) || 1.30;
+
+            if (isNaN(pInput) || isNaN(tInput)) {
+                displayMessage("Please enter valid pressure and temperature.", "error");
                 return;
             }
 
-            // Units Conv
-            const P_abs_bar = P_bar_g + 1.01325;
-            const P_abs_Pa = P_abs_bar * 1e5;
-            const T_K = T_C + 273.15;
+            let Tc = 0, Pc = 0, w = 0, M = 0, sg = 0;
+            let derivationHtml = "";
+            let componentsUsed = [];
 
-            // 2. Critical Props (Tc, Pc, Omega)
-            let Tc = 0, Pc = 0, w = 0, M = 0;
-            
-            if (gasKey === 'natgas_sg') {
-                // Standing's Correlation for Natural Gas
-                // Tc = 168 + 325*SG - 12.5*SG^2
-                // Pc = 677 + 15.0*SG - 37.5*SG^2 (psia)
-                Tc = (168 + 325*sg - 12.5*sg*sg) * (5/9); // Rankine to Kelvin
-                const Pc_psia = 677 + 15*sg - 37.5*sg*sg;
-                Pc = Pc_psia * 0.0689476; // Bar
-                w = 0.01; // Approx acentric factor for NG
-                M = sg * 28.97;
-            } else {
+            // Step 1: Input Analysis & Composition Setup
+            derivationHtml += `<h4>Step 1: Input and Composition Profiling</h4>`;
+            if (compMode === 'pure') {
+                const gasKey = document.getElementById('gas-select').value;
                 const data = compDB[gasKey];
                 Tc = data.Tc;
                 Pc = data.Pc;
                 w = data.w;
                 M = data.M;
+                sg = data.SG;
+                componentsUsed.push({ name: gasKey.toUpperCase(), fraction: 1.0 });
+                derivationHtml += `Pure Gas selected: <strong>${gasKey.toUpperCase()}</strong>.<br>`;
+                derivationHtml += `Molecular Weight: $M = ${M.toFixed(3)}\\text{ g/mol}$, Specific Gravity: $\\text{SG} = ${sg.toFixed(3)}$<br>`;
+            } 
+            else if (compMode === 'natgas_sg') {
+                sg = parseFloat(document.getElementById('sg-val').value) || 0.6;
+                const n2 = parseFloat(document.getElementById('n2-mol').value) || 0;
+                const co2 = parseFloat(document.getElementById('co2-mol').value) || 0;
+                const h2s = parseFloat(document.getElementById('h2s-mol').value) || 0;
+                
+                // Standing's correlation to Rankine and psia
+                const Tc_Rankine = 168 + 325 * sg - 12.5 * sg * sg;
+                const Pc_psia = 677 + 15 * sg - 37.5 * sg * sg;
+                
+                // Correct for inerts (Carr-Kobayashi-Burrows)
+                const y_co2 = co2 / 100;
+                const y_n2 = n2 / 100;
+                const y_h2s = h2s / 100;
+                
+                const Tc_Rankine_corr = Tc_Rankine - 80 * y_co2 - 250 * y_n2 + 130 * y_h2s;
+                const Pc_psia_corr = Pc_psia + 440 * y_co2 - 170 * y_n2 + 9 * y_h2s;
+                
+                Tc = Tc_Rankine_corr * (5/9); // to Kelvin
+                Pc = Pc_psia_corr * 0.0689476; // to bar
+                w = 0.01 + 0.05 * ((sg - 0.55) / 0.2); // acentric factor approx
+                M = sg * 28.96;
+                componentsUsed.push({ name: 'Hydrocarbons', fraction: 1 - y_n2 - y_co2 - y_h2s }, { name: 'Nitrogen', fraction: y_n2 }, { name: 'CO2', fraction: y_co2 }, { name: 'H2S', fraction: y_h2s });
+                
+                derivationHtml += `Natural Gas defined by Specific Gravity: $\\text{SG} = ${sg.toFixed(3)}$.<br>`;
+                derivationHtml += `Inert Content: $N_2 = ${n2}\\%$, $CO_2 = ${co2}\\%$, $H_2S = ${h2s}\\%$.<br>`;
+            } 
+            else if (compMode === 'custom_mixture') {
+                const sum = updateMixSum();
+                let y_ch4 = (parseFloat(document.getElementById('mix-ch4').value) || 0) / 100;
+                let y_c2h6 = (parseFloat(document.getElementById('mix-c2h6').value) || 0) / 100;
+                let y_c3h8 = (parseFloat(document.getElementById('mix-c3h8').value) || 0) / 100;
+                let y_n2 = (parseFloat(document.getElementById('mix-n2').value) || 0) / 100;
+                let y_co2 = (parseFloat(document.getElementById('mix-co2').value) || 0) / 100;
+                let y_h2s = (parseFloat(document.getElementById('mix-h2s').value) || 0) / 100;
+                
+                // Normalize to ensure total = 1.0
+                const totFraction = y_ch4 + y_c2h6 + y_c3h8 + y_n2 + y_co2 + y_h2s;
+                if (totFraction > 0 && Math.abs(totFraction - 1) > 0.001) {
+                    y_ch4 /= totFraction;
+                    y_c2h6 /= totFraction;
+                    y_c3h8 /= totFraction;
+                    y_n2 /= totFraction;
+                    y_co2 /= totFraction;
+                    y_h2s /= totFraction;
+                }
+                
+                // Molar mixing via Kay's rule
+                M = y_ch4*compDB.methane.M + y_c2h6*compDB.ethane.M + y_c3h8*compDB.propane.M + y_n2*compDB.nitrogen.M + y_co2*compDB.co2.M + y_h2s*compDB.h2s.M;
+                sg = M / 28.964;
+                
+                const Tc_raw = y_ch4*compDB.methane.Tc + y_c2h6*compDB.ethane.Tc + y_c3h8*compDB.propane.Tc + y_n2*compDB.nitrogen.Tc + y_co2*compDB.co2.Tc + y_h2s*compDB.h2s.Tc;
+                const Pc_raw = y_ch4*compDB.methane.Pc + y_c2h6*compDB.ethane.Pc + y_c3h8*compDB.propane.Pc + y_n2*compDB.nitrogen.Pc + y_co2*compDB.co2.Pc + y_h2s*compDB.h2s.Pc;
+                
+                // Wichert-Aziz correction for CO2 & H2S sour components
+                const y_acid = y_co2 + y_h2s;
+                let epsilon = 0;
+                if (y_acid > 0) {
+                    epsilon = 120 * (Math.pow(y_acid, 0.9) - Math.pow(y_acid, 1.6)) + 15 * (Math.sqrt(y_h2s) - Math.pow(y_h2s, 4));
+                }
+                
+                Tc = Tc_raw - epsilon;
+                Pc = (Pc_raw * Tc) / (Tc_raw + y_h2s * (1 - y_h2s) * epsilon);
+                w = y_ch4*compDB.methane.w + y_c2h6*compDB.ethane.w + y_c3h8*compDB.propane.w + y_n2*compDB.nitrogen.w + y_co2*compDB.co2.w + y_h2s*compDB.h2s.w;
+                
+                componentsUsed.push(
+                    { name: 'Methane', fraction: y_ch4 },
+                    { name: 'Ethane', fraction: y_c2h6 },
+                    { name: 'Propane', fraction: y_c3h8 },
+                    { name: 'Nitrogen', fraction: y_n2 },
+                    { name: 'CO2', fraction: y_co2 },
+                    { name: 'H2S', fraction: y_h2s }
+                );
+                
+                derivationHtml += `Custom Gas Mixture calculated using Kay's Rule.<br>`;
+                derivationHtml += `Calculated Mean Molecular Weight: $M = ${M.toFixed(3)}\\text{ g/mol}$, Specific Gravity: $\\text{SG} = ${sg.toFixed(3)}$<br>`;
+                if (epsilon > 0) {
+                    derivationHtml += `Wichert-Aziz Sour Correction Factor: $\\epsilon = ${epsilon.toFixed(3)}\\text{ K}$ applied.<br>`;
+                }
             }
 
-            // Reduced Props
+            // Step 2: Critical Properties
+            derivationHtml += `<hr><h4>Step 2: critical Properties</h4>`;
+            derivationHtml += `Pseudo-critical Temperature: $T_{pc} = ${Tc.toFixed(2)}\\text{ K} = ${(Tc - 273.15).toFixed(2)}\\text{ °C}$<br>`;
+            derivationHtml += `Pseudo-critical Pressure: $P_{pc} = ${Pc.toFixed(2)}\\text{ bar} = ${(Pc*0.1).toFixed(3)}\\text{ MPa}$<br>`;
+            derivationHtml += `Mean Acentric Factor: $\\omega = ${w.toFixed(4)}$<br>`;
+
+            // Step 3: Operating State
+            derivationHtml += `<hr><h4>Step 3: Operating Conditions Convert</h4>`;
+            derivationHtml += `Operating Absolute Pressure: $P = ${P_abs_bar.toFixed(3)}\\text{ bar(a)} = ${(P_abs_bar * 1e5).toFixed(0)}\\text{ Pa}$<br>`;
+            derivationHtml += `Operating Temperature: $T = ${T_K.toFixed(2)}\\text{ K} = ${T_C.toFixed(2)}\\text{ °C}$<br>`;
+
+            // Step 4: Reduced Properties
             const Tr = T_K / Tc;
             const Pr = P_abs_bar / Pc;
+            derivationHtml += `<hr><h4>Step 4: Reduced Properties</h4>`;
+            derivationHtml += `Pseudo-reduced Temperature: $T_{pr} = \\frac{T}{T_{pc}} = \\frac{${T_K.toFixed(2)}}{${Tc.toFixed(2)}} = ${Tr.toFixed(4)}$<br>`;
+            derivationHtml += `Pseudo-reduced Pressure: $P_{pr} = \\frac{P}{P_{pc}} = \\frac{${P_abs_bar.toFixed(3)}}{${Pc.toFixed(2)}} = ${Pr.toFixed(4)}$<br>`;
 
-            // 3. EOS Solve
+            // Step 5: Solve Z-Factor
+            derivationHtml += `<hr><h4>Step 5: Solve Equation of State (Z-Factor)</h4>`;
             let Z = 1.0;
-            let derivationHtml = "";
-
             if (method === 'ideal') {
                 Z = 1.0;
-                derivationHtml = `Assumption: Ideal Gas Law ($PV=nRT$). $Z=1.0$.`;
+                derivationHtml += `Using Ideal Gas Law model. $Z = 1.0000$<br>`;
+            } 
+            else if (method === 'aga8') {
+                // AGA 8 Gross model logic
+                let y_n2 = 0, y_co2 = 0, y_h2s = 0;
+                if (compMode === 'natgas_sg') {
+                    y_n2 = (parseFloat(document.getElementById('n2-mol').value) || 0) / 100;
+                    y_co2 = (parseFloat(document.getElementById('co2-mol').value) || 0) / 100;
+                    y_h2s = (parseFloat(document.getElementById('h2s-mol').value) || 0) / 100;
+                } else if (compMode === 'custom_mixture') {
+                    y_n2 = (parseFloat(document.getElementById('mix-n2').value) || 0) / 100;
+                    y_co2 = (parseFloat(document.getElementById('mix-co2').value) || 0) / 100;
+                    y_h2s = (parseFloat(document.getElementById('mix-h2s').value) || 0) / 100;
+                }
+                const res = solveAGA8Gross(P_abs_bar, T_K, sg, y_n2, y_co2, y_h2s);
+                Z = res.Z;
+                derivationHtml += `Using AGA 8 (SGERG-88) Gross Method (ISO 12213-3).<br>`;
+                derivationHtml += `Virial $B^* = ${res.B_star.toFixed(5)}$, $C^* = ${res.C_star.toFixed(5)}$.<br>`;
+                derivationHtml += `Newton-Raphson Converged Root: $Z = ${Z.toFixed(5)}$<br>`;
+            } 
+            else if (method === 'hy') {
+                Z = solveHallYarborough(Tr, Pr);
+                derivationHtml += `Using Hall-Yarborough Standing-Katz Correlation.<br>`;
+                derivationHtml += `Solved Reduced Density value $Y$ converged. Result: $Z = ${Z.toFixed(5)}$<br>`;
+            } 
+            else if (method === 'dak') {
+                Z = solveDAK(Tr, Pr);
+                derivationHtml += `Using Dranchuk-Abu-Kassim Standing-Katz Model.<br>`;
+                derivationHtml += `Solved Newton-Raphson root. Result: $Z = ${Z.toFixed(5)}$<br>`;
             } 
             else if (method === 'cnga') {
-                // CNGA Correlation
-                const P_psig = P_bar_g * 14.5038;
+                const P_psig = (P_abs_bar - 1.01325) * 14.5038;
                 const T_R = T_K * 1.8;
                 const num = 344400 * P_psig * Math.pow(10, 1.785 * sg);
                 const den = Math.pow(T_R, 3.825);
                 Z = 1 / (1 + num/den);
-                derivationHtml = `Using CNGA Correlation (Valid for Natural Gas, P < 5000 psig).<br>$$ Z = \\frac{1}{1 + \\frac{344400 \\cdot P \\cdot 10^{1.785 G}}{T^{3.825}}} $$`;
-            }
-            else if (method === 'pr') {
-                // Peng-Robinson
-                const R_const = 0.08314; // bar L / mol K
-                const kappa = 0.37464 + 1.54226*w - 0.26992*w*w;
-                const alpha = Math.pow(1 + kappa*(1 - Math.sqrt(Tr)), 2);
-                
-                const a_c = 0.45724 * Math.pow(R_const * Tc, 2) / Pc;
-                const b_c = 0.07780 * (R_const * Tc) / Pc;
-                
-                const a = a_c * alpha;
-                const b = b_c;
-                
-                const A_fac = (a * P_abs_bar) / Math.pow(R_const * T_K, 2);
-                const B_fac = (b * P_abs_bar) / (R_const * T_K);
-                
-                const c2 = -(1 - B_fac);
-                const c1 = A_fac - 3*B_fac*B_fac - 2*B_fac;
-                const c0 = -(A_fac*B_fac - B_fac*B_fac - B_fac*B_fac*B_fac);
-                
-                Z = solveCubic(c2, c1, c0);
-                
-                derivationHtml = `<strong>1. Reduced Properties:</strong><br> $T_r = \\frac{T}{T_c} = \\frac{${T_K.toFixed(2)}}{${Tc.toFixed(2)}} = ${Tr.toFixed(4)}$<br> $P_r = \\frac{P}{P_c} = \\frac{${P_abs_bar.toFixed(2)}}{${Pc.toFixed(2)}} = ${Pr.toFixed(4)}$<br><br>`;
-                derivationHtml += `<strong>2. PR Parameters (Acentric Factor $\\omega=${w}$):</strong><br> $\\kappa = 0.37464 + 1.54226\\omega - 0.26992\\omega^2 = ${kappa.toFixed(4)}$<br> $\\alpha = [1 + \\kappa(1 - \\sqrt{T_r})]^2 = ${alpha.toFixed(4)}$<br><br>`;
-                derivationHtml += `<strong>3. Dimensionless Coefficients:</strong><br> $A = \\frac{a\\alpha P}{R^2T^2} = ${A_fac.toFixed(5)}$<br> $B = \\frac{bP}{RT} = ${B_fac.toFixed(5)}$<br><br>`;
-                derivationHtml += `<strong>4. Cubic Equation Construction:</strong><br> $Z^3 + (${c2.toFixed(4)})Z^2 + (${c1.toFixed(4)})Z + (${c0.toFixed(4)}) = 0$`;
-            }
-            else if (method === 'rk') {
-                // Redlich-Kwong
-                const R_const = 0.08314;
-                const a_c = 0.42748 * Math.pow(R_const * Tc, 2) / Pc;
-                const b_c = 0.08664 * (R_const * Tc) / Pc;
-                
-                const a = a_c / Math.sqrt(Tr);
-                const b = b_c;
-                
-                const A_fac = (a * P_abs_bar) / Math.pow(R_const * T_K, 2);
-                const B_fac = (b * P_abs_bar) / (R_const * T_K);
-                
-                const c2 = -1;
-                const c1 = A_fac - B_fac - B_fac*B_fac;
-                const c0 = -A_fac * B_fac;
-                
-                Z = solveCubic(c2, c1, c0);
-                derivationHtml = `Using Redlich-Kwong EOS.<br>$T_r = ${Tr.toFixed(3)}$, $P_r = ${Pr.toFixed(3)}$.<br>Coeffs A=${A_fac.toFixed(4)}, B=${B_fac.toFixed(4)}`;
+                derivationHtml += `Using CNGA Pipeline correlation.<br>`;
+                derivationHtml += `Formula: $Z = \\frac{1}{1 + \\frac{344400 \\cdot P \\cdot 10^{1.785 \\text{SG}}}{T^{3.825}}} = ${Z.toFixed(5)}$<br>`;
+            } 
+            else {
+                // Cubic Equations (PR, SRK, RK)
+                const R = 0.083144;
+                let a_c = 0, b_c = 0, kappa = 0, alpha = 0;
+                if (method === 'pr') {
+                    a_c = 0.45724 * Math.pow(R * Tc, 2) / Pc;
+                    b_c = 0.07780 * (R * Tc) / Pc;
+                    kappa = 0.37464 + 1.54226 * w - 0.26992 * w * w;
+                    alpha = Math.pow(1 + kappa * (1 - Math.sqrt(Tr)), 2);
+                    const a = a_c * alpha;
+                    const b = b_c;
+                    const A = (a * P_abs_bar) / Math.pow(R * T_K, 2);
+                    const B = (b * P_abs_bar) / (R * T_K);
+                    const c2 = -(1 - B);
+                    const c1 = A - 3*B*B - 2*B;
+                    const c0 = -(A*B - B*B - B*B*B);
+                    Z = solveCubic(c2, c1, c0);
+                    derivationHtml += `Using Peng-Robinson Cubic EOS.<br>`;
+                    derivationHtml += `$\\kappa = ${kappa.toFixed(4)}$, $\\alpha = ${alpha.toFixed(4)}$<br>`;
+                    derivationHtml += `Dimensionless Parameters: $A = ${A.toFixed(5)}$, $B = ${B.toFixed(5)}$<br>`;
+                    derivationHtml += `Polynomial: $Z^3 + (${c2.toFixed(4)})Z^2 + (${c1.toFixed(4)})Z + (${c0.toFixed(4)}) = 0$<br>`;
+                } 
+                else if (method === 'srk') {
+                    a_c = 0.42748 * Math.pow(R * Tc, 2) / Pc;
+                    b_c = 0.08664 * (R * Tc) / Pc;
+                    kappa = 0.480 + 1.574 * w - 0.176 * w * w;
+                    alpha = Math.pow(1 + kappa * (1 - Math.sqrt(Tr)), 2);
+                    const a = a_c * alpha;
+                    const b = b_c;
+                    const A = (a * P_abs_bar) / Math.pow(R * T_K, 2);
+                    const B = (b * P_abs_bar) / (R * T_K);
+                    const c2 = -1;
+                    const c1 = A - B - B * B;
+                    const c0 = -A * B;
+                    Z = solveCubic(c2, c1, c0);
+                    derivationHtml += `Using Soave-Redlich-Kwong (SRK) Cubic EOS.<br>`;
+                    derivationHtml += `Dimensionless Parameters: $A = ${A.toFixed(5)}$, $B = ${B.toFixed(5)}$<br>`;
+                    derivationHtml += `Polynomial: $Z^3 - Z^2 + (${c1.toFixed(4)})Z + (${c0.toFixed(4)}) = 0$<br>`;
+                } 
+                else if (method === 'rk') {
+                    a_c = 0.42748 * Math.pow(R * Tc, 2) / Pc;
+                    b_c = 0.08664 * (R * Tc) / Pc;
+                    alpha = 1 / Math.sqrt(Tr);
+                    const a = a_c * alpha;
+                    const b = b_c;
+                    const A = (a * P_abs_bar) / Math.pow(R * T_K, 2);
+                    const B = (b * P_bar_g) / (R * T_K);
+                    const c2 = -1;
+                    const c1 = A - B - B * B;
+                    const c0 = -A * B;
+                    Z = solveCubic(c2, c1, c0);
+                    derivationHtml += `Using Redlich-Kwong (RK) Cubic EOS.<br>`;
+                    derivationHtml += `Polynomial: $Z^3 - Z^2 + (${c1.toFixed(4)})Z + (${c0.toFixed(4)}) = 0$<br>`;
+                }
             }
 
-            // 4. Derived Values
-            const rho_real = (P_abs_Pa * M/1000) / (Z * 8.314 * T_K); // kg/m3
-            const rho_ideal = (P_abs_Pa * M/1000) / (1.0 * 8.314 * T_K);
-            const Fpv = Math.sqrt(1/Z);
+            // Step 6: Supercompressibility (Fpv)
+            const Fpv = Math.sqrt(1 / Z);
+            derivationHtml += `<hr><h4>Step 6: Supercompressibility Factor</h4>`;
+            derivationHtml += `Supercompressibility (AGA 3 / AGA 8 Custody standard):<br>`;
+            derivationHtml += `$$ F_{pv} = \\sqrt{\\frac{Z_{std}}{Z}} \\approx \\sqrt{\\frac{1}{Z}} = ${Fpv.toFixed(5)} $$<br>`;
 
-            lastResult = { Z, rho_real, rho_ideal, Fpv, M, P_bar_g, T_C, gasKey, method, derivationHtml };
+            // Step 7: Real vs Ideal Density
+            const rho_real = (P_abs_Pa * M / 1000) / (Z * 8.31446 * T_K);
+            const rho_ideal = (P_abs_Pa * M / 1000) / (1.0 * 8.31446 * T_K);
+            const deviation = ((rho_real - rho_ideal) / rho_ideal) * 100;
+            derivationHtml += `<hr><h4>Step 7: Density Evaluation</h4>`;
+            derivationHtml += `Ideal Gas Density: $\\rho_{ideal} = \\frac{P M}{R T} = ${rho_ideal.toFixed(3)}\\text{ kg/m}^3$<br>`;
+            derivationHtml += `Real Gas Density: $\\rho_{real} = \\frac{P M}{Z R T} = ${rho_real.toFixed(3)}\\text{ kg/m}^3$<br>`;
+            derivationHtml += `Deviation Error if Ideal Gas Law was assumed: $\\Delta\\% = ${deviation.toFixed(2)}\\%$ denser.<br>`;
 
-            // 5. Render Output
+            // Step 8: Isothermal Compressibility (cg)
+            const dP = 0.05; // bar step
+            const Z_plus = calcZ(method, P_abs_bar + dP, T_K, Tc, Pc, w);
+            const Z_minus = calcZ(method, P_abs_bar - dP, T_K, Tc, Pc, w);
+            const dZdP = (Z_plus - Z_minus) / (2 * dP);
+            const cg = (1 / P_abs_bar) - (1 / Z) * dZdP;
+            derivationHtml += `<hr><h4>Step 8: Isothermal Gas Compressibility (c_g)</h4>`;
+            derivationHtml += `$$ c_g = \\frac{1}{P} - \\frac{1}{Z}\\left(\\frac{\\partial Z}{\\partial P}\\right)_T = ${cg.toFixed(6)}\\text{ bar}^{-1} $$<br>`;
+
+            // Step 9: Gas Formation Volume Factor & LGE Dynamic Viscosity
+            const Bg = 0.003504 * Z * T_K / P_abs_bar;
+            
+            // Dynamic Viscosity via Lee-Gonzalez-Eakin (LGE)
+            const rho_g_cm3 = rho_real / 1000;
+            const K_lge = ((9.379 + 0.01607 * M) * Math.pow(T_K, 1.5)) / (209.2 + 19.26 * M + T_K);
+            const X_lge = 3.448 + (986.4 / T_K) + 0.01009 * M;
+            const Y_lge = 2.447 - 0.2224 * X_lge;
+            const vis_cP = 1e-4 * K_lge * Math.exp(X_lge * Math.pow(rho_g_cm3, Y_lge));
+            const vis_uPa = vis_cP * 1000; // to uPa.s
+
+            // Speed of sound
+            const vs = Math.sqrt(gamma * Z * (8314.46 / M) * T_K);
+
+            derivationHtml += `<hr><h4>Step 9: Dynamic Viscosity and Speed of Sound</h4>`;
+            derivationHtml += `Formation Volume Factor: $B_g = ${Bg.toFixed(6)}\\text{ m}^3/\\text{sm}^3$<br>`;
+            derivationHtml += `Gas Viscosity (Lee-Gonzalez-Eakin): $\\mu_g = ${vis_uPa.toFixed(3)}\\text{ }\\mu\\text{Pa}\\cdot\\text{s}$<br>`;
+            derivationHtml += `Speed of Sound in Gas: $v_s = \\sqrt{\\gamma Z \\frac{R}{M} T} = ${vs.toFixed(1)}\\text{ m/s}$<br>`;
+
+            // Step 10: Industry Validation Warnings
+            derivationHtml += `<hr><h4>Step 10: Industry Validation & Recommendations</h4>`;
+            let warnings = [];
+            
+            // Hydrate risk calculation
+            const P_psia = P_abs_bar * 14.5038;
+            const T_hyd_F = 15.5 * Math.log(P_psia) - 16;
+            const T_hyd_C = (T_hyd_F - 32) * 5/9;
+            
+            if (T_C <= T_hyd_C) {
+                warnings.push(`<strong>WARNING: Gas Hydrate Risk.</strong> Under operating conditions, gas hydrate freezing temperature is estimated at ${T_hyd_C.toFixed(1)}°C, which is above operating temperature ${T_C.toFixed(1)}°C. Liquid water may freeze into solid hydrate ice blocks, choking piping valves.`);
+            }
+            if (P_abs_bar > 250) {
+                warnings.push(`<strong>HIGH PRESSURE WARNING:</strong> Standard cubic Equations of State (PR, SRK) carry higher deviation margins above 250 bar. Verify Z using multi-parameter state models (AGA 8 Detail/GERG-2008).`);
+            }
+            if (warnings.length === 0) {
+                warnings.push(`Operating conditions are safe and within typical limits. No hydrate or extreme pressure risks detected.`);
+            }
+            
+            derivationHtml += warnings.map(w => `<p style="margin: 5px 0;">• ${w}</p>`).join('');
+
+            // Store State
+            lastResult = {
+                Z, Fpv, rho_real, rho_ideal, deviation, cg, Bg, vis_uPa, vs, M, sg, Tc, Pc, w, P_bar_g, T_C, pUnit, tUnit, method, derivationHtml, componentsUsed, warnings, T_K
+            };
+
+            // Render Output Table
             const tbody = document.getElementById('result-table-body');
             tbody.innerHTML = '';
             const addRow = (n, v, u, c="") => {
                 tbody.innerHTML += `<tr style="${c ? 'color:'+c : ''}"><td><strong>${n}</strong></td><td>${v}</td><td>${u}</td></tr>`;
             };
-            addRow("Compressibility (Z)", Z.toFixed(4), "-", Z < 0.9 ? "var(--warning)" : "");
-            addRow("Supercompressibility (Fpv)", Fpv.toFixed(4), "-", "var(--primary)");
-            addRow("Real Gas Density", rho_real.toFixed(3), "kg/mÂ³");
-            addRow("Ideal Gas Density", rho_ideal.toFixed(3), "kg/mÂ³");
-            addRow("Deviation", ((rho_real - rho_ideal)/rho_ideal * 100).toFixed(2), "% Error if Z=1");
+            addRow("Compressibility Factor (Z)", Z.toFixed(5), "-", Z < 0.9 ? "var(--warning)" : "");
+            addRow("Supercompressibility (Fpv)", Fpv.toFixed(5), "-");
+            addRow("Real Gas Density", rho_real.toFixed(3), "kg/m³");
+            addRow("Ideal Gas Density", rho_ideal.toFixed(3), "kg/m³");
+            addRow("Deviation Error", `${deviation.toFixed(2)}%`, "% denser if Z=1");
+            addRow("Isothermal Compressibility (cg)", cg.toFixed(6), "bar⁻¹");
+            addRow("Formation Volume Factor (Bg)", Bg.toFixed(6), "m³/sm³");
+            addRow("Dynamic Viscosity (μg)", vis_uPa.toFixed(3), "μPa·s");
+            addRow("Speed of Sound (vs)", vs.toFixed(1), "m/s");
 
             const interpEl = document.getElementById('interpretation-text');
             if (Z < 0.9) {
-                interpEl.innerHTML = `<span style="color:var(--warning); font-weight:bold;">High Compression.</span> Gas is ${( (1/Z - 1)*100 ).toFixed(1)}% denser than Ideal Law predicts. Critical for custody transfer.`;
+                interpEl.innerHTML = `<span style="color:var(--warning); font-weight:bold;">High Compressibility deviation.</span> Gas volume is ${( (1/Z - 1)*100 ).toFixed(1)}% smaller than Ideal Gas Law predicts. Precise custody transfer accounting required.`;
             } else if (Z > 1.05) {
-                interpEl.innerHTML = `Gas is expanding (Repulsive forces).`;
+                interpEl.innerHTML = `<span style="color:var(--accent); font-weight:bold;">Super-Repulsive Behavior.</span> High pressures have squeezed molecular shells close enough that repulsive forces dominate ($Z > 1$).`;
             } else {
-                interpEl.innerHTML = `Near Ideal behavior.`;
+                interpEl.innerHTML = `Gas shows near-ideal thermodynamic behavior.`;
             }
 
-            document.getElementById('calculation-details').innerHTML = `<div class="calculation-step">${derivationHtml}<br><br><strong>5. Solve Roots (Cardano's Method):</strong><br>Solving cubic polynomial to find real roots.<br>Selected Vapor Root: $Z = \\mathbf{${Z.toFixed(5)}}$<br><br><strong>6. Density Calculation:</strong><br>$\\rho_{real} = \\frac{PM}{ZRT} = \\frac{${(P_abs_Pa/1e5).toFixed(1)} \\text{ bar} \\cdot ${M} \\text{ g/mol}}{${Z.toFixed(4)} \\cdot R \\cdot ${T_K.toFixed(1)} \\text{ K}} = \\mathbf{${rho_real.toFixed(3)} \\text{ kg/m}^3}$</div>`;
+            document.getElementById('calculation-details').innerHTML = derivationHtml;
 
-            // 6. Visuals
+            // Trigger canvas graphs & particle animation
             drawIsotherm(method, Tc, Pc, M, w, T_K);
             animateGas(Z, T_K);
 
-            // 7. Show
+            // Show results block
             document.getElementById('result-container').classList.remove('hidden');
             if(window.MathJax) window.MathJax.typesetPromise([document.getElementById('calculation-details')]);
             document.getElementById('result-container').scrollIntoView({ behavior: 'smooth' });
         }
 
         function drawIsotherm(method, Tc, Pc, M, w, T_K) {
-            const ctx = document.getElementById('isoChart').getContext('2d');
+            const canvasEl = document.getElementById('isoChart');
+            if (!canvasEl) return;
+            const ctx = canvasEl.getContext('2d');
             if (isoChart) isoChart.destroy();
 
             const labels = [];
@@ -1686,33 +2242,14 @@
             const dataZ_low = [];
             const dataZ_high = [];
             
-            // Temperatures for families of curves
             const T_low = T_K - 20;
             const T_high = T_K + 20;
 
-            // Generate P range 0 to 300 bar
             for (let p = 1; p <= 300; p += 10) {
-                // Internal solver for chart points (Simplified PR logic for speed)
-                const getZ = (P, T) => {
-                    const Pr = (P+1.013)/Pc;
-                    const Tr = T/Tc;
-                    const R = 0.08314;
-                    const kappa = 0.37464 + 1.54226*w - 0.26992*w*w;
-                    const alpha = Math.pow(1 + kappa*(1 - Math.sqrt(Tr)), 2);
-                    const a = 0.45724 * Math.pow(R * Tc, 2) / Pc * alpha;
-                    const b = 0.07780 * (R * Tc) / Pc;
-                    const A = (a * (P+1.013)) / Math.pow(R * T, 2);
-                    const B = (b * (P+1.013)) / (R * T);
-                    const c2 = -(1 - B);
-                    const c1 = A - 3*B*B - 2*B;
-                    const c0 = -(A*B - B*B - B*B*B);
-                    return solveCubic(c2, c1, c0);
-                };
-                
                 labels.push(p);
-                dataZ_op.push(getZ(p, T_K));
-                dataZ_low.push(getZ(p, T_low));
-                dataZ_high.push(getZ(p, T_high));
+                dataZ_op.push(calcZ(method, p, T_K, Tc, Pc, w));
+                dataZ_low.push(calcZ(method, p, T_low, Tc, Pc, w));
+                dataZ_high.push(calcZ(method, p, T_high, Tc, Pc, w));
             }
 
             isoChart = new Chart(ctx, {
@@ -1721,27 +2258,27 @@
                     labels: labels,
                     datasets: [
                         {
-                            label: `${(T_K-273.15).toFixed(0)}Â°C (Operating)`,
+                            label: `${(T_K-273.15).toFixed(0)}°C (Operating)`,
                             data: dataZ_op,
-                            borderColor: '#1E3A8A', // Dark Blue
+                            borderColor: '#1E3A8A',
                             borderWidth: 3,
                             pointRadius: 0,
                             fill: false
                         },
                         {
-                            label: `${(T_low-273.15).toFixed(0)}Â°C`,
+                            label: `${(T_low-273.15).toFixed(0)}°C`,
                             data: dataZ_low,
-                            borderColor: '#3B82F6', // Light Blue
-                            borderWidth: 1,
+                            borderColor: '#3B82F6',
+                            borderWidth: 1.5,
                             borderDash: [5, 5],
                             pointRadius: 0,
                             fill: false
                         },
                         {
-                            label: `${(T_high-273.15).toFixed(0)}Â°C`,
+                            label: `${(T_high-273.15).toFixed(0)}°C`,
                             data: dataZ_high,
-                            borderColor: '#EF4444', // Red
-                            borderWidth: 1,
+                            borderColor: '#EF4444',
+                            borderWidth: 1.5,
                             borderDash: [5, 5],
                             pointRadius: 0,
                             fill: false
@@ -1762,24 +2299,20 @@
         // --- PARTICLE ANIMATION ---
         function animateGas(Z, TempK) {
             const canvas = document.getElementById('gasCanvas');
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const cw = canvas.width;
             const ch = canvas.height;
             
-            // Number of particles proportional to Density (1/Z)
-            // Z=1 -> 50 particles. Z=0.8 -> 62 particles.
             const densityFactor = 1 / Z;
             const numParticles = Math.min(300, Math.floor(60 * densityFactor));
-            
-            // Speed proportional to sqrt(Temperature) (Kinetic Theory)
-            // Base speed at 293K (20C) = 2.0
             const speedFactor = Math.sqrt(TempK / 293.15) * 2.0;
 
             particles = [];
-            for(let i=0; i<numParticles; i++) {
+            for (let i = 0; i < numParticles; i++) {
                 particles.push({
-                    x: Math.random() * cw,
-                    y: Math.random() * ch,
+                    x: Math.random() * (cw - 30) + 15,
+                    y: Math.random() * (ch - 30) + 15,
                     vx: (Math.random() - 0.5) * speedFactor,
                     vy: (Math.random() - 0.5) * speedFactor
                 });
@@ -1787,111 +2320,220 @@
 
             if (animationId) cancelAnimationFrame(animationId);
 
+            const isDark = document.body.classList.contains('dark-mode');
+            const particleColor = isDark ? '#34D399' : '#2563EB';
+
             function draw() {
                 ctx.clearRect(0, 0, cw, ch);
                 
-                // Draw Container
-                ctx.strokeStyle = '#334155';
+                // Draw Box border
+                ctx.strokeStyle = isDark ? '#334155' : '#E2E8F0';
                 ctx.lineWidth = 4;
                 ctx.strokeRect(10, 10, cw-20, ch-20);
                 
-                // Color based on temperature (Blue -> Red)
-                // Map 250K to 400K -> Hue 240 to 0
+                // Color hue based on temperature
                 let hue = 240 - ((TempK - 250) / 150) * 240;
-                hue = Math.max(0, Math.min(240, hue)); // Clamp
+                hue = Math.max(0, Math.min(240, hue));
                 ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
 
                 particles.forEach(p => {
                     p.x += p.vx;
                     p.y += p.vy;
                     
-                    // Bounce
                     if(p.x < 15 || p.x > cw-15) p.vx *= -1;
                     if(p.y < 15 || p.y > ch-15) p.vy *= -1;
                     
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+                    ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
                     ctx.fill();
                 });
                 
-                // Stats
-                ctx.fillStyle = '#000';
-                ctx.font = '12px Inter';
+                // Stats overlay
+                ctx.fillStyle = isDark ? '#E2E8F0' : '#1E293B';
+                ctx.font = 'bold 11px Inter';
                 ctx.fillText(`Relative Density: ${densityFactor.toFixed(2)}x`, 20, 30);
-                ctx.fillText(`Kinetic Energy (Temp): ${TempK.toFixed(0)} K`, 20, 45);
+                ctx.fillText(`Kinetic Temp: ${TempK.toFixed(1)} K`, 20, 45);
 
                 animationId = requestAnimationFrame(draw);
             }
             draw();
         }
 
+        // Vector PDF Exporter
         function generatePDF() {
             if (!lastResult) {
-                displayMessage("Calculate first.", "error");
+                displayMessage("Please perform calculation first.", "error");
                 return;
             }
+            
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
-            let y = 15;
+            const totalPages = 2;
 
-            pdf.setFont('helvetica', 'bold');
+            const stampPage = (pageNum) => {
+                // Header
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(9);
+                pdf.setTextColor(30, 58, 138); // Dark blue primary
+                pdf.text("DESIGN CALCULATORS", 14, 10);
+                pdf.setFont("helvetica", "normal");
+                pdf.setTextColor(100);
+                pdf.text("https://designcalculators.co.in", 14, 14);
+                
+                pdf.setStrokeColor(226, 232, 240);
+                pdf.setLineWidth(0.5);
+                pdf.line(14, 16, 196, 16);
+                
+                // Footer
+                pdf.line(14, 282, 196, 282);
+                pdf.setFontSize(8);
+                pdf.text("Gas Compressibility Audit Report", 14, 287);
+                pdf.text(`Page ${pageNum} of ${totalPages}`, 196, 287, { align: "right" });
+            };
+
+            // Page 1
+            stampPage(1);
+            
+            pdf.setFont("helvetica", "bold");
             pdf.setFontSize(16);
-            pdf.setTextColor(30, 58, 138); 
-            pdf.text('Gas Compressibility Report', 105, y, { align: 'center' });
-            y += 10;
+            pdf.setTextColor(30, 58, 138);
+            pdf.text("Gas Compressibility Audit Report", 105, 26, { align: "center" });
 
-            pdf.setFontSize(10);
+            pdf.setFontSize(9.5);
+            pdf.setFont("helvetica", "normal");
             pdf.setTextColor(100);
-            pdf.text(`Date: ${new Date().toLocaleString()}`, 105, y, { align: 'center' });
-            y += 15;
+            pdf.text(`Audit Timestamp: ${new Date().toLocaleString()}`, 105, 31, { align: "center" });
+
+            // Table of Inputs
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(11);
+            pdf.setTextColor(30, 58, 138);
+            pdf.text("1. Input Process Conditions & Fluid Setup", 14, 42);
 
             const inputData = [
-                ['Gas Type', lastResult.gasKey.toUpperCase()],
-                ['Mol Weight', lastResult.M],
-                ['Pressure', `${lastResult.P_bar_g} bar(g)`],
-                ['Temperature', `${lastResult.T_C} Â°C`],
-                ['Method', lastResult.method.toUpperCase()]
+                ["Method of Calculation", lastResult.method.toUpperCase()],
+                ["Operating Pressure", `${lastResult.P_bar_g.toFixed(2)} ${lastResult.pUnit}`],
+                ["Operating Temperature", `${lastResult.T_C.toFixed(2)} °${lastResult.tUnit}`],
+                ["Acentric Factor (w)", lastResult.w.toFixed(5)],
+                ["Specific Gravity (Air = 1)", lastResult.sg.toFixed(3)],
+                ["Pseudo-critical Temp (Tc)", `${lastResult.Tc.toFixed(2)} K`],
+                ["Pseudo-critical Press (Pc)", `${lastResult.Pc.toFixed(2)} bar(a)`]
             ];
 
             pdf.autoTable({
-                startY: y,
-                head: [['Parameter', 'Value']],
+                startY: 46,
+                head: [["Design Input Variable", "Value / Configuration"]],
                 body: inputData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] }
+                theme: "grid",
+                headStyles: { fillColor: [30, 58, 138] },
+                styles: { fontSize: 8.5 },
+                margin: { left: 14, right: 14 }
             });
-            y = pdf.lastAutoTable.finalY + 15;
+
+            // Fluid Components
+            let nextY = pdf.lastAutoTable.finalY + 8;
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(11);
+            pdf.text("2. Fluid Components Profile", 14, nextY);
+            
+            const compData = lastResult.componentsUsed.map(c => [c.name, `${(c.fraction * 100).toFixed(2)} %`]);
+            
+            pdf.autoTable({
+                startY: nextY + 4,
+                head: [["Component", "Mole Fraction (%)"]],
+                body: compData,
+                theme: "grid",
+                headStyles: { fillColor: [75, 85, 99] },
+                styles: { fontSize: 8.5 },
+                margin: { left: 14, right: 14 }
+            });
 
             // Results
-            pdf.text('2. EOS Results', 14, y);
-            y += 5;
+            nextY = pdf.lastAutoTable.finalY + 8;
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(11);
+            pdf.text("3. Calculated Compressibility & Real Gas Properties", 14, nextY);
 
             const resData = [
-                ['Z-Factor', lastResult.Z.toFixed(5)],
-                ['Fpv', lastResult.Fpv.toFixed(5)],
-                ['Real Density', `${lastResult.rho_real.toFixed(3)} kg/mÂ³`],
-                ['Ideal Density', `${lastResult.rho_ideal.toFixed(3)} kg/mÂ³`]
+                ["Compressibility Factor (Z)", lastResult.Z.toFixed(5)],
+                ["Supercompressibility (Fpv)", lastResult.Fpv.toFixed(5)],
+                ["Real Gas Density", `${lastResult.rho_real.toFixed(3)} kg/m³`],
+                ["Ideal Gas Density", `${lastResult.rho_ideal.toFixed(3)} kg/m³`],
+                ["Density Deviation Error", `${lastResult.deviation.toFixed(2)} %`],
+                ["Isothermal Compressibility (cg)", `${lastResult.cg.toFixed(6)} bar⁻¹`],
+                ["Formation Volume Factor (Bg)", `${lastResult.Bg.toFixed(6)} m³/sm³`],
+                ["Dynamic Viscosity (μg)", `${lastResult.vis_uPa.toFixed(3)} μPa·s`],
+                ["Speed of Sound (vs)", `${lastResult.vs.toFixed(1)} m/s`]
             ];
 
             pdf.autoTable({
-                startY: y,
-                head: [['Metric', 'Result']],
+                startY: nextY + 4,
+                head: [["Thermodynamic Parameter", "Calculated Value"]],
                 body: resData,
-                margin: { left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [30, 58, 138] },
-                didParseCell: function(data) {
-                    if(data.row.index === 0) {
-                        data.cell.styles.fontStyle = 'bold';
-                    }
-                }
+                theme: "grid",
+                headStyles: { fillColor: [16, 185, 129] },
+                styles: { fontSize: 8.5 },
+                margin: { left: 14, right: 14 }
             });
 
-            pdf.save('Z_Factor_Report.pdf');
-            displayMessage("PDF Downloaded", "success");
-        }
+            // Page 2
+            pdf.addPage();
+            stampPage(2);
 
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(11);
+            pdf.text("4. Engineering Calculation Breakdown Notes", 14, 25);
+
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(50);
+            
+            const summaryText = [
+                `- Real gas behavior was evaluated under pseudo-reduced temperature Tr = ${lastResult.T_K.toFixed(2)} / ${lastResult.Tc.toFixed(2)} = ${ (lastResult.T_K / lastResult.Tc).toFixed(4) } and pseudo-reduced pressure Pr = ${lastResult.Pr.toFixed(4)}.`,
+                `- The Z-factor was determined by solving the selected ${lastResult.method.toUpperCase()} algorithm iteratively.`,
+                `- Real gas density calculations verify that the gas is ${Math.abs(lastResult.deviation).toFixed(1)}% ${lastResult.deviation >= 0 ? "denser" : "rarer"} than predictions from ideal gas law behavior, which translates into critical flow rate custody margins.`,
+                `- Dynamic viscosity calculations utilize the Lee-Gonzalez-Eakin (LGE) correlation, mapping fluid shearing resistance under line pressure.`,
+                `- Speed of sound calculations account for isentropic expansion characteristics.`
+            ];
+
+            let textY = 32;
+            summaryText.forEach(line => {
+                pdf.text(line, 14, textY);
+                textY += 6;
+            });
+
+            // Warnings
+            textY += 8;
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(11);
+            pdf.text("5. Safety Inspections & Integrity Warnings", 14, textY);
+            
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(220, 38, 38); // Alert red
+            
+            textY += 6;
+            if (lastResult.warnings.length > 0) {
+                lastResult.warnings.forEach(w => {
+                    const cleanText = w.replace(/<\/?strong>/g, ""); // strip HTML tags
+                    pdf.text(`• ${cleanText}`, 14, textY, { maxWidth: 180 });
+                    textY += 12;
+                });
+            } else {
+                pdf.setTextColor(16, 185, 129);
+                pdf.text("• No operating integrity or hydrate freezing risks detected.", 14, textY);
+            }
+
+            // Disclaimer
+            pdf.setFont("helvetica", "italic");
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(150);
+            const disclaimer = "Disclaimer: This report was generated by Design Calculators. Calculated parameters represent theoretical solutions under standard Equation of State models. Real industrial gas flows are affected by contaminants, local thermodynamic imbalances, and pipeline physical profiles. Verify critical parameters before deploying pipelines.";
+            pdf.text(pdf.splitTextToSize(disclaimer, 180), 14, 250);
+
+            pdf.save("gas_compressibility_report.pdf");
+            displayMessage("PDF Report downloaded successfully!", "success");
+        }
     </script>
 </body>
 </html>
