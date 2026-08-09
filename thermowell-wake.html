@@ -735,25 +735,78 @@
         .thermowell-diagram {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             margin-top: 30px;
             margin-bottom: 20px;
-            padding: 20px;
-            background-color: var(--bg);
-            border-radius: 8px;
+            padding: 24px 16px;
+            background: linear-gradient(135deg, var(--bg), rgba(37,99,235,0.03));
+            border-radius: 16px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
             flex-direction: column;
             position: relative;
+            gap: 20px;
         }
-        .thermowell-diagram svg {
+        .thermowell-diagram .diag-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary);
             width: 100%;
-            max-width: 400px;
-            height: auto;
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            background-color: var(--card);
         }
+        .thermowell-diagram .diag-body {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 16px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .thermowell-diagram #tw-main-svg {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            border-radius: 12px;
+            filter: drop-shadow(0 4px 16px rgba(0,0,0,0.12));
+        }
+        .thermowell-diagram .diag-panel {
+            flex: 1;
+            min-width: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .diag-gauge-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .diag-gauge-wrap canvas {
+            width: 100%;
+            max-width: 180px;
+            height: auto;
+        }
+        .diag-metric {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            font-size: 0.82rem;
+        }
+        .diag-metric .dm-label { color: var(--text); opacity: 0.75; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .diag-metric .dm-value { font-weight: 700; font-size: 0.95rem; color: var(--heading); }
+        @keyframes vortex-anim {
+            0% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+            50% { opacity: 0.7; transform: scale(1) rotate(180deg); }
+            100% { opacity: 0; transform: scale(0.3) rotate(360deg); }
+        }
+        .vortex-dot { animation: vortex-anim 2s ease-in-out infinite; }
+        .vortex-dot:nth-child(2) { animation-delay: 0.5s; }
+        .vortex-dot:nth-child(3) { animation-delay: 1s; }
+        .vortex-dot:nth-child(4) { animation-delay: 1.5s; }
         .diagram-label {
             position: absolute;
             font-size: 0.8em;
@@ -1218,27 +1271,184 @@
         <!-- Results Container (Updated) -->
         <div id="result-container" class="result-container">
             <h3><i class="fas fa-clipboard-check"></i> Calculation Results</h3>
-            
-            <div class="thermowell-diagram">
-                <p style="margin-bottom: 25px; font-weight: bold; color: var(--secondary);">Thermowell Diagram (Simplified)</p>
-                <svg viewBox="0 0 100 200" preserveAspectRatio="xMidYMid meet">
-                    <!-- Pipe Wall -->
-                    <rect x="0" y="0" width="100" height="20" fill="#a0a0a0" stroke="#555" stroke-width="1"/>
-                    <rect x="0" y="180" width="100" height="20" fill="#a0a0a0" stroke="#555" stroke-width="1"/>
-                    <line x1="0" y1="20" x2="0" y2="180" stroke="#555" stroke-width="1"/>
-                    <line x1="100" y1="20" x2="100" y2="180" stroke="#555" stroke-width="1"/>
-                    <!-- Thermowell Body (Tapered/Straight representation) -->
-                    <polygon id="thermowell-body" points="40,20 60,20 60,180 40,180" fill="#cccccc" stroke="#333333" stroke-width="1"/>
-                    <!-- Bore -->
-                    <line x1="50" y1="20" x2="50" y2="180" stroke="#666666" stroke-width="0.5" stroke-dasharray="2,2"/>
-                    <!-- Labels -->
-                    <text x="70" y="100" font-size="8" fill="#333" text-anchor="middle">L</text>
-                    <text x="50" y="175" font-size="8" fill="#333" text-anchor="middle">D_t</text>
-                    <text x="50" y="25" font-size="8" fill="#333" text-anchor="middle">D_r</text>
-                    <text x="45" y="100" font-size="8" fill="#333" text-anchor="end">D_b</text>
-                </svg>
+              <!-- Premium Thermowell Engineering Diagram -->
+            <div class="thermowell-diagram" id="tw-diagram-wrap">
+                <div class="diag-header">
+                    <i class="fas fa-drafting-compass" style="color:var(--primary);"></i>
+                    <span>Live Thermowell Engineering Diagram</span>
+                    <span id="diag-type-badge" style="margin-left:auto;font-size:0.72rem;background:var(--primary);color:white;padding:3px 10px;border-radius:20px;letter-spacing:0.5px;">TAPERED</span>
+                </div>
+                <div class="diag-body">
+                    <!-- Main SVG cross-section -->
+                    <svg id="tw-main-svg" viewBox="0 0 320 440" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="pipeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#64748b"/>
+                                <stop offset="40%" stop-color="#94a3b8"/>
+                                <stop offset="100%" stop-color="#64748b"/>
+                            </linearGradient>
+                            <linearGradient id="twBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#334155"/>
+                                <stop offset="35%" stop-color="#94a3b8"/>
+                                <stop offset="65%" stop-color="#94a3b8"/>
+                                <stop offset="100%" stop-color="#334155"/>
+                            </linearGradient>
+                            <linearGradient id="flangeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#475569"/>
+                                <stop offset="50%" stop-color="#cbd5e1"/>
+                                <stop offset="100%" stop-color="#475569"/>
+                            </linearGradient>
+                            <filter id="glow-green"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            <filter id="glow-red"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+                                <path d="M0,0 L6,3 L0,6 Z" fill="#2563eb"/>
+                            </marker>
+                            <marker id="arr-dim" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+                                <path d="M0,0 L5,2.5 L0,5 Z" fill="#d97706"/>
+                            </marker>
+                            <marker id="arr-dim-rev" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto-start-reverse">
+                                <path d="M0,0 L5,2.5 L0,5 Z" fill="#d97706"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Pipe top wall -->
+                        <rect x="0" y="55" width="320" height="35" fill="url(#pipeGrad)" rx="4"/>
+                        <line x1="0" y1="55" x2="320" y2="55" stroke="#334155" stroke-width="1.5"/>
+                        <line x1="0" y1="90" x2="320" y2="90" stroke="#334155" stroke-width="1.5"/>
+                        <!-- Pipe hatch lines top -->
+                        <line x1="20" y1="55" x2="5" y2="72" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="45" y1="55" x2="30" y2="72" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="70" y1="55" x2="55" y2="72" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="250" y1="55" x2="235" y2="72" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="275" y1="55" x2="260" y2="72" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="300" y1="55" x2="285" y2="72" stroke="#475569" stroke-width="0.8"/>
+
+                        <!-- Pipe bottom wall -->
+                        <rect x="0" y="385" width="320" height="35" fill="url(#pipeGrad)" rx="4"/>
+                        <line x1="0" y1="385" x2="320" y2="385" stroke="#334155" stroke-width="1.5"/>
+                        <line x1="0" y1="420" x2="320" y2="420" stroke="#334155" stroke-width="1.5"/>
+                        <!-- Pipe hatch lines bottom -->
+                        <line x1="20" y1="385" x2="5" y2="402" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="45" y1="385" x2="30" y2="402" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="70" y1="385" x2="55" y2="402" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="250" y1="385" x2="235" y2="402" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="275" y1="385" x2="260" y2="402" stroke="#475569" stroke-width="0.8"/>
+                        <line x1="300" y1="385" x2="285" y2="402" stroke="#475569" stroke-width="0.8"/>
+
+                        <!-- Pipe internal fluid zone -->
+                        <rect x="0" y="90" width="320" height="295" fill="rgba(37,99,235,0.06)" />
+
+                        <!-- Flow arrows -->
+                        <line x1="20" y1="180" x2="95" y2="180" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)"/>
+                        <line x1="20" y1="220" x2="95" y2="220" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)"/>
+                        <line x1="20" y1="260" x2="95" y2="260" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)"/>
+                        <line x1="225" y1="180" x2="300" y2="180" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)"/>
+                        <line x1="225" y1="220" x2="300" y2="220" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)"/>
+                        <line x1="225" y1="260" x2="300" y2="260" stroke="#2563eb" stroke-width="2" marker-end="url(#arr)"/>
+                        <text x="18" y="148" font-size="9" fill="#2563eb" font-weight="700">Fluid Flow U</text>
+
+                        <!-- Flange body -->
+                        <rect id="tw-flange" x="128" y="35" width="64" height="55" fill="url(#flangeGrad)" stroke="#334155" stroke-width="2" rx="3"/>
+                        <!-- Flange bolt holes -->
+                        <circle cx="138" cy="48" r="3" fill="#475569"/>
+                        <circle cx="160" cy="48" r="3" fill="#475569"/>
+                        <circle cx="182" cy="48" r="3" fill="#475569"/>
+                        <circle cx="138" cy="72" r="3" fill="#475569"/>
+                        <circle cx="182" cy="72" r="3" fill="#475569"/>
+                        <text x="160" y="28" font-size="9" fill="#64748b" font-weight="700" text-anchor="middle">FLANGE / NOZZLE</text>
+
+                        <!-- Thermowell body - tapered (default, updated by JS) -->
+                        <polygon id="thermowell-body" points="148,90 172,90 168,370 152,370" fill="url(#twBodyGrad)" stroke="#1e293b" stroke-width="2"/>
+
+                        <!-- Bore (inner) -->
+                        <line id="tw-bore-line" x1="160" y1="90" x2="160" y2="365" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="5,3"/>
+
+                        <!-- Sensor tip indicator -->
+                        <circle id="tw-tip-dot" cx="160" cy="370" r="5" fill="#ef4444" stroke="white" stroke-width="1.5"/>
+                        <circle cx="160" cy="370" r="9" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.4"/>
+                        <text x="178" y="374" font-size="8" fill="#ef4444" font-weight="700">Sensor Tip</text>
+
+                        <!-- Status glow ring on flange -->
+                        <rect id="tw-status-glow" x="126" y="33" width="68" height="59" fill="none" stroke="#10b981" stroke-width="3" rx="5" opacity="0.6" filter="url(#glow-green)"/>
+
+                        <!-- Vortex shedding dots (animated) -->
+                        <g id="vortex-group">
+                            <circle class="vortex-dot" cx="220" cy="200" r="6" fill="none" stroke="#ea580c" stroke-width="2" style="animation-delay:0s"/>
+                            <circle class="vortex-dot" cx="240" cy="230" r="8" fill="none" stroke="#dc2626" stroke-width="1.5" style="animation-delay:0.5s"/>
+                            <circle class="vortex-dot" cx="225" cy="260" r="5" fill="none" stroke="#ea580c" stroke-width="2" style="animation-delay:1s"/>
+                            <circle class="vortex-dot" cx="245" cy="185" r="7" fill="none" stroke="#dc2626" stroke-width="1.5" style="animation-delay:1.5s"/>
+                        </g>
+
+                        <!-- Dimension callouts -->
+                        <!-- Root diameter (Dr) -->
+                        <line x1="148" y1="95" x2="120" y2="95" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+                        <line x1="172" y1="95" x2="200" y2="95" stroke="#d97706" stroke-width="1" stroke-dasharray="3,2"/>
+                        <line x1="120" y1="90" x2="120" y2="100" stroke="#d97706" stroke-width="1.5" marker-end="url(#arr-dim)" marker-start="url(#arr-dim-rev)"/>
+                        <text id="lbl-Dr" x="104" y="103" font-size="8" fill="#d97706" font-weight="700" text-anchor="middle">Dr=19mm</text>
+
+                        <!-- Tip diameter (Dt) -->
+                        <line x1="152" y1="368" x2="120" y2="368" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+                        <line x1="168" y1="368" x2="200" y2="368" stroke="#059669" stroke-width="1" stroke-dasharray="3,2"/>
+                        <text id="lbl-Dt" x="104" y="371" font-size="8" fill="#059669" font-weight="700" text-anchor="middle">Dt=13mm</text>
+
+                        <!-- Insertion length (L) -->
+                        <line x1="195" y1="90" x2="210" y2="90" stroke="#7c3aed" stroke-width="1" stroke-dasharray="3,2"/>
+                        <line x1="195" y1="370" x2="210" y2="370" stroke="#7c3aed" stroke-width="1" stroke-dasharray="3,2"/>
+                        <line x1="208" y1="90" x2="208" y2="370" stroke="#7c3aed" stroke-width="1.5"/>
+                        <line x1="203" y1="90" x2="213" y2="90" stroke="#7c3aed" stroke-width="1.5"/>
+                        <line x1="203" y1="370" x2="213" y2="370" stroke="#7c3aed" stroke-width="1.5"/>
+                        <text id="lbl-L" x="222" y="234" font-size="8" fill="#7c3aed" font-weight="700" text-anchor="start">L=150mm</text>
+
+                        <!-- Bore label -->
+                        <text id="lbl-Db" x="160" y="200" font-size="7" fill="#ef4444" font-weight="700" text-anchor="middle">Db=6mm</text>
+
+                        <!-- Material label -->
+                        <text id="lbl-mat" x="160" y="115" font-size="7" fill="#64748b" font-weight="600" text-anchor="middle">SS 316</text>
+
+                        <!-- Frequency ratio bar -->
+                        <rect x="110" y="425" width="100" height="8" rx="4" fill="#e2e8f0"/>
+                        <rect id="tw-freq-bar" x="110" y="425" width="20" height="8" rx="4" fill="#10b981"/>
+                        <text x="110" y="422" font-size="7" fill="#64748b" font-weight="600">fs/fn ratio</text>
+                        <text id="tw-freq-bar-val" x="215" y="432" font-size="7" fill="#10b981" font-weight="700">0.00</text>
+                        <line x1="190" y1="424" x2="190" y2="434" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="2,1"/>
+                        <text x="192" y="422" font-size="6" fill="#dc2626">0.8 Limit</text>
+
+                        <!-- Stability badge -->
+                        <rect id="tw-badge-bg" x="100" y="2" width="120" height="20" rx="10" fill="#10b981"/>
+                        <text id="tw-badge-text" x="160" y="15" font-size="9" fill="white" font-weight="700" text-anchor="middle">STABLE</text>
+                    </svg>
+
+                    <!-- Right info panel -->
+                    <div class="diag-panel">
+                        <div class="diag-gauge-wrap">
+                            <canvas id="tw-gauge-canvas" width="180" height="110" title="Frequency Ratio Gauge"></canvas>
+                            <div style="font-size:0.75rem;color:var(--text);opacity:0.8;text-align:center;">Frequency Ratio r = fs/fn</div>
+                        </div>
+                        <div class="diag-metric">
+                            <div class="dm-label">Wake Freq. f<sub>s</sub></div>
+                            <div class="dm-value" id="dm-fw">— Hz</div>
+                        </div>
+                        <div class="diag-metric">
+                            <div class="dm-label">Natural Freq. f<sub>n</sub></div>
+                            <div class="dm-value" id="dm-fn">— Hz</div>
+                        </div>
+                        <div class="diag-metric">
+                            <div class="dm-label">Bending Stress</div>
+                            <div class="dm-value" id="dm-stress">— MPa</div>
+                        </div>
+                        <div class="diag-metric">
+                            <div class="dm-label">Fluid Velocity</div>
+                            <div class="dm-value" id="dm-vel">— m/s</div>
+                        </div>
+                        <div class="diag-metric">
+                            <div class="dm-label">Reynolds Number</div>
+                            <div class="dm-value" id="dm-re">—</div>
+                        </div>
+                    </div>
+                </div>
                 <p class="status-display" id="stability-status-display">Stability Status: N/A</p>
             </div>
+
             
             <!-- NEW: Step-by-Step Calculation Cards -->
             <div id="steps-container" class="steps-container math-content">
@@ -1817,7 +2027,7 @@
                 standardReference.innerHTML = '';
                 stabilityStatusDisplay.textContent = 'Stability Status: N/A';
                 stabilityStatusDisplay.classList.remove('ok', 'error', 'warning');
-                updateThermowellDiagram('tapered');
+                updateThermowellDiagram(thermowellTypeInput ? thermowellTypeInput.value : 'tapered', null);
                 if (!silent) {
                     displayMessage("Results cleared.", "info");
                 }
@@ -1832,16 +2042,169 @@
                 displayMessage("Form reset to default values.", "info");
             }
 
-            function updateThermowellDiagram(type) {
+            // Premium Thermowell Diagram Update Function
+            function drawGauge(canvas, ratio) {
+                const ctx = canvas.getContext('2d');
+                const W = canvas.width, H = canvas.height;
+                ctx.clearRect(0, 0, W, H);
+
+                const cx = W / 2, cy = H - 14, r = Math.min(W, H * 1.6) * 0.42;
+                const startAngle = Math.PI, endAngle = 0; // 180° arc (left to right)
+
+                // Background arc
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, Math.PI, 0, false);
+                ctx.lineWidth = 14;
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.stroke();
+
+                // Colored zones
+                const zones = [
+                    { from: 0, to: 0.4, color: '#10b981' },
+                    { from: 0.4, to: 0.8, color: '#f59e0b' },
+                    { from: 0.8, to: 1.25, color: '#ef4444' },
+                ];
+                zones.forEach(z => {
+                    ctx.beginPath();
+                    const a1 = Math.PI + z.from * Math.PI;
+                    const a2 = Math.PI + Math.min(z.to, 1.25) * Math.PI;
+                    ctx.arc(cx, cy, r, a1, a2, false);
+                    ctx.lineWidth = 14;
+                    ctx.strokeStyle = z.color;
+                    ctx.stroke();
+                });
+
+                // Needle
+                const clampedRatio = Math.min(ratio, 1.25);
+                const needleAngle = Math.PI + (clampedRatio / 1.25) * Math.PI;
+                const nx = cx + (r - 8) * Math.cos(needleAngle);
+                const ny = cy + (r - 8) * Math.sin(needleAngle);
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(nx, ny);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#1e293b';
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx, cy, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = '#1e293b';
+                ctx.fill();
+
+                // Centre ratio text
+                ctx.fillStyle = ratio < 0.8 ? '#059669' : (ratio < 1.0 ? '#d97706' : '#dc2626');
+                ctx.font = 'bold 16px Montserrat, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(ratio.toFixed(2), cx, cy - 18);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '9px Inter, sans-serif';
+                ctx.fillText('r = fs/fn', cx, cy - 6);
+
+                // Tick labels
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '8px Inter, sans-serif';
+                ['0', '0.4', '0.8', '1.25'].forEach((lbl, i) => {
+                    const vals = [0, 0.4, 0.8, 1.25];
+                    const ang = Math.PI + (vals[i] / 1.25) * Math.PI;
+                    const tx = cx + (r + 12) * Math.cos(ang);
+                    const ty = cy + (r + 12) * Math.sin(ang);
+                    ctx.textAlign = 'center';
+                    ctx.fillText(lbl, tx, ty);
+                });
+            }
+
+            function updateThermowellDiagram(type, results) {
+                const body = document.getElementById('thermowell-body');
+                const badge = document.getElementById('tw-badge-bg');
+                const badgeText = document.getElementById('tw-badge-text');
+                const glowRing = document.getElementById('tw-status-glow');
+                const freqBar = document.getElementById('tw-freq-bar');
+                const freqBarVal = document.getElementById('tw-freq-bar-val');
+                const typeBadge = document.getElementById('diag-type-badge');
+
+                if (!body) return;
+
+                // Update shape based on thermowell type
                 if (type === 'tapered') {
-                    thermowellBodySVG.setAttribute('points', '40,20 60,20 55,180 45,180');
-                } else { // straight
-                    thermowellBodySVG.setAttribute('points', '40,20 60,20 60,180 40,180');
+                    body.setAttribute('points', '148,90 172,90 168,370 152,370');
+                    if (typeBadge) typeBadge.textContent = 'TAPERED';
+                } else if (type === 'stepped') {
+                    // Stepped: wide upper, narrow lower
+                    body.setAttribute('points', '142,90 178,90 178,220 165,220 165,370 155,370 155,220 142,220');
+                    if (typeBadge) typeBadge.textContent = 'STEPPED';
+                } else {
+                    // Straight
+                    body.setAttribute('points', '148,90 172,90 172,370 148,370');
+                    if (typeBadge) typeBadge.textContent = 'STRAIGHT';
+                }
+
+                // Update live data if results available
+                if (results) {
+                    const ratio = results.frequencyRatio || 0;
+                    const isStable = ratio < 0.8 && results.sigma_b < results.S_T && results.P_proc < results.P_max_bar;
+                    const isWarning = ratio >= 0.6 && ratio < 0.8;
+
+                    // Color coding
+                    const statusColor = isStable ? (isWarning ? '#f59e0b' : '#10b981') : '#ef4444';
+                    const statusText = isStable ? (isWarning ? 'CAUTION' : 'STABLE') : 'UNSTABLE';
+                    const glowFilter = isStable ? 'url(#glow-green)' : 'url(#glow-red)';
+
+                    if (badge) { badge.setAttribute('fill', statusColor); }
+                    if (badgeText) { badgeText.textContent = statusText; }
+                    if (glowRing) {
+                        glowRing.setAttribute('stroke', statusColor);
+                        glowRing.setAttribute('filter', glowFilter);
+                    }
+
+                    // Dimension labels
+                    const lblDr = document.getElementById('lbl-Dr');
+                    const lblDt = document.getElementById('lbl-Dt');
+                    const lblL  = document.getElementById('lbl-L');
+                    const lblDb = document.getElementById('lbl-Db');
+                    const lblMat = document.getElementById('lbl-mat');
+                    if (lblDr) lblDr.textContent = `Dr=${results.Dr_mm.toFixed(1)}mm`;
+                    if (lblDt) lblDt.textContent = `Dt=${results.Dt_mm.toFixed(1)}mm`;
+                    if (lblL)  lblL.textContent  = `L=${results.L_mm.toFixed(0)}mm`;
+                    if (lblDb) lblDb.textContent = `Db=${results.Db_mm.toFixed(1)}mm`;
+                    if (lblMat) lblMat.textContent = results.materialName ? results.materialName.split(' ').slice(0,2).join(' ') : '';
+
+                    // Frequency ratio bar (0 to 100 pixels max, 0.8 limit at 80px)
+                    const barW = Math.min(ratio / 1.25 * 100, 100);
+                    if (freqBar) {
+                        freqBar.setAttribute('width', barW.toFixed(1));
+                        freqBar.setAttribute('fill', statusColor);
+                    }
+                    if (freqBarVal) {
+                        freqBarVal.textContent = ratio.toFixed(3);
+                        freqBarVal.setAttribute('fill', statusColor);
+                    }
+
+                    // Info panel metrics
+                    const dmFw = document.getElementById('dm-fw');
+                    const dmFn = document.getElementById('dm-fn');
+                    const dmStress = document.getElementById('dm-stress');
+                    const dmVel = document.getElementById('dm-vel');
+                    const dmRe = document.getElementById('dm-re');
+                    if (dmFw) { dmFw.textContent = `${results.f_w.toFixed(2)} Hz`; dmFw.style.color = '#2563eb'; }
+                    if (dmFn) { dmFn.textContent = `${results.f_n.toFixed(2)} Hz`; dmFn.style.color = '#059669'; }
+                    if (dmStress) {
+                        dmStress.textContent = `${(results.sigma_b/1e6).toFixed(2)} MPa`;
+                        dmStress.style.color = results.sigma_b < results.S_T ? '#059669' : '#dc2626';
+                    }
+                    if (dmVel) { dmVel.textContent = `${results.U.toFixed(2)} m/s`; dmVel.style.color = '#7c3aed'; }
+                    if (dmRe) { dmRe.textContent = results.Re.toExponential(2); dmRe.style.color = '#ea580c'; }
+
+                    // Draw gauge
+                    const gaugeCanvas = document.getElementById('tw-gauge-canvas');
+                    if (gaugeCanvas) drawGauge(gaugeCanvas, ratio);
+                } else {
+                    // Default state (no results yet)
+                    const gaugeCanvas = document.getElementById('tw-gauge-canvas');
+                    if (gaugeCanvas) drawGauge(gaugeCanvas, 0);
                 }
             }
-            
+
             thermowellTypeInput.addEventListener('change', function() {
-                updateThermowellDiagram(this.value);
+                updateThermowellDiagram(this.value, currentResults);
             });
 
             // --- MAJOR UPDATE: New Calculation Function ---
@@ -2175,7 +2538,7 @@
                 addResultRow("ASME PTC 19.3 Evaluation", isStable ? `<strong class="ok">COMPLIANT</strong>` : `<strong class="error">NON-COMPLIANT</strong>`);
                 addResultRow("Mechanical Stability Status", `<strong class="${statusClass}">${statusMessage}</strong>`);
 
-                updateThermowellDiagram(thermowellType);
+                updateThermowellDiagram(thermowellType, currentResults);
                 stabilityStatusDisplay.textContent = `Stability Status: ${statusMessage}`;
                 stabilityStatusDisplay.classList.remove('ok', 'error', 'warning');
                 stabilityStatusDisplay.classList.add(statusClass);
@@ -2480,8 +2843,8 @@
                 });
             }
 
-            updateThermowellDiagram(thermowellTypeInput.value);
-            calculateWakeFrequency(true); // Run initial calculation silently on load
+            updateThermowellDiagram(thermowellTypeInput.value, null);
+            calculateWakeFrequency(true); // Run initial calculation silently on load — this will call updateThermowellDiagram with real results
         });
     </script>
 </body>
