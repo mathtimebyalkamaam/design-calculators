@@ -469,9 +469,9 @@
             background-color: var(--card);
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            display: none; /* Hidden by default */
-            opacity: 0; /* For animation */
-            transform: translateY(20px); /* Initial state for animation */
+            display: block; /* Modified: Always visible */
+            opacity: 1; /* Modified: Always visible */
+            transform: translateY(0); /* Modified: Always visible */
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
         }
         
@@ -608,7 +608,7 @@
 
         /* NEW: Styles for calculation steps (from provided file) */
         .steps-container {
-            display: none;
+            display: block; /* Modified: Always visible */
             margin-top: 30px;
         }
         .steps-container.active {
@@ -1260,95 +1260,407 @@
             
             <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
                 <button type="button" id="clear-results-btn" class="clear-results-btn"><i class="fas fa-times-circle"></i> Clear Results</button>
-                <button type="button" id="pdf-btn" class="calculate-btn" style="background: var(--success); margin: 0;"><i class="fas fa-file-pdf"></i> Export PDF Report</button>
+<button type="button" id="pdf-btn" class="calculate-btn" style="background: var(--success); margin: 0;"><i class="fas fa-file-pdf"></i> Export PDF Report</button>
             </div>
             
             <div class="standard-reference" id="standard-reference">
                 <!-- Standard reference text will be inserted here -->
             </div>
 
-            <!-- NEW: Educational Section -->
+            <!-- Engineering Manual: Vertical Cards -->
             <div id="education-section" class="education-section">
-                <h2><i class="fas fa-lightbulb"></i> Professional Insights: Thermowell Failure Explained</h2>
-    
-                <div class="insight-card">
-                    <h4><i class="fas fa-tools"></i> What is a Thermowell?</h4>
-                    <p>A thermowell is a strong, sealed tube that protects a temperature sensor (like a thermocouple, RTD, or thermometer) from the process fluid it's measuring. Think of it as a permanent "sleeve" installed in a pipe or vessel. This allows the sensor to be safely removed for calibration or replacement without shutting down or draining the entire process.</p>
-                    <p>While it provides essential protection, the thermowell itself, being a blunt object protruding into a moving fluid, is subject to powerful aerodynamic (or hydrodynamic) forces. Failure to properly engineer this component can lead to catastrophic mechanical failure.</p>
-                </div>
-    
-                <div class="insight-card">
-                    <h4><i class="fas fa-water"></i> The Danger: Flow-Induced Vibration (FIV)</h4>
-                    <p>When a fluid (like steam, gas, or liquid) flows past a thermowell, it doesn't just flow <em>around</em> it; it creates a turbulent pattern called a <strong>Kármán vortex street</strong>. The fluid creates swirling vortices, or "wakes," that detach from alternating sides of the thermowell. You can see this same effect when wind blows past a flagpole, causing it to "sing" or flutter.</p>
-                    <p>This alternating vortex shedding creates a periodic force that pushes the thermowell back and forth, perpendicular to the direction of the flow. The frequency of this pushing force is called the <strong>wake frequency (f<sub>w</sub>)</strong>.</p>
-                </div>
-                
-                <div class="danger-box">
-                    <h4><i class="fas fa-exclamation-triangle"></i> Resonance: The "Silent Killer"</h4>
-                    <p>Like a guitar string, every physical object has a <strong>natural frequency (f<sub>n</sub>)</strong>—the frequency at which it "wants" to vibrate if you "pluck" it. This is determined by its length, diameter, material stiffness (Young's Modulus), and how it's mounted (e.g., cantilevered).</p>
-                    <p><strong>Resonance</strong> is the catastrophic phenomenon that occurs when the external forcing frequency (the wake frequency, $f_w$) gets too close to the thermowell's internal natural frequency ($f_n$).</p>
-                    <p>When this "lock-in" occurs, the tiny pushes from the vortices perfectly align with the thermowell's own vibration, amplifying the motion with each cycle. The vibrations can grow exponentially, leading to high-cycle fatigue and causing the thermowell to snap off and be sent downstream, potentially destroying pumps, turbines, or other critical equipment.</p>
-                    <p>The goal of this calculation, and the entire ASME PTC 19.3 TW-2016 standard, is to ensure this <strong>never</strong> happens.</p>
+                <h2><i class="fas fa-lightbulb" style="color:var(--accent);"></i> Engineering Manual: Thermowell Vibration Sizing</h2>
+
+                <!-- WHAT -->
+                <div class="insight-card" style="border-left-color: #2563eb; background: linear-gradient(135deg, var(--card), rgba(37,99,235,0.04));">
+                    <h4 style="color:#2563eb;"><i class="fas fa-tools"></i> The 'What' — What is a Thermowell?</h4>
+                    <p>A thermowell is a protective metal sleeve installed in a process pipe or vessel. It houses temperature sensors (such as RTDs or Thermocouples), isolating them from high fluid pressures, corrosive environments, and high-velocity flows.</p>
+                    <p>By protecting the sensor inside its hollow core, the thermowell permits safe sensor removal for calibration or replacement without draining the line or shutting down the entire facility. However, because it extends directly into the path of the flowing fluid, it behaves as a <strong>cantilever beam</strong>, absorbing significant static and dynamic mechanical loads.</p>
+                    <div style="text-align:center; margin:20px 0;">
+                        <svg viewBox="0 0 520 190" xmlns="http://www.w3.org/2000/svg" style="max-width:520px;width:100%;height:auto;background:var(--bg);border-radius:12px;border:1px solid var(--border);display:inline-block;">
+                            <line x1="15" y1="35" x2="505" y2="35" stroke="#64748b" stroke-width="3"/>
+                            <line x1="15" y1="155" x2="505" y2="155" stroke="#64748b" stroke-width="3"/>
+                            <text x="18" y="27" font-size="9" fill="#64748b" font-weight="bold">Process Pipe Wall (Top)</text>
+                            <text x="18" y="170" font-size="9" fill="#64748b" font-weight="bold">Process Pipe Wall (Bottom)</text>
+                            <!-- Flow arrow -->
+                            <path d="M 30,95 L 90,95" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                            <polygon points="90,90 100,95 90,100" fill="#2563eb"/>
+                            <text x="28" y="82" font-size="9" fill="#2563eb" font-weight="bold">Fluid Flow U</text>
+                            <!-- Flange box -->
+                            <rect x="228" y="12" width="44" height="23" fill="none" stroke="#475569" stroke-width="1.5" rx="2"/>
+                            <text x="250" y="27" font-size="8" fill="#475569" text-anchor="middle" font-weight="bold">Flange</text>
+                            <!-- Tapered thermowell body -->
+                            <path d="M 233,35 L 241,135 L 259,135 L 267,35 Z" fill="rgba(100,116,139,0.15)" stroke="#475569" stroke-width="2"/>
+                            <!-- Root diameter label -->
+                            <line x1="222" y1="37" x2="278" y2="37" stroke="#d97706" stroke-width="1" stroke-dasharray="3 2"/>
+                            <text x="283" y="41" font-size="8" fill="#d97706" font-weight="bold">Root Ø Q</text>
+                            <!-- Tip diameter label -->
+                            <line x1="233" y1="135" x2="267" y2="135" stroke="#d97706" stroke-width="1" stroke-dasharray="3 2"/>
+                            <text x="272" y="139" font-size="8" fill="#d97706" font-weight="bold">Tip Ø B</text>
+                            <!-- Insertion length bracket -->
+                            <line x1="212" y1="35" x2="212" y2="135" stroke="#059669" stroke-width="1.5"/>
+                            <line x1="207" y1="35" x2="217" y2="35" stroke="#059669" stroke-width="1.5"/>
+                            <line x1="207" y1="135" x2="217" y2="135" stroke="#059669" stroke-width="1.5"/>
+                            <text x="165" y="90" font-size="9" fill="#059669" font-weight="bold">Insert. Length U</text>
+                            <!-- Sensor wire -->
+                            <line x1="250" y1="22" x2="250" y2="125" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 2"/>
+                            <circle cx="250" cy="125" r="4" fill="#ef4444"/>
+                            <text x="250" y="148" font-size="7" fill="#ef4444" text-anchor="middle" font-weight="bold">RTD/TC Tip</text>
+                        </svg>
+                    </div>
                 </div>
 
-                <div class="insight-card">
-                    <h4><i class="fas fa-book-open"></i> The ASME PTC 19.3 TW-2016 Standard</h4>
-                    <p>This is the global standard for the mechanical design and selection of thermowells. It is a rigorous check that evaluates multiple failure modes. This calculator performs the most critical of these checks: the frequency limit.</p>
-                    <p>The standard mandates several checks, including:</p>
-                    <ul>
-                        <li><strong>Frequency Limit (This Calculator):</strong> The primary safety check. The standard states that the thermowell's natural frequency ($f_n$) must be high enough to avoid resonance. The wake frequency ($f_w$) must be less than 80% of the natural frequency.
-                        <div class="formula-block" style="text-align:center; font-weight:bold; font-size: 1.1rem;">$f_w < 0.8 \times f_n$ &nbsp;&nbsp; (or) &nbsp;&nbsp; $\frac{f_n}{f_w} > 1.25$</div></li>
-                        <li><strong>Static Stress Limit:</strong> Checks if the thermowell is strong enough to resist the simple "push" (drag force) of the fluid without bending or breaking.</li>
-                        <li><strong>Dynamic Stress Limit:</strong> Checks if the thermowell can withstand the cyclic stress from the vibrating forces, even if it's not in full resonance.</li>
-                        <li><strong>Pressure Rating:</strong> Ensures the thermowell can withstand the process pressure without bursting.</li>
-                    </ul>
-                    <p><strong>Note:</strong> This tool only evaluates the Frequency Limit. A complete design must satisfy all four criteria.</p>
+                <!-- WHY -->
+                <div class="insight-card" style="border-left-color: #ea580c; background: linear-gradient(135deg, var(--card), rgba(234,88,12,0.04));">
+                    <h4 style="color:#ea580c;"><i class="fas fa-water"></i> The 'Why' — Why Vortex Shedding Induces Vibration</h4>
+                    <p>As fluid flows past the cylindrical thermowell, it separates, creating alternating low-pressure swirls — a <strong>Kármán vortex street</strong> — detaching from opposite sides of the stem.</p>
+                    <p>Each vortex detachment exerts an asymmetric dynamic force on the stem, alternately pushing it <em>transversely</em> (perpendicular to flow) at the <strong>wake frequency \(f_s = S_t \cdot U / d\)</strong> and <em>in-line</em> (parallel to flow) at \(2f_s\). The Strouhal number \(S_t \approx 0.22\) for Re&nbsp;&gt;&nbsp;1000.</p>
+                    <div style="text-align:center; margin:20px 0;">
+                        <svg viewBox="0 0 520 160" xmlns="http://www.w3.org/2000/svg" style="max-width:520px;width:100%;height:auto;background:var(--bg);border-radius:12px;border:1px solid var(--border);display:inline-block;">
+                            <!-- Flow streamlines top/bottom -->
+                            <path d="M 15,40 Q 130,38 180,28 T 260,22 Q 320,28 500,28" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+                            <path d="M 15,120 Q 130,122 180,132 T 260,138 Q 320,132 500,132" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+                            <!-- Flow arrow -->
+                            <path d="M 15,80 L 50,80" fill="none" stroke="#2563eb" stroke-width="2"/>
+                            <polygon points="50,75 60,80 50,85" fill="#2563eb"/>
+                            <text x="15" y="72" font-size="8" fill="#2563eb" font-weight="bold">Flow U</text>
+                            <!-- Cylinder -->
+                            <circle cx="140" cy="80" r="24" fill="#475569" stroke="#1e293b" stroke-width="2"/>
+                            <text x="140" y="84" font-size="8" fill="white" font-weight="bold" text-anchor="middle">Stem</text>
+                            <!-- Vortices -->
+                            <path d="M 195,60 a 12,12 0 1,1 14,-8 a 9,9 0 1,1 8,6" fill="none" stroke="#2563eb" stroke-width="2"/>
+                            <path d="M 255,100 a 14,14 0 1,0 16,-12 a 11,11 0 1,0 10,-8" fill="none" stroke="#dc2626" stroke-width="2"/>
+                            <path d="M 320,55 a 16,16 0 1,1 18,-12 a 12,12 0 1,1 12,-9" fill="none" stroke="#2563eb" stroke-width="2"/>
+                            <path d="M 390,108 a 18,18 0 1,0 20,-16 a 14,14 0 1,0 14,-12" fill="none" stroke="#dc2626" stroke-width="2"/>
+                            <!-- Transverse force arrows -->
+                            <path d="M 140,80 L 140,30" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+                            <polygon points="135,32 140,20 145,32" fill="#ea580c"/>
+                            <path d="M 140,80 L 140,130" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+                            <polygon points="135,128 140,140 145,128" fill="#ea580c"/>
+                            <text x="90" y="22" font-size="8" fill="#ea580c" font-weight="bold">Oscillating Lift (f_s)</text>
+                            <text x="260" y="155" font-size="9" fill="#475569" font-weight="bold" text-anchor="middle">Kármán Vortex Street — Alternating Wake Shedding</text>
+                        </svg>
+                    </div>
                 </div>
-                
-                <div class="success-box">
-                    <h4><i class="fas fa-check-circle"></i> How to "Fix" a Failing Thermowell Design</h4>
-                    <p>If the calculation shows a failure ($f_n / f_w < 1.25$), the design is unsafe and must be changed. Engineers have several options, all of which aim to either <strong>increase the natural frequency ($f_n$)</strong> or <strong>disrupt the wake frequency ($f_w$)</strong>:</p>
+
+                <!-- WHICH -->
+                <div class="insight-card" style="border-left-color: #059669; background: linear-gradient(135deg, var(--card), rgba(5,150,105,0.04));">
+                    <h4 style="color:#059669;"><i class="fas fa-exclamation-triangle"></i> The 'Which' — Which Failure Modes Occur? (Resonance Limits)</h4>
+                    <p>Every thermowell has a <strong>natural frequency \(f_n\)</strong> — the frequency at which it vibrates when disturbed. If the wake frequency \(f_s\) approaches \(f_n\), the thermowell enters <strong>resonance (lock-in)</strong>, exponentially growing the vibration amplitude until fatigue failure.</p>
+                    <p>ASME PTC 19.3 TW-2016 defines the <strong>frequency ratio \(r = f_s / f_n\)</strong> safety limits:</p>
+                    <ul>
+                        <li><strong style="color:#059669;">Safe zone:</strong> \(r &lt; 0.8\) — vortex frequency safely below natural frequency.</li>
+                        <li><strong style="color:#dc2626;">Forbidden zone:</strong> \(0.8 \le r \le 1.25\) — highly amplified bending stress; FAIL.</li>
+                        <li><strong style="color:#d97706;">In-line limit:</strong> \(r &lt; 0.4\) required for dense liquids to avoid in-line resonance at \(2f_s = f_n\).</li>
+                    </ul>
+                    <div style="text-align:center; margin:20px 0;">
+                        <svg viewBox="0 0 520 155" xmlns="http://www.w3.org/2000/svg" style="max-width:520px;width:100%;height:auto;background:var(--bg);border-radius:12px;border:1px solid var(--border);display:inline-block;">
+                            <line x1="35" y1="105" x2="490" y2="105" stroke="#64748b" stroke-width="2"/>
+                            <!-- Safe zone -->
+                            <rect x="35" y="35" width="230" height="55" fill="rgba(5,150,105,0.12)" stroke="#059669" stroke-width="1.5" rx="4"/>
+                            <text x="150" y="66" font-size="10" fill="#059669" font-weight="bold" text-anchor="middle">SAFE ZONE</text>
+                            <text x="150" y="80" font-size="8" fill="#059669" text-anchor="middle">r &lt; 0.8</text>
+                            <!-- Forbidden zone -->
+                            <rect x="265" y="35" width="120" height="55" fill="rgba(239,68,68,0.12)" stroke="#ef4444" stroke-width="1.5" rx="4"/>
+                            <text x="325" y="62" font-size="9" fill="#b91c1c" font-weight="bold" text-anchor="middle">FORBIDDEN</text>
+                            <text x="325" y="76" font-size="8" fill="#b91c1c" text-anchor="middle">0.8 ≤ r ≤ 1.25</text>
+                            <!-- Tick marks -->
+                            <line x1="35" y1="100" x2="35" y2="112" stroke="#64748b" stroke-width="1.5"/><text x="35" y="124" font-size="8" fill="#64748b" text-anchor="middle">0.0</text>
+                            <line x1="140" y1="100" x2="140" y2="112" stroke="#d97706" stroke-width="1.5"/><text x="140" y="124" font-size="8" fill="#d97706" text-anchor="middle">0.4</text>
+                            <line x1="265" y1="100" x2="265" y2="112" stroke="#dc2626" stroke-width="1.5"/><text x="265" y="124" font-size="8" fill="#dc2626" text-anchor="middle">0.8</text>
+                            <line x1="385" y1="100" x2="385" y2="112" stroke="#dc2626" stroke-width="2"/><text x="385" y="124" font-size="8" fill="#dc2626" font-weight="bold" text-anchor="middle">1.0 ⚡</text>
+                            <text x="260" y="144" font-size="9" fill="#475569" font-weight="bold" text-anchor="middle">ASME PTC 19.3 TW-2016 — Frequency Ratio r = f_s / f_n</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- WHERE -->
+                <div class="insight-card" style="border-left-color: #7c3aed; background: linear-gradient(135deg, var(--card), rgba(124,58,237,0.04));">
+                    <h4 style="color:#7c3aed;"><i class="fas fa-map-marker-alt"></i> The 'Where' — Where Do Thermowells Fail?</h4>
+                    <p>As a cantilever beam, the thermowell concentrates maximum bending stress at its <strong>root</strong> — the weld-neck-to-nozzle junction. Microscopic fatigue cracks initiate in the heat-affected zone (HAZ) of the root weld, propagating under cyclical loading until the stem fractures and enters the flow stream.</p>
+                    <p>The bending moment formula: \(M = F_L \cdot L\), where bending stress at root \(\sigma = M \cdot c / I\). For a hollow cylinder, \(I = \pi(D_o^4 - D_i^4)/64\).</p>
+                    <div style="text-align:center; margin:20px 0;">
+                        <svg viewBox="0 0 520 160" xmlns="http://www.w3.org/2000/svg" style="max-width:520px;width:100%;height:auto;background:var(--bg);border-radius:12px;border:1px solid var(--border);display:inline-block;">
+                            <defs>
+                                <linearGradient id="stressGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#ef4444"/>
+                                    <stop offset="30%" stop-color="#f97316"/>
+                                    <stop offset="65%" stop-color="#e2e8f0"/>
+                                    <stop offset="100%" stop-color="#cbd5e1"/>
+                                </linearGradient>
+                            </defs>
+                            <!-- Flange wall -->
+                            <rect x="25" y="18" width="22" height="120" fill="#475569" rx="2"/>
+                            <text x="36" y="143" font-size="8" fill="white" text-anchor="middle" font-weight="bold">Root</text>
+                            <!-- Thermowell body with gradient stress -->
+                            <path d="M 47,48 L 370,62 L 370,95 L 47,108 Z" fill="url(#stressGrad2)" stroke="#334155" stroke-width="1.5"/>
+                            <!-- Force arrow -->
+                            <path d="M 370,38 L 370,58" fill="none" stroke="#b91c1c" stroke-width="2.5"/>
+                            <polygon points="365,57 370,68 375,57" fill="#b91c1c"/>
+                            <text x="370" y="30" font-size="8" fill="#b91c1c" font-weight="bold" text-anchor="middle">F_L (Lift)</text>
+                            <!-- Crack line at root -->
+                            <path d="M 50,55 Q 44,78 50,100" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 2"/>
+                            <text x="60" y="42" font-size="8" fill="#ef4444" font-weight="bold">⚠ Peak σ (Root)</text>
+                            <!-- Stress = 0 at tip -->
+                            <text x="375" y="82" font-size="8" fill="#64748b" font-weight="bold">σ ≈ 0 (Tip)</text>
+                            <text x="260" y="140" font-size="9" fill="#475569" font-weight="bold" text-anchor="middle">Bending Stress Profile — Cantilever Beam Model</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- HOW -->
+                <div class="insight-card" style="border-left-color: #db2777; background: linear-gradient(135deg, var(--card), rgba(219,39,119,0.04));">
+                    <h4 style="color:#db2777;"><i class="fas fa-check-circle"></i> The 'How' — How to Resolve Sizing Failures</h4>
+                    <p>When \(r \ge 0.8\), the design fails the frequency check and must be corrected. Engineers apply one or more of these proven solutions:</p>
                     <ol>
-                        <li><strong>Shorten the Insertion Length (L):</strong> This is the most effective solution. $f_n$ is inversely proportional to $L^2$. Halving the length quadruples the natural frequency. This is why you should always use the shortest thermowell possible that still reaches the representative flow.</li>
-                        <li><strong>Increase the Root/Tip Diameter (D):</strong> A thicker thermowell is stiffer, which increases $f_n$. A larger diameter may also reduce the wake frequency ($f_w = S_t \times U / D$).</li>
-                        <li><strong>Change Material:</strong> Using a stiffer material (higher Young's Modulus, $E$) or a lighter material (lower $\rho_s$) will increase $f_n$.</li>
-                        <li><strong>Add a Velocity Collar:</strong> This is a support collar added partway down the thermowell. It effectively "shortens" the unsupported length ($L$) and changes the mounting from a simple cantilever, dramatically increasing $f_n$.</li>
-                        <li><strong>Use a Helical Strake Profile:</strong> Instead of a smooth cylinder, these thermowells have a helical (spiral) fin. This design, borrowed from industrial chimneys, "trips" the fluid flow and breaks up the vortices, preventing a coherent, resonant wake from ever forming. This <em>disrupts</em> $f_w$ rather than changing $f_n$.</li>
+                        <li><strong>Shorten insertion length \(L\):</strong> Since \(f_n \propto 1/L^2\), halving \(L\) quadruples \(f_n\). Most powerful remedy.</li>
+                        <li><strong>Increase stem diameters:</strong> A larger root diameter \(Q\) raises section modulus \(I\), stiffening the beam and raising \(f_n\).</li>
+                        <li><strong>Use stiffer material:</strong> Higher Young's Modulus \(E\) (e.g., Hastelloy at 205 GPa) raises \(f_n\) over lower \(E\) materials.</li>
+                        <li><strong>Angled / elbow mounting:</strong> 45° nozzle or elbow-facing installations reduce the effective normal velocity on the stem.</li>
+                        <li><strong>Helical strake fins:</strong> Three helical fins welded to the stem break vortex correlation and prevent resonant lock-in without changing \(f_n\).</li>
                     </ol>
-                </div>
-    
-                <div class="insight-card">
-                    <h4><i class="fas-calculator"></i> Key Parameters in the Calculation</h4>
-                    <ul>
-                        <li><strong>Reynolds Number ($R_e$):</strong> A dimensionless number that describes the flow regime (laminar, turbulent). It's calculated using fluid density, velocity, diameter, and viscosity. $R_e$ is used to find the correct Strouhal number.</li>
-                        <li><strong>Strouhal Number ($S_t$):</strong> A dimensionless number that links the wake frequency, velocity, and diameter. For most industrial flows ($R_e > 1000$), $S_t$ is a near-constant, typically around 0.22.</li>
-                        <li><strong>Young's Modulus ($E$):</strong> A measure of material stiffness. A higher $E$ (like Hastelloy) means a stiffer thermowell and a higher $f_n$ compared to a more flexible material (like Titanium). This value also decreases as temperature increases.</li>
-                    </ul>
+                    <div style="text-align:center; margin:20px 0;">
+                        <svg viewBox="0 0 520 160" xmlns="http://www.w3.org/2000/svg" style="max-width:520px;width:100%;height:auto;background:var(--bg);border-radius:12px;border:1px solid var(--border);display:inline-block;">
+                            <!-- Divider -->
+                            <line x1="260" y1="10" x2="260" y2="150" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="5 3"/>
+                            <!-- Left: Smooth stem -->
+                            <text x="130" y="22" font-size="9" fill="#b91c1c" font-weight="bold" text-anchor="middle">Smooth Stem → Resonance</text>
+                            <rect x="60" y="55" width="140" height="32" rx="4" fill="rgba(100,116,139,0.2)" stroke="#475569" stroke-width="1.5"/>
+                            <!-- Coherent vortices -->
+                            <path d="M 215,62 a 9,9 0 1,1 11,-7 a 7,7 0 1,1 7,5" fill="none" stroke="#ef4444" stroke-width="1.8"/>
+                            <path d="M 215,92 a 9,9 0 1,0 11,7 a 7,7 0 1,0 7,-5" fill="none" stroke="#ef4444" stroke-width="1.8"/>
+                            <text x="130" y="108" font-size="8" fill="#b91c1c" text-anchor="middle">Coherent vortex lock-in</text>
+                            <!-- Right: Helical strakes -->
+                            <text x="390" y="22" font-size="9" fill="#059669" font-weight="bold" text-anchor="middle">Helical Strakes → Safe</text>
+                            <rect x="295" y="55" width="140" height="32" rx="4" fill="rgba(100,116,139,0.2)" stroke="#475569" stroke-width="1.5"/>
+                            <!-- Strake fins -->
+                            <path d="M 300,48 Q 315,68 330,48 Q 345,68 360,48 Q 375,68 390,48 Q 405,68 420,48" fill="none" stroke="#059669" stroke-width="2"/>
+                            <path d="M 300,98 Q 315,78 330,98 Q 345,78 360,98 Q 375,78 390,98 Q 405,78 420,98" fill="none" stroke="#059669" stroke-width="2"/>
+                            <!-- Broken small vortices -->
+                            <circle cx="455" cy="65" r="4" fill="none" stroke="#059669" stroke-width="1.2"/>
+                            <circle cx="465" cy="82" r="3" fill="none" stroke="#059669" stroke-width="1.2"/>
+                            <circle cx="475" cy="60" r="2.5" fill="none" stroke="#059669" stroke-width="1.2"/>
+                            <text x="390" y="108" font-size="8" fill="#059669" text-anchor="middle">Disrupted — no lock-in</text>
+                            <text x="260" y="145" font-size="9" fill="#475569" font-weight="bold" text-anchor="middle">Smooth vs Helical Strake Thermowell — Vortex Disruption</text>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-        </div>
+            <!-- Governing Design Standards -->
+            <div class="education-section" style="margin-top:30px;">
+                <h2><i class="fas fa-balance-scale" style="color:var(--primary);"></i> Governing Sizing Standards &amp; Applicability Rules</h2>
+                <p style="margin-bottom:20px;">Thermowell sizing must satisfy both international and national (Indian) design codes. The table below summarises the key standards and their explicit applicability limits:</p>
+                <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;">
+                    <table class="result-table" style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+                        <thead>
+                            <tr style="background:var(--primary);color:white;">
+                                <th style="padding:12px 14px;text-align:left;min-width:160px;">Standard</th>
+                                <th style="padding:12px 14px;text-align:left;min-width:180px;">Scope &amp; Focus</th>
+                                <th style="padding:12px 14px;text-align:left;">Applicability Rules &amp; Sizing Criteria</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid var(--border);">
+                                <td style="padding:12px 14px;vertical-align:top;"><strong style="color:#2563eb;">ASME PTC 19.3 TW-2016</strong><br><small style="color:var(--text);opacity:0.75;">Global (Primary)</small></td>
+                                <td style="padding:12px 14px;vertical-align:top;">Thermowell sizing in all process piping &amp; vessels</td>
+                                <td style="padding:12px 14px;vertical-align:top;">
+                                    <ul style="margin:0;padding-left:18px;">
+                                        <li><strong>Frequency ratio:</strong> \(r = f_s/f_n &lt; 0.8\) (transverse); \(r &lt; 0.4\) for in-line resonance in liquids</li>
+                                        <li><strong>Static bending stress:</strong> \(\sigma_{bend} &lt; S_y / SF\) (safety factor SF ≥ 1.5)</li>
+                                        <li><strong>Dynamic stress amplitude:</strong> Must be below material endurance limit</li>
+                                        <li><strong>Hydrostatic rating:</strong> Process pressure &lt; thermowell collapse pressure \(p_c\)</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--border);background:var(--bg);">
+                                <td style="padding:12px 14px;vertical-align:top;"><strong style="color:#059669;">DIN 43772</strong><br><small style="color:var(--text);opacity:0.75;">European Standard</small></td>
+                                <td style="padding:12px 14px;vertical-align:top;">Standardised thermowell shapes and material loading</td>
+                                <td style="padding:12px 14px;vertical-align:top;">
+                                    <ul style="margin:0;padding-left:18px;">
+                                        <li>Defines standardised shapes: straight, tapered, stepped, flanged, threaded</li>
+                                        <li>Specifies standard insertion lengths and pressure-temperature loading charts up to <strong>400 bar, 700 °C</strong></li>
+                                        <li>Governs weld-neck and socket-weld attachment design in European plants</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--border);">
+                                <td style="padding:12px 14px;vertical-align:top;"><strong style="color:#ea580c;">ASTM E644</strong><br><small style="color:var(--text);opacity:0.75;">Testing Standard</small></td>
+                                <td style="padding:12px 14px;vertical-align:top;">Sensor vibration integrity &amp; thermal response</td>
+                                <td style="padding:12px 14px;vertical-align:top;">
+                                    <ul style="margin:0;padding-left:18px;">
+                                        <li>Test methods for calibrating RTD/thermocouple resistance to vibration inside thermowells</li>
+                                        <li>Ensures bore diameter tolerances do not degrade sensor thermal response times</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr style="border-bottom:1px solid var(--border);background:var(--bg);">
+                                <td style="padding:12px 14px;vertical-align:top;"><strong style="color:#7c3aed;">ISO 10816 / ISO 1940</strong><br><small style="color:var(--text);opacity:0.75;">Vibration Standards</small></td>
+                                <td style="padding:12px 14px;vertical-align:top;">Piping background mechanical vibration</td>
+                                <td style="padding:12px 14px;vertical-align:top;">
+                                    <ul style="margin:0;padding-left:18px;">
+                                        <li>Governs background vibrations from pumps/compressors in the piping header</li>
+                                        <li>If piping vibration &gt; <strong>21 mm/s RMS</strong>, thermowell \(f_n\) verification must include support excitation contribution</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:12px 14px;vertical-align:top;"><strong style="color:#db2777;">IS 2801 / IS 7358</strong><br><small style="color:var(--text);opacity:0.75;">Indian Standard (BIS)</small></td>
+                                <td style="padding:12px 14px;vertical-align:top;">Indian petrochemical sensor wells sizing</td>
+                                <td style="padding:12px 14px;vertical-align:top;">
+                                    <ul style="margin:0;padding-left:18px;">
+                                        <li>BIS guidelines for thermowell selection, material validation, and welded installation in Indian oil refineries</li>
+                                        <li>Mandates <strong>radiographic testing (RT)</strong> and <strong>dye-penetrant testing (DPT)</strong> for Class 1 high-pressure weld attachments</li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 10 Interview Questions -->
+            <div class="education-section" style="margin-top:30px;">
+                <h2><i class="fas fa-graduation-cap" style="color:#7c3aed;"></i> 10 Most Asked Thermowell Interview Questions</h2>
+
+                <div class="insight-card" style="border-left-color:#2563eb;background:linear-gradient(135deg,var(--card),rgba(37,99,235,0.04));">
+                    <h4 style="color:#2563eb;">Q1: What is the Strouhal number and why is it critical for thermowell design?</h4>
+                    <p>The <strong>Strouhal number \(S_t\)</strong> is a dimensionless parameter relating vortex shedding frequency to flow velocity and body diameter:</p>
+                    <div class="formula-block" style="overflow-x:auto;">$$S_t = \frac{f_s \cdot d}{U}$$</div>
+                    <p>Rearranging: \(f_s = S_t \cdot U / d\). For \(\text{Re} &gt; 1000\) (typical industrial flow), \(S_t \approx 0.22\). This means vortex shedding frequency is <em>directly proportional</em> to velocity and <em>inversely proportional</em> to the stem diameter — making the tip diameter \(B\) (the smallest dimension in the flow) the most critical dimension for vortex frequency calculation.</p>
+                    <div style="text-align:center;margin:15px 0;">
+                        <svg viewBox="0 0 420 90" xmlns="http://www.w3.org/2000/svg" style="max-width:420px;width:100%;height:auto;display:inline-block;background:var(--bg);border-radius:8px;border:1px solid var(--border);">
+                            <text x="210" y="28" font-size="11" fill="#2563eb" font-weight="bold" text-anchor="middle">Re &lt; 300: St ≈ 0.10–0.18</text>
+                            <text x="210" y="50" font-size="11" fill="#059669" font-weight="bold" text-anchor="middle">300 &lt; Re &lt; 1×10⁵: St ≈ 0.20–0.22 (Industrial range)</text>
+                            <text x="210" y="72" font-size="11" fill="#d97706" font-weight="bold" text-anchor="middle">Re &gt; 1×10⁵: St ≈ 0.27 (turbulent boundary layer)</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#059669;background:linear-gradient(135deg,var(--card),rgba(5,150,105,0.04));">
+                    <h4 style="color:#059669;">Q2: How is the natural frequency of a cantilevered thermowell calculated?</h4>
+                    <p>Using Euler-Bernoulli beam theory for a cantilever with a hollow circular cross-section:</p>
+                    <div class="formula-block" style="overflow-x:auto;">$$f_n = \frac{\lambda^2}{2\pi L^2} \sqrt{\frac{E \cdot I}{\rho_s \cdot A + m_a}}$$</div>
+                    <p>Where: \(\lambda = 1.875\) (first mode cantilever shape factor), \(L\) = insertion length (m), \(E\) = Young's Modulus (Pa), \(I = \pi(D_o^4 - D_i^4)/64\) = second moment of area (m⁴), \(\rho_s\) = material density (kg/m³), \(A = \pi(D_o^2 - D_i^2)/4\) = cross-sectional area, and \(m_a\) = added (virtual) fluid mass per unit length.</p>
+                    <p style="color:#ef4444;font-weight:bold;">Key insight: \(f_n \propto 1/L^2\) — doubling length reduces \(f_n\) by 4×.</p>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#ea580c;background:linear-gradient(135deg,var(--card),rgba(234,88,12,0.04));">
+                    <h4 style="color:#ea580c;">Q3: What is the "added mass" correction and when does it matter?</h4>
+                    <p>When a thermowell vibrates in a fluid, it must also accelerate the surrounding fluid with it — this is the <strong>virtual (added) mass</strong> effect. It acts as an apparent increase in mass, reducing the natural frequency:</p>
+                    <div class="formula-block" style="overflow-x:auto;">$$m_a = C_m \cdot \rho_f \cdot \frac{\pi D_o^2}{4}$$</div>
+                    <p>Where \(C_m \approx 1.0\) for a cylinder in unbounded flow. This correction is significant for <strong>dense liquids</strong> (e.g., water at 1000 kg/m³) but negligible for gases (e.g., steam at &lt;10 kg/m³). Ignoring this correction for liquid service could overestimate \(f_n\) by 20–40%, leading to unsafe designs.</p>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#7c3aed;background:linear-gradient(135deg,var(--card),rgba(124,58,237,0.04));">
+                    <h4 style="color:#7c3aed;">Q4: Why is the frequency limit set at r &lt; 0.8 (not 1.0)?</h4>
+                    <p>The safety factor of 0.8 accounts for the phenomenon of <strong>"lock-in"</strong>. When \(r\) approaches 0.8–1.2, vortex shedding does not simply continue at its natural Strouhal frequency — it synchronises (locks in) to the thermowell's structural vibration frequency. This dramatically amplifies the dynamic force and extends the resonance bandwidth far beyond a pure mathematical singularity.</p>
+                    <p>Additionally, the safety margin accounts for:</p>
+                    <ul>
+                        <li>Uncertainties in fluid velocity (±15–20% in field conditions)</li>
+                        <li>Material property scatter (Young's modulus ±5%)</li>
+                        <li>Manufacturing tolerances in dimensional accuracy</li>
+                        <li>Temperature effects on \(E\) reducing \(f_n\) in service</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#d97706;background:linear-gradient(135deg,var(--card),rgba(217,119,6,0.04));">
+                    <h4 style="color:#d97706;">Q5: How does operating temperature affect thermowell natural frequency?</h4>
+                    <p>Young's Modulus \(E\) decreases with rising temperature. The temperature correction applied in ASME PTC 19.3 TW-2016 is approximately linear:</p>
+                    <div class="formula-block" style="overflow-x:auto;">$$E(T) = E_{25°C} \times \left[1 - 0.0005 \times (T - 25)\right]$$</div>
+                    <p>For SS 316 at 400°C vs 25°C: \(E\) drops from 193 GPa to ~166 GPa — a <strong>14% reduction</strong>. Since \(f_n \propto \sqrt{E}\), natural frequency drops by ~7.5%. This is why thermowell calculations must always use the <em>operating</em> temperature material properties, not room temperature values. At very high temperatures (&gt;500°C), the material may creep, requiring the use of stress-rupture limits instead of yield strength.</p>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#db2777;background:linear-gradient(135deg,var(--card),rgba(219,39,119,0.04));">
+                    <h4 style="color:#db2777;">Q6: What is the difference between static and dynamic stress checks?</h4>
+                    <p><strong>Static (steady-state) stress</strong> is caused by the steady drag force of the fluid pushing the thermowell in the flow direction. The maximum bending stress at the root:</p>
+                    <div class="formula-block" style="overflow-x:auto;">$$\sigma_{static} = \frac{M_{drag} \cdot c}{I} = \frac{C_D \cdot \frac{1}{2}\rho_f U^2 \cdot d \cdot L \cdot \frac{L}{2} \cdot (D_o/2)}{I}$$</div>
+                    <p><strong>Dynamic (cyclic) stress</strong> is caused by the alternating lift force from vortex shedding. This cyclical stress, even at amplitudes below the yield strength, can cause <em>fatigue failure</em> over thousands or millions of cycles. ASME PTC 19.3 TW-2016 requires dynamic stress amplitude to remain below the material's <strong>endurance limit</strong> (typically ~0.4 × Ultimate Tensile Strength for steel).</p>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#0891b2;background:linear-gradient(135deg,var(--card),rgba(8,145,178,0.04));">
+                    <h4 style="color:#0891b2;">Q7: When should a velocity collar (support collar) be used?</h4>
+                    <p>A <strong>velocity collar</strong> is a snug-fitting support ring located partway along the thermowell insertion length. It acts as an intermediate support point, effectively dividing the cantilever into two shorter spans. This changes the boundary condition from a simple cantilever to a propped cantilever, dramatically altering the mode shape:</p>
+                    <div class="formula-block" style="overflow-x:auto;">$$f_{n,\text{collared}} \approx \frac{\lambda_{\text{collared}}^2}{2\pi L_{eff}^2} \sqrt{\frac{EI}{\rho_s A}}$$</div>
+                    <p>Where \(L_{eff}\) is the effective (reduced) unsupported length. A collar at the mid-point can raise \(f_n\) by a factor of <strong>4–8×</strong> over a simple cantilever. Collars are used when process velocity cannot be reduced and shortening the thermowell would result in the sensor tip falling out of the representative flow stream.</p>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#16a34a;background:linear-gradient(135deg,var(--card),rgba(22,163,74,0.04));">
+                    <h4 style="color:#16a34a;">Q8: Why do stepped thermowells offer better performance than straight wells of the same insertion length?</h4>
+                    <p>A <strong>stepped thermowell</strong> has a thick, stiff upper shank (near the root) that transitions to a thinner lower shank (near the tip). This provides:</p>
+                    <ul>
+                        <li><strong>Higher \(f_n\)</strong>: The thick root provides high \(EI\), making the well stiff where bending moment is highest.</li>
+                        <li><strong>Lower tip mass</strong>: The thin lower shank reduces the effective participating mass, further raising \(f_n\).</li>
+                        <li><strong>Lower wake frequency</strong>: The smaller tip diameter \(d\) in the flow reduces \(f_s = S_t \cdot U / d\) — wait, a smaller tip actually <em>increases</em> \(f_s\). But since \(f_n\) rises faster than \(f_s\), the ratio \(r = f_s/f_n\) still improves.</li>
+                        <li><strong>Better thermal response</strong>: The thinner tip reduces thermal mass and improves sensor response time \(\tau\).</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#c026d3;background:linear-gradient(135deg,var(--card),rgba(192,38,211,0.04));">
+                    <h4 style="color:#c026d3;">Q9: Explain the hydrostatic (collapse pressure) check for thermowells.</h4>
+                    <p>A thermowell experiences full process fluid pressure on its outer surface and near-atmospheric pressure in the bore (where the sensor sits). This creates a net <strong>external pressure</strong> that can cause the thermowell to buckle or collapse like a tube under external pressure.</p>
+                    <p>ASME PTC 19.3 TW-2016 checks that the process pressure \(p\) does not exceed the collapse rating:</p>
+                    <div class="formula-block" style="overflow-x:auto;">$$p_c = \frac{2E}{1-\nu^2} \cdot \left(\frac{t}{D_o}\right)^3 \quad \text{and} \quad p &lt; \frac{p_c}{SF}$$</div>
+                    <p>Where \(t\) = wall thickness, \(\nu\) = Poisson's ratio (~0.3 for steel), and SF = safety factor (typically 4 for long-term service). For thin-walled thermowells in high-pressure service (&gt;100 bar), this check can be the governing failure mode, overriding the frequency limit.</p>
+                </div>
+
+                <div class="insight-card" style="border-left-color:#dc2626;background:linear-gradient(135deg,var(--card),rgba(220,38,38,0.04));">
+                    <h4 style="color:#dc2626;">Q10: What are helical strakes and how do they suppress resonance?</h4>
+                    <p>Helical strakes are three continuous helical fins spiralling along the thermowell's outer surface at 120° pitch intervals. Borrowed from offshore riser engineering (where they suppress vortex-induced vibration on subsea pipelines), strakes work by <strong>disrupting vortex spanwise correlation</strong>:</p>
+                    <ul>
+                        <li>Smooth cylinders shed vortices <em>coherently</em> along their span — this creates a resonant lift force across the full length.</li>
+                        <li>Strakes cause the vortices to shed <em>at different phases</em> at different axial locations — the forces partially cancel, reducing net lift force by 70–90%.</li>
+                    </ul>
+                    <p>Key design rule: strakes must span the <strong>full immersed length</strong> of the thermowell to be effective. Partial straking can sometimes <em>worsen</em> performance by creating a discontinuity that triggers coherent shedding over the unstraked portion. Strakes increase drag coefficient \(C_D\) by ~60–80% but eliminate the alternating lift force.</p>
+                    <div style="text-align:center;margin:15px 0;">
+                        <svg viewBox="0 0 420 80" xmlns="http://www.w3.org/2000/svg" style="max-width:420px;width:100%;height:auto;display:inline-block;background:var(--bg);border-radius:8px;border:1px solid var(--border);">
+                            <!-- Strake visual -->
+                            <rect x="30" y="30" width="360" height="22" rx="3" fill="rgba(100,116,139,0.2)" stroke="#475569" stroke-width="1.5"/>
+                            <path d="M 30,24 Q 55,42 80,24 Q 105,42 130,24 Q 155,42 180,24 Q 205,42 230,24 Q 255,42 280,24 Q 305,42 330,24 Q 355,42 380,24" fill="none" stroke="#059669" stroke-width="2.2"/>
+                            <path d="M 30,58 Q 55,40 80,58 Q 105,40 130,58 Q 155,40 180,58 Q 205,40 230,58 Q 255,40 280,58 Q 305,40 330,58 Q 355,40 380,58" fill="none" stroke="#2563eb" stroke-width="2.2"/>
+                            <text x="210" y="72" font-size="9" fill="#475569" font-weight="bold" text-anchor="middle">Three Helical Strake Fins at 120° — Full Immersed Length</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- .tool-container -->
     </main>
 
-    <!-- NEW: Footer from provided file -->
-        
-    <!-- Related Tools Section (Auto-generated) -->
-    <section style="padding: 40px 0; background: var(--bg-color, #f8fafc);">
+    <!-- Related Tools Section -->
+    <section style="padding:48px 0;background:var(--bg);">
         <div class="container">
-            <h2 style="text-align:center; font-size:1.4rem; margin-bottom:20px; color:var(--heading-color, #1e293b);">Related Engineering Calculators</h2>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:15px; max-width:900px; margin:0 auto;">
-                    <a href="/capacitance-level" class="silo-card" style="text-decoration:none;">
-                        <span>Capacitance Level</span>
-                    </a>
-                    <a href="/dp-flow-conversion" class="silo-card" style="text-decoration:none;">
-                        <span>Dp Flow Conversion</span>
-                    </a>
-                    <a href="/impulselinefreezing" class="silo-card" style="text-decoration:none;">
-                        <span>Impulselinefreezing</span>
-                    </a>
+            <h2 style="text-align:center;font-size:1.5rem;margin-bottom:8px;color:var(--heading);">Related Engineering Calculators</h2>
+            <p style="text-align:center;color:var(--text);margin-bottom:28px;font-size:0.95rem;">Companion tools that complete your process instrumentation design workflow</p>
+            <div class="related-calc-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;max-width:960px;margin:0 auto;">
+                <a href="/capacitance-level" class="silo-card" style="text-decoration:none;" aria-label="Capacitance Level Calculator">
+                    <div class="silo-card-title"><i class="fas fa-layer-group"></i> Capacitance Level Calculator</div>
+                    <div class="silo-card-body">
+                        <div class="benefit-item"><span class="benefit-label" style="color:#2563eb;">What it does</span><span>Converts capacitance readings from capacitance-type level sensors into accurate level measurements using dielectric constants.</span></div>
+                        <div class="benefit-item"><span class="benefit-label" style="color:#059669;">Useful for</span><span>Sizing level transmitters in storage tanks and vessels where the process fluid dielectric changes with temperature or composition.</span></div>
+                    </div>
+                    <span class="silo-card-action" style="color:#2563eb;">Estimate Level &rarr;</span>
+                </a>
+                <a href="/dp-flow-conversion" class="silo-card" style="text-decoration:none;" aria-label="DP Flow Conversion Calculator">
+                    <div class="silo-card-title"><i class="fas fa-tachometer-alt"></i> DP Flow Conversion</div>
+                    <div class="silo-card-body">
+                        <div class="benefit-item"><span class="benefit-label" style="color:#059669;">What it does</span><span>Converts differential pressure (DP) transmitter outputs into volumetric or mass flow rates using orifice-plate or Venturi equations.</span></div>
+                        <div class="benefit-item"><span class="benefit-label" style="color:#2563eb;">Useful for</span><span>Flow sizing in high-temperature pipelines where fluid density (and thus thermowell service conditions) depend on the flow rate.</span></div>
+                    </div>
+                    <span class="silo-card-action" style="color:#059669;">Convert Flow &rarr;</span>
+                </a>
+                <a href="/impulselinefreezing" class="silo-card" style="text-decoration:none;" aria-label="Impulse Line Freezing Calculator">
+                    <div class="silo-card-title"><i class="fas fa-snowflake"></i> Impulse Line Freeze Calculator</div>
+                    <div class="silo-card-body">
+                        <div class="benefit-item"><span class="benefit-label" style="color:#7c3aed;">What it does</span><span>Calculates heat tracing requirements and winterisation parameters for impulse lines serving pressure and DP transmitters in cold climates.</span></div>
+                        <div class="benefit-item"><span class="benefit-label" style="color:#ea580c;">Useful for</span><span>Plants in cold regions where condensate can freeze inside impulse lines, disrupting process measurements linked to thermowell installations.</span></div>
+                    </div>
+                    <span class="silo-card-action" style="color:#7c3aed;">Check Freeze Risk &rarr;</span>
+                </a>
             </div>
         </div>
     </section>
+
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -1357,67 +1669,50 @@
                         <img src="logo.png" alt="Design Calculators Logo" loading="lazy" decoding="async">
                         <span class="footer-logo-text">Design Calculators</span>
                     </a>
-                    <p class="footer-description">A comprehensive engineering calculator hub based on IEC, IEEE, and
-                        global standards.</p>
+                    <p class="footer-description">A comprehensive engineering calculator hub based on IEC, IEEE, and global standards.</p>
                     <div class="social-buttons">
-                        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in"
-                            target="_blank" rel="noopener noreferrer" class="social-btn linkedin"
-                            aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer"
-                            class="social-btn youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in&text=Check%20out%20this%20amazing%20engineering%20calculator%20hub!"
-                            target="_blank" rel="noopener noreferrer" class="social-btn twitter" aria-label="Twitter"><i
-                                class="fab fa-twitter"></i></a>
-                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in"
-                            target="_blank" rel="noopener noreferrer" class="social-btn facebook"
-                            aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource:%20https://designcalculators.co.in"
-                            target="_blank" rel="noopener noreferrer" class="social-btn whatsapp"
-                            aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn linkedin" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer" class="social-btn youtube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url=https://designcalculators.co.in&text=Check%20out%20this%20amazing%20engineering%20calculator%20hub!" target="_blank" rel="noopener noreferrer" class="social-btn twitter" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn facebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text=Check%20out%20this%20amazing%20engineering%20resource:%20https://designcalculators.co.in" target="_blank" rel="noopener noreferrer" class="social-btn whatsapp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
                 <div class="footer-right">
                     <div class="footer-col">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href='/indexele'>Electrical Tools</a></li>
-                            <li><a href='/indexmech'>Mechanical Tools</a></li>
-                            <li><a href='/indexinst'>Instrumentation Tools</a></li>
-                            <li><a href='/about'>About Us</a></li>
-                            <li><a href='/faq'>FAQ</a></li>
+                            <li><a href="/indexele">Electrical Tools</a></li>
+                            <li><a href="/indexmech">Mechanical Tools</a></li>
+                            <li><a href="/indexinst">Instrumentation Tools</a></li>
+                            <li><a href="/about">About Us</a></li>
+                            <li><a href="/faq">FAQ</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
                         <h4>Learn More</h4>
                         <ul>
-                            <li><a href="https://www.youtube.com/@designcalculators" target="_blank"
-                                    rel="noopener noreferrer">YouTube Channel</a></li>
-                            <li><a href='/contact'>Contact Us</a></li>
-                            <li><a href='/privacy-policy'>Privacy Policy</a></li>
-                            <li><a href='/terms-of-service'>Terms of Service</a></li>
-                            <li><a href='/sitemap2'>Sitemap</a></li>
+                            <li><a href="https://www.youtube.com/@designcalculators" target="_blank" rel="noopener noreferrer">YouTube Channel</a></li>
+                            <li><a href="/contact">Contact Us</a></li>
+                            <li><a href="/privacy-policy">Privacy Policy</a></li>
+                            <li><a href="/terms-of-service">Terms of Service</a></li>
+                            <li><a href="/sitemap2">Sitemap</a></li>
                         </ul>
                     </div>
                     <div class="footer-col">
                         <h4>Our Network</h4>
                         <ul>
                             <li style="margin-bottom: 12px;">
-                                <a href="https://reliabilitytools.co.in/" target="_blank" rel="noopener"
-                                   style="font-weight: 600; display: block; margin-bottom: 2px;">Reliability Tools</a>
-                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Reliability
-                                    & maintenance engineering calculators.</span>
+                                <a href="https://reliabilitytools.co.in/" target="_blank" rel="noopener" style="font-weight: 600; display: block; margin-bottom: 2px;">Reliability Tools</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Reliability &amp; maintenance engineering calculators.</span>
                             </li>
                             <li style="margin-bottom: 12px;">
-                                <a href="https://electrosafe.homes/" target="_blank" rel="noopener"
-                                   style="font-weight: 600; display: block; margin-bottom: 2px;">ElectroSafe</a>
-                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Dedicated
-                                    to home electrical safety & protection.</span>
+                                <a href="https://electrosafe.homes/" target="_blank" rel="noopener" style="font-weight: 600; display: block; margin-bottom: 2px;">ElectroSafe</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Dedicated to home electrical safety &amp; protection.</span>
                             </li>
                             <li>
-                                <a href="https://knowyourname.co.in/" target="_blank" rel="noopener"
-                                   style="font-weight: 600; display: block; margin-bottom: 2px;">KnowYourName</a>
-                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Scientific
-                                    name analysis: Phonetics, Ergonomics & Acoustics.</span>
+                                <a href="https://knowyourname.co.in/" target="_blank" rel="noopener" style="font-weight: 600; display: block; margin-bottom: 2px;">KnowYourName</a>
+                                <span style="font-size: 0.85rem; color: #94a3b8; line-height: 1.3; display: block;">Scientific name analysis: Phonetics, Acoustics.</span>
                             </li>
                         </ul>
                     </div>
@@ -1431,6 +1726,7 @@
             </div>
         </div>
     </footer>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1514,25 +1810,25 @@
                 }, 5000);
             }
 
-            function clearResults() {
+            function clearResults(silent = false) {
                 currentResults = null;
-                resultContainer.classList.remove('show');
-                resultContainer.style.display = 'none';
                 resultTableBody.innerHTML = '';
                 calculationDetailsDiv.innerHTML = '';
-                calculationDetailsDiv.classList.remove('active'); // NEW: Hide steps
                 standardReference.innerHTML = '';
                 stabilityStatusDisplay.textContent = 'Stability Status: N/A';
                 stabilityStatusDisplay.classList.remove('ok', 'error', 'warning');
                 updateThermowellDiagram('tapered');
-                displayMessage("Results cleared.", "info");
+                if (!silent) {
+                    displayMessage("Results cleared.", "info");
+                }
             }
 
             function resetForm() {
                 for (const key in defaultValues) {
                     document.getElementById(key).value = defaultValues[key];
                 }
-                clearResults();
+                clearResults(true);
+                calculateWakeFrequency(true);
                 displayMessage("Form reset to default values.", "info");
             }
 
@@ -1553,8 +1849,9 @@
             // Global state to hold calculation results for PDF export
             let currentResults = null;
 
-            function calculateWakeFrequency() {
-                clearResults(); // Clear previous results
+            function calculateWakeFrequency(isInitial = false) {
+                const skipScroll = (isInitial === true);
+                clearResults(skipScroll); // Clear previous results
 
                 // --- Input Parsing and Validation ---
                 const L_mm = parseFloat(insertionLengthInput.value);
@@ -1900,7 +2197,9 @@
                 resultContainer.style.display = 'block';
                 setTimeout(() => {
                     resultContainer.classList.add('show');
-                    resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (!skipScroll) {
+                        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }, 10);
                 
                 // Typeset MathJax formulas
@@ -2182,6 +2481,7 @@
             }
 
             updateThermowellDiagram(thermowellTypeInput.value);
+            calculateWakeFrequency(true); // Run initial calculation silently on load
         });
     </script>
 </body>
