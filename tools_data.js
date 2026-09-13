@@ -1,5 +1,12 @@
 ﻿const allTools = [
     {
+        "name": "PLC PID & Jitter Impact",
+        "href": "plc-pid-jitter-impact",
+        "category": "instrumentation",
+        "icon": "fas fa-wave-square"
+    },
+
+    {
         "name": "Residential Load Calc",
         "href": "electricalresidentialload",
         "category": "electrical",
