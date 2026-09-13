@@ -1,5 +1,11 @@
 window.TOOLS_DB = [
     {
+        "name": "Excel Calculation Templates",
+        "href": "engineering-excel-calculation-templates",
+        "category": "resources",
+        "icon": "fas fa-file-excel"
+    },
+    {
         "name": "Residential Load Calc",
         "href": "electricalresidentialload",
         "category": "electrical",
