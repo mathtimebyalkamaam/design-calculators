@@ -43,7 +43,7 @@
     <!-- PDF Generation (Not used by this tool, but part of header) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -919,7 +919,7 @@
             word-break: break-all; /* Ensure long IDs wrap */
         }
     </style>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261111b">
     <meta property="og:title" content="Differential Pressure to Flow Conversion - Design Calculators - Instrumentation">
     <meta property="og:description" content="Professional calculator for DP flow conversion. Calculates mass and volumetric flow from differential pressure for orifice, venturi, nozzle, and pitot tubes per ISO 5167.">
 
@@ -1130,7 +1130,7 @@
       ]
     }
     </script>
-    <link rel="stylesheet" href="/rtx-related.css">
+    <link rel="stylesheet" href="/rtx-related.css?v=20261111b">
 </head>
 <body class="math-content" oncontextmenu="return false;">
     <div id="message-box" class="message-box"></div>
@@ -2085,66 +2085,11 @@
         </div>
     </footer>
 
-    <script type="module">
-        // Firebase imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        let db;
-        let auth;
-        let userId = 'anonymous'; // Default to anonymous
-        
-        // Global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize Firebase
-            try {
-                const firebaseConfig = JSON.parse(firebaseConfigStr);
-                if (Object.keys(firebaseConfig).length > 0) {
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
-                    setLogLevel('Debug'); // Enable detailed logging
-
-                    // Authenticate user
-                    try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                        
-                        onAuthStateChanged(auth, (user) => {
-                            if (user) {
-                                userId = user.uid;
-                                document.getElementById('user-id-display').textContent = `User ID: ${userId}`;
-                                console.log("Firebase initialized and user authenticated:", userId);
-                            } else {
-                                userId = crypto.randomUUID();
-                                document.getElementById('user-id-display').textContent = `User ID (Anonymous, no persistence): ${userId}`;
-                                console.log("User signed out, using temporary ID.");
-                            }
-                        });
-
-                    } catch (error) {
-                        console.error("Firebase authentication failed:", error);
-                        showCustomMessage("Failed to authenticate. Save/Load features may not work.", 'error');
-                        userId = crypto.randomUUID(); // Fallback
-                        document.getElementById('user-id-display').textContent = `User ID (Auth Error): ${userId}`;
-                    }
-                } else {
-                    console.warn("Firebase config not found. Save/Load features will be disabled.");
-                    showCustomMessage("Firebase is not configured. Save/Load are disabled.", 'warning');
-                    document.getElementById('user-id-display').textContent = `User ID (Firebase Disabled): ${userId}`;
-                }
-            } catch (e) {
-                console.error("Failed to parse Firebase config:", e);
-                showCustomMessage("Error loading Firebase config. Save/Load disabled.", "error");
-            }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const STORAGE_KEY = 'dpFlowCalculator_config';
+            const userIdEl = document.getElementById('user-id-display');
+            if (userIdEl) userIdEl.style.display = 'none';
 
             // Input elements
             const dpValueInput = document.getElementById('dp-value');
@@ -3130,14 +3075,8 @@
                 }
             });
 
-            // --- Firebase Save/Load Logic ---
-            saveConfigBtn.addEventListener('click', async function() {
-                if (!db || !auth || !userId || userId === 'anonymous') {
-                    showMessage("Cannot save. Firebase is not configured or user is not authenticated.", 'error');
-                    return;
-                }
-                showLoading("Saving configuration...");
-                
+            // --- Local Browser Save/Load Logic ---
+            saveConfigBtn.addEventListener('click', function() {
                 try {
                     const configData = {
                         'dp-value': dpValueInput.value,
@@ -3163,51 +3102,34 @@
                         'fluid-viscosity-unit': fluidViscosityUnitSelect.value,
                         'specific-heat-ratio': specificHeatRatioInput.value
                     };
-                    
-                    const configDocRef = doc(db, `artifacts/${appId}/users/${userId}/configs`, 'dpFlowCalculator');
-                    await setDoc(configDocRef, configData);
-                    showMessage('Configuration saved successfully!', 'success');
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(configData));
+                    showMessage('Configuration saved locally in your browser.', 'success');
                 } catch (error) {
                     console.error("Error saving configuration:", error);
-                    showMessage('Failed to save configuration. Please try again.', 'error');
-                } finally {
-                    hideLoading();
+                    showMessage('Failed to save configuration.', 'error');
                 }
             });
 
-            loadConfigBtn.addEventListener('click', async function() {
-                if (!db || !auth || !userId || userId === 'anonymous') {
-                    showMessage("Cannot load. Firebase is not configured or user is not authenticated.", 'error');
-                    return;
-                }
-                showLoading("Loading configuration...");
-                
+            loadConfigBtn.addEventListener('click', function() {
                 try {
-                    const configDocRef = doc(db, `artifacts/${appId}/users/${userId}/configs`, 'dpFlowCalculator');
-                    const docSnap = await getDoc(configDocRef);
-                    
-                    if (docSnap.exists()) {
-                        const loadedConfig = docSnap.data();
-                        
-                        // Populate form fields
+                    const rawConfig = localStorage.getItem(STORAGE_KEY);
+                    if (rawConfig) {
+                        const loadedConfig = JSON.parse(rawConfig);
                         for (const key in loadedConfig) {
                             const element = document.getElementById(key);
                             if (element) {
                                 element.value = loadedConfig[key];
                             }
                         }
-                        
-                        toggleFluidInputs(); // Adjust visibility
-                        clearResults(); // Clear any old results
-                        showMessage('Configuration loaded successfully!', 'success');
+                        toggleFluidInputs();
+                        clearResults();
+                        showMessage('Saved configuration loaded.', 'success');
                     } else {
-                        showMessage('No saved configuration found for this user.', 'info');
+                        showMessage('No saved configuration found in this browser.', 'info');
                     }
                 } catch (error) {
                     console.error("Error loading configuration:", error);
-                    showMessage('Failed to load configuration. Please try again.', 'error');
-                } finally {
-                    hideLoading();
+                    showMessage('Failed to load saved configuration.', 'error');
                 }
             });
 
@@ -3573,6 +3495,6 @@
         });
     </script>
     <script src="js/calculator-export.js"></script>
-    <script src="main.js"></script>
+    <script src="main.js?v=20261111b"></script>
 </body>
 </html>
